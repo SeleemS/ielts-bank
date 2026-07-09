@@ -2,16 +2,21 @@ import ReadingQuestion from '../../src/pages/ReadingQuestion';
 import {
   SKILLS,
   getLegacyIdSlugMap,
-  getPassageBySlug,
+  getPassageSlugs,
+  getStructuredPassage,
   toMetaDescription,
 } from '../../lib/supabase';
 
 export default ReadingQuestion;
 
 export async function getStaticPaths() {
-  // Emit the SAME legacy Firestore ids used as URLs today (SEO-indexed).
-  const legacyMap = await getLegacyIdSlugMap(SKILLS.reading);
-  const ids = Object.keys(legacyMap);
+  // Pre-render BOTH the legacy Firestore ids (SEO-indexed URLs) and the new
+  // slugs. Anything not listed is rendered on demand via fallback: 'blocking'.
+  const [legacyMap, slugs] = await Promise.all([
+    getLegacyIdSlugMap(SKILLS.reading),
+    getPassageSlugs(SKILLS.reading),
+  ]);
+  const ids = Array.from(new Set([...Object.keys(legacyMap), ...slugs]));
   return {
     paths: ids.map((id) => ({ params: { id } })),
     fallback: 'blocking',
@@ -19,15 +24,15 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  // getPassageBySlug accepts either a slug or a legacy Firestore id.
-  const passage = await getPassageBySlug(SKILLS.reading, params.id);
+  // getStructuredPassage accepts either a slug or a legacy Firestore id.
+  const passage = await getStructuredPassage(SKILLS.reading, params.id);
   if (!passage) return { notFound: true };
 
   return {
     props: {
       id: params.id,
       passage,
-      description: toMetaDescription(passage.passageText),
+      description: toMetaDescription(passage.bodyHtml),
     },
     revalidate: 3600,
   };

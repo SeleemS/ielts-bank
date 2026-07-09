@@ -1,264 +1,268 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Text,
-  Box,
-  Flex,
-  Button,
-  Spinner,
-  Badge,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-} from '@chakra-ui/react';
-import confetti from 'canvas-confetti';
-import { useRouter } from 'next/router';
+import React, { useState, useEffect, useMemo } from 'react';
+import NextLink from 'next/link';
+import { Search, ArrowRight, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listPassages } from '../../lib/supabase';
+import { Button } from '../../components/ui/button';
+import { cn } from '../lib/utils';
 
-const DataTable = ({ selectedOption }) => {
-  const [data, setData] = useState([]);
-  const [cache, setCache] = useState({});
+// Pure Tailwind/shadcn question browser. NO Chakra imports.
+//
+// Renders a polished, information-dense table of practice passages with a
+// client-side title search and pagination over the full list. The full list is
+// either passed in via `items` (SectionLanding fetches it in getStaticProps) or
+// fetched on the client via listPassages when only a skill/selectedOption is
+// given (e.g. a Toggle-driven surface). Rows link to the existing route
+// /<skill>question/<legacyId || id> — routing is unchanged.
+
+const RESULTS_PER_PAGE = 10;
+
+// Emerald / amber / red difficulty pills; slate fallback for anything else
+// (e.g. "Task 2"). Keyed on a lowercased difficulty string.
+const DIFFICULTY_STYLES = {
+  easy: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+  medium: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+  hard: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20',
+};
+const DIFFICULTY_FALLBACK =
+  'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:border-slate-500/20';
+
+function DifficultyBadge({ difficulty }) {
+  if (!difficulty) return null;
+  const style = DIFFICULTY_STYLES[String(difficulty).toLowerCase()] || DIFFICULTY_FALLBACK;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold',
+        style
+      )}
+    >
+      {difficulty}
+    </span>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="divide-y divide-border">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 px-4 py-4 sm:px-6">
+          <div className="h-4 w-6 shrink-0 animate-pulse rounded bg-muted" />
+          <div className="h-4 flex-1 animate-pulse rounded bg-muted" style={{ maxWidth: `${60 - i * 4}%` }} />
+          <div className="h-5 w-16 shrink-0 animate-pulse rounded-full bg-muted" />
+          <div className="hidden h-8 w-24 shrink-0 animate-pulse rounded-md bg-muted sm:block" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const DataTable = ({ items, skill, selectedOption }) => {
+  // Route prefix / fetch key. Accept either an explicit skill or the legacy
+  // capitalized selectedOption prop.
+  const skillLower = String(skill || selectedOption || 'reading').toLowerCase();
+
+  const [data, setData] = useState(items || []);
+  const [loading, setLoading] = useState(!items);
+  const [query, setQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const resultsPerPage = 10;
-  const router = useRouter();
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [hasOpenedModal, setHasOpenedModal] = useState(false);
 
   useEffect(() => {
-    if (selectedOption === 'Writing' && !hasOpenedModal) {
-      confetti({ spread: 100, particleCount: 150, origin: { y: 0.6 } });
-      onOpen();
-      setHasOpenedModal(true);
+    // Prefetched list wins: no client fetch, no spinner.
+    if (items) {
+      setData(items);
+      setLoading(false);
+      return undefined;
     }
-  }, [selectedOption]);
-
-  useEffect(() => {
-    async function fetchData() {
-      if (cache[selectedOption]) {
-        const cachedData = cache[selectedOption];
-        setData(cachedData);
-        setTotalPages(Math.ceil(cachedData.length / resultsPerPage));
-      } else {
-        setLoading(true);
-        // listPassages returns [{ id: slug, legacyId, title, difficulty }].
-        const fetchedData = await listPassages(selectedOption.toLowerCase());
-
-        setData(fetchedData);
-        setTotalPages(Math.ceil(fetchedData.length / resultsPerPage));
-        setLoading(false);
-
-        setCache(prev => ({ ...prev, [selectedOption]: fetchedData }));
-      }
-    }
-
-    fetchData();
-  }, [selectedOption, cache]);
-
-  const handleRowClick = id => {
-    const routePath = `/${selectedOption.toLowerCase()}question/${id}`;
-    router.push(routePath);
-  };
-
-  const getDifficultyBadge = difficulty => {
-    const colorSchemes = {
-      Easy: 'green',
-      Medium: 'yellow',
-      Hard: 'red',
-      'Task 2': 'blue',
+    let active = true;
+    setLoading(true);
+    // listPassages returns [{ id: slug, legacyId, title, difficulty }].
+    listPassages(skillLower)
+      .then((res) => {
+        if (active) {
+          setData(res || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setData([]);
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
     };
+  }, [items, skillLower]);
 
-    return (
-      <Badge
-        colorScheme={colorSchemes[difficulty] || 'gray'}
-        variant="subtle"
-        px={3}
-        py={1}
-        borderRadius="full"
-        fontWeight="600"
-        fontSize="xs"
-      >
-        {difficulty}
-      </Badge>
-    );
-  };
+  // Reset to first page whenever the dataset or search changes.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, skillLower, data]);
 
-  const handlePageChange = newPage => {
-    if (newPage < 1) {
-      setCurrentPage(totalPages);
-    } else if (newPage > totalPages) {
-      setCurrentPage(1);
-    } else {
-      setCurrentPage(newPage);
-    }
-  };
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter((item) => (item.title || '').toLowerCase().includes(q));
+  }, [data, query]);
 
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / RESULTS_PER_PAGE));
+  const page = Math.min(currentPage, totalPages);
+  const start = (page - 1) * RESULTS_PER_PAGE;
+  const pageItems = filtered.slice(start, start + RESULTS_PER_PAGE);
 
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  const goTo = (p) => setCurrentPage(Math.min(Math.max(1, p), totalPages));
 
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <Button
-          key={i}
-          size="sm"
-          variant={currentPage === i ? 'solid' : 'ghost'}
-          colorScheme={currentPage === i ? 'blue' : 'gray'}
-          onClick={() => handlePageChange(i)}
-          mx={1}
-        >
-          {i}
-        </Button>
-      );
-    }
-
-    return (
-      <Flex justify="center" align="center" mt={6} gap={2} mb={6}>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </Button>
-        {pages}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </Button>
-      </Flex>
-    );
-  };
+  const pageNumbers = useMemo(() => {
+    const maxVisible = 5;
+    let s = Math.max(1, page - Math.floor(maxVisible / 2));
+    let e = Math.min(totalPages, s + maxVisible - 1);
+    if (e - s + 1 < maxVisible) s = Math.max(1, e - maxVisible + 1);
+    const nums = [];
+    for (let i = s; i <= e; i++) nums.push(i);
+    return nums;
+  }, [page, totalPages]);
 
   return (
-    <Box w="full">
-      {loading ? (
-        <Flex
-          justifyContent="center"
-          alignItems="center"
-          height="400px"
-          direction="column"
-          bg="white"
-          borderRadius="xl"
-          border="1px"
-          borderColor="gray.200"
-        >
-          <Spinner size="xl" thickness="3px" speed="0.65s" emptyColor="gray.200" color="blue.500" />
-          <Text fontSize="lg" mt={4} color="gray.600" fontWeight="500">
-            Loading questions...
-          </Text>
-        </Flex>
-      ) : (
-        <Box
-          bg="white"
-          borderRadius="xl"
-          border="1px"
-          borderColor="gray.200"
-          overflow="hidden"
-          shadow="sm"
-        >
-          <Box overflowX="auto">
-            <Table variant="simple" size="md">
-              <Thead bg="gray.50">
-                <Tr>
-                  <Th fontWeight="700" color="gray.700" fontSize="sm" py={4} w="80px">
-                    #
-                  </Th>
-                  <Th fontWeight="700" color="gray.700" fontSize="sm" py={4}>
-                    Title
-                  </Th>
-                  <Th fontWeight="700" color="gray.700" fontSize="sm" py={4} w="120px">
-                    Difficulty
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {data
-                  .slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage)
-                  .map((item, index) => (
-                    <Tr
-                      key={item.id}
-                      onClick={() => handleRowClick(item.legacyId || item.id)}
-                      cursor="pointer"
-                      _hover={{
-                        bg: 'blue.50',
-                        transform: 'translateY(-1px)',
-                        shadow: 'sm',
-                      }}
-                      transition="all 0.2s"
-                      borderBottom="1px"
-                      borderColor="gray.100"
-                    >
-                      <Td py={4} color="gray.600" fontWeight="500">
-                        {(currentPage - 1) * resultsPerPage + index + 1}
-                      </Td>
-                      <Td py={4}>
-                        <Text fontWeight="600" color="gray.900" fontSize="sm" noOfLines={2}>
-                          {item.title}
-                        </Text>
-                      </Td>
-                      <Td py={4}>{getDifficultyBadge(item.difficulty)}</Td>
-                    </Tr>
-                  ))}
-              </Tbody>
-            </Table>
-          </Box>
-          {renderPagination()}
-        </Box>
-      )}
+    <div className="tw-root w-full font-sans">
+      {/* Toolbar: search + result count */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title..."
+            aria-label="Search questions by title"
+            className={cn(
+              'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground',
+              'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
+              'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
+            )}
+          />
+        </div>
+        {!loading && (
+          <p className="text-sm text-muted-foreground">
+            {filtered.length} {filtered.length === 1 ? 'question' : 'questions'}
+            {query.trim() ? ' found' : ''}
+          </p>
+        )}
+      </div>
 
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
-        <ModalOverlay />
-        <ModalContent 
-          border="1px solid #CBD5E0"
-          borderRadius="xl"
-          boxShadow="2xl"
-          px={6}
-          py={4}
-        >
-          <ModalHeader fontWeight="700" fontSize="xl">How We Grade Writing</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={2}>
-            <Text mb={3} color="gray.700" fontSize="md">
-              When you practice IELTS Writing with us, your response is graded by OpenAI's GPT-4 model — the most advanced AI in the world.
-            </Text>
-            <Text mb={3} color="gray.700" fontSize="md">
-              It evaluates your grammar, coherence, vocabulary, and task response using the official IELTS scoring criteria.
-            </Text>
-            <Text color="gray.700" fontSize="md">
-              This makes our platform one of the most accurate, fastest, and easiest ways to improve your IELTS writing — with no human correction needed.
-            </Text>
-          </ModalBody>
-          <Flex justify="center" py={4}>
-            <Button onClick={onClose} bg="black" color="white" px={8} _hover={{ bg: 'gray.800' }}>
-              Close
+      {/* Card */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        {loading ? (
+          <LoadingSkeleton />
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <Inbox className="h-6 w-6" />
+            </span>
+            <p className="text-base font-semibold text-foreground">
+              {query.trim() ? 'No matching questions' : 'No questions yet'}
+            </p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              {query.trim()
+                ? `Nothing matches “${query.trim()}”. Try a different search term.`
+                : 'No questions are available for this section yet. Please check back soon.'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="w-14 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Title
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Difficulty
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+                    <span className="sr-only">Action</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((item, index) => {
+                  const href = `/${skillLower}question/${item.legacyId || item.id}`;
+                  return (
+                    <tr
+                      key={item.id}
+                      className="group border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
+                    >
+                      <td className="px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:px-6">
+                        {start + index + 1}
+                      </td>
+                      <td className="px-4 py-4 align-middle">
+                        <NextLink
+                          href={href}
+                          className="text-sm font-semibold text-foreground no-underline transition-colors hover:text-accent"
+                        >
+                          {item.title}
+                        </NextLink>
+                      </td>
+                      <td className="px-4 py-4 align-middle">
+                        <DifficultyBadge difficulty={item.difficulty} />
+                      </td>
+                      <td className="px-4 py-4 text-right align-middle sm:px-6">
+                        <Button asChild size="sm" variant="ghost" className="text-accent hover:text-accent">
+                          <NextLink href={href} className="no-underline">
+                            Practise
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                          </NextLink>
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => goTo(page - 1)}
+            disabled={page === 1}
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Previous</span>
+          </Button>
+          {pageNumbers.map((n) => (
+            <Button
+              key={n}
+              variant={n === page ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => goTo(n)}
+              aria-current={n === page ? 'page' : undefined}
+              className="min-w-9 tabular-nums"
+            >
+              {n}
             </Button>
-          </Flex>
-        </ModalContent>
-      </Modal>
-    </Box>
+          ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => goTo(page + 1)}
+            disabled={page === totalPages}
+            aria-label="Next page"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

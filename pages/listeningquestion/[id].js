@@ -2,16 +2,20 @@ import ListeningQuestion from '../../src/pages/ListeningQuestion';
 import {
   SKILLS,
   getLegacyIdSlugMap,
-  getPassageBySlug,
+  getPassageSlugs,
+  getStructuredPassage,
   toMetaDescription,
 } from '../../lib/supabase';
 
 export default ListeningQuestion;
 
 export async function getStaticPaths() {
-  // Emit the SAME legacy Firestore ids used as URLs today (SEO-indexed).
-  const legacyMap = await getLegacyIdSlugMap(SKILLS.listening);
-  const ids = Object.keys(legacyMap);
+  // Pre-render BOTH legacy Firestore ids and new slugs; others on demand.
+  const [legacyMap, slugs] = await Promise.all([
+    getLegacyIdSlugMap(SKILLS.listening),
+    getPassageSlugs(SKILLS.listening),
+  ]);
+  const ids = Array.from(new Set([...Object.keys(legacyMap), ...slugs]));
   return {
     paths: ids.map((id) => ({ params: { id } })),
     fallback: 'blocking',
@@ -19,15 +23,12 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  // getPassageBySlug accepts either a slug or a legacy Firestore id.
-  const passage = await getPassageBySlug(SKILLS.listening, params.id);
+  const passage = await getStructuredPassage(SKILLS.listening, params.id);
   if (!passage) return { notFound: true };
 
-  // Listening passages describe an audio clip; fall back to a generic
-  // description when there is no text content to derive one from.
   const description =
-    toMetaDescription(passage.passageText) ||
-    `Practise IELTS Listening with "${passage.passageTitle}". Listen to the audio and answer the questions.`;
+    toMetaDescription(passage.bodyHtml) ||
+    `Practise IELTS Listening with "${passage.title}". Listen to the audio and answer the questions.`;
 
   return {
     props: {

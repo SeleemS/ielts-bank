@@ -1,14 +1,16 @@
-import { ChakraProvider } from '@chakra-ui/react';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
-import '../src/index.css';
+// Tailwind + shadcn design tokens. Chakra has been fully removed; Tailwind
+// Preflight is re-enabled in tailwind.config.js.
+import '../src/styles/globals.css';
+import { inter } from '../src/lib/fonts';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <ChakraProvider>
+    <div className={`${inter.variable} font-sans`}>
       {/* Google AdSense */}
       <Script
         id="adsbygoogle-init"
@@ -35,7 +37,7 @@ function MyApp({ Component, pageProps }) {
 
       <Component {...pageProps} />
       <Analytics />
-    </ChakraProvider>
+    </div>
   );
 }
 

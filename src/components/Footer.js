@@ -1,92 +1,86 @@
 import React from 'react';
-import { Box, Container, Text, Flex, Link, Spacer } from '@chakra-ui/react';
 import NextLink from 'next/link';
+import Image from 'next/image';
+import { Separator } from '../../components/ui/separator';
 
-const Footer = () => {
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
-    
-    return (
-        <Box bg="gray.900" color="white" py={8} mt="auto">
-            <Container maxW="container.xl">
-                <Flex direction={{ base: "column", md: "row" }} alignItems="center" gap={4}>
-                    <Text fontSize="sm" color="gray.400" fontWeight="500">
-                        © {new Date().getFullYear()} IELTS-Bank. All rights reserved.
-                    </Text>
-                    <Spacer />
-                    <Flex gap={6} direction={{ base: "column", md: "row" }} align="center">
-                        <NextLink href="/blog" passHref legacyBehavior>
-                            <Link
-                                onClick={scrollToTop}
-                                color="gray.300"
-                                fontSize="sm"
-                                fontWeight="500"
-                                _hover={{
-                                    color: 'white',
-                                    textDecoration: 'none'
-                                }}
-                                transition="color 0.2s"
-                            >
-                                Blog
-                            </Link>
-                        </NextLink>
-                        <NextLink href="/termsofservice" passHref legacyBehavior>
-                            <Link 
-                                onClick={scrollToTop} 
-                                color="gray.300"
-                                fontSize="sm"
-                                fontWeight="500"
-                                _hover={{ 
-                                    color: 'white',
-                                    textDecoration: 'none'
-                                }}
-                                transition="color 0.2s"
-                            >
-                                Terms of Service
-                            </Link>
-                        </NextLink>
-                        <NextLink href="/privacypolicy" passHref legacyBehavior>
-                            <Link 
-                                onClick={scrollToTop} 
-                                color="gray.300"
-                                fontSize="sm"
-                                fontWeight="500"
-                                _hover={{ 
-                                    color: 'white',
-                                    textDecoration: 'none'
-                                }}
-                                transition="color 0.2s"
-                            >
-                                Privacy Policy
-                            </Link>
-                        </NextLink>
-                        <NextLink href="/contactus" passHref legacyBehavior>
-                            <Link 
-                                onClick={scrollToTop} 
-                                color="gray.300"
-                                fontSize="sm"
-                                fontWeight="500"
-                                _hover={{ 
-                                    color: 'white',
-                                    textDecoration: 'none'
-                                }}
-                                transition="color 0.2s"
-                            >
-                                Contact Us
-                            </Link>
-                        </NextLink>
-                    </Flex>
-                </Flex>
-                <Text fontSize="xs" color="gray.500" mt={6} textAlign={{ base: "center", md: "left" }} maxW="container.md">
-                    IELTS-Bank is an independent study resource and is not affiliated with, endorsed by, or connected to the British Council, IDP: IELTS Australia, or Cambridge University Press &amp; Assessment. &quot;IELTS&quot; is a registered trademark of its respective owners and is used here for descriptive purposes only.
-                </Text>
-            </Container>
-        </Box>
-    );
-};
+// Pure Tailwind/shadcn Footer. NO Chakra imports — renders on every page,
+// including still-Chakra ones, so it must be self-contained.
 
-export default Footer;
+const PRACTICE_LINKS = [
+  { label: 'Reading', href: '/readingquestion' },
+  { label: 'Writing', href: '/writingquestion' },
+  { label: 'Listening', href: '/listeningquestion' },
+  { label: 'Speaking (soon)', href: '/readingquestion' },
+];
+
+const RESOURCE_LINKS = [
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact Us', href: '/contactus' },
+];
+
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', href: '/privacypolicy' },
+  { label: 'Terms of Service', href: '/termsofservice' },
+];
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">{title}</h3>
+      <ul className="mt-4 space-y-3">
+        {links.map((link) => (
+          <li key={link.label}>
+            <NextLink
+              href={link.href}
+              className="text-sm text-slate-300 no-underline transition-colors hover:text-white"
+            >
+              {link.label}
+            </NextLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default function Footer() {
+  return (
+    <footer className="tw-root mt-auto bg-slate-950 text-slate-300">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
+          {/* Brand blurb */}
+          <div className="col-span-2 md:col-span-2">
+            <NextLink href="/" className="flex items-center gap-2.5 no-underline">
+              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-md bg-white/5 ring-1 ring-white/10">
+                <Image src="/image.png" alt="IELTS-Bank logo" width={28} height={28} className="h-7 w-7 object-contain" />
+              </span>
+              <span className="text-lg font-bold tracking-tight text-white">
+                IELTS<span className="text-accent">-Bank</span>
+              </span>
+            </NextLink>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+              Free IELTS practice with authentic-style Reading, Writing and Listening
+              questions, instant auto-scoring and model answers — everything you need to
+              raise your band score.
+            </p>
+          </div>
+
+          <FooterColumn title="Practice" links={PRACTICE_LINKS} />
+          <FooterColumn title="Resources" links={RESOURCE_LINKS} />
+          <FooterColumn title="Legal" links={LEGAL_LINKS} />
+        </div>
+
+        <Separator className="my-10 bg-white/10" />
+
+        <div className="flex flex-col gap-6">
+          <p className="text-sm font-medium text-slate-400">
+            © {new Date().getFullYear()} IELTS-Bank. All rights reserved.
+          </p>
+          <p className="max-w-3xl text-xs leading-relaxed text-slate-500">
+            IELTS-Bank is an independent study resource and is not affiliated with, endorsed by, or connected to the British Council, IDP: IELTS Australia, or Cambridge University Press &amp; Assessment. &quot;IELTS&quot; is a registered trademark of its respective owners and is used here for descriptive purposes only.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

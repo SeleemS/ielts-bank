@@ -1,0 +1,260 @@
+[
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Riverside Community Leisure Centre",
+    "difficulty": "easy",
+    "topic_tags": ["general", "leisure"],
+    "body_html": "<p><strong>Riverside Community Leisure Centre &ndash; Membership Information</strong></p><p>Welcome to Riverside, your local centre for sport, fitness and relaxation. Whether you want to swim, join a fitness class or simply meet friends in our café, we have something for everyone. Please read the following information carefully before signing up.</p><p><strong>Opening hours</strong></p><p>The centre is open Monday to Friday from 6.30 a.m. to 10.00 p.m., and on Saturdays and Sundays from 8.00 a.m. to 8.00 p.m. The swimming pool closes thirty minutes before the rest of the building. During public holidays the centre operates on reduced hours; these are displayed at reception and on our website one week in advance.</p><p><strong>Membership options</strong></p><p>We offer three types of membership. The Standard membership gives you unlimited use of the gym and swimming pool. The Plus membership adds free entry to all group fitness classes, which non-members and Standard members must otherwise book and pay for individually. The Family membership covers two adults and up to three children living at the same address, and represents the best value for households. All memberships are billed monthly and may be paused for up to two months per year if you are unwell or away.</p><p><strong>Joining</strong></p><p>To join, bring proof of your address and a form of photo identification to reception. There is a one-off joining fee of £20, which is waived if you sign up during the first week of any month. New members receive a free half-hour session with a fitness instructor, who will show you how to use the equipment safely. Booking this session is strongly recommended but not compulsory.</p><p><strong>Using the facilities</strong></p><p>Members must swipe their membership card at the entrance each time they visit. Please do not allow anyone else to use your card, as this may result in your membership being cancelled. Lockers are available in the changing rooms; these require a refundable £1 coin, which is returned when you collect your belongings. The centre cannot accept responsibility for items left unattended outside a locker.</p><p><strong>Children</strong></p><p>Children under the age of eight must be accompanied by an adult at all times, including in the pool. Young people aged between eight and fifteen may use the gym only during supervised youth sessions, which run on weekday afternoons and Saturday mornings. Details of these sessions are available from reception.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "The swimming pool closes at the same time as the rest of the building.", "answer": "false", "evidence": "The swimming pool closes thirty minutes before the rest of the building." },
+          { "prompt_text": "Standard members can attend all group fitness classes free of charge.", "answer": "false", "evidence": "The Plus membership adds free entry to all group fitness classes, which non-members and Standard members must otherwise book and pay for individually." },
+          { "prompt_text": "The joining fee is not charged if you sign up in the first week of a month.", "answer": "true", "evidence": "There is a one-off joining fee of £20, which is waived if you sign up during the first week of any month." },
+          { "prompt_text": "Booking the free session with a fitness instructor is compulsory for all new members.", "answer": "false", "evidence": "Booking this session is strongly recommended but not compulsory." },
+          { "prompt_text": "The centre offers a discount to members who bring a friend.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Children under eight must always be accompanied by an adult in the pool.", "answer": "true", "evidence": "Children under the age of eight must be accompanied by an adult at all times, including in the pool." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the text for each answer.",
+        "questions": [
+          { "prompt_text": "At what time does the centre open on Saturdays?", "accepted": ["8.00 a.m.", "8.00 am", "8 a.m.", "8am", "8.00"], "word_limit": 3, "evidence": "on Saturdays and Sundays from 8.00 a.m. to 8.00 p.m." },
+          { "prompt_text": "How many children can a Family membership cover?", "accepted": ["three", "3", "up to three"], "word_limit": 3, "evidence": "up to three children living at the same address" },
+          { "prompt_text": "What must members do with their membership card each time they visit?", "accepted": ["swipe it", "swipe", "swipe their card"], "word_limit": 3, "evidence": "Members must swipe their membership card at the entrance each time they visit." },
+          { "prompt_text": "How much money is needed to use a locker, and is it returned?", "accepted": ["a refundable £1 coin", "£1", "1 coin", "a £1 coin"], "word_limit": 3, "evidence": "these require a refundable £1 coin, which is returned when you collect your belongings." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "New Staff: Workplace Health and Safety",
+    "difficulty": "easy",
+    "topic_tags": ["general", "work"],
+    "body_html": "<p><strong>Health and Safety Guidance for New Employees</strong></p><p>This guidance is provided to every new member of staff during their first week. Please read it carefully and keep it for future reference. Following these rules protects you, your colleagues and our visitors, and is a condition of your employment.</p><p><strong>Reporting hazards</strong></p><p>If you notice anything that could cause harm &ndash; a wet floor, a damaged cable, a blocked exit &ndash; you must report it to your supervisor as soon as possible. Do not assume that someone else has already done so. Minor hazards that you can safely deal with yourself, such as a small spill, should be cleaned up straight away, and a warning sign placed if necessary. Never attempt to repair electrical equipment yourself; instead, remove it from use and label it clearly.</p><p><strong>Fire safety</strong></p><p>Make sure you know the location of the nearest fire exit and the assembly point for your area. If the fire alarm sounds, leave the building immediately by the nearest safe exit and go to the assembly point. Do not stop to collect personal belongings, and do not use the lifts. A fire drill is held twice a year; you are expected to take part exactly as you would in a real emergency. Fire exits must never be blocked, even temporarily.</p><p><strong>Lifting and carrying</strong></p><p>Many injuries at work are caused by lifting objects incorrectly. Before lifting anything heavy, consider whether you can reduce the load or use a trolley. When you do lift, bend your knees rather than your back and keep the object close to your body. If an item is too heavy or awkward to move safely on your own, ask a colleague for help. There is no benefit in risking an injury to save a few minutes.</p><p><strong>Accidents and first aid</strong></p><p>All accidents, however minor, must be recorded in the accident book kept at the main reception. This is true even if no first aid was needed. The names of trained first-aiders are displayed on the notice board in the staff room, along with the location of the first-aid kits. In a serious emergency, call for an ambulance first and then inform your supervisor.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "You should assume that a hazard you notice has already been reported by someone else.", "answer": "false", "evidence": "you must report it to your supervisor as soon as possible. Do not assume that someone else has already done so." },
+          { "prompt_text": "Staff are permitted to repair electrical equipment themselves if they are careful.", "answer": "false", "evidence": "Never attempt to repair electrical equipment yourself; instead, remove it from use and label it clearly." },
+          { "prompt_text": "You should collect your belongings before leaving the building during a fire alarm.", "answer": "false", "evidence": "Do not stop to collect personal belongings, and do not use the lifts." },
+          { "prompt_text": "A fire drill takes place twice a year.", "answer": "true", "evidence": "A fire drill is held twice a year" },
+          { "prompt_text": "The company provides trolleys in every department.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Even minor accidents must be recorded in the accident book.", "answer": "true", "evidence": "All accidents, however minor, must be recorded in the accident book kept at the main reception." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the text for each answer.",
+        "questions": [
+          { "prompt_text": "What should you place near a small spill after cleaning it up, if necessary?", "accepted": ["a warning sign", "warning sign", "a sign", "sign"], "word_limit": 3, "evidence": "should be cleaned up straight away, and a warning sign placed if necessary." },
+          { "prompt_text": "When lifting a heavy object, which part of your body should you bend?", "accepted": ["your knees", "knees", "the knees"], "word_limit": 3, "evidence": "bend your knees rather than your back and keep the object close to your body." },
+          { "prompt_text": "Where are the names of trained first-aiders displayed?", "accepted": ["the notice board", "notice board", "on the notice board", "the staff room"], "word_limit": 3, "evidence": "The names of trained first-aiders are displayed on the notice board in the staff room" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Using the Self-Service Laundry",
+    "difficulty": "easy",
+    "topic_tags": ["general", "instructions"],
+    "body_html": "<p><strong>Sparkle Launderette &ndash; How to Use Our Machines</strong></p><p>Our self-service launderette is open every day from 7.00 a.m. to 10.00 p.m. Staff are on duty between 9.00 a.m. and 5.00 p.m. to help you if needed. Please follow the instructions below to get the best results and to keep the machines working well for everyone.</p><p><strong>Step 1: Sort your washing</strong></p><p>Separate light-coloured items from dark ones to avoid colours running. Check pockets and remove any coins, tissues or other objects, as these can damage the machines or your clothes. Very delicate items should not be placed in our machines; a separate hand-washing sink is provided at the rear of the building for these.</p><p><strong>Step 2: Load the machine</strong></p><p>Do not overfill the drum. As a guide, you should be able to fit your hand comfortably into the top of the loaded drum. Overfilling gives poor results and may cause a breakdown. Close the door firmly until you hear it click.</p><p><strong>Step 3: Add detergent and choose a programme</strong></p><p>Detergent can be bought from the machine near the entrance if you have not brought your own. Add it to the correct drawer, not directly onto the clothes. Select a programme using the dial: use a warm wash for everyday items and a cold wash for delicate or brightly coloured items. A hot wash is available but is only recommended for heavily soiled items such as bedding.</p><p><strong>Step 4: Pay and start</strong></p><p>Insert coins into the slot, or use the card reader for contactless payment. The price for each programme is shown on the front of the machine. Once payment is accepted, press the green button to start. A typical wash takes about forty minutes.</p><p><strong>Step 5: Drying</strong></p><p>Tumble dryers are located along the back wall. Please remove your laundry from the washing machine promptly when it finishes, so that others may use it. Clean the lint filter of the dryer before you use it. If you have any problem, press the call button on the wall or speak to a member of staff during staffed hours.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Members of staff are present at the launderette until it closes at 10.00 p.m.", "answer": "false", "evidence": "Staff are on duty between 9.00 a.m. and 5.00 p.m. to help you if needed." },
+          { "prompt_text": "Very delicate items can be washed by hand at the rear of the building.", "answer": "true", "evidence": "a separate hand-washing sink is provided at the rear of the building for these." },
+          { "prompt_text": "Detergent should be poured directly onto the clothes in the drum.", "answer": "false", "evidence": "Add it to the correct drawer, not directly onto the clothes." },
+          { "prompt_text": "A cold wash is recommended for delicate or brightly coloured items.", "answer": "true", "evidence": "use a warm wash for everyday items and a cold wash for delicate or brightly coloured items." },
+          { "prompt_text": "The launderette offers a discount to regular customers.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "How can you tell whether the machine is overfilled?", "options": ["The door will not open", "You cannot fit your hand comfortably into the top of the drum", "The dial will not turn", "The light turns red"], "answer_index": 1, "evidence": "you should be able to fit your hand comfortably into the top of the loaded drum. Overfilling gives poor results" },
+          { "prompt_text": "For which kind of item is a hot wash recommended?", "options": ["Brightly coloured items", "Delicate items", "Heavily soiled items such as bedding", "Everyday items"], "answer_index": 2, "evidence": "A hot wash is available but is only recommended for heavily soiled items such as bedding." },
+          { "prompt_text": "What should you do before using a tumble dryer?", "options": ["Add detergent to the drawer", "Clean the lint filter", "Press the green button", "Insert a £1 coin"], "answer_index": 1, "evidence": "Clean the lint filter of the dryer before you use it." },
+          { "prompt_text": "Why are customers asked to remove laundry promptly when the wash finishes?", "options": ["To avoid extra charges", "So that others may use the machine", "To protect the clothes from shrinking", "Because staff will remove it otherwise"], "answer_index": 1, "evidence": "Please remove your laundry from the washing machine promptly when it finishes, so that others may use it." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Greenfield Public Library Services",
+    "difficulty": "easy",
+    "topic_tags": ["general", "community"],
+    "body_html": "<p><strong>Greenfield Public Library &ndash; A Guide for Members</strong></p><p>Greenfield Public Library is free to join for anyone who lives, works or studies in the Greenfield area. To register, simply visit the library with proof of your name and address, such as a utility bill or bank statement. Your membership card will be issued the same day and can be used at all branches in the district.</p><p><strong>Borrowing</strong></p><p>Members may borrow up to twelve items at any one time, including books, audiobooks and films. Books may be kept for three weeks, while films must be returned within one week. If no one else has requested an item, you may renew it up to three times, either in person, by telephone or through our website. A small charge applies to films but not to books.</p><p><strong>Returns and fines</strong></p><p>Items can be returned to any branch, or placed in the outdoor return box when the library is closed. Please note that a fine is charged for each day an item is overdue. If you think you will be unable to return something on time, contact us to arrange a renewal before the due date, and no fine will be charged. Members with unpaid fines above a set amount will not be able to borrow further items until the balance is cleared.</p><p><strong>Computers and printing</strong></p><p>Free access to computers and the internet is available at every branch. Sessions last up to one hour and can be booked in advance at the desk or online. Printing is available at a small cost per page; black-and-white printing is cheaper than colour. Please ask a member of staff if you need help using the equipment.</p><p><strong>Events</strong></p><p>The library runs a full programme of free events, including a weekly story time for young children on Wednesday mornings, a monthly book club for adults, and occasional talks by visiting authors. A reading challenge is held every summer to encourage children to keep reading during the school holidays. Details of all events are posted on the noticeboard and updated on our website each month.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Only people who live in the Greenfield area can join the library.", "answer": "false", "evidence": "Greenfield Public Library is free to join for anyone who lives, works or studies in the Greenfield area." },
+          { "prompt_text": "Films must be returned within one week.", "answer": "true", "evidence": "Books may be kept for three weeks, while films must be returned within one week." },
+          { "prompt_text": "An item can be renewed even if another member has requested it.", "answer": "false", "evidence": "If no one else has requested an item, you may renew it up to three times" },
+          { "prompt_text": "No fine is charged if you arrange a renewal before the due date.", "answer": "true", "evidence": "contact us to arrange a renewal before the due date, and no fine will be charged." },
+          { "prompt_text": "Colour printing costs the same as black-and-white printing.", "answer": "false", "evidence": "black-and-white printing is cheaper than colour." },
+          { "prompt_text": "The summer reading challenge offers prizes to the children who take part.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the text for each answer.",
+        "questions": [
+          { "prompt_text": "How many items may a member borrow at one time?", "accepted": ["twelve", "12", "up to twelve"], "word_limit": 3, "evidence": "Members may borrow up to twelve items at any one time" },
+          { "prompt_text": "Where can items be placed when the library is closed?", "accepted": ["the outdoor return box", "outdoor return box", "the return box", "return box"], "word_limit": 3, "evidence": "or placed in the outdoor return box when the library is closed." },
+          { "prompt_text": "How long can a computer session last?", "accepted": ["one hour", "up to one hour", "an hour", "1 hour"], "word_limit": 3, "evidence": "Sessions last up to one hour and can be booked in advance" },
+          { "prompt_text": "On which morning is story time for young children held?", "accepted": ["wednesday", "wednesday mornings", "on wednesday"], "word_limit": 3, "evidence": "a weekly story time for young children on Wednesday mornings" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Situations Vacant",
+    "difficulty": "easy",
+    "topic_tags": ["general", "work"],
+    "body_html": "<p><strong>Situations Vacant &ndash; This Week's Local Jobs</strong></p><p><strong>A. Café Assistant, The Willow Tearoom</strong></p><p>We are looking for a friendly, reliable person to join our busy tearoom. Duties include serving customers, preparing hot drinks and light snacks, and keeping the café clean and tidy. No previous experience is necessary, as full training will be given, but a cheerful manner is essential. The role is part-time, covering weekends and two weekday mornings. You must be available to start work at 7.30 a.m. Apply in person with a short letter explaining why you would suit the job.</p><p><strong>B. Delivery Driver, Fresh Fields Groceries</strong></p><p>Fresh Fields is expanding its home-delivery service and needs an additional driver. You will collect orders from our warehouse and deliver them to customers across the county, so a full, clean driving licence held for at least two years is required. The work involves lifting boxes of groceries, so a reasonable level of fitness is important. Hours are full-time, Tuesday to Saturday. Knowledge of local roads is an advantage but not essential, as a satellite navigation device is provided. Send your application by email to the address below.</p><p><strong>C. Weekend Receptionist, Harbour View Hotel</strong></p><p>Our small seafront hotel requires a receptionist to work Saturdays and Sundays. You will welcome guests, answer the telephone, take bookings and deal with enquiries. Applicants should be well organised and confident using a computer. Experience in a similar role is preferred, and the ability to speak a second language would be welcomed by our many overseas visitors. Accommodation is not provided, so applicants should live within easy travelling distance. To apply, download a form from our website and return it by the end of the month.</p><p><strong>D. Gardening Helper, Rosewood Care Home</strong></p><p>We need a keen gardener to help maintain the grounds of our care home for two afternoons a week. Tasks include mowing lawns, weeding and planting. Tools are supplied. This would suit someone who enjoys working outdoors and does not mind chatting with our residents, who love to watch the garden being tended. The position is suitable for a retired person seeking light, flexible work. Please telephone the manager to arrange an informal visit.</p>",
+    "groups": [
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "Which job requires a driving licence held for at least two years?", "options": ["A, the Café Assistant", "B, the Delivery Driver", "C, the Weekend Receptionist", "D, the Gardening Helper"], "answer_index": 1, "evidence": "a full, clean driving licence held for at least two years is required." },
+          { "prompt_text": "Which job states that no previous experience is necessary?", "options": ["A, the Café Assistant", "B, the Delivery Driver", "C, the Weekend Receptionist", "D, the Gardening Helper"], "answer_index": 0, "evidence": "No previous experience is necessary, as full training will be given" },
+          { "prompt_text": "For which job would the ability to speak a second language be welcomed?", "options": ["A, the Café Assistant", "B, the Delivery Driver", "C, the Weekend Receptionist", "D, the Gardening Helper"], "answer_index": 2, "evidence": "the ability to speak a second language would be welcomed by our many overseas visitors." },
+          { "prompt_text": "Which job is described as suitable for a retired person?", "options": ["A, the Café Assistant", "B, the Delivery Driver", "C, the Weekend Receptionist", "D, the Gardening Helper"], "answer_index": 3, "evidence": "The position is suitable for a retired person seeking light, flexible work." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the text for each answer.",
+        "questions": [
+          { "prompt_text": "At what time must the Café Assistant be available to start work?", "accepted": ["7.30 a.m.", "7.30 am", "7.30", "7:30"], "word_limit": 3, "evidence": "You must be available to start work at 7.30 a.m." },
+          { "prompt_text": "How should applicants apply for the Delivery Driver job?", "accepted": ["by email", "email", "by e-mail"], "word_limit": 3, "evidence": "Send your application by email to the address below." },
+          { "prompt_text": "How can someone apply for the Gardening Helper position?", "accepted": ["telephone the manager", "by telephone", "telephone", "phone the manager"], "word_limit": 3, "evidence": "Please telephone the manager to arrange an informal visit." },
+          { "prompt_text": "Where can an applicant for the Weekend Receptionist job download an application form?", "accepted": ["the website", "our website", "from our website", "website"], "word_limit": 3, "evidence": "To apply, download a form from our website and return it by the end of the month." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Guided Walking Tours of the Old Town",
+    "difficulty": "easy",
+    "topic_tags": ["general", "tourism"],
+    "body_html": "<p><strong>Discover the Old Town on Foot</strong></p><p>Our guided walking tours are the perfect way to explore the history and hidden corners of the Old Town. Led by knowledgeable local guides, each tour lasts about ninety minutes and covers roughly two kilometres at a gentle pace, with plenty of stops along the way. Tours run whatever the weather, so please dress appropriately and wear comfortable shoes.</p><p><strong>Choose your tour</strong></p><p>The Classic Tour introduces the main sights, including the market square, the old harbour and the cathedral. The Hidden History Tour takes smaller groups down quiet lanes to discover lesser-known stories and buildings, and is popular with visitors who have been to the town before. The Twilight Tour, which departs in the early evening, focuses on tales and legends and ends at a traditional inn, where a hot drink is included in the price. Children particularly enjoy the Twilight Tour.</p><p><strong>Times and prices</strong></p><p>The Classic Tour departs daily at 10.00 a.m. and 2.00 p.m. The Hidden History Tour runs on Tuesdays, Thursdays and Saturdays at 11.00 a.m. The Twilight Tour operates only from May to September. Tickets cost £12 for adults and £6 for children under sixteen. Children under five go free. A family ticket for two adults and two children is available at £30. Groups of ten or more receive a discount; please contact us in advance to arrange this.</p><p><strong>Booking</strong></p><p>Booking is recommended, especially in the busy summer months, and can be done online or at the tourist information office in the market square. You may also simply turn up at the meeting point, which is beside the fountain in the market square, ten minutes before the tour begins, although we cannot guarantee a place for those who have not booked. Tours are limited to twenty people, except the Hidden History Tour, which takes no more than twelve.</p><p><strong>Please note</strong></p><p>Our tours involve walking on cobbled streets and climbing a number of steps, and are therefore not suitable for wheelchairs. If you have particular mobility needs, please contact us before booking so that we can advise you. Well-behaved dogs on leads are welcome on all tours except the Twilight Tour.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Tours take place only when the weather is good.", "answer": "false", "evidence": "Tours run whatever the weather, so please dress appropriately" },
+          { "prompt_text": "The Hidden History Tour is popular with people who have visited the town before.", "answer": "true", "evidence": "is popular with visitors who have been to the town before." },
+          { "prompt_text": "The Twilight Tour is available all year round.", "answer": "false", "evidence": "The Twilight Tour operates only from May to September." },
+          { "prompt_text": "A hot drink is included in the price of the Twilight Tour.", "answer": "true", "evidence": "ends at a traditional inn, where a hot drink is included in the price." },
+          { "prompt_text": "The Classic Tour is cheaper than the other tours.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Dogs are allowed on the Twilight Tour.", "answer": "false", "evidence": "Well-behaved dogs on leads are welcome on all tours except the Twilight Tour." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the text for each answer.",
+        "questions": [
+          { "prompt_text": "Roughly how long does each tour last?", "accepted": ["ninety minutes", "90 minutes", "about ninety minutes"], "word_limit": 3, "evidence": "each tour lasts about ninety minutes" },
+          { "prompt_text": "How much does a family ticket cost?", "accepted": ["£30", "30", "£30.00"], "word_limit": 3, "evidence": "A family ticket for two adults and two children is available at £30." },
+          { "prompt_text": "Where is the meeting point for the tours?", "accepted": ["beside the fountain", "the fountain", "beside the fountain in the market square", "the market square"], "word_limit": 3, "evidence": "the meeting point, which is beside the fountain in the market square" },
+          { "prompt_text": "What is the maximum number of people on the Hidden History Tour?", "accepted": ["twelve", "12", "no more than twelve"], "word_limit": 3, "evidence": "the Hidden History Tour, which takes no more than twelve." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Tenants' Handbook: Your Responsibilities",
+    "difficulty": "medium",
+    "topic_tags": ["general", "housing"],
+    "body_html": "<p><strong>Tenants' Handbook &ndash; Looking After Your Home</strong></p><p>This section of your handbook explains what we, as your landlord, will do, and what you, as our tenant, are responsible for. Keeping to these arrangements helps us maintain good homes and a good relationship with all our tenants. If you are ever unsure who is responsible for a particular repair, please contact the housing office before taking action.</p><p><strong>Repairs we carry out</strong></p><p>We are responsible for keeping the structure of your home in good order. This includes the roof, walls, windows and outside doors, as well as the systems that supply water, gas and electricity, and the heating. If any of these develops a fault, report it to us promptly and we will arrange a repair. Urgent repairs, such as a serious water leak or a complete loss of heating in winter, will be dealt with within twenty-four hours. Less urgent repairs will be completed within one month.</p><p><strong>Your responsibilities</strong></p><p>As a tenant, you are responsible for keeping your home clean and for minor upkeep. This includes replacing light bulbs, keeping sinks and drains clear, and testing the batteries in your smoke alarm regularly. You must also take reasonable care to prevent damage. For example, in very cold weather you should keep your home gently heated to stop the pipes from freezing. If a repair is needed because of damage caused by you, a member of your household or a visitor, you may be charged for the cost of putting it right.</p><p><strong>Decorating and alterations</strong></p><p>You are welcome to decorate the inside of your home, but you must not make structural changes, such as removing walls, without our written permission. Similarly, you should not put up a shed, fence or satellite dish outside without asking us first. Any improvements you make must be left in place when you move out, unless we agree otherwise.</p><p><strong>Ending your tenancy</strong></p><p>If you decide to leave, you must give us at least four weeks' notice in writing. When you move out, the home should be clean, empty of your belongings and left in good condition, apart from fair wear and tear. Any rent owing must be paid in full. We will inspect the property and return your deposit, less the cost of any repairs for which you are responsible.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims made in the text? Write YES if the statement agrees, NO if it contradicts, or NOT GIVEN if it is impossible to say.",
+        "questions": [
+          { "prompt_text": "The landlord is responsible for repairing the roof of the home.", "answer": "yes", "evidence": "We are responsible for keeping the structure of your home in good order. This includes the roof, walls, windows and outside doors" },
+          { "prompt_text": "Urgent repairs will be dealt with within twenty-four hours.", "answer": "yes", "evidence": "Urgent repairs, such as a serious water leak or a complete loss of heating in winter, will be dealt with within twenty-four hours." },
+          { "prompt_text": "Replacing light bulbs is the responsibility of the landlord.", "answer": "no", "evidence": "As a tenant, you are responsible for keeping your home clean and for minor upkeep. This includes replacing light bulbs" },
+          { "prompt_text": "Tenants may remove internal walls without asking the landlord.", "answer": "no", "evidence": "you must not make structural changes, such as removing walls, without our written permission." },
+          { "prompt_text": "The landlord charges tenants a fee for decorating the inside of their home.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "A tenant who wishes to leave must give at least four weeks' notice in writing.", "answer": "yes", "evidence": "you must give us at least four weeks' notice in writing." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the text for each answer.",
+        "questions": [
+          { "prompt_text": "Within what time will less urgent repairs be completed?", "accepted": ["one month", "a month", "within one month"], "word_limit": 3, "evidence": "Less urgent repairs will be completed within one month." },
+          { "prompt_text": "In cold weather, keeping the home gently heated helps to stop what from freezing?", "accepted": ["the pipes", "pipes"], "word_limit": 3, "evidence": "you should keep your home gently heated to stop the pipes from freezing." },
+          { "prompt_text": "Apart from repairs, what will be deducted from the deposit if owed?", "accepted": ["rent", "any rent owing", "rent owing"], "word_limit": 3, "evidence": "Any rent owing must be paid in full." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "The Volunteer Ranger Programme",
+    "difficulty": "medium",
+    "topic_tags": ["general", "environment"],
+    "body_html": "<p>Every year, thousands of people give up their free time to help look after the countryside as volunteer rangers. Working alongside the small number of paid staff who manage our parks and nature reserves, these volunteers carry out a huge range of tasks that would otherwise be left undone. Their contribution has become so important that many reserves could not be maintained to the same standard without them. This article explains what volunteer rangers do, who can take part, and why so many people find the work rewarding.</p><p>The duties of a volunteer ranger are varied and change with the seasons. In spring and summer, much of the work involves maintaining footpaths so that visitors can enjoy the reserve safely, clearing overgrown vegetation, and repairing gates and fences. In autumn and winter, when there are fewer visitors, attention turns to larger tasks such as planting trees, managing ponds and controlling plants that threaten to crowd out native species. Throughout the year, rangers also help to record the wildlife they see, and this information is passed to scientists who use it to track how species are faring. No single day is quite like another.</p><p>One of the most valued aspects of the role is contact with the public. On busy weekends, volunteer rangers are often the first point of contact for visitors, answering questions, giving directions and explaining the importance of the reserve. Many rangers say they enjoy this side of the work as much as the practical tasks, because it allows them to share their enthusiasm for nature with others. Some go on to lead guided walks or to help with educational visits by school groups, introducing children to the wildlife on their doorstep.</p><p>Becoming a volunteer ranger does not require any special qualifications. What matters most is a willingness to work outdoors in all weathers and to be part of a team. Full training is provided, covering everything from the safe use of tools to identifying local plants and animals, so newcomers need bring nothing but enthusiasm. Volunteers are asked to commit to a minimum of one day a month, although many choose to give far more, and the programme is flexible enough to fit around work and family life. There is no upper age limit, and the programme attracts people of all backgrounds, from students seeking experience to retired people looking for a new interest.</p><p>The benefits of volunteering extend well beyond the satisfaction of helping the environment. Many rangers report that the physical, outdoor activity improves their health and lifts their spirits, providing a welcome contrast to indoor working lives. The programme is also a way of making friends, since volunteers often work in small groups and form lasting friendships. For younger volunteers, the experience and skills gained can be valuable when applying for paid work in conservation or related fields, and the programme is happy to provide references for those who need them.</p><p>Of course, the work is not always easy. It can be physically demanding, and there are days when the weather is miserable and the tasks unglamorous. Yet the rangers themselves rarely dwell on the hardships. Instead they speak of the pleasure of seeing a footpath they repaired being enjoyed by families, or a stretch of woodland they planted beginning to grow. In an age when many people feel disconnected from the natural world, the volunteer ranger programme offers a rare chance to make a visible, lasting difference to a place, and to feel part of the effort to protect it for those who come after.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the text? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Volunteer rangers work entirely without any paid staff.", "answer": "false", "evidence": "Working alongside the small number of paid staff who manage our parks and nature reserves, these volunteers carry out a huge range of tasks" },
+          { "prompt_text": "The tasks of a volunteer ranger change according to the season.", "answer": "true", "evidence": "The duties of a volunteer ranger are varied and change with the seasons." },
+          { "prompt_text": "Special qualifications are required to become a volunteer ranger.", "answer": "false", "evidence": "Becoming a volunteer ranger does not require any special qualifications." },
+          { "prompt_text": "Volunteers are asked to give at least one day a month.", "answer": "true", "evidence": "Volunteers are asked to commit to a minimum of one day a month" },
+          { "prompt_text": "Volunteer rangers are paid a small allowance for their travel costs.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "What kind of work do rangers focus on in autumn and winter?", "options": ["Maintaining footpaths for visitors", "Larger tasks such as planting trees and managing ponds", "Answering questions from the public", "Leading guided walks"], "answer_index": 1, "evidence": "In autumn and winter, when there are fewer visitors, attention turns to larger tasks such as planting trees, managing ponds" },
+          { "prompt_text": "Why do many rangers enjoy contact with the public?", "options": ["Because it means they can avoid practical tasks", "Because it allows them to share their enthusiasm for nature with others", "Because visitors pay them for information", "Because it is less tiring than outdoor work"], "answer_index": 1, "evidence": "they enjoy this side of the work... because it allows them to share their enthusiasm for nature with others." },
+          { "prompt_text": "According to the text, what is provided to newcomers so that they need only bring enthusiasm?", "options": ["A uniform", "Full training", "A payment", "Accommodation"], "answer_index": 1, "evidence": "Full training is provided... so newcomers need bring nothing but enthusiasm." },
+          { "prompt_text": "How can the programme help younger volunteers?", "options": ["By guaranteeing them a paid job", "By giving experience and skills useful for paid conservation work, and providing references", "By paying for their studies", "By offering them free travel"], "answer_index": 1, "evidence": "the experience and skills gained can be valuable when applying for paid work in conservation... the programme is happy to provide references" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the text for each answer.",
+        "questions": [
+          { "prompt_text": "The wildlife records made by rangers are passed to which group of people?", "accepted": ["scientists"], "word_limit": 2, "evidence": "this information is passed to scientists who use it to track how species are faring." },
+          { "prompt_text": "Besides improving health, what does the programme allow volunteers to make, as they work in small groups?", "accepted": ["friends", "friendships", "lasting friendships"], "word_limit": 3, "evidence": "The programme is also a way of making friends, since volunteers often work in small groups and form lasting friendships." }
+        ]
+      }
+    ]
+  }
+]

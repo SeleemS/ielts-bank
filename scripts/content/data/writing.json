@@ -1,0 +1,355 @@
+[
+  {
+    "skill": "writing",
+    "title": "Free University Tuition",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "government"
+    ],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some people believe that university education should be free for all students, funded entirely by the government. Others argue that students should pay for their own studies because they benefit personally from a degree.</p><p>To what extent do you agree or disagree that higher education should be free of charge?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Screens in the Classroom",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "technology"
+    ],
+    "essay_type": "discussion",
+    "prompt_html": "<p>In many schools, traditional textbooks are being replaced by tablets and laptops. Some educators welcome this shift, while others worry that it harms learning and concentration.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Homework Burden",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "health"
+    ],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>In some countries, schoolchildren are given large amounts of homework every day, and many students report feeling stressed and exhausted as a result.</p><p>What problems does this cause, and what solutions can you suggest?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Studying Abroad",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "globalisation"
+    ],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>An increasing number of students choose to complete their university studies in a foreign country rather than in their home nation.</p><p>Do the advantages of studying abroad outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "The Remote Work Shift",
+    "task": 2,
+    "topic_tags": [
+      "work",
+      "technology"
+    ],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Since the rise of high-speed internet, a growing proportion of employees now work from home rather than commuting to a shared office.</p><p>Is this a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Career or Passion",
+    "task": 2,
+    "topic_tags": [
+      "work",
+      "society"
+    ],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Young people are often advised to choose a career that pays well, yet others believe they should follow their personal interests instead.</p><p>Why do many people prioritise salary when choosing a job? Is it better to pursue a well-paid career or one that you find personally fulfilling?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "The Four-Day Week",
+    "task": 2,
+    "topic_tags": [
+      "work",
+      "health"
+    ],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some businesses have introduced a four-day working week, arguing that shorter hours make employees healthier and more productive.</p><p>To what extent do you agree or disagree that a shorter working week benefits both workers and companies?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Single-Use Plastics",
+    "task": 2,
+    "topic_tags": [
+      "environment",
+      "government"
+    ],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Enormous quantities of single-use plastic, such as bottles and packaging, are discarded every day, polluting land and oceans around the world.</p><p>What are the causes of this problem, and what measures could reduce it?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Protecting Endangered Species",
+    "task": 2,
+    "topic_tags": [
+      "environment",
+      "government"
+    ],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some people think that governments should spend large sums of money protecting endangered animals, while others believe this money would be better spent on human needs.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "The Price of Fuel",
+    "task": 2,
+    "topic_tags": [
+      "environment",
+      "government"
+    ],
+    "essay_type": "opinion",
+    "prompt_html": "<p>One way to reduce traffic and air pollution is to greatly increase the cost of petrol and diesel for private car owners.</p><p>To what extent do you agree or disagree that raising fuel prices is the best way to solve these problems?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "City Green Spaces",
+    "task": 2,
+    "topic_tags": [
+      "environment",
+      "society"
+    ],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Many rapidly growing cities are replacing parks and gardens with apartment blocks and offices in order to house more residents.</p><p>Is this a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Life Online",
+    "task": 2,
+    "topic_tags": [
+      "technology",
+      "society"
+    ],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>People today can shop, bank, study and socialise without ever leaving their homes, thanks to the internet.</p><p>Do the advantages of conducting so much of daily life online outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Artificial Intelligence at Work",
+    "task": 2,
+    "topic_tags": [
+      "technology",
+      "work"
+    ],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Artificial intelligence is increasingly able to perform tasks that were once done by human employees, from writing reports to answering customer questions.</p><p>Is this a positive or negative development for society?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Smartphones and Children",
+    "task": 2,
+    "topic_tags": [
+      "technology",
+      "health"
+    ],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Many children now own smartphones and spend several hours a day looking at screens instead of playing outside or reading.</p><p>What problems can this cause, and what solutions would you recommend?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Fast Food and Public Health",
+    "task": 2,
+    "topic_tags": [
+      "health",
+      "government"
+    ],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Rates of obesity and diet-related illness have risen sharply in many countries. Some argue that governments should place a heavy tax on unhealthy food and drinks.</p><p>To what extent do you agree or disagree with this approach?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Preventive Healthcare",
+    "task": 2,
+    "topic_tags": [
+      "health",
+      "government"
+    ],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some people believe that health budgets should focus on preventing illness through education and lifestyle programmes, while others think the money is better spent on treating patients who are already sick.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "The Sedentary Lifestyle",
+    "task": 2,
+    "topic_tags": [
+      "health",
+      "society"
+    ],
+    "essay_type": "two-part",
+    "prompt_html": "<p>People in modern societies are becoming increasingly inactive, spending most of their day sitting at desks or in front of screens.</p><p>Why are people less physically active than in the past? What can be done to encourage a more active lifestyle?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Global English",
+    "task": 2,
+    "topic_tags": [
+      "globalisation",
+      "society"
+    ],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>English has become the dominant language of international business, science and entertainment, and is spoken by more people than any other language.</p><p>Do the advantages of having one global language outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Vanishing Traditions",
+    "task": 2,
+    "topic_tags": [
+      "globalisation",
+      "society"
+    ],
+    "essay_type": "two-part",
+    "prompt_html": "<p>As countries become more connected, many traditional customs, crafts and festivals are gradually disappearing.</p><p>Why are these traditions being lost? Should governments take action to preserve them?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Community and Crime",
+    "task": 2,
+    "topic_tags": [
+      "crime",
+      "society"
+    ],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some people claim that the most effective way to reduce crime is to give young people better education and job opportunities rather than building more prisons.</p><p>To what extent do you agree or disagree?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Surveillance Cameras",
+    "task": 2,
+    "topic_tags": [
+      "crime",
+      "technology"
+    ],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Public spaces in many cities are now monitored by large numbers of security cameras. Some see this as an effective way to prevent crime, while others regard it as an invasion of privacy.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Funding the Arts",
+    "task": 2,
+    "topic_tags": [
+      "government",
+      "society"
+    ],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>In some countries, the government provides significant financial support to museums, theatres and orchestras so that citizens can enjoy the arts at low cost.</p><p>Do the advantages of public funding for the arts outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "title": "Household Water Use by Region",
+    "task": 1,
+    "topic_tags": [
+      "environment"
+    ],
+    "essay_type": "line graph",
+    "prompt_html": "<p>The line graph below shows the average daily water consumption per person, measured in litres, in four regions of the world between 1990 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows litres per person per day, ranging from 0 to 400, and the horizontal axis shows the years 1990, 2000, 2010 and 2020. North America begins highest at around 360 litres and falls steadily to about 300 by 2020. Europe starts at roughly 250 litres and declines gently to 200. East Asia rises from about 120 litres to a peak of 190 in 2010 before dipping slightly. Sub-Saharan Africa remains the lowest throughout, increasing only marginally from around 40 to 60 litres over the period.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "Transport to Work by City",
+    "task": 1,
+    "topic_tags": [
+      "society"
+    ],
+    "essay_type": "bar chart",
+    "prompt_html": "<p>The bar chart below compares the percentage of commuters using four different methods of transport to travel to work in three cities in 2022. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows percentages from 0 to 60, and the horizontal axis groups the cities of Amsterdam, Tokyo and Los Angeles, each with four bars for car, public transport, bicycle and walking. In Los Angeles, the car dominates at about 55 per cent, with public transport at 20, bicycle at 5 and walking at 20. In Tokyo, public transport is highest at roughly 50 per cent, cars at 15, bicycles at 15 and walking at 20. In Amsterdam, cycling leads at around 40 per cent, followed by public transport at 25, walking at 20 and cars at 15.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "Household Spending Breakdown",
+    "task": 1,
+    "topic_tags": [
+      "society"
+    ],
+    "essay_type": "pie chart",
+    "prompt_html": "<p>The two pie charts below show how an average household in one country divided its monthly spending across six categories in 1995 and in 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>Each chart is divided into the categories of housing, food, transport, healthcare, entertainment and other. In 1995, food was the largest category at 30 per cent, followed by housing at 25, transport at 15, healthcare at 10, entertainment at 10 and other at 10. By 2020, housing had become the largest share at 35 per cent, food had fallen to 20, transport remained at 15, healthcare rose to 15, entertainment stayed at 10 and other fell to 5.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "International Tourist Arrivals",
+    "task": 1,
+    "topic_tags": [
+      "globalisation"
+    ],
+    "essay_type": "table",
+    "prompt_html": "<p>The table below shows the number of international tourist arrivals, in millions, in five countries in the years 2000, 2010 and 2019. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The rows list France, Spain, the United States, China and Thailand, and the columns give the figures for 2000, 2010 and 2019. France recorded 77, 77 and 89 million; Spain 47, 53 and 84 million; the United States 51, 60 and 79 million; China 31, 56 and 66 million; and Thailand 10, 16 and 40 million. The strongest growth over the period was seen in Thailand and Spain, while France remained the most visited country throughout.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "How Chocolate Is Produced",
+    "task": 1,
+    "topic_tags": [
+      "technology"
+    ],
+    "essay_type": "process diagram",
+    "prompt_html": "<p>The diagram below illustrates the process by which chocolate is produced from cacao trees. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The process is linear and consists of eight stages. First, cacao pods are harvested by hand from cacao trees on tropical plantations. The pods are then split open and the white beans inside are removed. Next, the beans are left to ferment in wooden boxes for several days, after which they are spread out to dry in the sun. The dried beans are packed into large sacks and transported by ship to processing factories. At the factory, the beans are roasted in ovens at a high temperature, then crushed and ground into a thick liquid known as chocolate liquor. Finally, this liquid is mixed with sugar and milk, poured into moulds, and cooled to form solid bars of chocolate.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "Development of a Town Centre",
+    "task": 1,
+    "topic_tags": [
+      "society"
+    ],
+    "essay_type": "map",
+    "prompt_html": "<p>The two maps below show the centre of the town of Riverdale in 1985 and how it appears today. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>In 1985, a river ran along the northern edge of the town, crossed by a single small footbridge. To the south of the river lay open farmland and a large area of woodland in the east. A single main road ran from west to east through the centre, lined with a few shops and a school in the south-west corner. Today, the footbridge has been replaced by a wide road bridge, and the farmland has been developed into a residential area of houses. The woodland in the east has been cleared to make way for a shopping mall and a car park, while the school has been extended and a hospital has been built beside it in the south-west.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "Energy Generation and Emissions",
+    "task": 1,
+    "topic_tags": [
+      "environment"
+    ],
+    "essay_type": "multiple charts",
+    "prompt_html": "<p>The bar chart and line graph below show the sources of electricity generation in one country and the country's total carbon emissions between 2000 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The bar chart displays the percentage of electricity generated from coal, natural gas, nuclear and renewables in 2000, 2010 and 2020. Coal fell sharply from 55 per cent in 2000 to 25 per cent in 2020, while renewables rose dramatically from 5 per cent to 35 per cent. Natural gas increased slightly from 25 to 30 per cent, and nuclear declined from 15 to 10 per cent. The accompanying line graph shows total carbon emissions, measured in millions of tonnes, falling steadily from about 500 million tonnes in 2000 to around 300 million tonnes in 2020, with the sharpest drop occurring after 2010.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "title": "Reasons for Studying: Then and Now",
+    "task": 1,
+    "topic_tags": [
+      "education",
+      "society"
+    ],
+    "essay_type": "two pie charts",
+    "prompt_html": "<p>The two pie charts below show the main reasons adults gave for enrolling in further education courses in one country in 1990 and in 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>In 1990, the largest share of learners cited ‘to improve job prospects’ at 40 per cent, followed by ‘personal interest’ at 30 per cent, ‘to gain a qualification’ at 20 per cent, and ‘to meet people’ at 10 per cent. In 2020, ‘to improve job prospects’ had fallen to 30 per cent, while ‘to gain a qualification’ had risen to 35 per cent and had become the most common reason. ‘Personal interest’ remained at 30 per cent, and ‘to meet people’ dropped to 5 per cent.</p>",
+    "word_limit_min": 150
+  }
+]

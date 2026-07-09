@@ -1,0 +1,252 @@
+[
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Spending on Space Exploration",
+    "task": 2,
+    "topic_tags": ["science", "government"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some people believe that governments waste money on exploring space and that these funds should instead be spent on solving problems here on Earth, such as poverty and disease.</p><p>To what extent do you agree or disagree?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "The Decline of Reading for Pleasure",
+    "task": 2,
+    "topic_tags": ["society", "education"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>In many countries, fewer people, and especially fewer young people, now read books for pleasure than in the past.</p><p>Why is this happening, and what could be done to encourage more people to read?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Should Zoos Be Banned",
+    "task": 2,
+    "topic_tags": ["environment", "society"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some people argue that keeping wild animals in zoos is cruel and that zoos should be closed. Others believe that zoos play an important role in education and in protecting endangered species.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Part-Time Jobs for Teenagers",
+    "task": 2,
+    "topic_tags": ["work", "education"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>In some countries, teenagers often take part-time jobs while they are still at school.</p><p>Do the advantages of this outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "The Growth of Mass Tourism",
+    "task": 2,
+    "topic_tags": ["tourism", "environment"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Every year, larger numbers of tourists travel to popular destinations around the world, and some famous places now receive many millions of visitors annually.</p><p>Is this rise in mass tourism a positive or a negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "An Ageing Population",
+    "task": 2,
+    "topic_tags": ["society", "health"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>In many countries, people are living longer and the average age of the population is rising.</p><p>What problems does an ageing population cause? What measures can be taken to address these problems?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Advertising Aimed at Children",
+    "task": 2,
+    "topic_tags": ["media", "society"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some people think that advertising directed at children should be banned completely.</p><p>To what extent do you agree or disagree?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Investing in Renewable Energy",
+    "task": 2,
+    "topic_tags": ["environment", "government"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some people believe that governments should invest heavily in renewable sources of energy such as wind and solar power. Others argue that this money would be better spent on making existing energy sources cheaper and more reliable.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Traffic Congestion in Cities",
+    "task": 2,
+    "topic_tags": ["society", "environment"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Traffic congestion is becoming a serious problem in many large cities, with roads increasingly blocked at all times of day.</p><p>What are the causes of this problem, and what solutions can you suggest?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Living in the City or the Countryside",
+    "task": 2,
+    "topic_tags": ["society", "lifestyle"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>Many people are now leaving the countryside to live and work in large cities.</p><p>Do the advantages of living in a city outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Social Media and Friendship",
+    "task": 2,
+    "topic_tags": ["technology", "society"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>People increasingly use social media to keep in touch with their friends rather than meeting them in person.</p><p>Is this a positive or a negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Sport and National Identity",
+    "task": 2,
+    "topic_tags": ["sport", "society"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Major international sporting events, such as world championships, are watched by millions of people who support their national teams.</p><p>Why do people feel such strong national pride during these events? Is this a good or a bad thing?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Compulsory Community Service for Students",
+    "task": 2,
+    "topic_tags": ["education", "society"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some people believe that all secondary-school students should be required to do a period of unpaid community service, such as helping elderly people or cleaning public spaces.</p><p>To what extent do you agree or disagree?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Taking a Gap Year",
+    "task": 2,
+    "topic_tags": ["education", "work"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some young people choose to take a year off between finishing school and starting university, often to travel or to work. Some think this is a valuable experience, while others believe it is a waste of time.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Reducing Household Waste",
+    "task": 2,
+    "topic_tags": ["environment", "society"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Households in many countries throw away enormous quantities of waste, including food, packaging and old goods.</p><p>What are the reasons for this, and what can be done to reduce the amount of waste that households produce?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Internet Users in Three Countries",
+    "task": 1,
+    "topic_tags": ["technology"],
+    "essay_type": "line graph",
+    "prompt_html": "<p>The line graph below shows the percentage of the population using the internet in three countries between 1998 and 2018. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows the percentage of the population, from 0 to 100, and the horizontal axis shows the years 1998, 2003, 2008, 2013 and 2018. In 1998, internet use was low in all three countries: Canada stood at about 35 per cent, Japan at around 15 per cent and Mexico at just 5 per cent. Canada rose steadily to reach roughly 90 per cent by 2018. Japan climbed more sharply, overtaking Canada briefly around 2008 before levelling off at about 85 per cent. Mexico grew more slowly throughout, reaching only around 60 per cent by the end of the period, though its rate of growth increased after 2013.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Employment by Sector in Four Countries",
+    "task": 1,
+    "topic_tags": ["work"],
+    "essay_type": "table",
+    "prompt_html": "<p>The table below shows the percentage of workers employed in three sectors of the economy &ndash; agriculture, industry and services &ndash; in four countries in 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The rows list the four countries and the columns give the percentage of workers in agriculture, industry and services. In Country A, 3 per cent worked in agriculture, 22 per cent in industry and 75 per cent in services. In Country B, the figures were 10 per cent, 30 per cent and 60 per cent respectively. Country C had 40 per cent in agriculture, 25 per cent in industry and 35 per cent in services. Country D showed 5 per cent in agriculture, 45 per cent in industry and 50 per cent in services. Services was the largest sector in three of the four countries, while agriculture dominated in Country C.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "How Glass Bottles Are Recycled",
+    "task": 1,
+    "topic_tags": ["environment"],
+    "essay_type": "process diagram",
+    "prompt_html": "<p>The diagram below shows the process by which used glass bottles are recycled into new ones. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The process is a cycle made up of seven stages. First, used glass bottles are collected from households and from bottle banks in public places. The collected glass is then transported by lorry to a recycling plant. At the plant, the glass is sorted by colour into clear, green and brown, and any items made of other materials, such as metal caps or plastic, are removed. The sorted glass is next washed to remove any remaining dirt, and then crushed into small pieces known as cullet. The cullet is melted in a furnace at a very high temperature, together with sand and other raw materials. Finally, the molten glass is poured into moulds to form new bottles, which are cooled, filled and sent back to shops, where the cycle can begin again.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Changes to a University Campus",
+    "task": 1,
+    "topic_tags": ["education"],
+    "essay_type": "map",
+    "prompt_html": "<p>The two maps below show the layout of a university campus in 2000 and how it is planned to look in 2030. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>In 2000, the campus was entered from a main road in the south, which led to a car park in the south-east corner. The centre of the campus was occupied by a single large teaching building, with a library to its west and a sports field in the north. A small canteen stood beside the library. In the 2030 plan, the car park has been removed and replaced by a new station for electric buses, and the entrance road has been made into a pedestrian-only walkway. The sports field in the north remains unchanged, but the canteen has been enlarged into a full student centre. A new science building has been added in the east, and the open space between the buildings has been landscaped into gardens with trees and seating.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "Reasons for Visiting a Museum",
+    "task": 1,
+    "topic_tags": ["society"],
+    "essay_type": "bar chart",
+    "prompt_html": "<p>The bar chart below shows the main reasons given by visitors for going to a city museum, compared between two age groups &ndash; under 30 and 30 and over &ndash; in 2021. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows the percentage of visitors, from 0 to 50, and the horizontal axis lists four reasons: to learn something, to see a special exhibition, to entertain children, and to meet friends. Among visitors under 30, meeting friends was the most common reason at about 40 per cent, followed by seeing a special exhibition at 30 per cent, learning something at 20 per cent and entertaining children at 10 per cent. Among visitors aged 30 and over, learning something was the leading reason at around 35 per cent, with entertaining children close behind at 30 per cent, seeing a special exhibition at 25 per cent, and meeting friends the least common at just 10 per cent.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "Letter of Complaint About a Faulty Appliance",
+    "task": 1,
+    "topic_tags": ["general", "complaint"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You recently bought a kitchen appliance from a large store, but it stopped working correctly after only a few days.</p><p>Write a letter to the store manager. In your letter:</p><ul><li>explain what you bought and when</li><li>describe the problem with the appliance</li><li>say what you would like the manager to do about it</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: Dear Sir or Madam,</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "Letter to a Landlord About Repairs",
+    "task": 1,
+    "topic_tags": ["general", "housing"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You are renting a flat, and there are several things that need to be repaired.</p><p>Write a letter to your landlord. In your letter:</p><ul><li>explain how long you have been living in the flat</li><li>describe the repairs that are needed</li><li>suggest a convenient time for the work to be carried out</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: Dear Mr Thomas,</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "Letter Inviting a Friend to Visit",
+    "task": 1,
+    "topic_tags": ["general", "personal"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You have recently moved to a new town, and you would like a friend to come and stay with you.</p><p>Write a letter to your friend. In your letter:</p><ul><li>tell your friend about your new town</li><li>invite them to come and stay with you</li><li>suggest some things you could do together during the visit</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: Dear Sam,</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "Letter Requesting Time Off Work",
+    "task": 1,
+    "topic_tags": ["general", "work"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You need to take some time off work to deal with an important personal matter.</p><p>Write a letter to your manager. In your letter:</p><ul><li>explain why you need time off</li><li>say how much time you will need and when</li><li>suggest how your work could be covered while you are away</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: Dear Ms Powell,</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "Letter to a Neighbour About Noise",
+    "task": 1,
+    "topic_tags": ["general", "community"],
+    "essay_type": "letter",
+    "prompt_html": "<p>A neighbour has recently been making a lot of noise late at night, which is disturbing you.</p><p>Write a letter to your neighbour. In your letter:</p><ul><li>introduce yourself and explain where you live</li><li>describe the problem the noise is causing you</li><li>politely suggest what your neighbour could do to help</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: Dear Neighbour,</p>",
+    "word_limit_min": 150
+  }
+]

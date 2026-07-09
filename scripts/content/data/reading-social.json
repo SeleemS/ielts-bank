@@ -1,0 +1,344 @@
+[
+  {
+    "skill": "reading",
+    "title": "The Psychology of Habit Formation",
+    "difficulty": "medium",
+    "topic_tags": ["psychology"],
+    "body_html": "<p>A habit is a behaviour that has become so routine that it is performed with little conscious thought. Brushing one's teeth in the morning, reaching for a phone when a notification sounds, or taking the same route to work each day are all examples of actions that begin as deliberate choices but eventually run almost automatically. Psychologists are interested in habits precisely because they occupy this middle ground between fully intentional behaviour and pure reflex. Understanding how habits are built, and how they can be broken, has practical consequences for health, education and personal well-being.</p><p>Much research on habit formation describes a repeating cycle that is often summarised as cue, routine and reward. The cue is a trigger in the environment or the body that prompts a behaviour: a particular time of day, an emotional state, a location, or the presence of certain people. The routine is the behaviour itself. The reward is the benefit the brain associates with the behaviour, which may be as simple as a pleasant taste, a feeling of relief, or a small sense of accomplishment. When a cue is reliably followed by a routine and then a reward, the brain gradually learns to link them, so that encountering the cue increasingly produces a craving for the reward and an urge to perform the routine.</p><p>This learning process is closely tied to a region deep within the brain called the basal ganglia, which is involved in the storage of automatic behaviours. As a behaviour is repeated, the mental effort required to carry it out tends to decline. Early attempts demand attention and planning, but with repetition the sequence becomes chunked into a single unit that can unfold without much supervision from the conscious mind. This efficiency is generally useful, because it frees mental resources for tasks that genuinely require thought. The same efficiency, however, is what makes unwanted habits so persistent, since they continue to operate even when a person consciously wishes to stop.</p><p>A common belief is that habits form in a fixed number of days, and the figure of twenty-one days is frequently repeated in popular guides. The evidence does not support such a precise rule. Studies that track people as they try to establish new routines suggest that the time needed varies considerably from one individual and one behaviour to another. Simple actions, such as drinking a glass of water after breakfast, may become automatic fairly quickly, whereas more demanding routines, such as a regular exercise session, can take much longer. What matters most is not a magic number but consistency: performing the behaviour repeatedly in the same context strengthens the underlying association.</p><p>Because habits are anchored to cues, changing the surrounding context can have a powerful effect. People who move house, start a new job or travel often find that established habits weaken, simply because the familiar triggers are absent. Researchers sometimes exploit this insight when helping people change their behaviour, encouraging them to alter their environment rather than relying on willpower alone. Removing tempting foods from the home, or leaving running shoes by the door, adjusts the cues that a person encounters and thereby influences which routines are likely to be triggered.</p><p>Breaking an unwanted habit is generally harder than forming a new one, and attempts to suppress a behaviour by force of will frequently fail. A more effective strategy, according to many psychologists, is substitution: keeping the same cue and reward but replacing the routine in between. Someone who reaches for a sugary snack when feeling stressed might, for instance, learn to take a short walk instead, so that the cue of stress and the reward of relief remain but the intervening behaviour changes. Because the old association is not truly erased, however, the original habit can reappear under pressure, which is one reason lasting change tends to require patience and repeated practice.</p><p>Habits also interact with self-image and motivation. When a behaviour becomes bound up with how people see themselves, it is more likely to endure, because it is reinforced by identity as well as by immediate reward. This suggests that the study of habit is not merely a matter of mechanical repetition but is connected to broader questions of goals, values and the way individuals understand their own lives. Small habits can also accumulate, since a single routine may create the conditions for others to develop, so that modest changes sometimes produce effects out of proportion to their apparent size. For all these reasons, habit formation remains an active and practical field of psychological enquiry. It is worth stressing, finally, that not every repeated behaviour becomes a genuine habit in the technical sense. A behaviour that continues to depend on careful thought each time it is performed, or that varies according to the person's mood and reasoning, is better described as goal-directed than as habitual. The hallmark of a true habit is its relative independence from immediate goals: it can persist even when the original reason for it has faded, and even when it no longer produces the reward that first established it. This is why people sometimes report carrying out a familiar routine automatically before realising that they no longer wanted its outcome at all, a phenomenon that neatly illustrates the automatic quality that defines habitual action.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "A habit sits somewhere between a fully deliberate action and an automatic reflex.",
+            "answer": "true",
+            "evidence": "Psychologists are interested in habits precisely because they occupy this middle ground between fully intentional behaviour and pure reflex."
+          },
+          {
+            "prompt_text": "As a behaviour is repeated, it generally requires more mental effort to perform.",
+            "answer": "false",
+            "evidence": "As a behaviour is repeated, the mental effort required to carry it out tends to decline."
+          },
+          {
+            "prompt_text": "The claim that habits form in exactly twenty-one days is well supported by research.",
+            "answer": "false",
+            "evidence": "The evidence does not support such a precise rule."
+          },
+          {
+            "prompt_text": "Moving to a new home can cause established habits to become weaker.",
+            "answer": "true",
+            "evidence": "People who move house, start a new job or travel often find that established habits weaken, simply because the familiar triggers are absent."
+          },
+          {
+            "prompt_text": "Children form habits more quickly than adults do.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, the reward in the habit cycle is best described as",
+            "options": [
+              "the trigger that prompts a behaviour to begin",
+              "the benefit the brain associates with the behaviour",
+              "the region of the brain that stores routines",
+              "the effort required to plan a new action"
+            ],
+            "answer_index": 1,
+            "evidence": "The reward is the benefit the brain associates with the behaviour, which may be as simple as a pleasant taste, a feeling of relief, or a small sense of accomplishment."
+          },
+          {
+            "prompt_text": "The efficiency that habits bring is described as a problem when",
+            "options": [
+              "a behaviour requires careful planning each time",
+              "the reward becomes too small to notice",
+              "an unwanted habit keeps running despite a wish to stop",
+              "the cue is removed from the environment"
+            ],
+            "answer_index": 2,
+            "evidence": "The same efficiency, however, is what makes unwanted habits so persistent, since they continue to operate even when a person consciously wishes to stop."
+          },
+          {
+            "prompt_text": "Which strategy for breaking a habit does the passage present as effective?",
+            "options": [
+              "suppressing the behaviour through willpower alone",
+              "keeping the cue and reward but changing the routine",
+              "eliminating both the cue and the reward",
+              "waiting a fixed number of days for it to fade"
+            ],
+            "answer_index": 1,
+            "evidence": "A more effective strategy, according to many psychologists, is substitution: keeping the same cue and reward but replacing the routine in between."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What word does the passage use for the trigger in the environment or body that prompts a habitual behaviour?",
+            "accepted": ["cue", "a cue"],
+            "word_limit": 2,
+            "evidence": "The cue is a trigger in the environment or the body that prompts a behaviour."
+          },
+          {
+            "prompt_text": "Which brain region is involved in storing automatic behaviours?",
+            "accepted": ["basal ganglia", "the basal ganglia"],
+            "word_limit": 3,
+            "evidence": "This learning process is closely tied to a region deep within the brain called the basal ganglia, which is involved in the storage of automatic behaviours."
+          },
+          {
+            "prompt_text": "According to the passage, what matters most for a behaviour to become automatic, rather than a fixed number of days?",
+            "accepted": ["consistency", "repeatedly in the same context"],
+            "word_limit": 3,
+            "evidence": "What matters most is not a magic number but consistency: performing the behaviour repeatedly in the same context strengthens the underlying association."
+          },
+          {
+            "prompt_text": "In addition to immediate reward, what can reinforce a habit and make it more likely to endure?",
+            "accepted": ["identity", "self-image", "identity as well"],
+            "word_limit": 3,
+            "evidence": "When a behaviour becomes bound up with how people see themselves, it is more likely to endure, because it is reinforced by identity as well as by immediate reward."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "Sleep and the Consolidation of Memory",
+    "difficulty": "medium",
+    "topic_tags": ["psychology", "science"],
+    "body_html": "<p>For a long time sleep was regarded mainly as a period of rest, a pause during which the body recovered and the mind simply switched off. Modern research has overturned this view. Far from being idle, the sleeping brain is remarkably active, and one of its most important functions appears to be the processing and strengthening of memories formed during the day. The idea that we may learn, in a sense, while we sleep has become a central theme in the science of memory.</p><p>Psychologists distinguish between the initial encoding of an experience and its later consolidation. Encoding is the moment at which information is first registered; consolidation is the slower process by which a fragile new memory becomes more stable and better integrated with what we already know. Sleep is thought to play a particularly significant role in this second stage. During sleep the brain is protected from the constant stream of new input that fills our waking hours, which may give it the opportunity to rehearse and reorganise recent experiences without interference.</p><p>Human sleep is not uniform but moves through repeated cycles made up of different stages. These are broadly divided into rapid eye movement sleep, known as REM, and several stages of non-REM sleep, which include the deep slow-wave sleep that dominates the early part of the night. Researchers have found that these stages are not interchangeable. Deep slow-wave sleep seems especially important for the consolidation of facts and events, the kind of memory that can be consciously recalled and put into words. REM sleep, by contrast, has been linked more strongly to emotional memories and to certain kinds of skill learning, although the picture is still debated.</p><p>One influential idea is that during deep sleep the brain replays patterns of activity that occurred during waking learning. Recordings of brain activity in animals suggest that sequences fired while an animal explored an environment are reactivated during subsequent sleep, often in a compressed form. According to this account, such replay helps to transfer memories from temporary storage in a structure called the hippocampus to more durable storage distributed across the outer layer of the brain. Over time this transfer is thought to make memories less dependent on the hippocampus and more resistant to being lost.</p><p>Evidence for the benefits of sleep also comes from studies of learning and performance. In a typical experiment, volunteers learn a task, such as a list of word pairs or a sequence of finger movements, and are then tested after either a period of sleep or an equivalent period of wakefulness. Those who have slept commonly perform better, even when the total amount of time that has passed is the same. Naps as well as a full night's sleep can produce such improvements, which suggests that it is sleep itself, rather than merely the passing of time, that supports the consolidation of what has been learned.</p><p>The relationship between sleep and memory helps to explain why insufficient sleep is so damaging to learning. A tired brain struggles both to encode new information effectively and to consolidate it afterwards, so that a student who stays awake through the night before an examination may undermine the very learning they are trying to secure. This has led many researchers to argue that adequate sleep should be treated as an essential part of education rather than as an optional luxury, though translating this message into changed behaviour has proved difficult.</p><p>Not every aspect of the theory is settled. Scientists continue to debate exactly how the different stages of sleep contribute, whether some memories are strengthened at the expense of others, and how dreaming relates to the processing that takes place. What is no longer seriously disputed, however, is the basic claim that sleep is bound up with memory. The old image of sleep as a blank interval has given way to a picture of a busy brain quietly sorting, filing and reinforcing the records of the day. The consequences of this shift in understanding reach into everyday life. If sleep genuinely helps to lock in what has been learned, then the way people schedule their study, their work and their rest deserves closer attention. Spreading learning across several sessions separated by nights of sleep, rather than cramming everything into a single marathon, may allow consolidation to do its work between sessions. Some researchers have even explored whether cues presented quietly during sleep, such as a sound or a scent that was linked to earlier learning, can gently strengthen particular memories, although this remains an experimental and delicate area rather than a reliable technique. Sleep may also help the mind to extract general rules from specific experiences. After a night's sleep people sometimes grasp a hidden pattern in a problem that eluded them the evening before, as though the brain had continued to work on the material offline. This kind of insight suggests that consolidation is not simply a matter of preserving memories unchanged but can involve reorganising them, discarding irrelevant detail and drawing out the underlying structure. Seen in this light, sleep is less like a filing cabinet that stores documents untouched and more like an editor who reviews the day's material and decides what deserves to be kept and how it should be arranged.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Modern research shows that the brain is largely inactive during sleep.",
+            "answer": "false",
+            "evidence": "Far from being idle, the sleeping brain is remarkably active, and one of its most important functions appears to be the processing and strengthening of memories formed during the day."
+          },
+          {
+            "prompt_text": "The different stages of sleep are thought to serve interchangeable functions in memory.",
+            "answer": "false",
+            "evidence": "Researchers have found that these stages are not interchangeable."
+          },
+          {
+            "prompt_text": "People who sleep after learning a task often perform better than those who stay awake for a similar period.",
+            "answer": "true",
+            "evidence": "Those who have slept commonly perform better, even when the total amount of time that has passed is the same."
+          },
+          {
+            "prompt_text": "Short daytime naps produce no measurable benefit for memory.",
+            "answer": "false",
+            "evidence": "Naps as well as a full night's sleep can produce such improvements, which suggests that it is sleep itself, rather than merely the passing of time, that supports the consolidation of what has been learned."
+          },
+          {
+            "prompt_text": "The passage states that people need exactly eight hours of sleep for memory to work properly.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, consolidation is best described as",
+            "options": [
+              "the moment when information is first registered",
+              "the slower process that makes a new memory more stable",
+              "the constant stream of new input during waking hours",
+              "the recovery of the body during rest"
+            ],
+            "answer_index": 1,
+            "evidence": "consolidation is the slower process by which a fragile new memory becomes more stable and better integrated with what we already know."
+          },
+          {
+            "prompt_text": "Deep slow-wave sleep is described as especially important for",
+            "options": [
+              "consolidating facts and events that can be consciously recalled",
+              "processing emotional memories",
+              "learning new physical skills",
+              "protecting the brain from dreaming"
+            ],
+            "answer_index": 0,
+            "evidence": "Deep slow-wave sleep seems especially important for the consolidation of facts and events, the kind of memory that can be consciously recalled and put into words."
+          },
+          {
+            "prompt_text": "The idea of replay during deep sleep suggests that memories are",
+            "options": [
+              "erased to make room for new learning",
+              "transferred from the hippocampus to more durable storage",
+              "stored permanently in the hippocampus",
+              "weakened each time they are reactivated"
+            ],
+            "answer_index": 1,
+            "evidence": "such replay helps to transfer memories from temporary storage in a structure called the hippocampus to more durable storage distributed across the outer layer of the brain."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What is the name for the moment at which information is first registered?",
+            "accepted": ["encoding", "the encoding"],
+            "word_limit": 2,
+            "evidence": "Encoding is the moment at which information is first registered; consolidation is the slower process by which a fragile new memory becomes more stable and better integrated with what we already know."
+          },
+          {
+            "prompt_text": "Which type of sleep has been linked more strongly to emotional memories?",
+            "accepted": ["REM sleep", "REM", "rapid eye movement"],
+            "word_limit": 3,
+            "evidence": "REM sleep, by contrast, has been linked more strongly to emotional memories and to certain kinds of skill learning, although the picture is still debated."
+          },
+          {
+            "prompt_text": "In which brain structure are memories thought to be stored temporarily before transfer?",
+            "accepted": ["hippocampus", "the hippocampus"],
+            "word_limit": 2,
+            "evidence": "such replay helps to transfer memories from temporary storage in a structure called the hippocampus to more durable storage distributed across the outer layer of the brain."
+          },
+          {
+            "prompt_text": "Many researchers argue that adequate sleep should be treated as an essential part of what, rather than as a luxury?",
+            "accepted": ["education", "part of education"],
+            "word_limit": 3,
+            "evidence": "This has led many researchers to argue that adequate sleep should be treated as an essential part of education rather than as an optional luxury, though translating this message into changed behaviour has proved difficult."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "The Global Journey of Coffee",
+    "difficulty": "medium",
+    "topic_tags": ["economics", "culture"],
+    "body_html": "<p>Few commodities have travelled as far, or shaped as many economies, as coffee. Grown in a broad band of tropical countries and consumed in enormous quantities across the world, it is today one of the most widely traded agricultural products. The journey of a single cup, from a bush on a hillside to a mug on a kitchen table, passes through many hands and crosses many borders, and the story of how this came about is bound up with trade, migration and taste.</p><p>Coffee is generally believed to have originated in the highlands of what is now Ethiopia, where the plant grew wild long before it was cultivated. From there its use spread across the Arabian Peninsula, where it was brewed as a drink and where the first coffee houses appeared. These establishments became lively centres of conversation and commerce, and as trade routes carried the beans further afield, similar houses opened in the cities of Europe. By the seventeenth and eighteenth centuries the coffee house had become a fixture of urban life in many places, valued as a space for discussion, news and business.</p><p>As demand grew, European powers began to establish coffee cultivation in their tropical colonies. The plant was carried to South and Central America, to parts of Asia and to islands in several oceans, often to be grown on large estates. This expansion had a profound and frequently harsh human dimension, because much of the labour on early plantations was coerced. The global spread of coffee is therefore inseparable from the history of colonial trade, and the geography of where coffee is grown today still reflects those old patterns of empire.</p><p>Two species dominate modern production. Arabica, prized for its more delicate and varied flavour, tends to grow at higher altitudes and is more vulnerable to disease and to shifts in weather. Robusta, as its name suggests, is hardier and higher in caffeine, and it is often used in instant coffee and in blends where a stronger, more bitter character is acceptable. The two command different prices, and the balance between them shifts with fashion, cost and the conditions of a given harvest. Because coffee bushes take several years to mature, growers cannot quickly adjust their output when prices change, which contributes to the sharp swings that have long characterised the market.</p><p>These price swings fall unevenly along the supply chain. A great deal of the value of coffee is added after it leaves the country where it is grown, through roasting, branding and retailing, activities that are largely concentrated in wealthier importing nations. Farmers, many of them working small plots, often receive only a modest share of the final price and are exposed to the volatility of world markets. In my view, this imbalance is the central injustice of the coffee trade, and any account that celebrates the drink without acknowledging it is incomplete. Various schemes, including certification programmes that promise better terms for growers, have tried to address the problem, though opinions differ on how much difference they truly make.</p><p>Coffee is also woven into culture in ways that go well beyond economics. Different societies have developed their own rituals and preferences, from small strong cups drunk quickly to large milky drinks lingered over for hours. The rise of a modern café culture, in which branded coffee shops serve as informal offices and meeting places, echoes the older role of the coffee house as a social hub. Whatever form it takes, the act of drinking coffee is rarely only about the beverage itself; it is also about pause, sociability and routine.</p><p>Looking ahead, the crop faces serious challenges. Changing climate threatens the cooler, higher land on which the finest Arabica depends, and pests and diseases can devastate harvests. Researchers are searching for more resilient varieties and for growing methods that can withstand a warmer, less predictable world. The outcome matters not only to consumers who take their morning cup for granted but to the millions of people whose livelihoods depend on this remarkable and much-travelled bean. The processing of coffee after harvest is itself a craft that shapes the final flavour. Once the cherries are picked, the beans inside must be separated from the fruit, dried and later roasted, and each of these steps can be carried out in different ways. Some producers dry the beans inside the whole fruit under the sun, a method that tends to give a fuller, fruitier taste, while others strip away the pulp and ferment the beans in water before drying. The degree of roasting then determines much of the character of the cup, from lighter roasts that preserve delicate and acidic notes to dark roasts that bring out heavier, more bitter flavours. A great deal of skill and judgement lies behind what many drinkers experience as a simple, everyday pleasure. Because so many livelihoods are linked to this single crop, events in one part of the world, such as a poor harvest caused by drought or frost, can ripple outward and be felt by consumers and producers thousands of kilometres away. This interconnectedness is part of what makes coffee such a revealing subject: to follow the bean is to trace the threads that bind distant economies together.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Coffee is thought to have originated in the highlands of present-day Ethiopia.",
+            "answer": "true",
+            "evidence": "Coffee is generally believed to have originated in the highlands of what is now Ethiopia, where the plant grew wild long before it was cultivated."
+          },
+          {
+            "prompt_text": "The first coffee houses appeared in the cities of Europe.",
+            "answer": "false",
+            "evidence": "From there its use spread across the Arabian Peninsula, where it was brewed as a drink and where the first coffee houses appeared."
+          },
+          {
+            "prompt_text": "Robusta contains more caffeine than Arabica.",
+            "answer": "true",
+            "evidence": "Robusta, as its name suggests, is hardier and higher in caffeine, and it is often used in instant coffee and in blends where a stronger, more bitter character is acceptable."
+          },
+          {
+            "prompt_text": "Coffee is the most valuable agricultural export of every country that grows it.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Growers can rapidly increase their output when coffee prices rise.",
+            "answer": "false",
+            "evidence": "Because coffee bushes take several years to mature, growers cannot quickly adjust their output when prices change, which contributes to the sharp swings that have long characterised the market."
+          }
+        ]
+      },
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The writer believes the unequal division of value along the supply chain is the central injustice of the coffee trade.",
+            "answer": "yes",
+            "evidence": "In my view, this imbalance is the central injustice of the coffee trade, and any account that celebrates the drink without acknowledging it is incomplete."
+          },
+          {
+            "prompt_text": "The writer claims that certification programmes have definitely solved the problem of low prices for growers.",
+            "answer": "no",
+            "evidence": "Various schemes, including certification programmes that promise better terms for growers, have tried to address the problem, though opinions differ on how much difference they truly make."
+          },
+          {
+            "prompt_text": "The writer argues that drinking coffee is rarely only about the beverage itself.",
+            "answer": "yes",
+            "evidence": "Whatever form it takes, the act of drinking coffee is rarely only about the beverage itself; it is also about pause, sociability and routine."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, much of the value of coffee is added",
+            "options": [
+              "on the farms where the beans are grown",
+              "after the beans leave the producing country",
+              "during the transport of beans between colonies",
+              "before the coffee bushes reach maturity"
+            ],
+            "answer_index": 1,
+            "evidence": "A great deal of the value of coffee is added after it leaves the country where it is grown, through roasting, branding and retailing, activities that are largely concentrated in wealthier importing nations."
+          },
+          {
+            "prompt_text": "Arabica is described in the passage as",
+            "options": [
+              "hardier and higher in caffeine than Robusta",
+              "mainly used in instant coffee",
+              "more delicate in flavour and vulnerable to disease",
+              "grown chiefly at low altitudes"
+            ],
+            "answer_index": 2,
+            "evidence": "Arabica, prized for its more delicate and varied flavour, tends to grow at higher altitudes and is more vulnerable to disease and to shifts in weather."
+          },
+          {
+            "prompt_text": "The passage suggests that climate change is a threat to coffee because",
+            "options": [
+              "it reduces the world's demand for the drink",
+              "it makes roasting and branding more expensive",
+              "it endangers the cooler, higher land on which fine Arabica depends",
+              "it lowers the caffeine content of the beans"
+            ],
+            "answer_index": 2,
+            "evidence": "Changing climate threatens the cooler, higher land on which the finest Arabica depends, and pests and diseases can devastate harvests."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Across which region did the use of coffee spread after leaving its place of origin?",
+            "accepted": ["the Arabian Peninsula", "Arabian Peninsula", "Arabian peninsula"],
+            "word_limit": 3,
+            "evidence": "From there its use spread across the Arabian Peninsula, where it was brewed as a drink and where the first coffee houses appeared."
+          },
+          {
+            "prompt_text": "Which two species are said to dominate modern coffee production, besides Robusta?",
+            "accepted": ["Arabica", "arabica"],
+            "word_limit": 2,
+            "evidence": "Arabica, prized for its more delicate and varied flavour, tends to grow at higher altitudes and is more vulnerable to disease and to shifts in weather."
+          },
+          {
+            "prompt_text": "Much of the labour on early coffee plantations is described as having been what?",
+            "accepted": ["coerced", "coerced labour"],
+            "word_limit": 2,
+            "evidence": "This expansion had a profound and frequently harsh human dimension, because much of the labour on early plantations was coerced."
+          }
+        ]
+      }
+    ]
+  }
+]

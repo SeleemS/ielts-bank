@@ -1,0 +1,415 @@
+[
+  {
+    "skill": "reading",
+    "title": "The Rise of Vertical Farming",
+    "difficulty": "medium",
+    "topic_tags": [
+      "environment"
+    ],
+    "body_html": "<p>Vertical farming is the practice of growing crops in stacked layers rather than spread across open fields. Instead of relying on soil and sunlight in the traditional way, most commercial vertical farms are housed inside controlled indoor environments such as warehouses, shipping containers or purpose-built structures. Within these spaces, plants are arranged on shelves that rise from floor to ceiling, allowing a large quantity of produce to be cultivated on a comparatively small footprint of land. The central idea is to move agriculture closer to the people who consume its output, especially in dense urban areas where farmland is scarce and expensive.</p><p>The techniques used inside these farms differ markedly from conventional cultivation. Many operations depend on hydroponics, a method in which roots are bathed in a nutrient-rich water solution rather than anchored in earth. Others use aeroponics, where roots hang in the air and are misted with the nutrients they need. Because the growing environment is enclosed, operators can regulate temperature, humidity and the concentration of carbon dioxide with considerable precision. Artificial lighting, typically supplied by energy-efficient LED fixtures, replaces the sun and can be tuned to the specific wavelengths that particular plants absorb most readily. This level of control means crops can be grown throughout the year, unaffected by the changing seasons or by spells of poor weather outside.</p><p>Supporters of the approach point to several environmental advantages. Vertical farms can recycle water within closed systems, and as a result they often use only a small fraction of the water required by field agriculture, where much of the supply is lost to evaporation or drainage. Growing indoors also reduces the need for chemical pesticides, since pests are far less likely to reach sealed rooms. Because the produce is cultivated near the point of sale, the distance it must travel before reaching a shop or restaurant is greatly shortened, cutting the emissions and spoilage associated with long-haul transport. Land that would otherwise be given over to farming can, in principle, be returned to forest or other natural uses.</p><p>Yet the model faces significant obstacles, and the most serious of these is energy. Sunlight is free, but artificial lighting is not, and running banks of lamps around the clock consumes a great deal of electricity. Heating, cooling and the pumps that circulate water and nutrients add further to the demand. When that power comes from fossil fuels, the environmental benefits of saving water and land can be offset by a heavy carbon footprint. For this reason, the economics of vertical farming are strongest where electricity is both cheap and generated from low-carbon sources. The high cost of building and equipping a facility also means that early ventures have tended to concentrate on high-value crops that can command premium prices.</p><p>The range of crops presently suited to vertical farming is another limitation. Leafy greens such as lettuce, spinach and herbs grow quickly, remain compact and fetch good returns, which makes them ideal candidates. Certain fruiting plants, including tomatoes and strawberries, have also been grown successfully indoors. Staple cereals such as wheat and rice, however, remain impractical, because they occupy large volumes, take longer to mature and sell for relatively little. Feeding the world's population on stacked shelves is therefore not a realistic prospect with today's technology; vertical farms are better understood as a complement to conventional agriculture than as a replacement for it.</p><p>Interest in the sector has nonetheless grown rapidly, driven by concerns about food security, a swelling urban population and the unpredictable effects of a changing climate on outdoor harvests. Investors have poured money into start-ups, and some large retailers have partnered with growers to place small farms inside or beside their stores. Progress has not been uniform, and a number of high-profile companies have struggled or collapsed when their running costs outpaced their revenues. Such setbacks have tempered the early enthusiasm and prompted a more sober assessment of where the method genuinely makes sense.</p><p>Looking ahead, the future of vertical farming is likely to hinge on continued falls in the cost of LED lighting and on the wider spread of renewable electricity. Advances in automation, including robots that plant, monitor and harvest crops, could reduce the labour costs that weigh on many operations. Researchers are also exploring how the controlled conditions inside these farms might be used to raise the nutritional quality of produce or to breed varieties tailored to indoor growth. Whether the industry becomes a mainstream pillar of the food system or remains a specialised niche, it has already demonstrated that food can be produced in places and ways that would once have seemed impossible.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Most commercial vertical farms are located inside enclosed indoor spaces.",
+            "answer": "true",
+            "evidence": "Instead of relying on soil and sunlight in the traditional way, most commercial vertical farms are housed inside controlled indoor environments such as warehouses, shipping containers or purpose-built structures."
+          },
+          {
+            "prompt_text": "In aeroponic systems, plant roots are placed in soil.",
+            "answer": "false",
+            "evidence": "Others use aeroponics, where roots hang in the air and are misted with the nutrients they need."
+          },
+          {
+            "prompt_text": "Vertical farms can produce crops at any time of year regardless of outdoor weather.",
+            "answer": "true",
+            "evidence": "This level of control means crops can be grown throughout the year, unaffected by the changing seasons or by spells of poor weather outside."
+          },
+          {
+            "prompt_text": "Growing crops indoors typically requires more water than field agriculture.",
+            "answer": "false",
+            "evidence": "Vertical farms can recycle water within closed systems, and as a result they often use only a small fraction of the water required by field agriculture, where much of the supply is lost to evaporation or drainage."
+          },
+          {
+            "prompt_text": "Governments in most countries now offer subsidies to vertical farming companies.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The environmental gains of vertical farming can be undermined when its electricity comes from fossil fuels.",
+            "answer": "true",
+            "evidence": "When that power comes from fossil fuels, the environmental benefits of saving water and land can be offset by a heavy carbon footprint."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, why do early vertical farming ventures tend to focus on high-value crops?",
+            "options": [
+              "The high cost of building and equipping a facility",
+              "A shortage of leafy greens in cities",
+              "Government restrictions on staple crops",
+              "The difficulty of installing LED lighting"
+            ],
+            "answer_index": 0,
+            "evidence": "The high cost of building and equipping a facility also means that early ventures have tended to concentrate on high-value crops that can command premium prices."
+          },
+          {
+            "prompt_text": "The passage identifies which factor as the most serious obstacle facing vertical farming?",
+            "options": [
+              "A lack of suitable urban land",
+              "Energy consumption",
+              "Public distrust of hydroponics",
+              "A shortage of trained workers"
+            ],
+            "answer_index": 1,
+            "evidence": "Yet the model faces significant obstacles, and the most serious of these is energy."
+          },
+          {
+            "prompt_text": "Why are staple cereals such as wheat and rice considered impractical for vertical farms?",
+            "options": [
+              "They cannot survive under artificial lighting",
+              "They require chemical pesticides to grow",
+              "They take up large volumes, mature slowly and sell for little",
+              "They need more carbon dioxide than can be supplied"
+            ],
+            "answer_index": 2,
+            "evidence": "Staple cereals such as wheat and rice, however, remain impractical, because they occupy large volumes, take longer to mature and sell for relatively little."
+          },
+          {
+            "prompt_text": "How does the passage suggest vertical farming should best be understood?",
+            "options": [
+              "As a complete replacement for conventional agriculture",
+              "As a complement to conventional agriculture",
+              "As a method suited only to cereal production",
+              "As a technology with no environmental benefits"
+            ],
+            "answer_index": 1,
+            "evidence": "vertical farms are better understood as a complement to conventional agriculture than as a replacement for it."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What type of energy-efficient fixtures typically replace the sun inside vertical farms?",
+            "accepted": [
+              "LED fixtures",
+              "LED lighting",
+              "LED lamps"
+            ],
+            "word_limit": 2,
+            "evidence": "Artificial lighting, typically supplied by energy-efficient LED fixtures, replaces the sun and can be tuned to the specific wavelengths that particular plants absorb most readily."
+          },
+          {
+            "prompt_text": "In which growing method are roots bathed in a nutrient-rich water solution?",
+            "accepted": [
+              "hydroponics"
+            ],
+            "word_limit": 2,
+            "evidence": "Many operations depend on hydroponics, a method in which roots are bathed in a nutrient-rich water solution rather than anchored in earth."
+          },
+          {
+            "prompt_text": "Which category of fast-growing crop is described as an ideal candidate for vertical farming?",
+            "accepted": [
+              "leafy greens",
+              "leafy green"
+            ],
+            "word_limit": 2,
+            "evidence": "Leafy greens such as lettuce, spinach and herbs grow quickly, remain compact and fetch good returns, which makes them ideal candidates."
+          },
+          {
+            "prompt_text": "What kind of machines could reduce the labour costs that burden many vertical farms?",
+            "accepted": [
+              "robots"
+            ],
+            "word_limit": 2,
+            "evidence": "Advances in automation, including robots that plant, monitor and harvest crops, could reduce the labour costs that weigh on many operations."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "Restoring Urban Wetlands",
+    "difficulty": "medium",
+    "topic_tags": [
+      "environment"
+    ],
+    "body_html": "<p>Wetlands are areas of land where water covers the soil, or lies just beneath its surface, for at least part of the year. They include marshes, swamps, bogs and the muddy margins of rivers and lakes. For much of the past two centuries, wetlands close to towns and cities were regarded as wasteland: damp, unproductive and a breeding ground for disease. As settlements expanded, vast stretches were drained and filled to make room for housing, factories and roads. Only in recent decades has this attitude begun to reverse, as scientists have come to appreciate the many services that healthy wetlands quietly provide.</p><p>Among the most valuable of these services is flood control. A wetland behaves rather like a sponge, absorbing heavy rainfall and the surges that follow storms, then releasing the water slowly over the following days and weeks. When wetlands are paved over, that natural buffer disappears, and rain runs quickly off hard surfaces into drains and channels that can be overwhelmed. Cities that have lost their wetlands are therefore often more vulnerable to sudden flooding. Restoring these habitats can reduce that risk while also recharging the underground stores of water on which many communities depend during dry periods.</p><p>Wetlands also act as natural filters. As water moves slowly through the reeds, sediments and the roots of aquatic plants, pollutants and excess nutrients are trapped or broken down by microorganisms. This process can improve the quality of water that eventually reaches rivers and reservoirs, reducing the burden on the treatment plants that supply households. In addition, the plants and soils of a wetland store large amounts of carbon, locking away a greenhouse gas that would otherwise contribute to the warming of the atmosphere. Peat-forming wetlands are especially effective at this, accumulating carbon in waterlogged ground over thousands of years, and they hold a remarkable share of the carbon stored in the world's soils despite covering only a modest proportion of its land surface. When wetlands are drained, much of that stored carbon is released, and the exposed soils may continue to emit it for decades afterwards.</p><p>Perhaps the most visible benefit, at least to city dwellers, is the richness of life that a restored wetland supports. These habitats are among the most biologically productive on Earth, providing food and shelter for insects, fish, amphibians and a great variety of birds. Migratory species, in particular, rely on wetlands as staging posts where they can rest and feed on long journeys between breeding and wintering grounds. A wetland on the edge of a city can become an unexpected haven for wildlife, and a place where residents encounter nature without travelling far from home.</p><p>Restoration itself is rarely as simple as letting water flood back onto drained land. Engineers and ecologists must first understand how water once flowed across the site and how that flow has been altered by drains, embankments and buildings. Contaminated soil may need to be removed or treated, and native plants must often be reintroduced, because the seeds of the original vegetation may no longer survive in the ground. Invasive species that have colonised the disturbed site have to be controlled so that they do not crowd out the plants the project is trying to establish. A successful restoration can take many years before the habitat begins to function as a natural wetland would.</p><p>The work also depends heavily on the support of the surrounding community. Where residents value a restored wetland, they are more likely to protect it from littering, pollution and encroachment. Many projects therefore include boardwalks, viewing platforms and educational signs that invite people to visit and learn, turning the site into a shared amenity rather than a fenced-off enclosure. Schools frequently use nearby wetlands as outdoor classrooms, and volunteers help with tasks such as planting and monitoring wildlife. This sense of ownership can prove as important to a project's long-term survival as any piece of engineering.</p><p>Despite the growing enthusiasm, urban wetland restoration continues to face pressures. Land within cities is valuable, and developers may argue that it is better used for housing than for marsh. Restored wetlands require ongoing maintenance and funding, which can be difficult to secure once the initial project is complete. Climate change adds further uncertainty, since rising sea levels and shifting rainfall patterns may alter the conditions that a restored site was designed for. Nevertheless, as cities confront the twin challenges of flooding and biodiversity loss, the humble wetland is increasingly seen not as wasteland to be conquered but as valuable infrastructure worth reclaiming.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "For much of the past two hundred years, wetlands near cities were viewed as worthless land.",
+            "answer": "true",
+            "evidence": "For much of the past two centuries, wetlands close to towns and cities were regarded as wasteland: damp, unproductive and a breeding ground for disease."
+          },
+          {
+            "prompt_text": "Cities that have lost their wetlands tend to be better protected against sudden flooding.",
+            "answer": "false",
+            "evidence": "Cities that have lost their wetlands are therefore often more vulnerable to sudden flooding."
+          },
+          {
+            "prompt_text": "Draining a wetland releases much of the carbon that its plants and soils had stored.",
+            "answer": "true",
+            "evidence": "When wetlands are drained, much of that stored carbon is released."
+          },
+          {
+            "prompt_text": "Restoring a wetland can usually be achieved simply by allowing water to flood back onto the land.",
+            "answer": "false",
+            "evidence": "Restoration itself is rarely as simple as letting water flood back onto drained land."
+          },
+          {
+            "prompt_text": "Wetland restoration projects cost more than building housing on the same land.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Climate change introduces uncertainty into wetland restoration because of rising seas and changing rainfall.",
+            "answer": "true",
+            "evidence": "Climate change adds further uncertainty, since rising sea levels and shifting rainfall patterns may alter the conditions that a restored site was designed for."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "The passage compares a wetland's response to heavy rainfall to the behaviour of",
+            "options": [
+              "a sponge",
+              "a drain",
+              "a reservoir",
+              "a filter"
+            ],
+            "answer_index": 0,
+            "evidence": "A wetland behaves rather like a sponge, absorbing heavy rainfall and the surges that follow storms, then releasing the water slowly over the following days and weeks."
+          },
+          {
+            "prompt_text": "How do wetlands help improve water quality according to the passage?",
+            "options": [
+              "By speeding water rapidly into drains",
+              "By trapping or breaking down pollutants and excess nutrients as water moves slowly through them",
+              "By adding chemicals that neutralise pollution",
+              "By storing water underground indefinitely"
+            ],
+            "answer_index": 1,
+            "evidence": "As water moves slowly through the reeds, sediments and the roots of aquatic plants, pollutants and excess nutrients are trapped or broken down by microorganisms."
+          },
+          {
+            "prompt_text": "Why are wetlands especially important to migratory species?",
+            "options": [
+              "They provide permanent breeding grounds",
+              "They offer staging posts to rest and feed on long journeys",
+              "They protect the birds from predators",
+              "They supply the only source of fresh water in cities"
+            ],
+            "answer_index": 1,
+            "evidence": "Migratory species, in particular, rely on wetlands as staging posts where they can rest and feed on long journeys between breeding and wintering grounds."
+          },
+          {
+            "prompt_text": "According to the passage, community support matters to a restoration project mainly because residents who value a wetland are more likely to",
+            "options": [
+              "pay for its construction",
+              "protect it from littering, pollution and encroachment",
+              "remove invasive species themselves",
+              "oppose new housing developments"
+            ],
+            "answer_index": 1,
+            "evidence": "Where residents value a restored wetland, they are more likely to protect it from littering, pollution and encroachment."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Which service, involving the absorption of storm surges, is described as among the most valuable that wetlands provide?",
+            "accepted": [
+              "flood control"
+            ],
+            "word_limit": 2,
+            "evidence": "Among the most valuable of these services is flood control."
+          },
+          {
+            "prompt_text": "What breaks down pollutants and excess nutrients as water passes through a wetland?",
+            "accepted": [
+              "microorganisms"
+            ],
+            "word_limit": 2,
+            "evidence": "pollutants and excess nutrients are trapped or broken down by microorganisms."
+          },
+          {
+            "prompt_text": "What kind of species, which colonise disturbed sites, must be controlled during restoration?",
+            "accepted": [
+              "invasive species",
+              "invasive"
+            ],
+            "word_limit": 2,
+            "evidence": "Invasive species that have colonised the disturbed site have to be controlled so that they do not crowd out the plants the project is trying to establish."
+          },
+          {
+            "prompt_text": "As what type of outdoor space do schools frequently use nearby wetlands?",
+            "accepted": [
+              "outdoor classrooms",
+              "classrooms",
+              "outdoor classroom"
+            ],
+            "word_limit": 2,
+            "evidence": "Schools frequently use nearby wetlands as outdoor classrooms, and volunteers help with tasks such as planting and monitoring wildlife."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "Lithium and the Battery Age",
+    "difficulty": "medium",
+    "topic_tags": [
+      "environment"
+    ],
+    "body_html": "<p>Lithium is the lightest of all metals, so soft that it can be cut with a knife and so reactive that it must be stored away from air and water. For most of its history it was a chemical curiosity of interest chiefly to scientists. Today it has become one of the most sought-after materials in the world, because it lies at the heart of the rechargeable batteries that power mobile phones, laptops and, above all, electric vehicles. As countries attempt to move away from fossil fuels, demand for lithium has surged, and the metal has acquired a strategic importance that few would have predicted a generation ago.</p><p>The reason lithium is so valuable in batteries has to do with its physical properties. Being extremely light, it allows batteries to store a large amount of energy without adding much weight, a quality that matters enormously in a car or a phone. Lithium-ion batteries can also be charged and discharged many hundreds of times before their performance noticeably declines, and they lose their charge relatively slowly when not in use. These characteristics made them the natural choice as portable electronics spread through the 1990s, and the same advantages now make them central to the shift towards cleaner transport. A single electric car may contain thousands of individual cells, and the battery pack is typically one of the heaviest and most costly parts of the whole vehicle, which is why even small improvements in the way lithium is packed into a cell can translate into meaningful gains in range or price.</p><p>The metal is obtained from two main sources. The first is hard rock, chiefly a mineral called spodumene, which is mined from the ground and then processed at high temperatures to extract the lithium it contains. The second is underground brine, salty water pumped from beneath dry salt flats, most famously in a region of South America sometimes called the lithium triangle. There the brine is spread across enormous ponds and left for many months, so that the sun evaporates the water and gradually concentrates the lithium that remains. Each method has its own costs and drawbacks, and the choice between them depends on geology, climate and the price that producers can command.</p><p>Extracting lithium, however, carries an environmental price. The evaporation process consumes vast quantities of water in regions that are often already extremely dry, and this can bring mining companies into conflict with local farmers and communities who depend on the same scarce supply. Hard-rock mining, for its part, disturbs the landscape and requires a good deal of energy for processing. Critics point out that a technology promoted as clean therefore has consequences that are anything but invisible, and they argue that these impacts must be weighed carefully against the benefits of reducing emissions from vehicles.</p><p>Supply is a further concern. Although lithium itself is reasonably abundant in the Earth's crust, deposits that can be exploited profitably are concentrated in a handful of countries, and the facilities that refine the raw material into battery-grade chemicals are more concentrated still. This uneven distribution has raised worries about the security of supply, since a disruption in one region could ripple through the global market. Governments and manufacturers have responded by seeking new sources, by signing long-term contracts and by investing in their own processing capacity so as not to depend too heavily on any single supplier.</p><p>Recycling is widely seen as part of the answer. Because the lithium in a spent battery does not disappear, it can in principle be recovered and used again, reducing the need for fresh mining. In practice, recycling has been held back by the difficulty of collecting used batteries and by the complex processes required to separate their valuable components. As the first generation of electric-vehicle batteries reaches the end of its working life, however, a larger and steadier stream of material is expected to become available, and improved techniques may make recovery more economical than it has been so far.</p><p>Researchers are also working on batteries that would reduce reliance on lithium altogether. Some designs replace it with sodium, a far more common element, while others aim to squeeze more energy from each unit of lithium so that less is needed overall. It is too early to say which of these approaches, if any, will displace the lithium-ion battery from its dominant position. What seems clear is that batteries of some kind will remain fundamental to a low-carbon future, and that securing the materials to make them, whether through mining, recycling or new chemistry, will be one of the defining industrial challenges of the coming decades.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Lithium is a soft metal that can be cut with a knife.",
+            "answer": "true",
+            "evidence": "Lithium is the lightest of all metals, so soft that it can be cut with a knife and so reactive that it must be stored away from air and water."
+          },
+          {
+            "prompt_text": "Lithium-ion batteries lose their charge very quickly when they are not being used.",
+            "answer": "false",
+            "evidence": "Lithium-ion batteries can also be charged and discharged many hundreds of times before their performance noticeably declines, and they lose their charge relatively slowly when not in use."
+          },
+          {
+            "prompt_text": "Lithium is rare and almost entirely absent from the Earth's crust.",
+            "answer": "false",
+            "evidence": "Although lithium itself is reasonably abundant in the Earth's crust, deposits that can be exploited profitably are concentrated in a handful of countries, and the facilities that refine the raw material into battery-grade chemicals are more concentrated still."
+          },
+          {
+            "prompt_text": "The evaporation method of extracting lithium can bring mining companies into conflict with local farmers over water.",
+            "answer": "true",
+            "evidence": "The evaporation process consumes vast quantities of water in regions that are often already extremely dry, and this can bring mining companies into conflict with local farmers and communities who depend on the same scarce supply."
+          },
+          {
+            "prompt_text": "Electric vehicles powered by lithium batteries are cheaper to buy than petrol cars.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Recycling used lithium batteries has been limited by the difficulty of collecting them and by complex separation processes.",
+            "answer": "true",
+            "evidence": "In practice, recycling has been held back by the difficulty of collecting used batteries and by the complex processes required to separate their valuable components."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Why is lithium's light weight particularly valuable in batteries?",
+            "options": [
+              "It allows batteries to store a large amount of energy without adding much weight",
+              "It makes batteries cheaper to manufacture",
+              "It prevents batteries from overheating",
+              "It removes the need for recharging"
+            ],
+            "answer_index": 0,
+            "evidence": "Being extremely light, it allows batteries to store a large amount of energy without adding much weight, a quality that matters enormously in a car or a phone."
+          },
+          {
+            "prompt_text": "According to the passage, how is lithium obtained from underground brine?",
+            "options": [
+              "By heating spodumene at high temperatures",
+              "By spreading the brine in ponds so the sun evaporates the water",
+              "By filtering the brine through reeds",
+              "By freezing the salty water"
+            ],
+            "answer_index": 1,
+            "evidence": "There the brine is spread across enormous ponds and left for many months, so that the sun evaporates the water and gradually concentrates the lithium that remains."
+          },
+          {
+            "prompt_text": "What concern does the passage raise about the global supply of lithium?",
+            "options": [
+              "The metal is running out worldwide",
+              "Exploitable deposits and refining are concentrated in a few countries",
+              "No country is willing to mine it",
+              "Batteries can no longer be manufactured"
+            ],
+            "answer_index": 1,
+            "evidence": "This uneven distribution has raised worries about the security of supply, since a disruption in one region could ripple through the global market."
+          },
+          {
+            "prompt_text": "Which alternative element is mentioned as a possible replacement for lithium in some battery designs?",
+            "options": [
+              "Sodium",
+              "Copper",
+              "Spodumene",
+              "Carbon"
+            ],
+            "answer_index": 0,
+            "evidence": "Some designs replace it with sodium, a far more common element, while others aim to squeeze more energy from each unit of lithium so that less is needed overall."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Which hard-rock mineral is named as a source of lithium?",
+            "accepted": [
+              "spodumene"
+            ],
+            "word_limit": 2,
+            "evidence": "The first is hard rock, chiefly a mineral called spodumene, which is mined from the ground and then processed at high temperatures to extract the lithium it contains."
+          },
+          {
+            "prompt_text": "By what name is the lithium-rich region of South America sometimes known?",
+            "accepted": [
+              "the lithium triangle",
+              "lithium triangle"
+            ],
+            "word_limit": 3,
+            "evidence": "The second is underground brine, salty water pumped from beneath dry salt flats, most famously in a region of South America sometimes called the lithium triangle."
+          },
+          {
+            "prompt_text": "Which type of vehicle is described as the leading driver of demand for lithium?",
+            "accepted": [
+              "electric vehicles",
+              "electric vehicle"
+            ],
+            "word_limit": 2,
+            "evidence": "it lies at the heart of the rechargeable batteries that power mobile phones, laptops and, above all, electric vehicles."
+          },
+          {
+            "prompt_text": "What process, involving the recovery of lithium from spent batteries, is widely seen as part of the solution?",
+            "accepted": [
+              "recycling"
+            ],
+            "word_limit": 2,
+            "evidence": "Recycling is widely seen as part of the answer."
+          }
+        ]
+      }
+    ]
+  }
+]

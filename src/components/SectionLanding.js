@@ -1,29 +1,16 @@
 import React from 'react';
 import Head from 'next/head';
-import NextLink from 'next/link';
-import {
-  Box,
-  Flex,
-  Container,
-  Heading,
-  Text,
-  VStack,
-  SimpleGrid,
-  Badge,
-  LinkBox,
-  LinkOverlay,
-} from '@chakra-ui/react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import DataTable from './DataTable';
+
+// Pure Tailwind/shadcn section landing. NO Chakra imports.
+//
+// Shared UI for the three section index pages (Reading / Writing / Listening).
+// Renders SEO head, the Tailwind Navbar + Footer, a heading/intro, and the
+// DataTable question browser fed the pre-fetched list from getStaticProps.
 
 const SITE_URL = 'https://ielts-bank.com';
-
-const difficultyColor = {
-  Easy: 'green',
-  Medium: 'yellow',
-  Hard: 'red',
-  'Task 2': 'blue',
-};
 
 const SectionLanding = ({
   section, // e.g. 'reading'
@@ -51,65 +38,26 @@ const SectionLanding = ({
         <meta name="twitter:card" content="summary" />
       </Head>
 
-      <Flex direction="column" minH="100vh" bg="gray.50">
+      <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">
         <Navbar />
-        <Box flex="1" py={{ base: 8, md: 12 }}>
-          <Container maxW="container.lg">
-            <VStack align="stretch" spacing={2} mb={8}>
-              <Heading as="h1" size="xl" color="gray.900" fontWeight="700">
-                {heading}
-              </Heading>
-              <Text fontSize="lg" color="gray.600">
-                {intro}
-              </Text>
-            </VStack>
 
-            {items.length === 0 ? (
-              <Text color="gray.600">No questions are available yet. Please check back soon.</Text>
-            ) : (
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5}>
-                {items.map((item) => (
-                  <LinkBox
-                    key={item.id}
-                    as="article"
-                    bg="white"
-                    borderRadius="xl"
-                    border="1px"
-                    borderColor="gray.200"
-                    shadow="sm"
-                    p={6}
-                    transition="all 0.2s"
-                    _hover={{ shadow: 'md', borderColor: 'blue.200', transform: 'translateY(-2px)' }}
-                  >
-                    <Flex justify="space-between" align="start" gap={3}>
-                      <Heading as="h2" size="md" color="gray.900" fontWeight="700">
-                        <LinkOverlay as={NextLink} href={`/${section}question/${item.legacyId || item.id}`}>
-                          {item.title}
-                        </LinkOverlay>
-                      </Heading>
-                      {item.difficulty && (
-                        <Badge
-                          colorScheme={difficultyColor[item.difficulty] || 'gray'}
-                          variant="subtle"
-                          px={3}
-                          py={1}
-                          borderRadius="full"
-                          fontWeight="600"
-                          fontSize="xs"
-                          flexShrink={0}
-                        >
-                          {item.difficulty}
-                        </Badge>
-                      )}
-                    </Flex>
-                  </LinkBox>
-                ))}
-              </SimpleGrid>
-            )}
-          </Container>
-        </Box>
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+            <header className="mb-8 max-w-2xl">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                {heading}
+              </h1>
+              <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+                {intro}
+              </p>
+            </header>
+
+            <DataTable skill={section} items={items} />
+          </div>
+        </main>
+
         <Footer />
-      </Flex>
+      </div>
     </>
   );
 };

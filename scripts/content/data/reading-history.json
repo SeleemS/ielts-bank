@@ -1,0 +1,372 @@
+[
+  {
+    "skill": "reading",
+    "title": "The Library of Alexandria",
+    "difficulty": "medium",
+    "topic_tags": ["history"],
+    "body_html": "<p>The Library of Alexandria was one of the most celebrated institutions of the ancient world, a centre of learning that came to symbolise the ambitions of Hellenistic civilisation. It was founded in the Egyptian city of Alexandria, which had been established by Alexander the Great, and it flourished under the rule of the Ptolemaic dynasty that governed Egypt after his death. The library was not an isolated building but formed part of a larger research complex known as the Mouseion, or 'shrine of the Muses', from which the modern word 'museum' is derived. Scholars believe that the institution was organised during the reigns of the first two Ptolemaic kings in the third century BC, though the precise details of its foundation remain uncertain. The rulers of Egypt in this period were Greek-speaking descendants of one of Alexander's generals, and they were eager to present their new capital as a worthy rival to the older cultural centres of the Greek world. Establishing a great library and research centre was one way of achieving this prestige, and it helped to attract talented individuals to the city.</p><p>The declared purpose of the library was extraordinarily ambitious: to gather together copies of every book that existed. The Ptolemaic rulers pursued this goal with considerable determination and resources. According to ancient accounts, agents were sent to markets and cities across the Mediterranean to purchase scrolls, and ships arriving at the busy harbour of Alexandria were reportedly searched for any books they carried. Works that were found would be copied by scribes, and in some cases the original was kept for the library while the copy was returned to the owner. Through such methods the collection grew rapidly, and ancient writers claimed that it eventually held hundreds of thousands of scrolls, although these figures cannot be verified and historians treat them with caution.</p><p>The books themselves took the form of papyrus scrolls rather than the bound volumes familiar today. Papyrus was manufactured from a reed that grew abundantly in the Egyptian marshes, which gave Alexandria a natural advantage in producing and storing written material. Because a single long work might occupy several scrolls, the organisation of the collection was a significant challenge. The scholar Callimachus is credited with compiling a vast catalogue known as the Pinakes, which listed authors and their works and is often regarded as an early ancestor of the modern library catalogue. Such tools made it possible for scholars to locate texts within an enormous and growing collection.</p><p>The library attracted many of the finest minds of the age, who were often supported financially by the Ptolemaic court and given the freedom to pursue their studies. Alexandria became associated with remarkable achievements in mathematics, astronomy, geography and medicine. The mathematician Euclid is traditionally connected with the city, and the scholar Eratosthenes, who served as head of the library, is famous for calculating the circumference of the Earth with impressive accuracy using observations of the sun. The concentration of scholars, texts and patronage in one place created conditions in which knowledge could be gathered, compared and advanced in ways that were rare in the ancient world.</p><p>The eventual fate of the library has become the subject of enduring legend, and its destruction is frequently imagined as a single dramatic event. The historical reality is almost certainly more complicated. One well-known episode occurred when Julius Caesar became involved in a conflict in Alexandria and a fire spread through part of the city; some ancient sources suggest that books were lost as a result. However, many historians argue that any such fire is unlikely to have destroyed the entire collection, and that the library continued to function afterwards in some form. It appears that the institution declined gradually over several centuries rather than vanishing at a single stroke.</p><p>A number of factors probably contributed to this slow decline. Political instability, reductions in royal funding, and the expulsion of scholars during periods of unrest all weakened the institution over time. The fragile nature of papyrus meant that scrolls had to be recopied regularly to survive, and once the resources and personnel needed for this work disappeared, the collection would inevitably have deteriorated. By the later centuries of the Roman period, the great library of the Ptolemies had effectively ceased to exist, though the memory of its ambition endured.</p><p>Today the Library of Alexandria is remembered less for what survives of it, which is almost nothing, than for the ideal it represents. Its aspiration to collect and preserve the whole of human knowledge in a single place has continued to inspire scholars, writers and institutions long after the physical library disappeared. In this sense the library has enjoyed a remarkable afterlife, existing in the imagination as a symbol of learning and of the fragility of the records on which civilisation depends.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The Library of Alexandria was a single, separate building unconnected to any other institution.",
+            "answer": "false",
+            "evidence": "It was not an isolated building but formed part of a larger research complex known as the Mouseion, or 'shrine of the Muses', from which the modern word 'museum' is derived."
+          },
+          {
+            "prompt_text": "The exact circumstances of the library's foundation are not fully known.",
+            "answer": "true",
+            "evidence": "Scholars believe that the institution was organised during the reigns of the first two Ptolemaic kings in the third century BC, though the precise details of its foundation remain uncertain."
+          },
+          {
+            "prompt_text": "Ships arriving at Alexandria were reportedly searched for books.",
+            "answer": "true",
+            "evidence": "According to ancient accounts, agents were sent to markets and cities across the Mediterranean to purchase scrolls, and ships arriving at the busy harbour of Alexandria were reportedly searched for any books they carried."
+          },
+          {
+            "prompt_text": "The ancient claims about the number of scrolls in the collection have been confirmed by modern research.",
+            "answer": "false",
+            "evidence": "ancient writers claimed that it eventually held hundreds of thousands of scrolls, although these figures cannot be verified and historians treat them with caution."
+          },
+          {
+            "prompt_text": "Papyrus was more expensive to produce than the writing materials used elsewhere in the ancient world.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Historians generally agree that a single fire completely destroyed the library.",
+            "answer": "false",
+            "evidence": "However, many historians argue that any such fire is unlikely to have destroyed the entire collection, and that the library continued to function afterwards in some form."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What was the stated aim of the Library of Alexandria?",
+            "options": [
+              "to collect copies of every book in existence",
+              "to train scribes for the Ptolemaic court",
+              "to preserve only Egyptian religious texts",
+              "to replace all other libraries in the Mediterranean"
+            ],
+            "answer_index": 0,
+            "evidence": "The declared purpose of the library was extraordinarily ambitious: to gather together copies of every book that existed."
+          },
+          {
+            "prompt_text": "What is the Pinakes described as in the passage?",
+            "options": [
+              "a collection of astronomical observations",
+              "an early ancestor of the modern library catalogue",
+              "a type of papyrus scroll",
+              "a school for Ptolemaic scholars"
+            ],
+            "answer_index": 1,
+            "evidence": "The scholar Callimachus is credited with compiling a vast catalogue known as the Pinakes, which listed authors and their works and is often regarded as an early ancestor of the modern library catalogue."
+          },
+          {
+            "prompt_text": "According to the passage, why did papyrus scrolls need to be recopied regularly?",
+            "options": [
+              "because the language of the texts kept changing",
+              "because scholars frequently updated the contents",
+              "because papyrus was fragile and would otherwise deteriorate",
+              "because the Ptolemaic kings demanded new versions"
+            ],
+            "answer_index": 2,
+            "evidence": "The fragile nature of papyrus meant that scrolls had to be recopied regularly to survive, and once the resources and personnel needed for this work disappeared, the collection would inevitably have deteriorated."
+          },
+          {
+            "prompt_text": "How does the passage suggest the library is chiefly remembered today?",
+            "options": [
+              "for the buildings that still survive",
+              "for the scrolls held in modern museums",
+              "for the scholars who were expelled from it",
+              "for the ideal of preserving all human knowledge"
+            ],
+            "answer_index": 3,
+            "evidence": "Today the Library of Alexandria is remembered less for what survives of it, which is almost nothing, than for the ideal it represents."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What was the name of the larger research complex of which the library formed a part?",
+            "accepted": ["Mouseion", "the Mouseion"],
+            "word_limit": 2,
+            "evidence": "It was not an isolated building but formed part of a larger research complex known as the Mouseion, or 'shrine of the Muses', from which the modern word 'museum' is derived."
+          },
+          {
+            "prompt_text": "Which scholar who led the library is famous for calculating the circumference of the Earth?",
+            "accepted": ["Eratosthenes"],
+            "word_limit": 2,
+            "evidence": "the scholar Eratosthenes, who served as head of the library, is famous for calculating the circumference of the Earth with impressive accuracy using observations of the sun."
+          },
+          {
+            "prompt_text": "From which type of plant that grew in Egyptian marshes was the writing material made?",
+            "accepted": ["a reed", "reed"],
+            "word_limit": 2,
+            "evidence": "Papyrus was manufactured from a reed that grew abundantly in the Egyptian marshes, which gave Alexandria a natural advantage in producing and storing written material."
+          },
+          {
+            "prompt_text": "Which Roman leader was involved in a conflict in Alexandria during which a fire spread through part of the city?",
+            "accepted": ["Julius Caesar", "Caesar"],
+            "word_limit": 2,
+            "evidence": "One well-known episode occurred when Julius Caesar became involved in a conflict in Alexandria and a fire spread through part of the city; some ancient sources suggest that books were lost as a result."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "A Short History of Tea",
+    "difficulty": "medium",
+    "topic_tags": ["history"],
+    "body_html": "<p>Tea is one of the most widely consumed drinks in the world, second only to water in many estimations, yet its origins lie in a single plant and a long history of cultivation and trade. All true tea, whether green, black or oolong, is produced from the leaves of Camellia sinensis, an evergreen shrub native to parts of East and South Asia. The differences between the various kinds of tea arise not from different plants but from how the harvested leaves are treated after picking, particularly the extent to which they are allowed to oxidise before being dried.</p><p>According to a well-known Chinese legend, tea was discovered by the mythical emperor Shen Nong, who is said to have been boiling water when leaves from a nearby bush drifted into his pot, producing a fragrant and refreshing drink. Such stories are charming but cannot be treated as history, and the true beginnings of tea drinking are lost in the distant past. What is reasonably certain is that tea was being consumed in China long before it became known elsewhere, and that over many centuries it developed from a medicinal preparation into an everyday beverage enjoyed for its taste. In its early use, tea was valued for its supposed benefits to health and alertness, and only gradually did the pleasure of drinking it come to matter as much as any medicinal effect. This slow change in the way tea was regarded helped to turn it from a rare remedy into a drink woven into ordinary daily life.</p><p>By the time of the Tang dynasty, tea had become firmly established in Chinese culture, and it was during this period that the scholar Lu Yu composed a famous work devoted entirely to the subject. This book described the cultivation of the plant, the preparation of the drink and the equipment involved, and it helped to raise tea drinking to the level of a refined art. From China the custom spread to neighbouring regions, and it took particularly deep root in Japan, where Buddhist monks are thought to have carried tea seeds and drinking practices back from their travels. In Japan the preparation and serving of tea eventually developed into an elaborate and highly ritualised ceremony.</p><p>Tea remained largely unknown in Europe until comparatively recent times. It was European traders operating in Asia who first brought the leaf westward, and Dutch merchants are generally credited with being among the earliest to import it in significant quantities during the seventeenth century. At first tea was an expensive luxury available only to the wealthy, and it was regarded by some as an exotic novelty of doubtful value. Gradually, however, it gained acceptance, and in Britain in particular it would become extraordinarily popular, eventually being regarded as a national drink.</p><p>The growing British appetite for tea had far-reaching consequences that extended well beyond the dining table. For a long period almost all the tea consumed in Britain was purchased from China, and this trade created serious economic and political tensions. In an effort to reduce their dependence on Chinese supplies, the British sought to grow tea within their own empire, and large plantations were established in parts of India, notably in the Assam region, where a variety of the plant suited to the local conditions was cultivated. These developments transformed India into one of the world's major tea-producing countries, and the plantations there were worked by large numbers of labourers under conditions that were often extremely harsh. The organisation of this industry on such a scale showed how a simple domestic habit in one country could reshape agriculture and society in another, thousands of miles away.</p><p>The way tea was prepared and enjoyed varied considerably from one society to another. In Britain the practice of adding milk became common, and an afternoon meal centred on tea, accompanied by light food, developed into a recognised social occasion. In other parts of the world tea was drunk plain, or flavoured with spices, or prepared in strong and heavily sweetened forms. These differing customs reflect the way in which a single imported product could be absorbed into local tastes and traditions, taking on a distinct character in each place it reached.</p><p>Today tea is grown in many countries with suitable climates, including China, India, Sri Lanka, Kenya and others, and it supports the livelihoods of enormous numbers of people involved in its cultivation and processing. The plant generally thrives in warm regions with plentiful rainfall, and the finest teas are often associated with cooler, higher-altitude areas where the leaves grow more slowly. From its uncertain and legendary beginnings, tea has become a genuinely global commodity, woven into the daily routines and social rituals of societies across the world.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Green, black and oolong teas are all made from the same species of plant.",
+            "answer": "true",
+            "evidence": "All true tea, whether green, black or oolong, is produced from the leaves of Camellia sinensis, an evergreen shrub native to parts of East and South Asia."
+          },
+          {
+            "prompt_text": "The story of the emperor Shen Nong is regarded by the passage as reliable historical fact.",
+            "answer": "false",
+            "evidence": "Such stories are charming but cannot be treated as history, and the true beginnings of tea drinking are lost in the distant past."
+          },
+          {
+            "prompt_text": "Lu Yu wrote his famous work on tea during the Tang dynasty.",
+            "answer": "true",
+            "evidence": "By the time of the Tang dynasty, tea had become firmly established in Chinese culture, and it was during this period that the scholar Lu Yu composed a famous work devoted entirely to the subject."
+          },
+          {
+            "prompt_text": "When tea first reached Europe, it was cheap and available to everyone.",
+            "answer": "false",
+            "evidence": "At first tea was an expensive luxury available only to the wealthy, and it was regarded by some as an exotic novelty of doubtful value."
+          },
+          {
+            "prompt_text": "The British government banned the import of Chinese tea in order to protect Indian plantations.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, what mainly creates the differences between types of tea?",
+            "options": [
+              "the use of entirely different plants",
+              "the way the leaves are treated after picking",
+              "the country in which the plant is grown",
+              "the age of the shrub when it is harvested"
+            ],
+            "answer_index": 1,
+            "evidence": "The differences between the various kinds of tea arise not from different plants but from how the harvested leaves are treated after picking, particularly the extent to which they are allowed to oxidise before being dried."
+          },
+          {
+            "prompt_text": "How is tea said to have reached Japan?",
+            "options": [
+              "through European traders",
+              "as a gift from Chinese emperors",
+              "through Buddhist monks returning from travels",
+              "by means of large commercial plantations"
+            ],
+            "answer_index": 2,
+            "evidence": "it took particularly deep root in Japan, where Buddhist monks are thought to have carried tea seeds and drinking practices back from their travels."
+          },
+          {
+            "prompt_text": "Why did the British establish tea plantations in India?",
+            "options": [
+              "to reduce their dependence on Chinese supplies",
+              "because tea could not be grown in China",
+              "to provide work for European settlers",
+              "because Indian tea was cheaper to transport to Japan"
+            ],
+            "answer_index": 0,
+            "evidence": "In an effort to reduce their dependence on Chinese supplies, the British sought to grow tea within their own empire, and large plantations were established in parts of India."
+          },
+          {
+            "prompt_text": "What does the passage say about where the finest teas are often grown?",
+            "options": [
+              "in dry lowland regions",
+              "in cooler, higher-altitude areas",
+              "only in the country of China",
+              "in places with very little rainfall"
+            ],
+            "answer_index": 1,
+            "evidence": "the finest teas are often associated with cooler, higher-altitude areas where the leaves grow more slowly."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What is the scientific name of the plant from which all true tea is produced?",
+            "accepted": ["Camellia sinensis"],
+            "word_limit": 2,
+            "evidence": "All true tea, whether green, black or oolong, is produced from the leaves of Camellia sinensis, an evergreen shrub native to parts of East and South Asia."
+          },
+          {
+            "prompt_text": "Which nationality of merchants is credited with being among the earliest to import tea in large quantities?",
+            "accepted": ["Dutch", "Dutch merchants"],
+            "word_limit": 2,
+            "evidence": "Dutch merchants are generally credited with being among the earliest to import it in significant quantities during the seventeenth century."
+          },
+          {
+            "prompt_text": "In which region of India were plantations established using a locally suited variety of the plant?",
+            "accepted": ["Assam", "the Assam region", "Assam region"],
+            "word_limit": 3,
+            "evidence": "large plantations were established in parts of India, notably in the Assam region, where a variety of the plant suited to the local conditions was cultivated."
+          },
+          {
+            "prompt_text": "What did the British commonly add to their tea?",
+            "accepted": ["milk"],
+            "word_limit": 2,
+            "evidence": "In Britain the practice of adding milk became common, and an afternoon meal centred on tea, accompanied by light food, developed into a recognised social occasion."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "title": "The Origins of the Alphabet",
+    "difficulty": "medium",
+    "topic_tags": ["history"],
+    "body_html": "<p>The alphabet is so familiar a tool that most people who use it never pause to consider how remarkable it is. An alphabet is a system of writing in which a small number of symbols each represent an individual sound, and by combining these symbols in different orders it becomes possible to record any word in a language. This principle stands in sharp contrast to earlier writing systems, in which signs might stand for whole words or syllables and in which the number of characters a writer had to master could run into the hundreds or even thousands.</p><p>The earliest writing systems developed independently in several parts of the ancient world, among them Mesopotamia and Egypt. The Mesopotamian system, known as cuneiform, was made by pressing a wedge-shaped tool into soft clay tablets, while the Egyptians developed the elaborate pictorial script known as hieroglyphs. These systems were powerful, but they were also complex and difficult to learn, and the ability to read and write was generally confined to a small class of trained scribes. Literacy in such societies was a specialised skill rather than a common accomplishment. Learning to write could take many years of training, and scribes therefore held a position of some importance, since they controlled access to records, laws and religious texts. The sheer effort required to master these systems meant that the ability to write remained the privilege of a very small group.</p><p>The decisive step towards the alphabet is thought to have been taken by Semitic-speaking peoples in the region of the ancient Near East, probably influenced by their contact with Egyptian writing. Rather than adopting the full complexity of the Egyptian system, they developed a much smaller set of signs, each standing for a consonant sound. Scholars believe that some of these early letters began as simple pictures: a sign might originally have depicted an object whose name started with the sound the letter represented. Over time these pictures were simplified and their pictorial origins became less obvious, until the signs functioned purely as symbols for sounds.</p><p>One feature of these early Semitic alphabets is that they generally recorded only consonants and left vowels unwritten. A reader was expected to supply the appropriate vowel sounds from knowledge of the language, much as a modern reader might understand an abbreviated form of a familiar word. This system worked well enough for the languages concerned, in which the pattern of consonants often carried the core meaning of a word, and it kept the number of signs pleasingly small. The economy of this design was one of its great strengths, for a system with only a couple of dozen signs could be learned far more quickly than one requiring hundreds of characters. This simplicity meant that writing need no longer be the preserve of a narrow group of specialists.</p><p>It was the Phoenicians, a seafaring and trading people of the eastern Mediterranean, who did most to spread the alphabet beyond its original home. As their ships carried goods from port to port, they also carried their compact and practical writing system, which proved well suited to the record-keeping needs of commerce. Because the Phoenician alphabet was simple and easy to learn compared with the older scripts, it could be adopted and adapted by other peoples with relative ease, and it became the ancestor of many later alphabets.</p><p>Among those who borrowed the Phoenician system were the Greeks, and it was they who introduced an innovation of lasting importance. The Greek language, unlike the Semitic languages, could not be represented clearly using consonants alone, so the Greeks took several signs for which they had no need and used them to stand for vowel sounds. In doing so they created what many scholars regard as the first true alphabet, one in which both consonants and vowels were written out. This made the script capable of representing speech with considerable precision and allowed it to be applied to a wide range of languages.</p><p>From the Greek alphabet descended the Latin alphabet, which spread across much of Europe with the growth and influence of Rome and which, in a modified form, is used to write English and many other languages today. Other branches of the same family gave rise to scripts used across large parts of the world. It is striking that so many of the writing systems now in daily use can be traced back, through a long chain of borrowing and adaptation, to those first modest experiments with sound-signs in the ancient Near East. The alphabet, in all its varied forms, remains one of the most influential inventions in human history.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "In an alphabet, each symbol generally represents an individual sound.",
+            "answer": "true",
+            "evidence": "An alphabet is a system of writing in which a small number of symbols each represent an individual sound, and by combining these symbols in different orders it becomes possible to record any word in a language."
+          },
+          {
+            "prompt_text": "In societies using cuneiform and hieroglyphs, most ordinary people could read and write.",
+            "answer": "false",
+            "evidence": "the ability to read and write was generally confined to a small class of trained scribes."
+          },
+          {
+            "prompt_text": "The early Semitic alphabets usually left vowel sounds unwritten.",
+            "answer": "true",
+            "evidence": "One feature of these early Semitic alphabets is that they generally recorded only consonants and left vowels unwritten."
+          },
+          {
+            "prompt_text": "The Phoenician alphabet contained more signs than the older writing systems it replaced.",
+            "answer": "false",
+            "evidence": "Because the Phoenician alphabet was simple and easy to learn compared with the older scripts, it could be adopted and adapted by other peoples with relative ease."
+          },
+          {
+            "prompt_text": "The Greeks taught the alphabet to the Phoenicians.",
+            "answer": "false",
+            "evidence": "Among those who borrowed the Phoenician system were the Greeks, and it was they who introduced an innovation of lasting importance."
+          },
+          {
+            "prompt_text": "The Latin alphabet is the most widely used writing system in the world today.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "How did the alphabet differ from earlier writing systems?",
+            "options": [
+              "It used symbols that each stood for whole words.",
+              "It used a small number of symbols each representing a sound.",
+              "It required writers to learn thousands of characters.",
+              "It could only be used by trained scribes."
+            ],
+            "answer_index": 1,
+            "evidence": "An alphabet is a system of writing in which a small number of symbols each represent an individual sound, and by combining these symbols in different orders it becomes possible to record any word in a language."
+          },
+          {
+            "prompt_text": "What does the passage suggest about the origin of some early Semitic letters?",
+            "options": [
+              "They were invented entirely at random.",
+              "They were copied directly from cuneiform tablets.",
+              "They began as simple pictures of objects.",
+              "They were created by Greek scholars."
+            ],
+            "answer_index": 2,
+            "evidence": "Scholars believe that some of these early letters began as simple pictures: a sign might originally have depicted an object whose name started with the sound the letter represented."
+          },
+          {
+            "prompt_text": "Why was the alphabet particularly useful to the Phoenicians?",
+            "options": [
+              "It allowed them to write poetry more easily.",
+              "It suited the record-keeping needs of their commerce.",
+              "It could only be understood by their own people.",
+              "It replaced the need for spoken language in trade."
+            ],
+            "answer_index": 1,
+            "evidence": "they also carried their compact and practical writing system, which proved well suited to the record-keeping needs of commerce."
+          },
+          {
+            "prompt_text": "What innovation did the Greeks introduce to the alphabet?",
+            "options": [
+              "They added signs to represent vowel sounds.",
+              "They reduced the number of consonants.",
+              "They replaced letters with pictures.",
+              "They wrote only consonants, as the Phoenicians had done."
+            ],
+            "answer_index": 0,
+            "evidence": "the Greeks took several signs for which they had no need and used them to stand for vowel sounds. In doing so they created what many scholars regard as the first true alphabet, one in which both consonants and vowels were written out."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What is the name of the Mesopotamian writing system made by pressing a tool into clay?",
+            "accepted": ["cuneiform"],
+            "word_limit": 2,
+            "evidence": "The Mesopotamian system, known as cuneiform, was made by pressing a wedge-shaped tool into soft clay tablets, while the Egyptians developed the elaborate pictorial script known as hieroglyphs."
+          },
+          {
+            "prompt_text": "What is the name of the pictorial script developed by the Egyptians?",
+            "accepted": ["hieroglyphs", "hieroglyphics"],
+            "word_limit": 2,
+            "evidence": "the Egyptians developed the elaborate pictorial script known as hieroglyphs."
+          },
+          {
+            "prompt_text": "Which single type of sound did each sign in the early Semitic alphabet stand for?",
+            "accepted": ["a consonant", "consonant", "consonant sound"],
+            "word_limit": 2,
+            "evidence": "they developed a much smaller set of signs, each standing for a consonant sound."
+          },
+          {
+            "prompt_text": "From which alphabet did the Latin alphabet descend?",
+            "accepted": ["the Greek alphabet", "Greek", "Greek alphabet"],
+            "word_limit": 3,
+            "evidence": "From the Greek alphabet descended the Latin alphabet, which spread across much of Europe with the growth and influence of Rome."
+          }
+        ]
+      }
+    ]
+  }
+]

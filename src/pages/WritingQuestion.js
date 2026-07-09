@@ -1,61 +1,90 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
-import {
-  Box,
-  Button,
-  Textarea,
-  Flex,
-  Container,
-  Text,
-  useToast,
-  VStack,
-  Heading,
-  Progress,
-} from '@chakra-ui/react';
-import Navbar from '../components/Navbar';
 import confetti from 'canvas-confetti';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-  Spinner,
-} from '@chakra-ui/react';
+import Navbar from '../components/Navbar';
+import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
+import { Progress } from '../../components/ui/progress';
+import { cn } from '../lib/utils';
 
 const SITE_URL = 'https://ielts-bank.com';
+const SCORE_ENDPOINT = 'https://wamm2ytjk5.execute-api.us-east-1.amazonaws.com/IELTSWritingBot';
+const PROMPT_HTML_CLASS =
+  'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
+
+function Modal({ open, onClose, title, children, dismissible = true }) {
+  if (!open) return null;
+  return (
+    <div className="tw-root fixed inset-0 z-[2000] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+        onClick={dismissible ? onClose : undefined}
+      />
+      <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl">
+        <div className="mb-3 flex items-start justify-between gap-4">
+          <h2 className="text-lg font-bold text-foreground">{title}</h2>
+          {dismissible && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 const WritingQuestion = ({ id: docId, passage, description }) => {
-  const passageText = passage?.passageText || '';
-  const passageTitle = passage?.passageTitle || '';
+  const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
+  const title = passage?.title || '';
+  const minWords = passage?.writing?.wordLimitMin || 250;
+  const storageKey = passage?.slug || docId;
+
   const [userResponse, setUserResponse] = useState('');
   const [apiResponse, setApiResponse] = useState('');
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isInfoOpen, onOpen: onInfoOpen, onClose: onInfoClose } = useDisclosure();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const toast = useToast();
+  const [errorMsg, setErrorMsg] = useState('');
 
+  // Restore any local draft for this prompt (foundation for the accounts wave).
   useEffect(() => {
-    onInfoOpen();
-  }, []);
+    if (!storageKey || typeof window === 'undefined') return;
+    try {
+      const saved = window.localStorage.getItem(`ielts-writing-draft:${storageKey}`);
+      if (saved) setUserResponse(saved);
+    } catch {
+      /* ignore */
+    }
+  }, [storageKey]);
 
-  const handleResponseChange = (event) => {
-    setUserResponse(event.target.value);
-  };
+  const handleResponseChange = useCallback(
+    (e) => {
+      const val = e.target.value;
+      setUserResponse(val);
+      if (storageKey && typeof window !== 'undefined') {
+        try {
+          window.localStorage.setItem(`ielts-writing-draft:${storageKey}`, val);
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    [storageKey]
+  );
 
-  const countWords = (text) => {
-    return text.split(/\s+/).filter(Boolean).length;
-  };
+  const wordCount = userResponse.split(/\s+/).filter(Boolean).length;
+  const progressValue = Math.min((wordCount / minWords) * 100, 100);
+  const isSufficient = wordCount >= minWords;
 
-  const wordCount = countWords(userResponse);
-  const progressValue = Math.min((wordCount / 250) * 100, 100);
-  const isWordCountSufficient = wordCount >= 250;
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
 
     if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
       window.gtag('event', 'submit_writing', {
@@ -64,78 +93,51 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
       });
     }
 
-    if (!isWordCountSufficient) {
-      toast({
-        title: 'Word Count Too Low',
-        description: `Your answer must be at least 250 words long. Your current word count is: ${wordCount}`,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+    if (!isSufficient) {
+      setErrorMsg(
+        `Your answer must be at least ${minWords} words. Current word count: ${wordCount}.`
+      );
       return;
     }
 
     setIsLoading(true);
-
     try {
-      const response = await fetch(
-        'https://wamm2ytjk5.execute-api.us-east-1.amazonaws.com/IELTSWritingBot',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: passageText, answer: userResponse }),
-        }
-      );
-
-      if (response.ok) {
-        const responseData = await response.json();
-        setApiResponse(responseData.message);
-        confetti({
-          spread: 100,
-          particleCount: 200,
-          origin: { y: 0.5 },
-          zIndex: 1000,
-          scalar: 1.4,
-        });
-        onOpen();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to score the answer. Please try again.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'An error occurred. Please try again.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
+      const response = await fetch(SCORE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: promptHtml, answer: userResponse }),
       });
+      if (response.ok) {
+        const data = await response.json();
+        setApiResponse(data.message || '');
+        setFeedbackOpen(true);
+        confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 });
+      } else {
+        setErrorMsg('Failed to score the answer. Please try again.');
+      }
+    } catch {
+      setErrorMsg('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const pageTitle = passageTitle
-    ? `${passageTitle} | IELTS Writing Practice | IELTS-Bank`
+  const pageTitle = title
+    ? `${title} | IELTS Writing Practice | IELTS-Bank`
     : 'IELTS Writing Practice | IELTS-Bank';
   const metaDescription =
     description ||
-    `AI-Powered IELTS grading for your writing. Practice with a real IELTS question like: '${passageTitle}'.`;
+    `AI-powered IELTS grading for your writing. Practise with a real IELTS question like: '${title}'.`;
   const canonicalUrl = `${SITE_URL}/writingquestion/${encodeURIComponent(docId || '')}`;
 
   if (!passage) {
     return (
-      <Flex direction="column" minH="100vh" bg="gray.50">
+      <div className="tw-root min-h-screen bg-background">
         <Navbar />
-        <Container maxW="container.md" py={20} textAlign="center">
-          <Heading size="md" color="gray.700">Loading question...</Heading>
-        </Container>
-      </Flex>
+        <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+          <h1 className="text-lg font-semibold text-muted-foreground">Loading question…</h1>
+        </div>
+      </div>
     );
   }
 
@@ -154,137 +156,91 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
         <meta name="twitter:card" content="summary" />
       </Head>
 
-      <Flex direction="column" minH="100vh" bg="gray.50">
+      <div className="tw-root min-h-screen bg-background">
         <Navbar />
-        <Box flex="1" py={6}>
-          <Container maxW="container.xl" pb={16}>
-            <VStack align="start" spacing={1} mb={6}>
-              <Heading size="lg">{passageTitle}</Heading>
-              <Text color="gray.600">IELTS Writing Practice - AI-Powered Feedback</Text>
-            </VStack>
 
-            <Flex direction={{ base: 'column', md: 'row' }} gap={6}>
-              <Box flex={1} bg="white" p={6} borderRadius="xl" shadow="sm" border="1px solid #E2E8F0">
-                <Text fontWeight="bold" mb={3}>Writing Prompt</Text>
-                <Box
-                  dangerouslySetInnerHTML={{ __html: passageText }}
-                  color="gray.700"
-                  fontSize="md"
-                  lineHeight="1.6"
-                />
-              </Box>
+        <main className="mx-auto max-w-7xl px-4 py-6 pb-16 sm:px-6 lg:px-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              IELTS Writing Practice — AI-Powered Feedback
+            </p>
+          </div>
 
-              <Box
-                flex={1}
-                bg="white"
-                p={6}
-                borderRadius="xl"
-                shadow="sm"
-                border="1px solid #E2E8F0"
-                display="flex"
-                flexDirection="column"
-              >
-                <Flex justify="space-between" mb={2}>
-                  <Text fontWeight="bold">Your Answer</Text>
-                  <VStack spacing={0} align="end">
-                    <Text fontSize="sm" color={isWordCountSufficient ? 'green.600' : 'orange.600'}>
-                      {wordCount} / 250 words
-                    </Text>
-                    <Progress
-                      value={progressValue}
-                      colorScheme={isWordCountSufficient ? 'green' : 'orange'}
-                      size="sm"
-                      w="100px"
-                      borderRadius="full"
-                    />
-                  </VStack>
-                </Flex>
-                <Textarea
-                  value={userResponse}
-                  onChange={handleResponseChange}
-                  placeholder="Write your full Task 2 response here..."
-                  resize="none"
-                  minH="300px"
-                  border="1px solid #CBD5E0"
-                  _focus={{ borderColor: 'blue.500', boxShadow: 'none' }}
-                />
-              </Box>
-            </Flex>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Prompt */}
+            <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-foreground">
+                Writing Prompt
+              </h2>
+              <div className={PROMPT_HTML_CLASS} dangerouslySetInnerHTML={{ __html: promptHtml }} />
+            </div>
 
-            <Flex justify="center" mt={10}>
-              <Button
-                onClick={handleSubmit}
-                isDisabled={!isWordCountSufficient}
-                size="lg"
-                bg="blue.600"
-                color="white"
-                px={12}
-                py={6}
-                borderRadius="xl"
-                fontWeight="600"
-                fontSize="lg"
-                _hover={{ bg: 'blue.700', transform: 'translateY(-2px)', shadow: 'xl' }}
-                _active={{ transform: 'translateY(0)' }}
-                transition="all 0.2s"
-              >
-                Get AI Feedback
-              </Button>
-            </Flex>
-
-            {/* AI Feedback Modal (scrollable, smaller height) */}
-            <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
-              <ModalOverlay />
-              <ModalContent maxH="80vh" overflowY="auto">
-                <ModalHeader>Your AI Feedback & Score</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                  <Box
-                    dangerouslySetInnerHTML={{ __html: apiResponse }}
-                    sx={{ '& p': { mb: 3 }, '& strong': { color: 'gray.900' } }}
+            {/* Answer */}
+            <div className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm">
+              <div className="mb-2 flex items-end justify-between gap-4">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                  Your Answer
+                </h2>
+                <div className="w-40">
+                  <div
+                    className={cn(
+                      'mb-1 text-right text-xs font-medium',
+                      isSufficient ? 'text-accent' : 'text-muted-foreground'
+                    )}
+                  >
+                    {wordCount} / {minWords} words
+                  </div>
+                  <Progress
+                    value={progressValue}
+                    indicatorClassName={isSufficient ? 'bg-accent' : 'bg-primary'}
                   />
-                </ModalBody>
-                <ModalFooter>
-                  <Button onClick={onClose} colorScheme="blue">Close</Button>
-                </ModalFooter>
-              </ModalContent>
-            </Modal>
+                </div>
+              </div>
+              <Textarea
+                value={userResponse}
+                onChange={handleResponseChange}
+                placeholder="Write your full response here…"
+                className="min-h-[320px] resize-y"
+              />
+              {errorMsg && (
+                <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {errorMsg}
+                </div>
+              )}
+            </div>
+          </div>
 
-            {/* Info Modal */}
-            <Modal isOpen={isInfoOpen} onClose={onInfoClose} isCentered>
-              <ModalOverlay />
-              <ModalContent>
-                <ModalHeader>How This Works</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                  <Text>
-                    We use AI to score your essay using the official IELTS rubric. Your response must
-                    be at least 250 words to receive feedback.
-                  </Text>
-                </ModalBody>
-                <ModalFooter>
-                  <Button onClick={onInfoClose} colorScheme="blue">Got it</Button>
-                </ModalFooter>
-              </ModalContent>
-            </Modal>
+          <div className="mt-8 flex justify-center">
+            <Button variant="accent" size="lg" onClick={handleSubmit} disabled={isLoading}>
+              {isLoading ? 'Analyzing…' : 'Get AI Feedback'}
+            </Button>
+          </div>
+        </main>
+      </div>
 
-            {/* Loading Modal */}
-            <Modal isOpen={isLoading} isCentered closeOnOverlayClick={false}>
-              <ModalOverlay />
-              <ModalContent>
-                <ModalBody textAlign="center" py={10}>
-                  <VStack spacing={4}>
-                    <Spinner size="xl" thickness="4px" speed="0.6s" />
-                    <Text fontWeight="medium" fontSize="md">
-                      Analyzing your response... <br />
-                      This can take up to 60 seconds.
-                    </Text>
-                  </VStack>
-                </ModalBody>
-              </ModalContent>
-            </Modal>
-          </Container>
-        </Box>
-      </Flex>
+      {/* Feedback modal */}
+      <Modal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} title="Your AI Feedback & Score">
+        <div
+          className="text-sm leading-relaxed text-foreground [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:font-bold [&_p]:mb-3 [&_strong]:font-semibold"
+          dangerouslySetInnerHTML={{ __html: apiResponse }}
+        />
+        <div className="mt-4 flex justify-end">
+          <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
+        </div>
+      </Modal>
+
+      {/* Loading modal */}
+      <Modal open={isLoading} onClose={() => {}} title="Analyzing your response" dismissible={false}>
+        <div className="flex flex-col items-center gap-4 py-6 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-accent" />
+          <p className="text-sm text-muted-foreground">
+            Scoring against the official IELTS rubric.
+            <br />
+            This can take up to 60 seconds.
+          </p>
+        </div>
+      </Modal>
     </>
   );
 };

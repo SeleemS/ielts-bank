@@ -1,18 +1,9 @@
 import Head from "next/head";
 import NextLink from "next/link";
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  VStack,
-  Link,
-  LinkBox,
-  LinkOverlay,
-} from "@chakra-ui/react";
+import { ArrowRight } from "lucide-react";
 import Navbar from "../../src/components/Navbar";
 import Footer from "../../src/components/Footer";
+import { Card } from "../../components/ui/card";
 import { posts } from "../../lib/posts";
 
 const SITE_URL = "https://ielts-bank.com";
@@ -61,64 +52,56 @@ export default function BlogIndex({ posts }) {
         />
       </Head>
 
-      <Flex direction="column" minH="100vh" bg="gray.50">
+      <div className="tw-root flex min-h-screen flex-col bg-background">
         <Navbar />
 
-        <Box flex="1" py={{ base: 8, md: 12 }}>
-          <Container maxW="container.md">
-            <VStack align="stretch" spacing={2} mb={8}>
-              <Heading as="h1" size="xl" color="gray.900" fontWeight="700">
+        <main className="flex-1 bg-secondary/40">
+          <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+            <header className="mb-10 max-w-2xl">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-accent">
                 IELTS-Bank Blog
-              </Heading>
-              <Text fontSize="lg" color="gray.600">
-                Strategies, tips and band score guides to help you prepare for
-                every part of the IELTS exam.
-              </Text>
-            </VStack>
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Strategies, tips and band score guides
+              </h1>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                Everything you need to prepare for every part of the IELTS exam,
+                written to help you raise your band score faster.
+              </p>
+            </header>
 
-            <VStack align="stretch" spacing={6}>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {posts.map((post) => (
-                <LinkBox
+                <Card
                   key={post.slug}
-                  as="article"
-                  bg="white"
-                  borderRadius="xl"
-                  border="1px"
-                  borderColor="gray.200"
-                  shadow="sm"
-                  p={{ base: 5, md: 6 }}
-                  transition="all 0.2s"
-                  _hover={{ shadow: "md", borderColor: "blue.200" }}
+                  className="group relative flex flex-col p-6 transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
                 >
-                  <Text color="gray.500" fontSize="sm" mb={2}>
+                  <time className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {post.date}
-                  </Text>
-                  <Heading as="h2" size="md" color="gray.900" fontWeight="700" mb={2}>
-                    <LinkOverlay as={NextLink} href={`/blog/${post.slug}`}>
+                  </time>
+                  <h2 className="mt-2 text-xl font-bold leading-snug text-foreground">
+                    <NextLink
+                      href={`/blog/${post.slug}`}
+                      className="no-underline outline-none after:absolute after:inset-0 group-hover:text-primary"
+                    >
                       {post.title}
-                    </LinkOverlay>
-                  </Heading>
-                  <Text color="gray.700" fontSize="md" lineHeight="1.6" mb={3}>
+                    </NextLink>
+                  </h2>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
                     {post.excerpt}
-                  </Text>
-                  <Link
-                    as={NextLink}
-                    href={`/blog/${post.slug}`}
-                    color="blue.600"
-                    fontSize="sm"
-                    fontWeight="600"
-                    _hover={{ textDecoration: "underline" }}
-                  >
-                    Read more →
-                  </Link>
-                </LinkBox>
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                    Read more
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Card>
               ))}
-            </VStack>
-          </Container>
-        </Box>
+            </div>
+          </div>
+        </main>
 
         <Footer />
-      </Flex>
+      </div>
     </>
   );
 }

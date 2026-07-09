@@ -1,39 +1,32 @@
-import React from 'react';
-import {
-  Box,
-  Text,
-  Link,
-  VStack,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  useToast,
-} from '@chakra-ui/react';
-import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import Head from 'next/head';
+import NextLink from 'next/link';
+import { CheckCircle2, Mail } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Button } from '../../components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/card';
+
+const fieldClasses =
+  'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 const ContactUs = () => {
-  const router = useRouter();
-  const toast = useToast();
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast({
-      title: 'Message sent!',
-      description: 'We will get back to you as soon as possible.',
-      status: 'success',
-      duration: 5000,
-      isClosable: true,
-    });
     e.target.reset();
+    setSent(true);
   };
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>Contact Us | IELTS-Bank</title>
         <meta
@@ -44,55 +37,122 @@ const ContactUs = () => {
         <link rel="canonical" href="https://ielts-bank.com/contactus" />
       </Head>
       <Navbar />
-      <Box flex="1" maxW="lg" mx="auto" px={4} py={12} w="full">
-        <VStack spacing={6} align="stretch">
-          <Text fontSize="3xl" fontWeight="bold" color="gray.800" textAlign="center">
-            Contact Us
-          </Text>
 
-          <Text fontSize="md" color="gray.600" textAlign="center">
-            You can also email us directly at{' '}
-            <Link href="mailto:info@ielts-bank.com" color="blue.500">
-              info@ielts-bank.com
-            </Link>
-          </Text>
+      <main className="flex-1">
+        <div className="mx-auto w-full max-w-xl px-4 py-12 sm:px-6 md:py-16">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Contact Us
+            </h1>
+            <p className="mt-3 text-base text-muted-foreground">
+              Have a question about IELTS practice or preparation? We would love
+              to hear from you.
+            </p>
+            <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4 text-accent" />
+              Or email us directly at{' '}
+              <a
+                href="mailto:info@ielts-bank.com"
+                className="font-medium text-accent underline underline-offset-2 hover:text-accent/80"
+              >
+                info@ielts-bank.com
+              </a>
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit}>
-            <VStack spacing={4} align="stretch">
-              <FormControl isRequired>
-                <FormLabel>Your Name</FormLabel>
-                <Input placeholder="John Doe" />
-              </FormControl>
+          <Card>
+            <CardHeader>
+              <CardTitle>Send us a message</CardTitle>
+              <CardDescription>
+                We will get back to you as soon as possible.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {sent && (
+                <div
+                  role="status"
+                  className="mb-6 flex items-start gap-3 rounded-md border border-accent/30 bg-accent/10 p-4 text-sm text-foreground"
+                >
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+                  <div>
+                    <p className="font-semibold">Message sent!</p>
+                    <p className="text-muted-foreground">
+                      We will get back to you as soon as possible.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-              <FormControl isRequired>
-                <FormLabel>Email Address</FormLabel>
-                <Input type="email" placeholder="john@example.com" />
-              </FormControl>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="John Doe"
+                    className={fieldClasses}
+                  />
+                </div>
 
-              <FormControl isRequired>
-                <FormLabel>Message</FormLabel>
-                <Textarea rows={5} placeholder="How can we help you?" />
-              </FormControl>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="john@example.com"
+                    className={fieldClasses}
+                  />
+                </div>
 
-              <Button type="submit" colorScheme="blue" size="md">
-                Send Message
-              </Button>
-            </VStack>
-          </form>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="message"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={5}
+                    placeholder="How can we help you?"
+                    className={`${fieldClasses} resize-y`}
+                  />
+                </div>
 
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/')}
-            alignSelf="center"
-            mt={4}
-            color="gray.600"
-          >
-            ← Back to Homepage
-          </Button>
-        </VStack>
-      </Box>
+                <Button type="submit" variant="accent" className="w-full">
+                  Send Message
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="mt-8 text-center">
+            <Button asChild variant="ghost">
+              <NextLink href="/" className="no-underline">
+                ← Back to Homepage
+              </NextLink>
+            </Button>
+          </div>
+        </div>
+      </main>
+
       <Footer />
-    </Box>
+    </div>
   );
 };
 

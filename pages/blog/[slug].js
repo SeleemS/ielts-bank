@@ -1,11 +1,27 @@
 import Head from "next/head";
 import NextLink from "next/link";
-import { Box, Container, Flex, Heading, Text, Link } from "@chakra-ui/react";
+import { ArrowLeft } from "lucide-react";
 import Navbar from "../../src/components/Navbar";
 import Footer from "../../src/components/Footer";
 import { posts } from "../../lib/posts";
 
 const SITE_URL = "https://ielts-bank.com";
+
+// Explicit "prose"-like typography via arbitrary child selectors. The
+// @tailwindcss/typography plugin is intentionally NOT used; Tailwind Preflight
+// is also off, so every element the CMS HTML can emit is styled here directly.
+const PROSE = [
+  "max-w-none text-base leading-8 text-slate-700",
+  "[&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-foreground",
+  "[&_h3]:mt-8 [&_h3]:mb-3 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground",
+  "[&_p]:mb-5",
+  "[&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-6",
+  "[&_li]:mb-2 [&_li]:pl-1 [&_li]:marker:text-accent",
+  "[&_strong]:font-semibold [&_strong]:text-foreground",
+  "[&_em]:italic",
+  "[&_a]:font-medium [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-accent/80",
+  "[&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-accent/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground",
+].join(" ");
 
 export default function BlogPost({ post }) {
   const canonical = `${SITE_URL}/blog/${post.slug}`;
@@ -56,84 +72,49 @@ export default function BlogPost({ post }) {
         />
       </Head>
 
-      <Flex direction="column" minH="100vh" bg="gray.50">
+      <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
         <Navbar />
 
-        <Box flex="1" py={{ base: 8, md: 12 }}>
-          <Container maxW="container.md">
-            <Box
-              bg="white"
-              borderRadius="xl"
-              border="1px"
-              borderColor="gray.200"
-              shadow="sm"
-              p={{ base: 6, md: 10 }}
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+            <NextLink
+              href="/blog"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline hover:text-accent/80"
             >
-              <Link
-                as={NextLink}
-                href="/blog"
-                color="blue.600"
-                fontSize="sm"
-                fontWeight="600"
-                _hover={{ textDecoration: "underline" }}
-              >
-                ← Back to Blog
-              </Link>
+              <ArrowLeft className="h-4 w-4" />
+              Back to Blog
+            </NextLink>
 
-              <Heading
-                as="h1"
-                size="xl"
-                color="gray.900"
-                fontWeight="700"
-                lineHeight="1.2"
-                mt={4}
-                mb={2}
-              >
-                {post.title}
-              </Heading>
+            <article className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-10">
+              <header className="mb-8 border-b border-border pb-8">
+                <time className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {post.date}
+                </time>
+                <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+                  {post.title}
+                </h1>
+              </header>
 
-              <Text color="gray.500" fontSize="sm" mb={8}>
-                {post.date}
-              </Text>
-
-              <Box
-                color="gray.800"
-                fontSize="md"
-                lineHeight="1.8"
-                sx={{
-                  "h2": {
-                    fontSize: "xl",
-                    fontWeight: "700",
-                    color: "gray.900",
-                    mt: 8,
-                    mb: 3,
-                  },
-                  "h3": {
-                    fontSize: "lg",
-                    fontWeight: "600",
-                    color: "gray.900",
-                    mt: 6,
-                    mb: 2,
-                  },
-                  "p": { mb: 4 },
-                  "ul, ol": { pl: 6, mb: 4 },
-                  "li": { mb: 2 },
-                  "strong": { fontWeight: "700", color: "gray.900" },
-                  "a": {
-                    color: "blue.600",
-                    fontWeight: "500",
-                    textDecoration: "underline",
-                  },
-                  "a:hover": { color: "blue.700" },
-                }}
+              <div
+                className={PROSE}
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
-            </Box>
-          </Container>
-        </Box>
+            </article>
+
+            <div className="mt-8 text-center">
+              <NextLink
+                href="/blog"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline hover:text-accent/80"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to all articles
+              </NextLink>
+            </div>
+          </div>
+        </main>
 
         <Footer />
-      </Flex>
+      </div>
     </>
   );
 }

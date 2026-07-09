@@ -2,17 +2,20 @@ import WritingQuestion from '../../src/pages/WritingQuestion';
 import {
   SKILLS,
   getLegacyIdSlugMap,
-  getPassageBySlug,
+  getPassageSlugs,
+  getStructuredPassage,
   toMetaDescription,
 } from '../../lib/supabase';
 
 export default WritingQuestion;
 
 export async function getStaticPaths() {
-  // Emit the SAME legacy Firestore ids used as URLs today (some contain spaces,
-  // e.g. "Agricultural Advancement") so SEO-indexed URLs keep resolving.
-  const legacyMap = await getLegacyIdSlugMap(SKILLS.writing);
-  const ids = Object.keys(legacyMap);
+  // Pre-render BOTH legacy Firestore ids (some contain spaces) and new slugs.
+  const [legacyMap, slugs] = await Promise.all([
+    getLegacyIdSlugMap(SKILLS.writing),
+    getPassageSlugs(SKILLS.writing),
+  ]);
+  const ids = Array.from(new Set([...Object.keys(legacyMap), ...slugs]));
   return {
     paths: ids.map((id) => ({ params: { id } })),
     fallback: 'blocking',
@@ -20,15 +23,14 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  // getPassageBySlug accepts either a slug or a legacy Firestore id.
-  const passage = await getPassageBySlug(SKILLS.writing, params.id);
+  const passage = await getStructuredPassage(SKILLS.writing, params.id);
   if (!passage) return { notFound: true };
 
   return {
     props: {
       id: params.id,
       passage,
-      description: toMetaDescription(passage.passageText),
+      description: toMetaDescription(passage.bodyHtml),
     },
     revalidate: 3600,
   };

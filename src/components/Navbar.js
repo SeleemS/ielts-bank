@@ -1,124 +1,111 @@
-import React from 'react';
-import {
-  Flex,
-  Box,
-  Spacer,
-  Image,
-  Text,
-  IconButton,
-  useDisclosure,
-  Collapse,
-  VStack,
-  Link,
-  Container
-} from '@chakra-ui/react';
-import { HamburgerIcon } from '@chakra-ui/icons';
+import React, { useState } from 'react';
 import NextLink from 'next/link';
+import Image from 'next/image';
+import { Menu, ArrowRight, BookOpen, PenLine, Headphones, Newspaper } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
+import { cn } from '../lib/utils';
 
-const Navbar = () => {
-    const { isOpen, onToggle } = useDisclosure();
+// Pure Tailwind/shadcn Navbar. NO Chakra imports — this renders on every page,
+// including pages still built with Chakra, so it must be self-contained.
 
-    return (
-        <Box bg="white" borderBottom="1px" borderColor="gray.100" position="sticky" top="0" zIndex="1000" boxShadow="sm">
-            <Container maxW="container.xl">
-                <Flex as="header" p={4} color="gray.800" align="center" position="relative">
-                    {/* Logo and Title */}
-                    <Link as={NextLink} href="/" _hover={{ textDecoration: 'none' }}>
-                        <Flex align="center">
-                            <Box p="1">
-                                <Image src="/image.png" alt="IELTS-Bank Logo" boxSize="40px" />
-                            </Box>
-                            <Text fontSize="xl" fontWeight="700" ml={3} color="gray.900">
-                                IELTS-Bank
-                            </Text>
-                        </Flex>
-                    </Link>
+const NAV_LINKS = [
+  { label: 'Reading', href: '/readingquestion', icon: BookOpen },
+  { label: 'Writing', href: '/writingquestion', icon: PenLine },
+  { label: 'Listening', href: '/listeningquestion', icon: Headphones },
+  { label: 'Blog', href: '/blog', icon: Newspaper },
+];
 
-                    <Spacer />
-
-                    {/* Menu Icon */}
-                    <IconButton
-                        icon={<HamburgerIcon color="gray.600"/>}
-                        variant="ghost"
-                        aria-label="Menu"
-                        onClick={onToggle}
-                        size="md"
-                        _hover={{ bg: 'gray.50' }}
-                    />
-
-                    {/* Expandable Menu Items */}
-                    {isOpen && (
-                      <Collapse in={isOpen} animateOpacity>
-                            <VStack
-                                position="absolute"
-                                top="100%"
-                                right="0"
-                                bg="white"
-                                w="200px"
-                                mt={2}
-                                rounded="lg"
-                                shadow="lg"
-                                border="1px"
-                                borderColor="gray.100"
-                                zIndex="10"
-                                mr={1}
-                                py={2}
-                            >
-                                <Link 
-                                    as={NextLink} 
-                                    href="/" 
-                                    p={3} 
-                                    w="full" 
-                                    textAlign="center"
-                                    _hover={{ bg: 'gray.50', textDecoration: 'none' }}
-                                    fontWeight="500"
-                                    color="gray.700"
-                                >
-                                    Home
-                                </Link>
-                                <Link
-                                    as={NextLink}
-                                    href="/blog"
-                                    p={3}
-                                    w="full"
-                                    textAlign="center"
-                                    _hover={{ bg: 'gray.50', textDecoration: 'none' }}
-                                    fontWeight="500"
-                                    color="gray.700"
-                                >
-                                    Blog
-                                </Link>
-                                <Link
-                                    as={NextLink}
-                                    href="/privacypolicy"
-                                    p={3}
-                                    w="full"
-                                    textAlign="center"
-                                    _hover={{ bg: 'gray.50', textDecoration: 'none' }}
-                                    fontWeight="500"
-                                    color="gray.700"
-                                >
-                                    Privacy Policy
-                                </Link>
-                                <Link 
-                                    as={NextLink} 
-                                    href="/contactus" 
-                                    p={3} 
-                                    w="full" 
-                                    textAlign="center"
-                                    _hover={{ bg: 'gray.50', textDecoration: 'none' }}
-                                    fontWeight="500"
-                                    color="gray.700"
-                                >
-                                    Contact Us
-                                </Link>
-                            </VStack>
-                        </Collapse>
-                    )}
-                </Flex>
-            </Container>
-        </Box>
-    );
+function BrandMark() {
+  return (
+    <NextLink href="/" className="flex items-center gap-2.5 no-underline">
+      <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-md bg-primary/5 ring-1 ring-primary/10">
+        <Image src="/image.png" alt="IELTS-Bank logo" width={28} height={28} className="h-7 w-7 object-contain" />
+      </span>
+      <span className="text-lg font-bold tracking-tight text-foreground">
+        IELTS<span className="text-accent">-Bank</span>
+      </span>
+    </NextLink>
+  );
 }
 
-export default Navbar;
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <header className="tw-root sticky top-0 z-[1000] w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <BrandMark />
+
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 md:flex">
+          {NAV_LINKS.map((link) => (
+            <NextLink
+              key={link.href}
+              href={link.href}
+              className={cn(
+                'rounded-md px-3 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors',
+                'hover:bg-secondary hover:text-foreground'
+              )}
+            >
+              {link.label}
+            </NextLink>
+          ))}
+        </nav>
+
+        {/* Desktop CTA */}
+        <div className="hidden md:block">
+          <Button asChild variant="accent" className="shadow-sm">
+            <NextLink href="/readingquestion" className="no-underline">
+              Start practicing
+              <ArrowRight className="h-4 w-4" />
+            </NextLink>
+          </Button>
+        </div>
+
+        {/* Mobile trigger */}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Mobile sheet */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="right" onClose={() => setOpen(false)}>
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              IELTS<span className="text-accent">-Bank</span>
+            </SheetTitle>
+          </SheetHeader>
+          <nav className="mt-2 flex flex-col gap-1">
+            {NAV_LINKS.map((link) => {
+              const Icon = link.icon;
+              return (
+                <NextLink
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-foreground no-underline transition-colors hover:bg-secondary"
+                >
+                  <Icon className="h-5 w-5 text-accent" />
+                  {link.label}
+                </NextLink>
+              );
+            })}
+          </nav>
+          <Button asChild variant="accent" size="lg" className="mt-2 w-full">
+            <NextLink href="/readingquestion" onClick={() => setOpen(false)} className="no-underline">
+              Start practicing
+              <ArrowRight className="h-4 w-4" />
+            </NextLink>
+          </Button>
+        </SheetContent>
+      </Sheet>
+    </header>
+  );
+}

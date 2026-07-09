@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * IELTS-Bank design tokens — "Trust / Academic" direction.
+ * Primary: deep navy. Accent: emerald. Neutrals: slate.
+ *
+ * NOTE: Tailwind Preflight is disabled in tailwind.config.js so this file's
+ * base layer does NOT reset Chakra-powered pages. The @layer base below only
+ * assigns CSS variables + a couple of opt-in helpers; it intentionally avoids
+ * a global element reset. Re-enable preflight once Chakra is fully removed.
+ */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Deep navy */
+    --primary: 215 60% 18%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 60% 18%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Emerald */
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 217 42% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 42% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Lightened navy for contrast on dark surfaces */
+    --primary: 210 40% 98%;
+    --primary-foreground: 215 60% 18%;
+
+    --secondary: 217 33% 18%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 160 84% 45%;
+  }
+}
+
+/*
+ * Scoped opt-in helpers for Tailwind-migrated surfaces. We deliberately do NOT
+ * apply border-color / bg globally (that would fight Chakra). Components that
+ * want the design system opt in with the `.tw-root` wrapper or Tailwind utils.
+ */
+@layer base {
+  .tw-root {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .tw-root *,
+  .tw-root *::before,
+  .tw-root *::after {
+    border-color: hsl(var(--border));
+  }
+}

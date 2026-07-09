@@ -1,22 +1,14 @@
 import React from 'react';
-import {
-  Box,
-  Flex,
-  VStack,
-  Text,
-  Button,
-  useBreakpointValue,
-} from '@chakra-ui/react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
+import NextLink from 'next/link';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent } from '../../components/ui/card';
 
 const TermsOfService = () => {
-  const router = useRouter();
-
   return (
-    <Flex direction="column" minHeight="100vh">
+    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>Terms of Service | IELTS-Bank</title>
         <meta
@@ -28,69 +20,81 @@ const TermsOfService = () => {
       </Head>
       <Navbar />
 
-      <Box flex="1" px={{ base: 4, md: 12 }} py={8}>
-        <VStack spacing={6} align="start" maxW="4xl" mx="auto">
-          <Button
-            colorScheme="blue"
-            variant="solid"
-            onClick={() => router.push('/')}
-          >
-            ← Back to Homepage
+      <main className="flex-1">
+        <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 md:py-16">
+          <Button asChild variant="ghost" className="mb-6 -ml-2">
+            <NextLink href="/" className="no-underline">
+              ← Back to Homepage
+            </NextLink>
           </Button>
 
-          <Text fontSize="3xl" fontWeight="bold">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Terms of Service
-          </Text>
+          </h1>
 
-          <Box fontSize="md" color="gray.700" lineHeight="1.8" width="100%">
-            <Text mb={4}>
-              Welcome to IELTSBank. Below are our Terms of Service, which outline
-              the rules and regulations for the use of IELTSBank's Website.
-            </Text>
+          <Card className="mt-6">
+            <CardContent className="space-y-5 pt-6 text-[15px] leading-8 text-slate-700">
+              <p>
+                Welcome to IELTSBank. Below are our Terms of Service, which outline
+                the rules and regulations for the use of IELTSBank's Website.
+              </p>
 
-            <Text mb={4}>
-              <strong>1. Terms</strong><br />
-              By accessing this website, you agree to be bound by these Terms of Service and comply with any applicable local laws.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">1. Terms</h2>
+                <p>
+                  By accessing this website, you agree to be bound by these Terms of Service and comply with any applicable local laws.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>2. Use License</strong><br />
-              Permission is granted to temporarily download one copy of the materials on IELTSBank's website for personal, non-commercial use only.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">2. Use License</h2>
+                <p>
+                  Permission is granted to temporarily download one copy of the materials on IELTSBank's website for personal, non-commercial use only.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>3. Disclaimer</strong><br />
-              The materials on IELTSBank’s website are provided "as is." IELTSBank disclaims all warranties, expressed or implied.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">3. Disclaimer</h2>
+                <p>
+                  The materials on IELTSBank’s website are provided "as is." IELTSBank disclaims all warranties, expressed or implied.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>4. Limitations</strong><br />
-              IELTSBank or its suppliers shall not be liable for any damages arising from the use or inability to use the website.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">4. Limitations</h2>
+                <p>
+                  IELTSBank or its suppliers shall not be liable for any damages arising from the use or inability to use the website.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>5. Revisions and Errata</strong><br />
-              The materials on IELTSBank’s website may include errors. IELTSBank does not guarantee their accuracy or currency.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">5. Revisions and Errata</h2>
+                <p>
+                  The materials on IELTSBank’s website may include errors. IELTSBank does not guarantee their accuracy or currency.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>6. Site Terms of Use Modifications</strong><br />
-              IELTSBank may revise these terms at any time without notice. By using this site, you agree to be bound by the current version.
-            </Text>
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">6. Site Terms of Use Modifications</h2>
+                <p>
+                  IELTSBank may revise these terms at any time without notice. By using this site, you agree to be bound by the current version.
+                </p>
+              </div>
 
-            <Text mb={4}>
-              <strong>Last Updated:</strong> December 11, 2024
-            </Text>
+              <p>
+                <strong className="font-semibold text-foreground">Last Updated:</strong> December 11, 2024
+              </p>
 
-            <Text>
-              If you have any questions about these Terms of Service, please contact us.
-            </Text>
-          </Box>
-        </VStack>
-      </Box>
+              <p>
+                If you have any questions about these Terms of Service, please contact us.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
 
       <Footer />
-    </Flex>
+    </div>
   );
 };
 
