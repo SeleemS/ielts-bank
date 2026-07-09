@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: http://www.ielts-bank.com/sitemap.xml
+Sitemap: https://ielts-bank.com/sitemap.xml

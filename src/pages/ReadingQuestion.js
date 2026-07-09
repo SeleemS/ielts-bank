@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { 
-    Box, 
-    Button, 
-    Flex, 
-    Container, 
-    VStack, 
-    Text, 
-    Divider, 
-    Select, 
+import React, { useState, useEffect, useMemo } from 'react';
+import Head from 'next/head';
+import {
+    Box,
+    Button,
+    Flex,
+    Container,
+    VStack,
+    Text,
+    Divider,
+    Select,
     Input,
     Badge,
     HStack,
     Heading
 } from '@chakra-ui/react';
-import { app } from '../firebase';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import Navbar from '../components/Navbar';
-import { Helmet } from 'react-helmet';
 import ShareButton from '../components/ShareButton';
-import ReactGA from 'react-ga';
 
 import {
     Modal,
@@ -32,16 +28,17 @@ import {
     useDisclosure,
 } from '@chakra-ui/react';
 
-const ReadingQuestion = () => {
-    let globalQuestionNumber = 0;
-    const [passageText, setPassageText] = useState('');
-    const [passageTitle, setPassageTitle] = useState('');
-    const [questionGroups, setQuestionGroups] = useState([]);
+const SITE_URL = 'https://ielts-bank.com';
+
+const ReadingQuestion = ({ id, passage, description }) => {
+    const passageText = passage?.passageText || '';
+    const passageTitle = passage?.passageTitle || '';
+    const questionGroups = passage?.questionGroups || [];
+
     const [userAnswers, setUserAnswers] = useState({});
     const [answerStatuses, setAnswerStatuses] = useState({});
 
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const shareText = "Check out this IELTS question!";
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [userScore, setUserScore] = useState(null);
@@ -61,40 +58,30 @@ const ReadingQuestion = () => {
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
-    const router = useRouter();
-    const { id: passageId } = router.query;
+    // Derived flat list: assign a continuous global question number (1..N) across
+    // all groups. Pure/deterministic so it is safe under React 18 StrictMode.
+    const numberedQuestionGroups = useMemo(() => {
+        let counter = 0;
+        return questionGroups.map(group => ({
+            ...group,
+            questions: (group.questions || []).map(qMap => {
+                counter += 1;
+                return { ...qMap, questionNumber: counter };
+            })
+        }));
+    }, [questionGroups]);
 
-    useEffect(() => {
-        globalQuestionNumber = 0;
-        const fetchData = async () => {
-            const db = getFirestore(app);
-            const docRef = doc(db, 'readingPassages', passageId);
-            const docSnap = await getDoc(docRef);
+    const renderQuestion = (qMap, group) => {
+        const questionNumber = qMap.questionNumber;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                setPassageText(data.passageText);
-                setQuestionGroups(data.questionGroups);
-                setPassageTitle(data.passageTitle);
-            } else {
-                console.log("No such document!");
-            }
-        };
-
-        fetchData();
-    }, [passageId]);
-
-    const renderQuestion = (qMap, questionNumber, group) => {
-        globalQuestionNumber++;
-    
-        const answerStatus = answerStatuses[globalQuestionNumber];
+        const answerStatus = answerStatuses[questionNumber];
         const isCorrect = answerStatus === 'correct';
         const isIncorrect = answerStatus === 'incorrect';
         const bgColor = isCorrect ? 'green.50' : (isIncorrect ? 'red.50' : 'white');
         const borderColor = isCorrect ? 'green.200' : (isIncorrect ? 'red.200' : 'gray.200');
-    
+
         let answerDisplay = null;
-    
+
         if (isIncorrect) {
             answerDisplay = (
                 <Text color="red.600" mt={3} fontWeight="600" fontSize="sm">
@@ -102,17 +89,17 @@ const ReadingQuestion = () => {
                 </Text>
             );
         }
-    
+
         switch (group.questionType) {
             case "Match":
             case "True or False":
             case "Yes or No":
                 return (
-                    <Box key={globalQuestionNumber} mb={6}>
+                    <Box key={questionNumber} mb={6}>
                         <Text mb={3} fontWeight="600" color="gray.800" fontSize="md">
-                            <Text as="span" color="blue.600">{globalQuestionNumber}.</Text> {qMap.text}
+                            <Text as="span" color="blue.600">{questionNumber}.</Text> {qMap.text}
                         </Text>
-                        <Select 
+                        <Select
                             onChange={e => handleAnswerChange(e, questionNumber)}
                             bg={bgColor}
                             borderColor={borderColor}
@@ -147,13 +134,13 @@ const ReadingQuestion = () => {
                 );
             case "Short Answer":
                 return (
-                    <Box key={globalQuestionNumber} mb={6}>
+                    <Box key={questionNumber} mb={6}>
                         <Text mb={3} fontWeight="600" color="gray.800" fontSize="md">
-                            <Text as="span" color="blue.600">{globalQuestionNumber}.</Text> {qMap.text}
+                            <Text as="span" color="blue.600">{questionNumber}.</Text> {qMap.text}
                         </Text>
-                        <Input 
-                            type="text" 
-                            onChange={e => handleAnswerChange(e, questionNumber)} 
+                        <Input
+                            type="text"
+                            onChange={e => handleAnswerChange(e, questionNumber)}
                             bg={bgColor}
                             borderColor={borderColor}
                             value={userAnswers[questionNumber] || ''}
@@ -173,16 +160,12 @@ const ReadingQuestion = () => {
     };
 
     const renderQuestionGroup = (group) => {
-        let localQuestionNumber = 0;
         return (
             <Box key={group.prompt} mb={8}>
                 <Text fontSize="lg" fontWeight="700" mb={4} color="gray.900">
                     {group.prompt}
                 </Text>
-                {group.questions.map(qMap => {
-                    localQuestionNumber++;
-                    return renderQuestion(qMap, localQuestionNumber, group);
-                })}
+                {group.questions.map(qMap => renderQuestion(qMap, group))}
             </Box>
         );
     };
@@ -194,58 +177,76 @@ const ReadingQuestion = () => {
         }));
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
-    
-        ReactGA.event({
-            category: 'User Engagement',
-            action: 'Submit Answer',
-            label: 'Reading Test Submission'
-        });
-    
+
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+            window.gtag('event', 'submit_answer', {
+                category: 'User Engagement',
+                label: 'Reading Test Submission',
+            });
+        }
+
         let newAnswerStatuses = {};
         let correctAnswersCount = 0;
-        let answerIndex = 1;
-    
-        const db = getFirestore(app);
-        const questionDoc = doc(db, 'readingPassages', passageId);
-        const docSnapshot = await getDoc(questionDoc);
-    
-        if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            data.questionGroups.forEach(group => {
-                group.questions.forEach(qMap => {
-                    const correctAnswer = qMap.answer.toLowerCase();
-                    const userAnswer = userAnswers[answerIndex] || "-";
-    
-                    if (userAnswer === correctAnswer) {
-                        correctAnswersCount++;
-                        newAnswerStatuses[answerIndex] = 'correct';
-                    } else {
-                        newAnswerStatuses[answerIndex] = 'incorrect';
-                    }
-                    answerIndex++;
-                });
+        let totalQuestions = 0;
+
+        // Grade against the in-memory numbered questions using the same continuous
+        // global question number that storage, display and coloring use.
+        numberedQuestionGroups.forEach(group => {
+            group.questions.forEach(qMap => {
+                totalQuestions++;
+                const correctAnswer = qMap.answer.toLowerCase();
+                const userAnswer = userAnswers[qMap.questionNumber] || "-";
+
+                if (userAnswer === correctAnswer) {
+                    correctAnswersCount++;
+                    newAnswerStatuses[qMap.questionNumber] = 'correct';
+                } else {
+                    newAnswerStatuses[qMap.questionNumber] = 'incorrect';
+                }
             });
-    
-            setAnswerStatuses(newAnswerStatuses);
-            setUserScore(`You answered ${correctAnswersCount} out of ${answerIndex - 1} questions correctly!`);
-            onOpen();
-        } else {
-            console.error("No such document!");
-        }
+        });
+
+        setAnswerStatuses(newAnswerStatuses);
+        setUserScore(`You answered ${correctAnswersCount} out of ${totalQuestions} questions correctly!`);
+        onOpen();
     };
+
+    const pageTitle = passageTitle
+        ? `${passageTitle} | IELTS Reading Practice | IELTS-Bank`
+        : 'IELTS Reading Practice | IELTS-Bank';
+    const metaDescription =
+        description || `Read and answer IELTS Reading questions for the passage: ${passageTitle}.`;
+    const canonicalUrl = `${SITE_URL}/readingquestion/${encodeURIComponent(id || '')}`;
+
+    if (!passage) {
+        return (
+            <Flex direction="column" minH="100vh" bg="gray.50">
+                <Navbar />
+                <Container maxW="container.md" py={20} textAlign="center">
+                    <Heading size="md" color="gray.700">Loading question...</Heading>
+                </Container>
+            </Flex>
+        );
+    }
 
     return (
         <>
-            <Helmet>
-                <title>{passageTitle ? `${passageTitle} - IELTS Reading Question` : 'IELTS Reading Question'}</title>
-                <meta name="description" content={`Read and answer questions for the passage: ${passageTitle}`} />
-                <meta name="keywords" content="IELTS, IELTS Reading, IELTS Academic Reading, IELTS General Reading, IELTS Reading Questions, IELTS Reading Practise Questions, IELTS Practice, IELTS Test Prep, IELTS Past Papers, IELTS Questions"/>
-                <meta name="robots" content="index, follow"/>
-                <meta property="og:url" content="https://ielts-bank.com/"/>
-            </Helmet>
-            
+            <Head>
+                <title>{pageTitle}</title>
+                <meta name="description" content={metaDescription} />
+                <meta name="keywords" content="IELTS, IELTS Reading, IELTS Academic Reading, IELTS General Reading, IELTS Reading Questions, IELTS Reading Practise Questions, IELTS Practice, IELTS Test Prep, IELTS Past Papers, IELTS Questions" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
+                <meta name="twitter:card" content="summary" />
+            </Head>
+
             <Flex direction="column" minH="100vh" bg="gray.50">
                 <Navbar />
                 
@@ -337,7 +338,7 @@ const ReadingQuestion = () => {
                                     overflowY="auto"
                                     maxH={{ base: "400px", lg: "600px" }}
                                 >
-                                    {questionGroups.map((group, groupIndex) => (
+                                    {numberedQuestionGroups.map((group) => (
                                         renderQuestionGroup(group)
                                     ))}
                                 </Box>

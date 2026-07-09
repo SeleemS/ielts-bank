@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { Box, Button, Textarea, Flex, Container, Text, Divider, useToast } from '@chakra-ui/react';
-import { app } from '../firebase';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import React, { useState, useMemo } from 'react';
+import Head from 'next/head';
+import { Box, Button, Textarea, Flex, Container, Text, Divider, useToast, Heading } from '@chakra-ui/react';
 import Navbar from '../components/Navbar';
-import { Helmet } from 'react-helmet';
 import {
     Modal,
     ModalOverlay,
@@ -19,42 +16,33 @@ import {
     Input,
 } from '@chakra-ui/react';
 
-const ListeningQuestion = () => {
-    let globalQuestionNumber = 0; // Global question number
-    const [audioUrl, setAudioUrl] = useState('');
-    const [passageTitle, setPassageTitle] = useState('');
-    const [questionGroups, setQuestionGroups] = useState([]);
+const SITE_URL = 'https://ielts-bank.com';
+
+const ListeningQuestion = ({ id, passage, description }) => {
+    const audioUrl = passage?.audioUrl || '';
+    const passageTitle = passage?.passageTitle || '';
+    const questionGroups = passage?.questionGroups || [];
     const [userAnswers, setUserAnswers] = useState({});
     const [answerStatuses, setAnswerStatuses] = useState({});
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [userScore, setUserScore] = useState(null);
 
-    const router = useRouter();
-    const { id: passageId } = router.query;
+    // Derived flat list: assign a continuous global question number (1..N) across
+    // all groups. Pure/deterministic so it is safe under React 18 StrictMode.
+    const numberedQuestionGroups = useMemo(() => {
+        let counter = 0;
+        return questionGroups.map(group => ({
+            ...group,
+            questions: (group.questions || []).map(qMap => {
+                counter += 1;
+                return { ...qMap, questionNumber: counter };
+            })
+        }));
+    }, [questionGroups]);
 
-    useEffect(() => {
-        globalQuestionNumber = 0;
-        const fetchData = async () => {
-            const db = getFirestore(app);
-            const docRef = doc(db, 'listeningPassages', passageId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                setAudioUrl(data.audioUrl);
-                setPassageTitle(data.passageTitle);
-                setQuestionGroups(data.questionGroups);
-            } else {
-                console.log("No such document!");
-            }
-        };
-
-        fetchData();
-    }, [passageId]);
-
-    const renderQuestion = (qMap, questionNumber, group) => {
-        globalQuestionNumber++; // Increment the global question number
-        const answerStatus = answerStatuses[globalQuestionNumber];
+    const renderQuestion = (qMap, group) => {
+        const questionNumber = qMap.questionNumber;
+        const answerStatus = answerStatuses[questionNumber];
         const isCorrect = answerStatus === 'correct';
         const isIncorrect = answerStatus === 'incorrect';
         const bgColor = isCorrect ? 'green.500' : (isIncorrect ? 'red.500' : 'gray.200');
@@ -64,11 +52,10 @@ const ListeningQuestion = () => {
             case "True or False":
             case "Yes or No":
                 return (
-                    
-                    <Box className="mb-4" my={4}>
-                        <Text><strong>{globalQuestionNumber}.</strong> {qMap.text}</Text>
-                        <Select 
-                            className="form-control mb-2" 
+                    <Box key={questionNumber} className="mb-4" my={4}>
+                        <Text><strong>{questionNumber}.</strong> {qMap.text}</Text>
+                        <Select
+                            className="form-control mb-2"
                             onChange={e => handleAnswerChange(e, questionNumber)}
                             bg={bgColor}
                             value={userAnswers[questionNumber] || ''}
@@ -97,12 +84,12 @@ const ListeningQuestion = () => {
                 );
             case "Short Answer":
                 return (
-                    <Box className="mb-4">
-                        <Text><strong>{globalQuestionNumber}.</strong> {qMap.text}</Text>
-                        <Input 
-                            type="text" 
-                            className="form-control mb-2" 
-                            onChange={e => handleAnswerChange(e, questionNumber)} 
+                    <Box key={questionNumber} className="mb-4">
+                        <Text><strong>{questionNumber}.</strong> {qMap.text}</Text>
+                        <Input
+                            type="text"
+                            className="form-control mb-2"
+                            onChange={e => handleAnswerChange(e, questionNumber)}
                             bg={bgColor}
                             value={userAnswers[questionNumber] || ''}
                             isReadOnly={isCorrect || isIncorrect}
@@ -112,18 +99,13 @@ const ListeningQuestion = () => {
             default:
                 return null;
         }
-        globalQuestionNumber++;
     };
 
     const renderQuestionGroup = (group) => {
-        let localQuestionNumber = 0;
         return (
             <Box key={group.prompt} mb={6}>
                 <Text fontSize="lg" fontWeight="bold" mb={2}>{group.prompt}</Text>
-                {group.questions.map(qMap => {
-                    localQuestionNumber++;
-                    return renderQuestion(qMap, localQuestionNumber, group);
-                })}
+                {group.questions.map(qMap => renderQuestion(qMap, group))}
             </Box>
         );
     };
@@ -135,47 +117,67 @@ const ListeningQuestion = () => {
         }));
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
         let newAnswerStatuses = {};
         let correctAnswersCount = 0;
-        let answerIndex = 1; // Start from 1 to match question numbers
-    
-        const db = getFirestore(app);
-        const questionDoc = doc(db, 'listeningPassages', passageId);
-        const docSnapshot = await getDoc(questionDoc);
-    
-        if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            data.questionGroups.forEach(group => {
-                group.questions.forEach(qMap => {
-                    const correctAnswer = qMap.answer.toLowerCase();
-                    const userAnswer = userAnswers[answerIndex] || "-";
-    
-                    if (userAnswer === correctAnswer) {
-                        correctAnswersCount++;
-                        newAnswerStatuses[answerIndex] = 'correct';
-                    } else {
-                        newAnswerStatuses[answerIndex] = 'incorrect';
-                    }
-                    answerIndex++;
-                });
+        let totalQuestions = 0;
+
+        // Grade against the in-memory numbered questions using the same continuous
+        // global question number that storage, display and coloring use.
+        numberedQuestionGroups.forEach(group => {
+            group.questions.forEach(qMap => {
+                totalQuestions++;
+                const correctAnswer = qMap.answer.toLowerCase();
+                const userAnswer = userAnswers[qMap.questionNumber] || "-";
+
+                if (userAnswer === correctAnswer) {
+                    correctAnswersCount++;
+                    newAnswerStatuses[qMap.questionNumber] = 'correct';
+                } else {
+                    newAnswerStatuses[qMap.questionNumber] = 'incorrect';
+                }
             });
-    
-            setAnswerStatuses(newAnswerStatuses);
-            setUserScore(`You answered ${correctAnswersCount} out of ${answerIndex - 1} questions correctly!`); // Update the score here
-            onOpen(); // Then open the modal
-            console.log(`You answered ${correctAnswersCount} out of ${answerIndex - 1} questions correctly!`);
-        } else {
-            console.error("No such document!");
-        }
+        });
+
+        setAnswerStatuses(newAnswerStatuses);
+        setUserScore(`You answered ${correctAnswersCount} out of ${totalQuestions} questions correctly!`);
+        onOpen();
     };
+
+    const pageTitle = passageTitle
+        ? `${passageTitle} | IELTS Listening Practice | IELTS-Bank`
+        : 'IELTS Listening Practice | IELTS-Bank';
+    const metaDescription =
+        description || `Practise IELTS Listening with the audio passage: ${passageTitle}.`;
+    const canonicalUrl = `${SITE_URL}/listeningquestion/${encodeURIComponent(id || '')}`;
+
+    if (!passage) {
+        return (
+            <Flex direction="column" minH="100vh" bg="gray.50">
+                <Navbar />
+                <Container maxW="container.md" py={20} textAlign="center">
+                    <Heading size="md" color="gray.700">Loading question...</Heading>
+                </Container>
+            </Flex>
+        );
+    }
 
     return (
         <>
-            <Helmet>
-                {/* Helmet content similar to ReadingQuestion.js */}
-            </Helmet>
+            <Head>
+                <title>{pageTitle}</title>
+                <meta name="description" content={metaDescription} />
+                <meta name="keywords" content="IELTS, IELTS Listening, IELTS Listening Questions, IELTS Listening Past Papers, IELTS Practice, IELTS Test Prep, IELTS Past Papers, IELTS Questions" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href={canonicalUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
+                <meta name="twitter:card" content="summary" />
+            </Head>
             <Navbar />
             <Container maxW="container.xl">
                 <Flex 
@@ -214,7 +216,7 @@ const ListeningQuestion = () => {
                     >
                         <Text fontSize="lg" fontWeight="bold">Questions:</Text>
                         <Divider my={4} />
-                        {questionGroups.map((group, groupIndex) => (
+                        {numberedQuestionGroups.map((group) => (
                             renderQuestionGroup(group)
                         ))}
                     </Box>

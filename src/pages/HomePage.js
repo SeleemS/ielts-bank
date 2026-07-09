@@ -1,17 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import Head from 'next/head';
 import {
   Box,
   Flex,
   VStack,
-  useBreakpointValue,
   Text,
   Container,
   Heading
 } from '@chakra-ui/react';
-import Navbar from '../components/Navbar'; 
+import Navbar from '../components/Navbar';
 import Toggle from '../components/Toggle';
 import DataTable from '../components/DataTable';
 import Footer from '../components/Footer';
+
+const SITE_URL = 'https://ielts-bank.com';
+const PAGE_TITLE =
+    'IELTS-Bank — Free IELTS Practice Questions: Reading, Writing, Listening';
+const PAGE_DESCRIPTION =
+    'IELTS-Bank provides the largest free database of IELTS past papers with AI-powered grading. Practise Reading, Writing and Listening on real test questions and improve your score.';
+
+const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'IELTS-Bank',
+    url: SITE_URL,
+};
 
 const HomePage = () => {
     const [selectedOption, setSelectedOption] = useState('Reading');
@@ -21,6 +34,27 @@ const HomePage = () => {
     };
 
     return (
+        <>
+        <Head>
+            <title>{PAGE_TITLE}</title>
+            <meta name="description" content={PAGE_DESCRIPTION} />
+            <meta name="keywords" content="IELTS, IELTS Bank, ielts bank, ielts practice, ielts database, IELTS Reading, IELTS Writing, IELTS Listening, IELTS Practice Questions, IELTS Past Papers, IELTS Test Prep" />
+            <meta name="robots" content="index, follow" />
+            <link rel="canonical" href={`${SITE_URL}/`} />
+            <meta property="og:type" content="website" />
+            <meta property="og:title" content={PAGE_TITLE} />
+            <meta property="og:description" content={PAGE_DESCRIPTION} />
+            <meta property="og:url" content={`${SITE_URL}/`} />
+            <meta property="og:site_name" content="IELTS-Bank" />
+            <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
+            <meta name="twitter:card" content="summary" />
+            <meta name="twitter:title" content={PAGE_TITLE} />
+            <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+            />
+        </Head>
         <Flex direction="column" minH="100vh" bg="gray.50">
             <Navbar />
             
@@ -62,6 +96,7 @@ const HomePage = () => {
             
             <Footer />
         </Flex>
+        </>
     );
 };
 

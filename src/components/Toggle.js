@@ -3,7 +3,7 @@ import { Flex, Button, Box } from '@chakra-ui/react';
 
 const Toggle = ({ onChange }) => {
     const [selected, setSelected] = useState('Reading');
-    const options = ['Reading', 'Writing'];
+    const options = ['Reading', 'Writing', 'Listening'];
 
     const handleSelect = (option) => {
         setSelected(option);

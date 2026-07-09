@@ -21,9 +21,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import confetti from 'canvas-confetti';
-import { app } from '../firebase';
 import { useRouter } from 'next/router';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { listPassages } from '../../lib/supabase';
 
 const DataTable = ({ selectedOption }) => {
   const [data, setData] = useState([]);
@@ -53,10 +52,8 @@ const DataTable = ({ selectedOption }) => {
         setTotalPages(Math.ceil(cachedData.length / resultsPerPage));
       } else {
         setLoading(true);
-        const db = getFirestore(app);
-        const collectionName = `${selectedOption.toLowerCase()}Passages`;
-        const querySnapshot = await getDocs(collection(db, collectionName));
-        const fetchedData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // listPassages returns [{ id: slug, legacyId, title, difficulty }].
+        const fetchedData = await listPassages(selectedOption.toLowerCase());
 
         setData(fetchedData);
         setTotalPages(Math.ceil(fetchedData.length / resultsPerPage));
@@ -203,7 +200,7 @@ const DataTable = ({ selectedOption }) => {
                   .map((item, index) => (
                     <Tr
                       key={item.id}
-                      onClick={() => handleRowClick(item.id)}
+                      onClick={() => handleRowClick(item.legacyId || item.id)}
                       cursor="pointer"
                       _hover={{
                         bg: 'blue.50',
@@ -219,10 +216,10 @@ const DataTable = ({ selectedOption }) => {
                       </Td>
                       <Td py={4}>
                         <Text fontWeight="600" color="gray.900" fontSize="sm" noOfLines={2}>
-                          {item.passageTitle}
+                          {item.title}
                         </Text>
                       </Td>
-                      <Td py={4}>{getDifficultyBadge(item.passageDifficulty)}</Td>
+                      <Td py={4}>{getDifficultyBadge(item.difficulty)}</Td>
                     </Tr>
                   ))}
               </Tbody>

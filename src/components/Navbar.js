@@ -76,11 +76,23 @@ const Navbar = () => {
                                 >
                                     Home
                                 </Link>
-                                <Link 
-                                    as={NextLink} 
-                                    href="/privacypolicy" 
-                                    p={3} 
-                                    w="full" 
+                                <Link
+                                    as={NextLink}
+                                    href="/blog"
+                                    p={3}
+                                    w="full"
+                                    textAlign="center"
+                                    _hover={{ bg: 'gray.50', textDecoration: 'none' }}
+                                    fontWeight="500"
+                                    color="gray.700"
+                                >
+                                    Blog
+                                </Link>
+                                <Link
+                                    as={NextLink}
+                                    href="/privacypolicy"
+                                    p={3}
+                                    w="full"
                                     textAlign="center"
                                     _hover={{ bg: 'gray.50', textDecoration: 'none' }}
                                     fontWeight="500"

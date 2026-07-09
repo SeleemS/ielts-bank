@@ -1,7 +1,5 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Head from 'next/head';
 import {
   Box,
   Button,
@@ -14,11 +12,7 @@ import {
   Heading,
   Progress,
 } from '@chakra-ui/react';
-import { app } from '../firebase';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import ReactGA from 'react-ga';
 import Navbar from '../components/Navbar';
-import { Helmet } from 'react-helmet';
 import confetti from 'canvas-confetti';
 import {
   Modal,
@@ -32,36 +26,17 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 
-const WritingQuestion = () => {
-  const [passageText, setPassageText] = useState('');
-  const [passageTitle, setPassageTitle] = useState('');
+const SITE_URL = 'https://ielts-bank.com';
+
+const WritingQuestion = ({ id: docId, passage, description }) => {
+  const passageText = passage?.passageText || '';
+  const passageTitle = passage?.passageTitle || '';
   const [userResponse, setUserResponse] = useState('');
   const [apiResponse, setApiResponse] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isInfoOpen, onOpen: onInfoOpen, onClose: onInfoClose } = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
-
-  const router = useRouter();
-  const { id: docId } = router.query;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const db = getFirestore(app);
-      const docRef = doc(db, 'writingPassages', docId);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setPassageText(data.passageText);
-        setPassageTitle(data.passageTitle);
-      } else {
-        console.log('No such document!');
-      }
-    };
-
-    fetchData();
-  }, [docId]);
 
   useEffect(() => {
     onInfoOpen();
@@ -82,11 +57,12 @@ const WritingQuestion = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    ReactGA.event({
-      category: 'User Engagement',
-      action: 'Submit Writing',
-      label: 'Writing Test Submission',
-    });
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', 'submit_writing', {
+        category: 'User Engagement',
+        label: 'Writing Test Submission',
+      });
+    }
 
     if (!isWordCountSufficient) {
       toast({
@@ -144,24 +120,39 @@ const WritingQuestion = () => {
     }
   };
 
+  const pageTitle = passageTitle
+    ? `${passageTitle} | IELTS Writing Practice | IELTS-Bank`
+    : 'IELTS Writing Practice | IELTS-Bank';
+  const metaDescription =
+    description ||
+    `AI-Powered IELTS grading for your writing. Practice with a real IELTS question like: '${passageTitle}'.`;
+  const canonicalUrl = `${SITE_URL}/writingquestion/${encodeURIComponent(docId || '')}`;
+
+  if (!passage) {
+    return (
+      <Flex direction="column" minH="100vh" bg="gray.50">
+        <Navbar />
+        <Container maxW="container.md" py={20} textAlign="center">
+          <Heading size="md" color="gray.700">Loading question...</Heading>
+        </Container>
+      </Flex>
+    );
+  }
+
   return (
     <>
-      <Helmet>
-        <title>
-          {passageTitle ? `${passageTitle} - IELTS Writing Task` : 'IELTS Writing Question'}
-        </title>
-        <meta
-          name="description"
-          content={`AI-Powered IELTS grading for your writing. Practice with a real IELTS question like: '${passageTitle}'.`}
-        />
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={metaDescription} />
         <meta name="robots" content="index, follow" />
-        <meta
-          property="og:title"
-          content={passageTitle ? `${passageTitle} - IELTS Writing Task` : 'IELTS Writing Question'}
-        />
-        <meta property="og:image" content="https://ielts-bank.com/favicon.png" />
-        <meta property="og:url" content={`https://ielts-bank.com/writing/${docId}`} />
-      </Helmet>
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
+        <meta name="twitter:card" content="summary" />
+      </Head>
 
       <Flex direction="column" minH="100vh" bg="gray.50">
         <Navbar />

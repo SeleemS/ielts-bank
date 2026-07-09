@@ -1,6 +1,4 @@
-import { initializeApp } from 'firebase/app';
-
-
+import { initializeApp, getApps, getApp } from 'firebase/app';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCxAGciWo48j3A2P1okoK-3midsNm14cDk",
@@ -13,6 +11,8 @@ const firebaseConfig = {
     measurementId: "G-1KRYZZY68X"
   };
 
-  const app = initializeApp(firebaseConfig);
+// Guard initialization so repeated init at build time (SSG/getStaticProps)
+// does not throw "Firebase App named '[DEFAULT]' already exists".
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-  export { app };
+export { app };

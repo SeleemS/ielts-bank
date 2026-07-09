@@ -19,6 +19,21 @@ const Footer = () => {
                     </Text>
                     <Spacer />
                     <Flex gap={6} direction={{ base: "column", md: "row" }} align="center">
+                        <NextLink href="/blog" passHref legacyBehavior>
+                            <Link
+                                onClick={scrollToTop}
+                                color="gray.300"
+                                fontSize="sm"
+                                fontWeight="500"
+                                _hover={{
+                                    color: 'white',
+                                    textDecoration: 'none'
+                                }}
+                                transition="color 0.2s"
+                            >
+                                Blog
+                            </Link>
+                        </NextLink>
                         <NextLink href="/termsofservice" passHref legacyBehavior>
                             <Link 
                                 onClick={scrollToTop} 
@@ -66,6 +81,9 @@ const Footer = () => {
                         </NextLink>
                     </Flex>
                 </Flex>
+                <Text fontSize="xs" color="gray.500" mt={6} textAlign={{ base: "center", md: "left" }} maxW="container.md">
+                    IELTS-Bank is an independent study resource and is not affiliated with, endorsed by, or connected to the British Council, IDP: IELTS Australia, or Cambridge University Press &amp; Assessment. &quot;IELTS&quot; is a registered trademark of its respective owners and is used here for descriptive purposes only.
+                </Text>
             </Container>
         </Box>
     );

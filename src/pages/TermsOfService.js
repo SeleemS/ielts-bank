@@ -8,6 +8,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -16,6 +17,15 @@ const TermsOfService = () => {
 
   return (
     <Flex direction="column" minHeight="100vh">
+      <Head>
+        <title>Terms of Service | IELTS-Bank</title>
+        <meta
+          name="description"
+          content="Read the IELTS-Bank terms of service outlining the rules for using our free IELTS practice website and resources."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://ielts-bank.com/termsofservice" />
+      </Head>
       <Navbar />
 
       <Box flex="1" px={{ base: 4, md: 12 }} py={8}>

@@ -7,6 +7,7 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -15,6 +16,15 @@ const PrivacyPolicy = () => {
 
   return (
     <Flex direction="column" minHeight="100vh">
+      <Head>
+        <title>Privacy Policy | IELTS-Bank</title>
+        <meta
+          name="description"
+          content="Read the IELTS-Bank privacy policy covering how we handle information when you use our free IELTS practice resources."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://ielts-bank.com/privacypolicy" />
+      </Head>
       <Navbar />
 
       <Box flex="1" px={{ base: 4, md: 12 }} py={8}>

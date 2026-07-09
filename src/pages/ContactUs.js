@@ -12,6 +12,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -33,6 +34,15 @@ const ContactUs = () => {
 
   return (
     <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+      <Head>
+        <title>Contact Us | IELTS-Bank</title>
+        <meta
+          name="description"
+          content="Get in touch with the IELTS-Bank team. Email us at info@ielts-bank.com or use our contact form for questions about IELTS practice and preparation."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://ielts-bank.com/contactus" />
+      </Head>
       <Navbar />
       <Box flex="1" maxW="lg" mx="auto" px={4} py={12} w="full">
         <VStack spacing={6} align="stretch">

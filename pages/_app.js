@@ -1,27 +1,38 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import ReactGA from 'react-ga';
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/react';
 import '../src/index.css';
 
-ReactGA.initialize('G-1KRYZZY68X');
+const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
+const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
 
 function MyApp({ Component, pageProps }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    const handleRouteChange = (url) => {
-      ReactGA.pageview(url);
-    };
-    router.events.on('routeChangeComplete', handleRouteChange);
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
-    };
-  }, [router.events]);
-
   return (
     <ChakraProvider>
+      {/* Google AdSense */}
+      <Script
+        id="adsbygoogle-init"
+        strategy="afterInteractive"
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        crossOrigin="anonymous"
+      />
+
+      {/* Google Analytics 4 (gtag.js) */}
+      <Script
+        id="gtag-src"
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}');
+        `}
+      </Script>
+
       <Component {...pageProps} />
       <Analytics />
     </ChakraProvider>
