@@ -1,0 +1,577 @@
+[
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Community Allotment Gardens: A Members' Guide",
+    "difficulty": "easy",
+    "topic_tags": ["general", "community"],
+    "body_html": "<p>Welcome to the Meadowbank Community Allotments. Our gardens provide members with a plot of land on which to grow their own fruit, vegetables and flowers, as well as a friendly community of fellow gardeners. This guide explains how the allotments are run and what we ask of every member. Please read it carefully and keep it for reference, as it sets out the rules that all plot-holders agree to follow when they join.</p><p><strong>Getting a plot</strong></p><p>Plots are allocated from a waiting list, and new members are offered a plot as one becomes available. Because demand is high, there may be a wait of several months before a plot is offered. When you accept a plot you will be asked to pay an annual rent, which is due at the start of each gardening year in March. The rent is deliberately kept low so that gardening remains affordable, and it helps to cover the cost of water, shared tools and the upkeep of common areas. Members who are aged over sixty-five, or who are receiving certain benefits, are entitled to a reduced rate; please ask the site secretary for details.</p><p><strong>Looking after your plot</strong></p><p>Members are expected to keep their plots reasonably cultivated and free of weeds. A plot does not have to be immaculate, and we understand that everyone gardens at their own pace, but a plot that is completely neglected creates problems for neighbouring gardeners, as weeds and pests spread easily from one plot to the next. If a plot is left uncultivated for a long period without good reason, the committee may write to the member and, in the last resort, reallocate the plot to someone on the waiting list. If you know you will be unable to tend your plot for a while, perhaps because of illness or travel, please let the site secretary know, and we will do our best to help.</p><p><strong>What you may and may not grow</strong></p><p>You are free to grow fruit, vegetables, herbs and flowers for your own use. The allotments are intended for personal use only, and produce grown on the site may not be sold for profit. Small fruit trees are permitted, but please choose varieties that will not grow so large that they shade neighbouring plots. The use of chemical weedkillers and pesticides is strongly discouraged, as many members prefer to garden organically and sprays can drift onto neighbouring plots. If you do need to control pests, please speak to experienced members first, as they can often suggest natural methods.</p><p><strong>Water and sheds</strong></p><p>Water is available from the taps located around the site, and members may fill watering cans from these. To conserve water, the use of hoses connected directly to the taps is not allowed, but you are welcome to install a water butt to collect rainwater from a shed roof. You may keep a small shed or greenhouse on your plot, but you must ask the committee for permission before putting up any structure, and it must not exceed the size limits set out in the site rules.</p><p><strong>Being a good neighbour</strong></p><p>The allotments work well because members look out for one another. Please keep the paths beside your plot clear so that others can pass with wheelbarrows, and do not let your plants or compost heaps encroach onto shared paths. Bonfires are permitted only on designated days and never at weekends, when many people are relaxing in their gardens, and you must never leave a fire unattended. Dogs are welcome on the site but must be kept on a lead at all times, and owners must clean up after them.</p><p><strong>Getting involved</strong></p><p>Several times a year we hold working parties, when members come together to maintain the shared areas, repair fences and clear communal paths. Taking part is voluntary but greatly appreciated, and it is a good way to meet other gardeners. We also hold an annual produce show in late summer, at which members can enter their best fruit, vegetables and flowers, and a plant sale in spring. Details of all events are posted on the notice board by the main gate and sent to members by email. If you have any questions that this guide does not answer, please contact the site secretary, whose details are on the notice board.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the guide? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "New members may have to wait several months before they are offered a plot.",
+            "answer": "true",
+            "evidence": "Because demand is high, there may be a wait of several months before a plot is offered."
+          },
+          {
+            "prompt_text": "The annual rent is due at the start of the gardening year in March.",
+            "answer": "true",
+            "evidence": "you will be asked to pay an annual rent, which is due at the start of each gardening year in March."
+          },
+          {
+            "prompt_text": "Members are allowed to sell the produce they grow on their plots.",
+            "answer": "false",
+            "evidence": "The allotments are intended for personal use only, and produce grown on the site may not be sold for profit."
+          },
+          {
+            "prompt_text": "Connecting a hose directly to the site taps is permitted.",
+            "answer": "false",
+            "evidence": "To conserve water, the use of hoses connected directly to the taps is not allowed."
+          },
+          {
+            "prompt_text": "The produce show attracts visitors from other allotment sites.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Dogs are allowed on the site if they are kept on a lead.",
+            "answer": "true",
+            "evidence": "Dogs are welcome on the site but must be kept on a lead at all times, and owners must clean up after them."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Who is entitled to a reduced rate of rent?",
+            "options": [
+              "anyone who joins the waiting list",
+              "members over sixty-five or receiving certain benefits",
+              "members who attend every working party",
+              "members who garden organically"
+            ],
+            "answer_index": 1,
+            "evidence": "Members who are aged over sixty-five, or who are receiving certain benefits, are entitled to a reduced rate."
+          },
+          {
+            "prompt_text": "What should a member do before putting up a shed or greenhouse?",
+            "options": [
+              "sell any excess produce",
+              "ask the committee for permission",
+              "remove all fruit trees",
+              "pay an additional rent"
+            ],
+            "answer_index": 1,
+            "evidence": "you must ask the committee for permission before putting up any structure, and it must not exceed the size limits set out in the site rules."
+          },
+          {
+            "prompt_text": "When are bonfires permitted on the site?",
+            "options": [
+              "only on designated days and never at weekends",
+              "at any time during daylight",
+              "only at weekends",
+              "only during working parties"
+            ],
+            "answer_index": 0,
+            "evidence": "Bonfires are permitted only on designated days and never at weekends, when many people are relaxing in their gardens."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the guide for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Whom should you inform if you will be unable to tend your plot for a while?",
+            "accepted": ["the site secretary", "site secretary"],
+            "word_limit": 3,
+            "evidence": "please let the site secretary know, and we will do our best to help."
+          },
+          {
+            "prompt_text": "What may you install to collect rainwater from a shed roof?",
+            "accepted": ["a water butt", "water butt"],
+            "word_limit": 3,
+            "evidence": "you are welcome to install a water butt to collect rainwater from a shed roof."
+          },
+          {
+            "prompt_text": "What voluntary events are held several times a year to maintain shared areas?",
+            "accepted": ["working parties", "working party"],
+            "word_limit": 2,
+            "evidence": "Several times a year we hold working parties, when members come together to maintain the shared areas."
+          },
+          {
+            "prompt_text": "Where are details of all events posted, besides being emailed to members?",
+            "accepted": ["the notice board", "notice board", "on the notice board"],
+            "word_limit": 3,
+            "evidence": "Details of all events are posted on the notice board by the main gate and sent to members by email."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Museum of Local History: Visitor Information",
+    "difficulty": "easy",
+    "topic_tags": ["general", "tourism"],
+    "body_html": "<p>Thank you for planning a visit to the Riverside Museum of Local History. Housed in a restored eighteenth-century warehouse beside the old harbour, the museum tells the story of our town and the people who have lived and worked here over the centuries. This information sheet will help you make the most of your visit, whether you are coming alone, with family or as part of a group.</p><p><strong>Opening hours and admission</strong></p><p>The museum is open from Tuesday to Sunday, from ten in the morning until five in the afternoon. It is closed on Mondays, apart from public holidays, when we open as usual. Last admission is at half past four, so please allow enough time to see the galleries before we close. Admission to the permanent galleries is free of charge, though we welcome donations towards the upkeep of the collection. There is a separate charge for special exhibitions, which are held in the gallery on the top floor several times a year.</p><p><strong>Getting here</strong></p><p>The museum is a ten-minute walk from the town centre and is well served by public transport, with several bus routes stopping nearby. We strongly encourage visitors to travel by bus, on foot or by bicycle, as there is no car park at the museum itself. The nearest public car park is on Mill Street, a short walk away, but spaces there are limited and fill up quickly on busy days. Secure bicycle racks are provided at the front of the building.</p><p><strong>What to see</strong></p><p>The permanent collection is arranged over three floors. The ground floor traces the town's origins as a fishing and trading port, with model ships, old maps and objects recovered from the harbour. The first floor is devoted to daily life in the town over the past two hundred years, including a reconstructed shop and schoolroom that are especially popular with younger visitors. The second floor houses our collection of local artwork and photography, as well as the space used for temporary exhibitions. A lift serves all floors for those who prefer not to use the stairs.</p><p><strong>Facilities</strong></p><p>A café on the ground floor serves hot drinks, light lunches and homemade cakes, and is open throughout the day. Visitors are welcome to use the café without paying to enter the museum. The gift shop, also on the ground floor, sells books about local history, postcards, and gifts made by local craftspeople. Toilets, including facilities for disabled visitors and a baby-changing room, are located on each floor. A cloakroom near the entrance offers a place to leave coats and bags, and we ask that large rucksacks and umbrellas be left there rather than carried through the galleries, where space can be tight and delicate objects are close at hand.</p><p><strong>Visiting with children</strong></p><p>Families are very welcome. Children must be accompanied by an adult at all times. Free activity trails, which guide young visitors around the galleries with puzzles and things to spot, are available from the front desk. During school holidays we run craft workshops and story sessions for children; these are free but must be booked in advance, as places are limited.</p><p><strong>Groups and guided tours</strong></p><p>We welcome groups, but organisers of parties of ten or more are asked to book their visit at least two weeks in advance so that we can ensure a comfortable experience for everyone. Guided tours led by our knowledgeable volunteers can be arranged for booked groups at no extra cost, but must be requested at the time of booking. Please note that flash photography is not permitted anywhere in the museum, as it can damage delicate exhibits, though visitors are welcome to take photographs without flash for personal use.</p><p><strong>Getting in touch</strong></p><p>If you have any questions before your visit, or wish to make a booking, please contact the front desk by telephone or email; our details are on the museum's website. Members of the public who are interested in the work of the museum may also like to know that we depend heavily on volunteers, who help at the front desk, lead tours and assist with the care of the collection. No special knowledge is needed to volunteer, only enthusiasm and a few free hours, and full training is given. If you might be interested, ask for a leaflet at the front desk. We look forward to welcoming you and hope you enjoy discovering the rich history of our town.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the visitor information? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The museum is closed on Mondays except when they are public holidays.",
+            "answer": "true",
+            "evidence": "It is closed on Mondays, apart from public holidays, when we open as usual."
+          },
+          {
+            "prompt_text": "There is a charge to enter the permanent galleries.",
+            "answer": "false",
+            "evidence": "Admission to the permanent galleries is free of charge, though we welcome donations towards the upkeep of the collection."
+          },
+          {
+            "prompt_text": "The museum has its own car park for visitors.",
+            "answer": "false",
+            "evidence": "as there is no car park at the museum itself. The nearest public car park is on Mill Street, a short walk away."
+          },
+          {
+            "prompt_text": "The museum building was previously used as a warehouse.",
+            "answer": "true",
+            "evidence": "Housed in a restored eighteenth-century warehouse beside the old harbour."
+          },
+          {
+            "prompt_text": "The café serves the most popular cakes in the town.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Visitors may take photographs for personal use as long as they do not use flash.",
+            "answer": "true",
+            "evidence": "flash photography is not permitted anywhere in the museum... though visitors are welcome to take photographs without flash for personal use."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "At what time is the last admission to the museum?",
+            "options": [
+              "four in the afternoon",
+              "half past four",
+              "five in the afternoon",
+              "ten in the morning"
+            ],
+            "answer_index": 1,
+            "evidence": "Last admission is at half past four, so please allow enough time to see the galleries before we close."
+          },
+          {
+            "prompt_text": "Where can visitors find the reconstructed shop and schoolroom?",
+            "options": [
+              "on the ground floor",
+              "on the first floor",
+              "on the second floor",
+              "in the café"
+            ],
+            "answer_index": 1,
+            "evidence": "The first floor is devoted to daily life in the town over the past two hundred years, including a reconstructed shop and schoolroom."
+          },
+          {
+            "prompt_text": "What must organisers of groups of ten or more do?",
+            "options": [
+              "pay an extra fee for entry",
+              "book their visit at least two weeks in advance",
+              "arrive before ten in the morning",
+              "bring their own guide"
+            ],
+            "answer_index": 1,
+            "evidence": "organisers of parties of ten or more are asked to book their visit at least two weeks in advance."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the text for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What is provided at the front of the building for those arriving by bicycle?",
+            "accepted": ["bicycle racks", "secure bicycle racks", "racks"],
+            "word_limit": 3,
+            "evidence": "Secure bicycle racks are provided at the front of the building."
+          },
+          {
+            "prompt_text": "What serves all floors for visitors who prefer not to use the stairs?",
+            "accepted": ["a lift", "lift", "the lift"],
+            "word_limit": 2,
+            "evidence": "A lift serves all floors for those who prefer not to use the stairs."
+          },
+          {
+            "prompt_text": "What free item, available from the front desk, guides young visitors around with puzzles?",
+            "accepted": ["activity trails", "an activity trail", "activity trail", "free activity trails"],
+            "word_limit": 3,
+            "evidence": "Free activity trails, which guide young visitors around the galleries with puzzles and things to spot, are available from the front desk."
+          },
+          {
+            "prompt_text": "Who leads the guided tours that can be arranged for booked groups?",
+            "accepted": ["volunteers", "our volunteers", "knowledgeable volunteers"],
+            "word_limit": 3,
+            "evidence": "Guided tours led by our knowledgeable volunteers can be arranged for booked groups at no extra cost."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Joining the Neighbourhood Book Club",
+    "difficulty": "easy",
+    "topic_tags": ["general", "community"],
+    "body_html": "<p>Have you ever wanted to read more widely, discover new authors and meet friendly people who share your love of reading? The Oakwood Neighbourhood Book Club has been bringing local readers together for more than ten years, and we are always happy to welcome new members. This leaflet explains how the club works and how you can join.</p><p><strong>How the club works</strong></p><p>We meet once a month, on the first Thursday of the month, in the community room at the back of the public library. Meetings begin at seven in the evening and usually last about ninety minutes. Each month we discuss a single book that everyone has agreed to read in advance. The choice of book is made by the group at the previous meeting, so that everyone has a say in what we read next, and we try to vary our choices between fiction and non-fiction, and between well-known classics and more recent titles.</p><p><strong>Getting hold of the books</strong></p><p>You do not need to buy the books we read. The library keeps several copies of each month's chosen title, which members can borrow free of charge, and copies are also often available as audiobooks and e-books for those who prefer them. Because the number of printed copies is limited, we recommend borrowing yours as early in the month as possible. If you would rather buy your own copy, the bookshop on the high street offers members of the club a small discount on request.</p><p><strong>What happens at a meeting</strong></p><p>Meetings are relaxed and informal, and there is no need to prepare anything in advance beyond reading the book. One member volunteers to lead each discussion, introducing the book and suggesting a few questions to get the conversation going, but everyone is encouraged to share their thoughts. You should not worry if you did not enjoy the book, or even if you did not manage to finish it; some of our best discussions have been about books that divided opinion. We ask only that members are courteous and allow everyone a chance to speak.</p><p><strong>Membership and costs</strong></p><p>There is no membership fee, and the club is run entirely by volunteers. We do, however, pass round a collection at each meeting to cover the cost of tea, coffee and biscuits, and any small contribution is welcome. You are under no obligation to attend every month; members come as often as they are able, and no one will mind if you miss a meeting or two. That said, we do ask that you let the organiser know if you have put your name down to lead a discussion but find you cannot attend, so that someone else can take over.</p><p><strong>Special events</strong></p><p>Twice a year we hold a special event in addition to our regular meetings. In the summer we organise an outing, which in recent years has included visits to literary festivals and to the former homes of famous writers. Around the end of the year we hold a social evening at which we look back on the books we have read and choose a few favourites. These events are a lovely way to get to know other members, and guests are welcome to come along.</p><p><strong>How to join</strong></p><p>Joining could not be simpler: just come along to a meeting. There is no need to sign up in advance, though it is helpful if you can let the organiser know you are coming so that we can make sure there is a copy of the book for you. You are welcome to attend a meeting or two to see whether the club suits you before deciding to become a regular member. Some people worry that they will not have anything interesting to say, or that the other members will all know far more about books than they do. Please do not let this put you off. Our members come from all walks of life and read at all sorts of speeds, and what matters is not expert knowledge but a willingness to share your honest reactions and to listen to those of others. If you have any questions, please speak to a member of library staff, who can pass your details to the organiser, or leave a message on the club's page on the community website.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the leaflet? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The club meets once a month in a room at the public library.",
+            "answer": "true",
+            "evidence": "We meet once a month, on the first Thursday of the month, in the community room at the back of the public library."
+          },
+          {
+            "prompt_text": "The organiser alone decides which book the group will read next.",
+            "answer": "false",
+            "evidence": "The choice of book is made by the group at the previous meeting, so that everyone has a say in what we read next."
+          },
+          {
+            "prompt_text": "Members must buy their own copy of each month's book.",
+            "answer": "false",
+            "evidence": "You do not need to buy the books we read. The library keeps several copies of each month's chosen title, which members can borrow free of charge."
+          },
+          {
+            "prompt_text": "There is no fee to become a member of the club.",
+            "answer": "true",
+            "evidence": "There is no membership fee, and the club is run entirely by volunteers."
+          },
+          {
+            "prompt_text": "The club has more members now than when it began.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Guests are allowed to attend the club's special events.",
+            "answer": "true",
+            "evidence": "These events are a lovely way to get to know other members, and guests are welcome to come along."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What does the leaflet advise about borrowing the printed books?",
+            "options": [
+              "to borrow them as early in the month as possible",
+              "to borrow them only on the day of the meeting",
+              "to buy them from the library",
+              "to share a single copy between members"
+            ],
+            "answer_index": 0,
+            "evidence": "Because the number of printed copies is limited, we recommend borrowing yours as early in the month as possible."
+          },
+          {
+            "prompt_text": "What does the leaflet say about members who did not finish the book?",
+            "options": [
+              "they should not attend the meeting",
+              "they should read it before speaking",
+              "they need not worry, as such books can lead to good discussions",
+              "they must lead the next discussion"
+            ],
+            "answer_index": 2,
+            "evidence": "You should not worry if you did not enjoy the book, or even if you did not manage to finish it; some of our best discussions have been about books that divided opinion."
+          },
+          {
+            "prompt_text": "What is the easiest way to join the club?",
+            "options": [
+              "pay a fee to the library",
+              "just come along to a meeting",
+              "sign a form in advance",
+              "lead a discussion first"
+            ],
+            "answer_index": 1,
+            "evidence": "Joining could not be simpler: just come along to a meeting."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the leaflet for each answer.",
+        "questions": [
+          {
+            "prompt_text": "At what time do the monthly meetings begin?",
+            "accepted": ["seven", "seven in the evening", "7 in the evening"],
+            "word_limit": 3,
+            "evidence": "Meetings begin at seven in the evening and usually last about ninety minutes."
+          },
+          {
+            "prompt_text": "What discount does the high street bookshop offer members on request?",
+            "accepted": ["a small discount", "small discount", "a discount"],
+            "word_limit": 3,
+            "evidence": "the bookshop on the high street offers members of the club a small discount on request."
+          },
+          {
+            "prompt_text": "What is passed round at each meeting to cover the cost of refreshments?",
+            "accepted": ["a collection", "collection"],
+            "word_limit": 2,
+            "evidence": "we do, however, pass round a collection at each meeting to cover the cost of tea, coffee and biscuits."
+          },
+          {
+            "prompt_text": "In which season does the club organise an outing?",
+            "accepted": ["summer", "the summer", "in the summer"],
+            "word_limit": 2,
+            "evidence": "In the summer we organise an outing, which in recent years has included visits to literary festivals."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Cycling Safety on Shared Paths",
+    "difficulty": "easy",
+    "topic_tags": ["general", "safety"],
+    "body_html": "<p>Cycling is a healthy, enjoyable and environmentally friendly way to get around, and our town has an expanding network of paths for people to use. Many of these are shared paths, which means they are used by cyclists and pedestrians together, and sometimes by other users such as people with pushchairs, wheelchair users and joggers. Sharing space safely requires a little care and consideration from everyone. This leaflet offers advice to help cyclists use the shared paths safely and courteously.</p><p><strong>Remember who else is using the path</strong></p><p>The single most important thing to remember on a shared path is that pedestrians have priority. People on foot may not hear you approaching, may change direction without warning, and may include young children or older people who move unpredictably. Always be prepared to slow down or stop, and never assume that others have seen you. On a shared path, you should ride at a speed that allows you to stop safely if someone steps into your way. A shared path is not the place for fast or sporting cycling; if you wish to ride quickly, please use the road instead.</p><p><strong>Let people know you are there</strong></p><p>Because pedestrians may not hear a bicycle, it is good practice to warn people when you are coming up behind them. A bell is the most effective way to do this, and we recommend that every bicycle used on shared paths is fitted with one. Ring your bell in good time, well before you reach the person, so that you do not startle them, and be ready to slow down in case they do not react as you expect. A friendly word of thanks as you pass costs nothing and helps everyone to get along.</p><p><strong>Keep left and pass with care</strong></p><p>As a general rule, keep to the left of the path, leaving room for others to pass in the opposite direction. When overtaking someone going the same way, wait until it is clear, give them plenty of room, and pass on the right where possible. Never squeeze past in a narrow space or when someone is coming the other way. If the path is crowded, it is often quicker and safer simply to slow to walking pace for a short distance than to try to force your way through.</p><p><strong>Be seen and be prepared</strong></p><p>If you cycle in the early morning, in the evening or in poor weather, make sure you can be seen. Lights are required by law when riding after dark, and wearing bright or reflective clothing helps others to notice you at any time of day. Although wearing a helmet is not compulsory on our paths, we strongly recommend it, as it can reduce the risk of serious injury in a fall. Check your brakes and tyres regularly, and carry a basic repair kit and a means of contacting someone in case of a breakdown.</p><p><strong>Take special care at junctions and crossings</strong></p><p>Many shared paths cross roads, driveways and other paths. Slow down as you approach any such point, and be ready to give way. Drivers turning into or out of a side road may not be looking for cyclists on the path, so make eye contact where you can and never assume a vehicle will stop for you. Where a path crosses a road at a marked crossing, follow the signals and give way to pedestrians who are already crossing.</p><p><strong>Respect the surroundings</strong></p><p>Finally, please help to keep the paths pleasant for everyone. Do not drop litter, keep your dog under control if you are cycling with one, and be considerate of people living beside the paths. If you come across a problem such as a fallen tree, a damaged surface or a broken sign, please report it to the council so that it can be dealt with quickly. In wet or icy weather, remember that the surface of a path can become slippery, particularly where fallen leaves have gathered or where the path passes under trees, and it is wise to reduce your speed further at such times. Where a path runs close to water, take extra care, as the edges may be soft or uneven. By following this simple advice, we can all make sure that the shared paths remain safe and welcoming for every user, whatever the season.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the leaflet? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "On a shared path, pedestrians have priority over cyclists.",
+            "answer": "true",
+            "evidence": "The single most important thing to remember on a shared path is that pedestrians have priority."
+          },
+          {
+            "prompt_text": "Shared paths are a suitable place for fast, sporting cycling.",
+            "answer": "false",
+            "evidence": "A shared path is not the place for fast or sporting cycling; if you wish to ride quickly, please use the road instead."
+          },
+          {
+            "prompt_text": "The leaflet recommends that every bicycle used on shared paths has a bell.",
+            "answer": "true",
+            "evidence": "A bell is the most effective way to do this, and we recommend that every bicycle used on shared paths is fitted with one."
+          },
+          {
+            "prompt_text": "Wearing a helmet is compulsory on the town's shared paths.",
+            "answer": "false",
+            "evidence": "Although wearing a helmet is not compulsory on our paths, we strongly recommend it."
+          },
+          {
+            "prompt_text": "Most cycling accidents on the paths happen at junctions.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Lights are required by law when cycling after dark.",
+            "answer": "true",
+            "evidence": "Lights are required by law when riding after dark, and wearing bright or reflective clothing helps others to notice you."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "When should you ring your bell to warn a pedestrian?",
+            "options": [
+              "in good time, well before you reach the person",
+              "only at the very last moment",
+              "after you have already passed them",
+              "only if they turn around"
+            ],
+            "answer_index": 0,
+            "evidence": "Ring your bell in good time, well before you reach the person, so that you do not startle them."
+          },
+          {
+            "prompt_text": "What does the leaflet advise when a path is crowded?",
+            "options": [
+              "force your way through quickly",
+              "slow to walking pace for a short distance",
+              "ride on the right-hand side",
+              "get off and carry your bicycle"
+            ],
+            "answer_index": 1,
+            "evidence": "If the path is crowded, it is often quicker and safer simply to slow to walking pace for a short distance than to try to force your way through."
+          },
+          {
+            "prompt_text": "What should you do as you approach a junction or crossing?",
+            "options": [
+              "speed up to cross quickly",
+              "assume all vehicles will stop for you",
+              "slow down and be ready to give way",
+              "ring your bell continuously"
+            ],
+            "answer_index": 2,
+            "evidence": "Slow down as you approach any such point, and be ready to give way."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the leaflet for each answer.",
+        "questions": [
+          {
+            "prompt_text": "As a general rule, to which side of the path should you keep?",
+            "accepted": ["the left", "left"],
+            "word_limit": 2,
+            "evidence": "As a general rule, keep to the left of the path, leaving room for others to pass in the opposite direction."
+          },
+          {
+            "prompt_text": "When overtaking someone going the same way, on which side should you pass where possible?",
+            "accepted": ["the right", "right", "on the right"],
+            "word_limit": 2,
+            "evidence": "give them plenty of room, and pass on the right where possible."
+          },
+          {
+            "prompt_text": "Besides your brakes, what else should you check regularly?",
+            "accepted": ["your tyres", "tyres", "tires"],
+            "word_limit": 2,
+            "evidence": "Check your brakes and tyres regularly, and carry a basic repair kit."
+          },
+          {
+            "prompt_text": "To whom should you report a problem such as a fallen tree or damaged surface?",
+            "accepted": ["the council", "council"],
+            "word_limit": 2,
+            "evidence": "please report it to the council so that it can be dealt with quickly."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "title": "Booking the Village Hall for Events",
+    "difficulty": "easy",
+    "topic_tags": ["general", "community"],
+    "body_html": "<p>The Ashcombe Village Hall is available for hire by local residents and organisations for a wide range of events, from children's parties and family celebrations to meetings, classes and rehearsals. This guide sets out how to make a booking, what the hall offers and the conditions that all hirers agree to. Please read it fully before making your booking.</p><p><strong>The hall and its facilities</strong></p><p>The main hall is a large, bright room with a wooden floor, suitable for gatherings of up to a hundred and twenty people seated. It can be arranged with tables and chairs, which are stored in the adjoining storeroom, or left clear for activities such as dancing or exercise. Off the main hall is a smaller meeting room that can be hired separately or together with the main hall. A fully equipped kitchen, with a cooker, refrigerator, kettles and crockery, adjoins the main hall and is included in the hire of the main room. There is a car park at the side of the building with space for around thirty vehicles.</p><p><strong>How to book</strong></p><p>All bookings are handled by the hall's booking secretary. To check whether the hall is free on your chosen date, please consult the online calendar on the village website, which shows current bookings, and then contact the booking secretary to make a provisional reservation. A booking is only confirmed once you have completed a booking form and paid a deposit. We recommend booking as far ahead as possible, as popular dates, particularly weekends and the period around the winter holidays, are often reserved many months in advance.</p><p><strong>Charges and deposits</strong></p><p>The hire charge depends on the room, the day and the length of the booking. Rates are lower for regular hirers, such as clubs that meet every week, than for one-off bookings. In addition to the hire charge, a refundable deposit is required at the time of booking. This deposit is returned in full after your event, provided that the hall has been left clean and tidy, that no damage has been caused, and that you have vacated the building by the agreed time. Charities and non-profit community groups may apply for a reduced rate; please mention this when you enquire.</p><p><strong>Your responsibilities as a hirer</strong></p><p>The person who makes the booking is responsible for the event and must be aged eighteen or over. You are expected to leave the hall as you found it: furniture returned to the storeroom, floors swept, the kitchen cleaned, and all rubbish removed from the premises, as there is no rubbish collection at the hall. You must not exceed the maximum number of people stated for the room, and emergency exits must be kept clear at all times. If you move any furniture during your event, please put it back before you leave.</p><p><strong>Things to note</strong></p><p>The hall has a licence for music and dancing, but if you intend to sell alcohol at your event you must arrange a separate licence yourself; the booking secretary can advise on how to do this. The use of candles, fireworks and any kind of smoke machine is not allowed anywhere in the building. Decorations may be put up, but please do not fix anything to the walls or ceiling with tape or pins that could cause damage; freestanding decorations are recommended instead.</p><p><strong>Cancellations</strong></p><p>We understand that plans sometimes change. If you need to cancel a booking, please tell the booking secretary as soon as possible. Cancellations made more than four weeks before the event will receive a full refund of any hire charge paid. For cancellations made later than this, part of the charge may be retained, as it may not be possible to re-let the hall at short notice. The deposit is always returned in the event of a cancellation. Please remember, too, that the hall is run for the benefit of the whole village by a committee of volunteers, and that the modest income from hire charges pays for heating, lighting, cleaning and repairs. By treating the building with care and leaving it in good order, every hirer helps to keep this valuable community resource available for others to enjoy. If you have any questions about hiring the hall, the booking secretary will be glad to help; contact details are on the village website and on the notice board outside the hall.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the guide? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The kitchen is included in the hire of the main hall.",
+            "answer": "true",
+            "evidence": "A fully equipped kitchen, with a cooker, refrigerator, kettles and crockery, adjoins the main hall and is included in the hire of the main room."
+          },
+          {
+            "prompt_text": "A booking is confirmed as soon as you check the online calendar.",
+            "answer": "false",
+            "evidence": "A booking is only confirmed once you have completed a booking form and paid a deposit."
+          },
+          {
+            "prompt_text": "Regular hirers pay lower rates than people making one-off bookings.",
+            "answer": "true",
+            "evidence": "Rates are lower for regular hirers, such as clubs that meet every week, than for one-off bookings."
+          },
+          {
+            "prompt_text": "The person who makes the booking must be at least eighteen years old.",
+            "answer": "true",
+            "evidence": "The person who makes the booking is responsible for the event and must be aged eighteen or over."
+          },
+          {
+            "prompt_text": "The hall is used more often for parties than for meetings.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Hirers may fix decorations to the walls using tape or pins.",
+            "answer": "false",
+            "evidence": "please do not fix anything to the walls or ceiling with tape or pins that could cause damage; freestanding decorations are recommended instead."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Under what condition is the refundable deposit returned in full after an event?",
+            "options": [
+              "if the event was well attended",
+              "if the hall is left clean and undamaged and vacated on time",
+              "if alcohol was not sold",
+              "if the booking was made months in advance"
+            ],
+            "answer_index": 1,
+            "evidence": "This deposit is returned in full after your event, provided that the hall has been left clean and tidy, that no damage has been caused, and that you have vacated the building by the agreed time."
+          },
+          {
+            "prompt_text": "What must a hirer do about rubbish at the end of an event?",
+            "options": [
+              "leave it in the kitchen",
+              "put it in the storeroom",
+              "remove all of it from the premises",
+              "leave it for the next hirer"
+            ],
+            "answer_index": 2,
+            "evidence": "all rubbish removed from the premises, as there is no rubbish collection at the hall."
+          },
+          {
+            "prompt_text": "What must a hirer arrange separately if they wish to sell alcohol?",
+            "options": [
+              "a music and dancing licence",
+              "an extra deposit",
+              "a separate licence, obtained by themselves",
+              "the use of a smoke machine"
+            ],
+            "answer_index": 2,
+            "evidence": "if you intend to sell alcohol at your event you must arrange a separate licence yourself; the booking secretary can advise on how to do this."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the guide for each answer.",
+        "questions": [
+          {
+            "prompt_text": "How many people, seated, can the main hall hold?",
+            "accepted": ["120", "a hundred and twenty", "one hundred and twenty"],
+            "word_limit": 3,
+            "evidence": "suitable for gatherings of up to a hundred and twenty people seated."
+          },
+          {
+            "prompt_text": "Who handles all bookings for the hall?",
+            "accepted": ["the booking secretary", "booking secretary"],
+            "word_limit": 3,
+            "evidence": "All bookings are handled by the hall's booking secretary."
+          },
+          {
+            "prompt_text": "Which groups may apply for a reduced rate, besides charities?",
+            "accepted": ["community groups", "non-profit community groups", "non-profit groups"],
+            "word_limit": 3,
+            "evidence": "Charities and non-profit community groups may apply for a reduced rate; please mention this when you enquire."
+          },
+          {
+            "prompt_text": "A full refund of the hire charge is given for cancellations made more than how long before the event?",
+            "accepted": ["four weeks", "more than four weeks"],
+            "word_limit": 3,
+            "evidence": "Cancellations made more than four weeks before the event will receive a full refund of any hire charge paid."
+          }
+        ]
+      }
+    ]
+  }
+]

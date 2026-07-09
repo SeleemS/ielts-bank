@@ -1,0 +1,627 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Engineering of the Gothic Cathedral",
+    "difficulty": "medium",
+    "topic_tags": ["architecture", "history"],
+    "body_html": "<p>The great cathedrals built in Europe during the later Middle Ages remain among the most ambitious structures ever raised by human hands. Soaring far above the towns that surrounded them, with walls of coloured glass and ceilings that seem to float overhead, these buildings represented a dramatic break from the heavier architecture that had come before. The style in which they were built later came to be called Gothic, and its development depended on a series of clever engineering solutions to a single central problem: how to build higher, and to let in more light, without the whole structure collapsing.</p><p>The architecture that preceded the Gothic style, generally known as Romanesque, relied on thick, solid walls and rounded arches to hold up the roof. Because the walls bore the entire weight of the building, they had to be massive, and the windows cut into them were necessarily small, so that the interiors tended to be dim and cavernous. Builders who wished to create taller and brighter churches were held back by the limitations of this system, in which every increase in height demanded ever more solid masonry.</p><p>The Gothic builders overcame these limitations through three key innovations that worked together. The first was the pointed arch, which replaced the rounded arch of the earlier style. A pointed arch directs the weight it carries more steeply downwards than a rounded one, allowing it to span wider spaces and to be built taller while exerting less outward pressure on its supports. This simple change in shape had far-reaching structural consequences.</p><p>The second innovation was the ribbed vault, a framework of stone ribs that carried the weight of the ceiling. Instead of a heavy, continuous stone roof pressing down evenly along the walls, the ribbed vault concentrated the load onto a skeleton of ribs, which channelled it down to specific points. The spaces between the ribs could then be filled with much lighter material. This meant that the roof no longer needed to be supported by a solid wall along its whole length, but only at the points where the ribs came down.</p><p>The third and most visually striking innovation was the flying buttress. Because the weight of the vault was concentrated at particular points, it tended to push the upper walls outwards at those points, threatening to topple them. The flying buttress solved this by transferring the outward thrust to sturdy supports standing away from the building, connected to it by arched bridges of stone. In effect, part of the structure that held the building up was moved outside the walls altogether. Freed from the need to be thick and solid, the walls could now be opened up with enormous windows.</p><p>It was these windows that gave the Gothic cathedral much of its character. The vast openings were filled with stained glass, small pieces of coloured glass held together by strips of lead and arranged to form pictures and patterns. As sunlight passed through them, the interior was flooded with shifting, jewel-like colour, an effect that contemporaries found deeply moving. For a largely illiterate population, the scenes depicted in the glass also served to tell stories and to convey religious teaching in visual form.</p><p>Building such a cathedral was an undertaking of staggering scale. Construction could continue for many decades, and in some cases well over a century, so that those who laid the foundations never saw the finished building. The work required the coordinated efforts of masons, carpenters, glaziers and countless labourers, directed by a master builder who held the overall design in his head and on rough drawings. Financing the work was a constant challenge, drawing on the resources of the church, wealthy donors and the wider community over several generations.</p><p>The reach for ever greater height was not without risk. As builders competed to construct the tallest and most daring structures, they sometimes pushed their materials and techniques beyond safe limits, and there were occasions when towers or vaults collapsed and had to be rebuilt. These failures taught hard lessons that were absorbed into later designs. Despite such setbacks, the Gothic cathedral stands as a triumph of medieval engineering and imagination, a demonstration of how a handful of structural ideas, combined with immense patience and skill, could turn heavy stone into buildings that appear to defy gravity.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Romanesque buildings had thick walls and small windows.",
+            "answer": "true",
+            "evidence": "generally known as Romanesque, relied on thick, solid walls and rounded arches... the windows cut into them were necessarily small, so that the interiors tended to be dim and cavernous."
+          },
+          {
+            "prompt_text": "A pointed arch exerts more outward pressure on its supports than a rounded arch.",
+            "answer": "false",
+            "evidence": "A pointed arch directs the weight it carries more steeply downwards than a rounded one, allowing it to span wider spaces and to be built taller while exerting less outward pressure on its supports."
+          },
+          {
+            "prompt_text": "The ribbed vault spread the weight of the ceiling evenly along the whole length of the walls.",
+            "answer": "false",
+            "evidence": "the ribbed vault concentrated the load onto a skeleton of ribs, which channelled it down to specific points... the roof no longer needed to be supported by a solid wall along its whole length."
+          },
+          {
+            "prompt_text": "The flying buttress transferred the outward thrust to supports standing away from the building.",
+            "answer": "true",
+            "evidence": "The flying buttress solved this by transferring the outward thrust to sturdy supports standing away from the building, connected to it by arched bridges of stone."
+          },
+          {
+            "prompt_text": "The stained glass was more expensive than the stone used in the walls.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Some cathedrals took more than a hundred years to build.",
+            "answer": "true",
+            "evidence": "Construction could continue for many decades, and in some cases well over a century, so that those who laid the foundations never saw the finished building."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What central problem did Gothic engineering aim to solve?",
+            "options": [
+              "how to build faster and more cheaply",
+              "how to build higher and let in more light without collapse",
+              "how to decorate walls with paintings",
+              "how to keep buildings warm in winter"
+            ],
+            "answer_index": 1,
+            "evidence": "how to build higher, and to let in more light, without the whole structure collapsing."
+          },
+          {
+            "prompt_text": "What happened to the walls once the flying buttress took the outward thrust?",
+            "options": [
+              "they had to be made even thicker",
+              "they could be opened up with enormous windows",
+              "they were removed entirely",
+              "they were painted with religious scenes"
+            ],
+            "answer_index": 1,
+            "evidence": "Freed from the need to be thick and solid, the walls could now be opened up with enormous windows."
+          },
+          {
+            "prompt_text": "Besides its beauty, what practical purpose did the stained glass serve?",
+            "options": [
+              "it kept out the cold",
+              "it supported the weight of the roof",
+              "it told stories and conveyed religious teaching to an illiterate population",
+              "it reflected sunlight away from the interior"
+            ],
+            "answer_index": 2,
+            "evidence": "For a largely illiterate population, the scenes depicted in the glass also served to tell stories and to convey religious teaching in visual form."
+          },
+          {
+            "prompt_text": "What sometimes happened when builders reached for ever greater height?",
+            "options": [
+              "the windows became too small",
+              "towers or vaults collapsed and had to be rebuilt",
+              "the master builders abandoned the projects",
+              "the cathedrals were left without roofs"
+            ],
+            "answer_index": 1,
+            "evidence": "there were occasions when towers or vaults collapsed and had to be rebuilt. These failures taught hard lessons that were absorbed into later designs."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What name is given to the architectural style that came before the Gothic?",
+            "accepted": ["Romanesque"],
+            "word_limit": 2,
+            "evidence": "The architecture that preceded the Gothic style, generally known as Romanesque, relied on thick, solid walls and rounded arches."
+          },
+          {
+            "prompt_text": "What type of arch replaced the rounded arch in Gothic buildings?",
+            "accepted": ["the pointed arch", "pointed arch", "pointed"],
+            "word_limit": 3,
+            "evidence": "The first was the pointed arch, which replaced the rounded arch of the earlier style."
+          },
+          {
+            "prompt_text": "What framework of stone carried the weight of the Gothic ceiling?",
+            "accepted": ["the ribbed vault", "ribbed vault", "ribs"],
+            "word_limit": 3,
+            "evidence": "The second innovation was the ribbed vault, a framework of stone ribs that carried the weight of the ceiling."
+          },
+          {
+            "prompt_text": "What material was used to hold the pieces of stained glass together?",
+            "accepted": ["lead"],
+            "word_limit": 2,
+            "evidence": "small pieces of coloured glass held together by strips of lead and arranged to form pictures and patterns."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Bauhaus and the Birth of Modern Design",
+    "difficulty": "medium",
+    "topic_tags": ["art", "architecture", "design"],
+    "body_html": "<p>Few schools have shaped the look of the modern world as profoundly as the Bauhaus, an institution of art, craft and design that operated in Germany for little more than a decade in the early twentieth century. Although it existed for a short time and was closed under political pressure, the ideas it developed spread across the world and continue to influence the design of buildings, furniture and everyday objects nearly a hundred years later. The school gave its name to a whole approach to design characterised by simplicity, function and a rejection of unnecessary ornament.</p><p>The Bauhaus was founded in 1919 by the architect Walter Gropius, who brought together the teaching of fine art and practical craft under a single roof. In the years before the school opened, art and craft had often been regarded as separate and unequal pursuits, with the fine artist enjoying higher status than the humble craftsman. Gropius rejected this division. He argued that there should be no fundamental difference between the artist and the craftsman, and that the two should be trained together so that beautiful design and skilled making could be reunited.</p><p>A distinctive feature of the school was the way its students were taught. Rather than beginning with the copying of old masters, newcomers took a preliminary course in which they explored materials, colour and form directly, learning through experiment and their own hands. After this foundation, students worked in a series of workshops devoted to particular materials and techniques, such as metal, wood, textiles and, later, wall painting. In these workshops they were typically guided by two teachers at once: an artist concerned with form, and an experienced craftsman concerned with technique.</p><p>The philosophy that emerged from this teaching placed great emphasis on function. Designers associated with the Bauhaus believed that the form of an object should follow from its purpose, and that decoration added merely for its own sake was dishonest and wasteful. A chair, a lamp or a building should be shaped by what it needed to do and by the nature of the materials from which it was made. This led to a preference for clean lines, plain surfaces and simple geometric shapes, an aesthetic that came to seem strikingly modern.</p><p>The Bauhaus also embraced the machine, at a time when many artists distrusted industrial production. Rather than lamenting the rise of the factory, its designers sought to create objects that could be manufactured in large numbers by machine while still being well designed. They produced prototypes for items such as tubular steel chairs, lamps and household goods that were intended not as unique handmade pieces but as models for mass production. In this way good design could, in principle, be made available to ordinary people rather than only to the wealthy.</p><p>The school did not remain in one place. It was originally established in the city of Weimar, but political hostility forced it to move to Dessau, where a famous new building designed by Gropius himself became a showcase for the school's ideas, with its glass walls and unadorned forms. Later the institution moved again, to Berlin, as conditions in Germany grew increasingly difficult. Throughout these moves the leadership of the school changed hands, passing from Gropius to later directors who continued to develop its work in different directions.</p><p>In 1933 the Bauhaus was closed for good under pressure from the new political regime, which regarded its modern outlook with suspicion. Yet the closure did not end its influence; if anything, it spread the school's ideas more widely. Many of the teachers and students left Germany and settled in other countries, carrying the principles of the Bauhaus with them. Several went on to teach and practise abroad, where they helped to shape modern architecture and design education far beyond the country of the school's birth.</p><p>The legacy of the Bauhaus is visible today in countless buildings of steel and glass, in furniture of simple geometric form, and in the very idea that everyday objects deserve careful and thoughtful design. Its insistence that beauty and usefulness belong together, and that good design should serve ordinary life, has become so widely accepted that it is easy to forget how radical it once seemed. For an institution that lasted only fourteen years, its impact on the modern world has been extraordinary.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The Bauhaus continued to influence design long after it had closed.",
+            "answer": "yes",
+            "evidence": "the ideas it developed spread across the world and continue to influence the design of buildings, furniture and everyday objects nearly a hundred years later."
+          },
+          {
+            "prompt_text": "Gropius believed the fine artist should have a higher status than the craftsman.",
+            "answer": "no",
+            "evidence": "He argued that there should be no fundamental difference between the artist and the craftsman, and that the two should be trained together."
+          },
+          {
+            "prompt_text": "Bauhaus designers thought that decoration added purely for its own sake was wasteful.",
+            "answer": "yes",
+            "evidence": "decoration added merely for its own sake was dishonest and wasteful."
+          },
+          {
+            "prompt_text": "The designers of the Bauhaus rejected the use of machines in production.",
+            "answer": "no",
+            "evidence": "The Bauhaus also embraced the machine... its designers sought to create objects that could be manufactured in large numbers by machine while still being well designed."
+          },
+          {
+            "prompt_text": "The tubular steel chair was the most popular Bauhaus product ever sold.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Who founded the Bauhaus in 1919?",
+            "options": [
+              "an experienced craftsman",
+              "the architect Walter Gropius",
+              "a group of factory owners",
+              "a government minister"
+            ],
+            "answer_index": 1,
+            "evidence": "The Bauhaus was founded in 1919 by the architect Walter Gropius, who brought together the teaching of fine art and practical craft under a single roof."
+          },
+          {
+            "prompt_text": "How did new students usually begin their studies?",
+            "options": [
+              "by copying the works of old masters",
+              "by designing complete buildings",
+              "by taking a preliminary course exploring materials, colour and form",
+              "by working in a factory"
+            ],
+            "answer_index": 2,
+            "evidence": "newcomers took a preliminary course in which they explored materials, colour and form directly, learning through experiment and their own hands."
+          },
+          {
+            "prompt_text": "According to Bauhaus philosophy, what should determine the form of an object?",
+            "options": [
+              "the wealth of its owner",
+              "its purpose and the nature of its materials",
+              "the latest fashions",
+              "the amount of decoration it could carry"
+            ],
+            "answer_index": 1,
+            "evidence": "the form of an object should follow from its purpose... A chair, a lamp or a building should be shaped by what it needed to do and by the nature of the materials from which it was made."
+          },
+          {
+            "prompt_text": "What effect did the closure of the school in 1933 have on its ideas?",
+            "options": [
+              "it caused them to be forgotten",
+              "it kept them confined to Germany",
+              "it helped to spread them more widely as people left the country",
+              "it stopped all further design education"
+            ],
+            "answer_index": 2,
+            "evidence": "the closure did not end its influence; if anything, it spread the school's ideas more widely. Many of the teachers and students left Germany and settled in other countries."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which country was the Bauhaus located?",
+            "accepted": ["Germany"],
+            "word_limit": 1,
+            "evidence": "the Bauhaus, an institution of art, craft and design that operated in Germany for little more than a decade."
+          },
+          {
+            "prompt_text": "In which city was the school originally established?",
+            "accepted": ["Weimar"],
+            "word_limit": 1,
+            "evidence": "It was originally established in the city of Weimar, but political hostility forced it to move to Dessau."
+          },
+          {
+            "prompt_text": "To which city did the school move after Weimar, where Gropius designed a famous building?",
+            "accepted": ["Dessau"],
+            "word_limit": 1,
+            "evidence": "it to move to Dessau, where a famous new building designed by Gropius himself became a showcase for the school's ideas."
+          },
+          {
+            "prompt_text": "The Bauhaus designers produced models intended for what kind of production?",
+            "accepted": ["mass production", "mass"],
+            "word_limit": 2,
+            "evidence": "not as unique handmade pieces but as models for mass production."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Origins of Opera",
+    "difficulty": "medium",
+    "topic_tags": ["music", "history"],
+    "body_html": "<p>Opera, the art form in which a dramatic story is told entirely or largely through singing, is often regarded as one of the great achievements of Western music. Yet it did not evolve gradually out of earlier musical traditions in the way one might expect. Instead, it was deliberately invented, the product of a group of thinkers in Italy around the end of the sixteenth century who set out to create a new kind of theatre. Their experiment gave rise to a form that would spread across Europe and remain popular for centuries.</p><p>The people responsible were members of an informal circle of scholars, poets and musicians who met in the city of Florence. This group is often referred to by historians as the Camerata. Its members were fascinated by the culture of ancient Greece, and in particular by ancient Greek drama, which they believed had been sung or chanted rather than simply spoken. They wished to revive what they imagined to be the powerful emotional effect of this ancient theatre, in which words and music had supposedly worked together to move the audience.</p><p>A central concern of the group was the relationship between words and music. The elaborate choral music popular at the time often set several voices singing different words at once, which made the text almost impossible to follow. The reformers objected to this, arguing that music should serve the words and make their meaning clear, not bury it beneath layers of competing sound. They wanted a style of singing in which a single voice could deliver a text clearly while the music heightened its emotional force.</p><p>Out of these ideas emerged a new manner of singing, sometimes described as a kind of heightened speech, in which a solo voice followed the natural rhythms and inflections of spoken language, supported by a simple instrumental accompaniment. This allowed a character to express feelings and to advance the story in a way that ordinary song, with its repeated words and fixed patterns, could not. It was this flexible, speech-like singing that made sung drama possible, for it enabled performers to carry a narrative forward through music.</p><p>The earliest operas took their subjects from ancient myth and legend, drawing on the same classical world that had inspired the reformers. Among the most famous of the early works was one based on the myth of a musician who descends to the underworld to recover his lost wife, a story whose subject was itself the power of music. Composed in the early years of the seventeenth century, this work is often regarded as the first great masterpiece of the new form, combining expressive solo singing with choruses, dances and instrumental passages into a satisfying whole.</p><p>At first opera was an exclusive entertainment, performed at the courts of princes and nobles for invited guests on special occasions. It was closely bound up with the display of wealth and power, and ordinary people had no access to it. This began to change when the first public opera houses opened, where anyone who could pay for a ticket was admitted. The appearance of these theatres transformed opera from a private courtly amusement into a form of popular entertainment, and it quickly attracted enthusiastic audiences.</p><p>As opera spread beyond Italy, it developed distinct national styles. Composers and audiences in different countries adapted the form to their own languages and tastes, so that the opera of one nation could differ markedly from that of another in its subjects, its balance of singing and spectacle, and its musical character. Debates arose about how opera should be written and what it was for, and these arguments helped to drive the art form forward, producing a rich variety of approaches over the following centuries.</p><p>From its beginnings as the deliberate experiment of a small group of Italian enthusiasts, opera grew into one of the most ambitious and enduring of all art forms, uniting music, poetry, drama, design and dance in a single spectacle. The reformers who gathered in Florence could hardly have imagined the scale of what they had set in motion, yet their basic conviction, that music joined to words could move the human heart with unique power, has proved remarkably durable, and continues to fill opera houses around the world.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Opera developed gradually out of earlier musical traditions.",
+            "answer": "false",
+            "evidence": "Yet it did not evolve gradually out of earlier musical traditions in the way one might expect. Instead, it was deliberately invented."
+          },
+          {
+            "prompt_text": "The members of the Florentine group were inspired by ancient Greek drama.",
+            "answer": "true",
+            "evidence": "Its members were fascinated by the culture of ancient Greece, and in particular by ancient Greek drama, which they believed had been sung or chanted rather than simply spoken."
+          },
+          {
+            "prompt_text": "The reformers approved of music in which several voices sang different words at the same time.",
+            "answer": "false",
+            "evidence": "The reformers objected to this, arguing that music should serve the words and make their meaning clear, not bury it beneath layers of competing sound."
+          },
+          {
+            "prompt_text": "The earliest operas were based on ancient myths and legends.",
+            "answer": "true",
+            "evidence": "The earliest operas took their subjects from ancient myth and legend, drawing on the same classical world that had inspired the reformers."
+          },
+          {
+            "prompt_text": "The first public opera house was larger than any of the private court theatres.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Opera developed different national styles as it spread beyond Italy.",
+            "answer": "true",
+            "evidence": "As opera spread beyond Italy, it developed distinct national styles. Composers and audiences in different countries adapted the form to their own languages and tastes."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What did the members of the Camerata want to revive?",
+            "options": [
+              "the emotional effect they believed ancient Greek theatre had had",
+              "the popular songs of their own day",
+              "the choral music of the church",
+              "the dances of the Italian courts"
+            ],
+            "answer_index": 0,
+            "evidence": "They wished to revive what they imagined to be the powerful emotional effect of this ancient theatre, in which words and music had supposedly worked together to move the audience."
+          },
+          {
+            "prompt_text": "What made sung drama possible, according to the passage?",
+            "options": [
+              "the use of large choirs singing together",
+              "a flexible, speech-like style of singing for a solo voice",
+              "the invention of new musical instruments",
+              "the building of large public theatres"
+            ],
+            "answer_index": 1,
+            "evidence": "It was this flexible, speech-like singing that made sung drama possible, for it enabled performers to carry a narrative forward through music."
+          },
+          {
+            "prompt_text": "What was the subject of the famous early opera mentioned in the passage?",
+            "options": [
+              "a battle between rival cities",
+              "the life of a Florentine prince",
+              "a musician who descends to the underworld to recover his wife",
+              "the founding of ancient Greece"
+            ],
+            "answer_index": 2,
+            "evidence": "one based on the myth of a musician who descends to the underworld to recover his lost wife, a story whose subject was itself the power of music."
+          },
+          {
+            "prompt_text": "How did the opening of public opera houses change the art form?",
+            "options": [
+              "it made opera a private courtly amusement",
+              "it turned opera into a form of popular entertainment",
+              "it ended performances outside Italy",
+              "it removed music from the drama"
+            ],
+            "answer_index": 1,
+            "evidence": "The appearance of these theatres transformed opera from a private courtly amusement into a form of popular entertainment, and it quickly attracted enthusiastic audiences."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which Italian city did the group of reformers meet?",
+            "accepted": ["Florence"],
+            "word_limit": 1,
+            "evidence": "an informal circle of scholars, poets and musicians who met in the city of Florence."
+          },
+          {
+            "prompt_text": "By what name is the Florentine group often referred to by historians?",
+            "accepted": ["the Camerata", "Camerata"],
+            "word_limit": 2,
+            "evidence": "This group is often referred to by historians as the Camerata."
+          },
+          {
+            "prompt_text": "The reformers thought that music should serve what element of the drama?",
+            "accepted": ["the words", "words"],
+            "word_limit": 2,
+            "evidence": "arguing that music should serve the words and make their meaning clear."
+          },
+          {
+            "prompt_text": "Where was opera first performed, before public theatres opened?",
+            "accepted": ["at the courts", "the courts", "courts", "at court"],
+            "word_limit": 3,
+            "evidence": "At first opera was an exclusive entertainment, performed at the courts of princes and nobles for invited guests on special occasions."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Rise of the Novel",
+    "difficulty": "medium",
+    "topic_tags": ["literature", "history"],
+    "body_html": "<p>The novel, a long work of prose fiction telling the story of imagined characters, is so central to modern reading that it can be hard to remember it is a comparatively recent form. For most of literary history, the dominant forms were poetry and drama, and prose tales tended to deal with heroes, myths and romances rather than the ordinary lives of ordinary people. The novel as we know it, concerned with individuals and their inner experience set against a realistic social background, emerged only a few centuries ago and rose to prominence with remarkable speed.</p><p>Several developments helped to make the rise of the novel possible. The spread of printing had gradually reduced the cost of books and increased their availability, so that reading was no longer confined to a small educated elite. At the same time, a growing and increasingly prosperous middle class provided a new body of readers with the leisure and money to buy books for entertainment. Rising levels of literacy, especially among women, expanded this readership further. Together these changes created a market for a new kind of writing aimed at a broad audience.</p><p>The novels that emerged to meet this demand differed from earlier prose fiction in important ways. Rather than recounting the fantastic adventures of legendary figures, they told stories about characters who resembled the readers themselves, placed in recognisable everyday settings. They paid close attention to the details of daily life, to money, work, family and social position, and above all to the thoughts and feelings of their central characters. This concern with individual experience and with a convincing picture of society gave the new form its distinctive realism.</p><p>Early novels experimented with various ways of telling their stories. Some were written as a series of letters exchanged between characters, a method that allowed readers to follow events through the differing viewpoints and private feelings of those involved. Others adopted the form of a fictional memoir or confession, in which a character appeared to look back and narrate the events of his or her own life. These techniques helped to create the sense of intimacy and psychological depth that readers found so absorbing.</p><p>The new form was not universally admired. Some critics and moralists regarded novels with suspicion, fearing that they filled the heads of readers, particularly young and female readers, with unrealistic expectations and idle fantasies. Reading fiction was sometimes condemned as a waste of time or even as a corrupting influence. Such disapproval did little to slow the growth of the form, however, and may even have added to its appeal. Novels continued to be produced and consumed in ever greater numbers.</p><p>The way novels reached their readers also shaped how they were written. Many were published not all at once but in instalments, appearing chapter by chapter over a period of weeks or months in magazines or as separate parts. This method of publication encouraged authors to end each instalment at a moment of suspense, so that readers would be eager to buy the next one. It also allowed writers to gauge the reaction of their audience as a story unfolded and, in some cases, to adjust the course of the plot in response.</p><p>By the nineteenth century the novel had become the dominant literary form of the age, and some of its practitioners achieved enormous fame and popularity. Novels were widely read and discussed, and successful authors could reach a vast public. The form proved capable of great variety, ranging from tales of romance and adventure to serious explorations of society, morality and the human mind. Writers used the novel to entertain, but also to comment on the injustices and problems of their time, and some works helped to shape public opinion on important questions.</p><p>The novel has continued to evolve ever since, adapting to changing tastes, technologies and ideas while retaining its essential character as an extended prose story about imagined lives. Its rise transformed the reading habits of the modern world and gave literature a new way of exploring individual experience in depth. What began as a form regarded by some with distrust has become perhaps the most widely read and influential kind of writing of the past few centuries.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "For most of literary history, poetry and drama were more dominant than prose fiction.",
+            "answer": "true",
+            "evidence": "For most of literary history, the dominant forms were poetry and drama, and prose tales tended to deal with heroes, myths and romances."
+          },
+          {
+            "prompt_text": "The spread of printing made books more expensive and harder to obtain.",
+            "answer": "false",
+            "evidence": "The spread of printing had gradually reduced the cost of books and increased their availability."
+          },
+          {
+            "prompt_text": "Early novels focused on the fantastic adventures of legendary heroes.",
+            "answer": "false",
+            "evidence": "Rather than recounting the fantastic adventures of legendary figures, they told stories about characters who resembled the readers themselves, placed in recognisable everyday settings."
+          },
+          {
+            "prompt_text": "Some critics worried that novels gave readers unrealistic expectations.",
+            "answer": "true",
+            "evidence": "fearing that they filled the heads of readers, particularly young and female readers, with unrealistic expectations and idle fantasies."
+          },
+          {
+            "prompt_text": "Novels published in instalments were more profitable than those published all at once.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "By the nineteenth century the novel had become the dominant literary form.",
+            "answer": "true",
+            "evidence": "By the nineteenth century the novel had become the dominant literary form of the age, and some of its practitioners achieved enormous fame and popularity."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Which social change helped create a market for novels?",
+            "options": [
+              "the decline of the middle class",
+              "the growth of a prosperous middle class with leisure to read",
+              "the closing of printing houses",
+              "the disappearance of poetry"
+            ],
+            "answer_index": 1,
+            "evidence": "a growing and increasingly prosperous middle class provided a new body of readers with the leisure and money to buy books for entertainment."
+          },
+          {
+            "prompt_text": "What gave the new form its distinctive realism?",
+            "options": [
+              "its use of legendary heroes",
+              "its focus on fantastic adventures",
+              "its concern with individual experience and a convincing picture of society",
+              "its rejection of everyday settings"
+            ],
+            "answer_index": 2,
+            "evidence": "This concern with individual experience and with a convincing picture of society gave the new form its distinctive realism."
+          },
+          {
+            "prompt_text": "Why did authors often end an instalment at a moment of suspense?",
+            "options": [
+              "to reduce the length of their novels",
+              "so that readers would be eager to buy the next one",
+              "to avoid criticism from moralists",
+              "because printing was expensive"
+            ],
+            "answer_index": 1,
+            "evidence": "This method of publication encouraged authors to end each instalment at a moment of suspense, so that readers would be eager to buy the next one."
+          },
+          {
+            "prompt_text": "Besides entertaining, what else did writers use the novel to do?",
+            "options": [
+              "to teach foreign languages",
+              "to record historical dates",
+              "to comment on the injustices and problems of their time",
+              "to replace poetry entirely"
+            ],
+            "answer_index": 2,
+            "evidence": "Writers used the novel to entertain, but also to comment on the injustices and problems of their time, and some works helped to shape public opinion."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Rising literacy among which group especially expanded the readership?",
+            "accepted": ["women"],
+            "word_limit": 2,
+            "evidence": "Rising levels of literacy, especially among women, expanded this readership further."
+          },
+          {
+            "prompt_text": "Some early novels were written as a series of what exchanged between characters?",
+            "accepted": ["letters"],
+            "word_limit": 2,
+            "evidence": "Some were written as a series of letters exchanged between characters."
+          },
+          {
+            "prompt_text": "Many novels were published not all at once but in what form?",
+            "accepted": ["instalments", "in instalments"],
+            "word_limit": 2,
+            "evidence": "Many were published not all at once but in instalments, appearing chapter by chapter over a period of weeks or months."
+          },
+          {
+            "prompt_text": "A novel is described as a long work of prose in which category of writing?",
+            "accepted": ["fiction", "prose fiction"],
+            "word_limit": 2,
+            "evidence": "The novel, a long work of prose fiction telling the story of imagined characters."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Oral Storytelling Traditions",
+    "difficulty": "medium",
+    "topic_tags": ["literature", "anthropology", "world cultures"],
+    "body_html": "<p>Long before the invention of writing, human beings preserved and passed on their knowledge, history and beliefs through the spoken word. In societies without written records, stories, poems and songs were held in memory and recited aloud, handed down from one generation to the next by word of mouth. This oral tradition was not a crude substitute for writing but a sophisticated system in its own right, capable of preserving vast amounts of material with surprising accuracy over long periods of time.</p><p>The performers who carried these traditions were often specialists who had undergone long training. In many cultures there existed a recognised class of skilled storytellers, poets or singers whose task was to remember and perform the community's most important tales. Such individuals commanded great respect, for they were the living libraries of their people, the guardians of history, genealogy and law as well as of entertainment. To lose such a person could mean the loss of knowledge that existed nowhere else.</p><p>Holding long narratives in memory required special techniques, and oral traditions developed a range of devices to make this possible. Stories and poems were often composed in verse, with regular rhythm and sometimes rhyme, features that make words easier to recall. Repetition played an important role, with certain phrases, descriptions or whole passages recurring throughout a work, providing the performer with familiar building blocks. Such repeated expressions, sometimes called formulas, could be slotted into the narrative as needed, helping the storyteller to maintain the flow of the performance.</p><p>Because oral performance is not fixed in the way a written text is, the same story could vary from one telling to another. A skilled performer did not simply recite a memorised script word for word but re-created the tale afresh on each occasion, adjusting its length and emphasis to suit the audience and the situation. This flexibility meant that oral works were living things, capable of growing and changing over time, so that a single story might exist in many different versions across a region without any one of them being regarded as the single correct form.</p><p>Scholars once assumed that the great epic poems that survive from the ancient world had been the work of a single author writing at a desk. Later research into living oral traditions challenged this view. By studying performers who still composed and sang long narrative poems in performance, researchers came to understand how such vast works could be created and transmitted without writing. They noticed the same reliance on rhythm, repetition and formulaic phrases, and concluded that some famous ancient epics had probably originated in a similar oral tradition before eventually being written down.</p><p>Oral storytelling served many purposes beyond mere entertainment. Through their stories, communities passed on practical knowledge, moral lessons and a sense of shared identity. Tales explained the origins of the world and of the people who told them, recorded the deeds of ancestors, and set out the customs and values by which people were expected to live. In this way the oral tradition helped to bind a community together and to give its members a common understanding of who they were and where they had come from.</p><p>The coming of writing did not immediately destroy these traditions, and for a long time oral and written culture existed side by side. In many places storytelling remained a central form of communal life, an occasion on which people gathered to listen, to remember and to share. Even in societies where writing was well established, the spoken tale retained a power and immediacy that the written word could not fully replace, and oral performance continued to flourish alongside books.</p><p>In more recent times, however, many oral traditions have come under threat. The spread of literacy, formal schooling and modern media has changed the way people spend their time and pass on knowledge, and in some communities the old stories are no longer learned by the young. Aware of what may be lost, scholars and community members in various parts of the world have made efforts to record and preserve these traditions before they disappear. Yet a recording can capture only a single performance, and cannot fully reproduce the living art of the storyteller, whose tale was made anew each time it was told.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Oral tradition was a sophisticated system capable of preserving material accurately over long periods.",
+            "answer": "true",
+            "evidence": "This oral tradition was not a crude substitute for writing but a sophisticated system in its own right, capable of preserving vast amounts of material with surprising accuracy over long periods of time."
+          },
+          {
+            "prompt_text": "Skilled storytellers in many cultures were treated with little respect.",
+            "answer": "false",
+            "evidence": "Such individuals commanded great respect, for they were the living libraries of their people, the guardians of history, genealogy and law as well as of entertainment."
+          },
+          {
+            "prompt_text": "Repetition of phrases helped performers to remember long narratives.",
+            "answer": "true",
+            "evidence": "Repetition played an important role, with certain phrases, descriptions or whole passages recurring throughout a work, providing the performer with familiar building blocks."
+          },
+          {
+            "prompt_text": "A single oral story usually existed in only one fixed and correct version.",
+            "answer": "false",
+            "evidence": "a single story might exist in many different versions across a region without any one of them being regarded as the single correct form."
+          },
+          {
+            "prompt_text": "Female storytellers were more common than male storytellers in ancient societies.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The arrival of writing immediately put an end to oral traditions.",
+            "answer": "false",
+            "evidence": "The coming of writing did not immediately destroy these traditions, and for a long time oral and written culture existed side by side."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Why were skilled storytellers so important to their communities?",
+            "options": [
+              "because they could read and write",
+              "because they were the living libraries of their people",
+              "because they controlled the food supply",
+              "because they invented new writing systems"
+            ],
+            "answer_index": 1,
+            "evidence": "they were the living libraries of their people, the guardians of history, genealogy and law as well as of entertainment."
+          },
+          {
+            "prompt_text": "What are the recurring expressions used by oral performers sometimes called?",
+            "options": [
+              "verses",
+              "genealogies",
+              "formulas",
+              "epics"
+            ],
+            "answer_index": 2,
+            "evidence": "Such repeated expressions, sometimes called formulas, could be slotted into the narrative as needed."
+          },
+          {
+            "prompt_text": "What did research into living oral traditions reveal about ancient epics?",
+            "options": [
+              "that they had all been lost",
+              "that they had been written by a single author at a desk",
+              "that they had probably originated in an oral tradition before being written down",
+              "that they contained no repetition"
+            ],
+            "answer_index": 2,
+            "evidence": "concluded that some famous ancient epics had probably originated in a similar oral tradition before eventually being written down."
+          },
+          {
+            "prompt_text": "According to the passage, why can a recording not fully preserve an oral tradition?",
+            "options": [
+              "because recordings are of poor quality",
+              "because it captures only a single performance and not the living art",
+              "because storytellers refuse to be recorded",
+              "because the stories are too short to record"
+            ],
+            "answer_index": 1,
+            "evidence": "a recording can capture only a single performance, and cannot fully reproduce the living art of the storyteller, whose tale was made anew each time it was told."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In what form were stories and poems often composed to make them easier to recall?",
+            "accepted": ["verse", "in verse"],
+            "word_limit": 2,
+            "evidence": "Stories and poems were often composed in verse, with regular rhythm and sometimes rhyme, features that make words easier to recall."
+          },
+          {
+            "prompt_text": "Rather than reciting word for word, a skilled performer did what to the tale on each occasion?",
+            "accepted": ["re-created it", "re-created", "recreated it", "recreated"],
+            "word_limit": 3,
+            "evidence": "a skilled performer did not simply recite a memorised script word for word but re-created the tale afresh on each occasion."
+          },
+          {
+            "prompt_text": "Besides entertainment, oral stories gave a community a shared sense of what?",
+            "accepted": ["identity", "shared identity", "a sense of shared identity"],
+            "word_limit": 3,
+            "evidence": "communities passed on practical knowledge, moral lessons and a sense of shared identity."
+          },
+          {
+            "prompt_text": "The spread of what, along with schooling and modern media, has threatened oral traditions?",
+            "accepted": ["literacy"],
+            "word_limit": 2,
+            "evidence": "The spread of literacy, formal schooling and modern media has changed the way people spend their time and pass on knowledge."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,302 @@
+[
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should the Death Penalty Be Abolished?",
+    "task": 2,
+    "topic_tags": ["crime", "government"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>A number of countries continue to use capital punishment for the most serious crimes, while others have removed it from their legal systems entirely.</p><p>To what extent do you agree or disagree that the death penalty should be abolished everywhere?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Do Celebrities Deserve Their High Salaries?",
+    "task": 2,
+    "topic_tags": ["media", "society"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Famous actors, singers and sports stars often earn far more money than professionals such as doctors, teachers and scientists whose work benefits society directly.</p><p>To what extent do you agree or disagree that these high salaries are justified?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should Governments Prioritise Public Transport Over Roads?",
+    "task": 2,
+    "topic_tags": ["urbanisation", "government"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>As cities expand, some people believe that governments should spend most of their transport budget on buses, trains and trams rather than on building and widening roads for cars.</p><p>To what extent do you agree or disagree with this view?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should Second Languages Be Taught in Primary School?",
+    "task": 2,
+    "topic_tags": ["education", "globalisation"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Some educationalists argue that children should begin learning a foreign language in the first years of primary school, while others feel this age should be reserved for mastering their first language.</p><p>To what extent do you agree or disagree that a second language should be taught from an early age?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Is Advertising Junk Food to Children Harmful?",
+    "task": 2,
+    "topic_tags": ["media", "health"],
+    "essay_type": "opinion",
+    "prompt_html": "<p>Manufacturers of sugary snacks and fizzy drinks frequently target their advertising at young children through television, apps and social media.</p><p>To what extent do you agree or disagree that this kind of advertising should be banned completely?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Homeschooling Versus Traditional Schooling",
+    "task": 2,
+    "topic_tags": ["education", "family"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>A growing number of parents choose to educate their children at home rather than sending them to a conventional school. Supporters praise the flexibility this offers, but critics worry about its effects on children.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Nuclear Power - Solution or Threat?",
+    "task": 2,
+    "topic_tags": ["environment", "science"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Some experts see nuclear energy as a clean and reliable way to meet growing electricity demand, while others regard it as dangerous and too costly to justify.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should Online News Be Free or Paid For?",
+    "task": 2,
+    "topic_tags": ["media", "technology"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Many newspapers now charge readers a subscription to access their websites. Some people believe reliable journalism must be paid for, while others argue that access to news should be free for everyone.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Genetic Modification of Food Crops",
+    "task": 2,
+    "topic_tags": ["science", "environment"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>Scientists are increasingly able to alter the genes of food crops to make them grow faster or resist disease. Some welcome this as a way to feed a growing population, while others fear unknown consequences for health and nature.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Traditional Remedies or Modern Medicine?",
+    "task": 2,
+    "topic_tags": ["health", "culture"],
+    "essay_type": "discussion",
+    "prompt_html": "<p>In many parts of the world, people still rely on traditional herbal remedies passed down through generations, while others trust only modern, scientifically tested medicine.</p><p>Discuss both views and give your own opinion.</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Youth Unemployment in Modern Economies",
+    "task": 2,
+    "topic_tags": ["work", "society"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>In many countries, large numbers of young people finish their education but are unable to find a job for a long period of time.</p><p>What problems does youth unemployment cause, and what measures could be taken to reduce it?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Decline of Bee Populations",
+    "task": 2,
+    "topic_tags": ["environment", "science"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Bees and other pollinating insects, which are essential for growing many of the world's crops, are disappearing at an alarming rate in several regions.</p><p>What are the causes of this decline, and what can be done to address it?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Overcrowding at Popular Tourist Destinations",
+    "task": 2,
+    "topic_tags": ["tourism", "environment"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Some famous cities and natural sites now receive so many visitors that local residents and the environment are put under serious strain.</p><p>What problems are caused by this over-tourism, and what solutions would you suggest?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Rise of Household Debt",
+    "task": 2,
+    "topic_tags": ["society", "government"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>In many societies, ordinary families are borrowing more and more money through credit cards and loans, and personal debt has reached record levels.</p><p>What problems can high levels of household debt cause, and what steps could be taken to tackle them?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Digital Addiction Among Young People",
+    "task": 2,
+    "topic_tags": ["technology", "health"],
+    "essay_type": "problem-solution",
+    "prompt_html": "<p>Many teenagers find it difficult to put down their phones and spend a large part of each day on games, videos and social media.</p><p>What problems does this dependence on digital devices create, and what solutions can you recommend?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Living in a Multigenerational Household",
+    "task": 2,
+    "topic_tags": ["family", "society"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>In some cultures it is common for grandparents, parents and children to all live together under one roof rather than in separate homes.</p><p>Do the advantages of living in a multigenerational household outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Growth of Online Learning Platforms",
+    "task": 2,
+    "topic_tags": ["education", "technology"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>It is now possible to take entire university courses online, watching lectures and submitting work over the internet without ever attending a campus.</p><p>Do the advantages of studying through online platforms outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Hosting Major International Sporting Events",
+    "task": 2,
+    "topic_tags": ["society", "government"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>Many cities compete for the right to host large sporting events such as the Olympic Games or the football World Cup, which require enormous investment.</p><p>Do the advantages of hosting such events outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Working for a Large Multinational Company",
+    "task": 2,
+    "topic_tags": ["work", "globalisation"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>Many graduates aim to work for large multinational corporations that operate in dozens of countries rather than for small local firms.</p><p>Do the advantages of working for a multinational company outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Moving Towards a Cashless Society",
+    "task": 2,
+    "topic_tags": ["technology", "society"],
+    "essay_type": "advantages-disadvantages",
+    "prompt_html": "<p>In some countries, physical money is being used less and less as people pay for almost everything with cards and phone apps.</p><p>Do the advantages of a society without cash outweigh the disadvantages?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Why So Many People Move to Cities",
+    "task": 2,
+    "topic_tags": ["urbanisation", "society"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Across the world, people continue to leave rural areas and move into large cities in ever greater numbers.</p><p>Why do so many people choose to move to cities? What effects does this movement have on the countryside they leave behind?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Disappearance of Minority Languages",
+    "task": 2,
+    "topic_tags": ["culture", "globalisation"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Every year, a number of the world's smaller languages stop being spoken as their last remaining speakers pass away.</p><p>Why are so many minority languages dying out? Do you think efforts should be made to keep them alive?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Falling Public Trust in the News Media",
+    "task": 2,
+    "topic_tags": ["media", "society"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Surveys in many countries suggest that people increasingly distrust newspapers, television channels and other traditional sources of news.</p><p>Why do you think trust in the news media has fallen? What could be done to rebuild public confidence in journalism?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Why Fewer People Cook Meals at Home",
+    "task": 2,
+    "topic_tags": ["health", "society"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>In many households, home-cooked meals are being replaced by ready-made food and restaurant deliveries.</p><p>Why are fewer people preparing meals at home than in the past? What effects does this trend have on families and society?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Growing Popularity of Extreme Sports",
+    "task": 2,
+    "topic_tags": ["health", "society"],
+    "essay_type": "two-part",
+    "prompt_html": "<p>Dangerous activities such as rock climbing, skydiving and white-water rafting are attracting more and more participants around the world.</p><p>Why are extreme sports becoming so popular? Do you think governments should discourage people from taking part in them?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Expansion of the Gig Economy",
+    "task": 2,
+    "topic_tags": ["work", "technology"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>A rising number of people no longer hold permanent jobs and instead earn a living through short-term tasks arranged by apps and websites, such as delivering food or driving passengers.</p><p>Is the growth of this so-called gig economy a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Spread of the Same Food Brands Worldwide",
+    "task": 2,
+    "topic_tags": ["globalisation", "culture"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>The same international restaurant chains and food brands can now be found in almost every country, and people in very different places increasingly eat the same meals.</p><p>Is this a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: The Automation of Factory Work",
+    "task": 2,
+    "topic_tags": ["technology", "work"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Robots and automated machines are carrying out an increasing share of the work in factories that was once done by human hands.</p><p>Is this increasing automation of manufacturing a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: People Marrying and Having Children Later",
+    "task": 2,
+    "topic_tags": ["family", "society"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>In many countries, people are now choosing to marry and to start a family much later in life than previous generations did.</p><p>Is this trend towards delaying marriage and children a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Tourism in Fragile Natural Environments",
+    "task": 2,
+    "topic_tags": ["tourism", "environment"],
+    "essay_type": "positive-negative",
+    "prompt_html": "<p>Remote and delicate places such as rainforests, coral reefs and polar regions are increasingly being opened up to tourists.</p><p>Is the growth of tourism in these fragile environments a positive or negative development?</p><p>Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  }
+]

@@ -21,6 +21,13 @@ const SectionLanding = ({
   items = [],
 }) => {
   const canonical = `${SITE_URL}/${section}question`;
+  const skillLabel = section
+    ? section.charAt(0).toUpperCase() + section.slice(1)
+    : 'Practice';
+  const ogTitle = `IELTS ${skillLabel} Practice`;
+  const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
+    ogTitle
+  )}&type=${encodeURIComponent(section || 'default')}`;
 
   return (
     <>
@@ -34,8 +41,13 @@ const SectionLanding = ({
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:site_name" content="IELTS-Bank" />
-        <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={`${ogTitle} — IELTS-Bank`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
       </Head>
 
       <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">

@@ -1,0 +1,102 @@
+[
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Mobile Phone Subscriptions in Three Countries",
+    "task": 1,
+    "topic_tags": ["technology"],
+    "essay_type": "line graph",
+    "prompt_html": "<p>The line graph below shows the number of mobile phone subscriptions, measured in millions, in three countries between 2005 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows the number of subscriptions in millions, ranging from 0 to 120, and the horizontal axis shows the years 2005, 2010, 2015 and 2020. Country A begins lowest at around 20 million in 2005 and rises steeply throughout, overtaking the others to reach about 110 million by 2020. Country B starts highest at roughly 60 million but grows only gently, finishing at around 80 million. Country C begins at about 35 million, climbs steadily to a peak of 70 million in 2015, and then levels off, ending the period at the same figure.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Unemployment Rates in Two Regions",
+    "task": 1,
+    "topic_tags": ["work", "society"],
+    "essay_type": "line graph",
+    "prompt_html": "<p>The line graph below shows the unemployment rate, as a percentage of the workforce, in a northern region and a southern region of one country between 2000 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows the unemployment rate from 0 to 14 per cent, and the horizontal axis is marked every five years from 2000 to 2020. The northern region begins at about 6 per cent, rises sharply to a peak of 12 per cent in 2010, and then falls back to around 5 per cent by 2020. The southern region starts higher at roughly 9 per cent, remains fairly stable until 2010, and afterwards declines gradually to about 7 per cent, ending the period above the northern region for the first time.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Weekly Leisure Hours by Age Group",
+    "task": 1,
+    "topic_tags": ["society"],
+    "essay_type": "bar chart",
+    "prompt_html": "<p>The bar chart below shows the average number of hours per week that people in three age groups spent on four leisure activities in one country in 2021. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows hours per week from 0 to 20, and the horizontal axis groups the activities of watching television, using social media, exercising and reading, each with three bars for people aged 18 to 29, 30 to 49 and 50 and over. Adults aged 50 and over watched the most television at about 18 hours, compared with 10 hours for the youngest group. Social media use was highest among 18 to 29 year olds at roughly 15 hours and lowest among the oldest group at 4 hours. Time spent exercising was similar across all groups at around 5 hours, while reading rose steadily with age, from 2 hours in the youngest group to 8 hours in the oldest.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Average Monthly Rainfall in Three Cities",
+    "task": 1,
+    "topic_tags": ["environment"],
+    "essay_type": "bar chart",
+    "prompt_html": "<p>The bar chart below shows the average monthly rainfall, measured in millimetres, in three cities during four selected months of the year. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The vertical axis shows rainfall in millimetres from 0 to 200, and the horizontal axis groups the months of January, April, July and October, each with a bar for the cities of Greenport, Hillton and Marisa. Greenport was wettest in January at about 180 millimetres and driest in July at only 20. Hillton showed the opposite pattern, with its lowest rainfall of 30 millimetres in January and its highest of 160 in July. Marisa remained the most consistent throughout, with figures between 90 and 110 millimetres in every month shown.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Sources of Household Energy in a Country",
+    "task": 1,
+    "topic_tags": ["environment"],
+    "essay_type": "pie chart",
+    "prompt_html": "<p>The two pie charts below show the sources of energy used by households in one country in 2000 and in 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>Each chart is divided into five sources: gas, electricity from coal, electricity from renewables, oil and wood. In 2000, gas provided the largest share at 40 per cent, followed by electricity from coal at 30 per cent, oil at 15 per cent, wood at 10 per cent and renewable electricity at just 5 per cent. By 2020, renewable electricity had risen sharply to 30 per cent, while electricity from coal had fallen to 10 per cent. Gas remained important but declined to 35 per cent, oil dropped to 15 per cent and wood fell to 10 per cent.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: University Enrolment by Field of Study",
+    "task": 1,
+    "topic_tags": ["education"],
+    "essay_type": "table",
+    "prompt_html": "<p>The table below shows the number of students, in thousands, enrolled in four fields of study at universities in one country in 2005, 2015 and 2023. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The rows list Engineering, Business, Arts and Humanities, and Health Sciences, and the columns give the figures for 2005, 2015 and 2023. Engineering enrolment rose from 40 to 55 and then to 70 thousand; Business increased from 60 to 75 but fell back to 65 thousand; Arts and Humanities declined steadily from 50 to 42 and then to 35 thousand; and Health Sciences grew most rapidly, from 30 to 48 and then to 68 thousand. By 2023, Engineering had the largest number of students, while Arts and Humanities had the smallest.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: Population by Age Band Over Three Decades",
+    "task": 1,
+    "topic_tags": ["society"],
+    "essay_type": "table",
+    "prompt_html": "<p>The table below shows the percentage of the population in three age bands in one country in 1980, 2000 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The rows list the age bands 0 to 14, 15 to 64, and 65 and over, and the columns give the percentage figures for 1980, 2000 and 2020. The proportion of children aged 0 to 14 fell steadily from 30 per cent in 1980 to 22 per cent in 2000 and then to 16 per cent in 2020. The working-age band of 15 to 64 remained the largest throughout, changing only slightly from 62 to 63 and then to 60 per cent. Meanwhile, the share of people aged 65 and over more than tripled over the period, rising from 8 per cent to 15 per cent and then to 24 per cent.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: How Drinking Water Is Treated",
+    "task": 1,
+    "topic_tags": ["environment"],
+    "essay_type": "process diagram",
+    "prompt_html": "<p>The diagram below illustrates the process by which river water is treated to make it safe for drinking. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The process is linear and consists of six stages. First, water is pumped from a river into a large intake tank, where a metal screen removes leaves, litter and other large objects. The water then flows into a settling tank, in which sand and heavy particles sink to the bottom and are taken away. Next, the water passes through beds of fine sand and gravel that filter out smaller impurities. After filtering, chlorine is added to the water to kill any remaining bacteria. The treated water is then stored in a covered reservoir before finally being pumped through underground pipes to homes and businesses.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: The Life Cycle of the Salmon",
+    "task": 1,
+    "topic_tags": ["environment", "science"],
+    "essay_type": "process diagram",
+    "prompt_html": "<p>The diagram below illustrates the life cycle of the salmon. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>The cycle is continuous and has five main stages. It begins when adult salmon lay their eggs among the stones of a shallow freshwater river. After several weeks, the eggs hatch into tiny fish, still living in the river and sheltering among the rocks. As these young fish grow larger, they swim downstream and eventually reach the open sea, where they spend most of their adult lives feeding and growing to full size. When they are ready to reproduce, the mature salmon swim back up the same rivers in which they were born. There they lay a new set of eggs, and the cycle begins again.</p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 1: The Development of a Coastal Village",
+    "task": 1,
+    "topic_tags": ["tourism", "urbanisation"],
+    "essay_type": "map",
+    "prompt_html": "<p>The two maps below show the coastal village of Sandbay in 1990 and how it appears in the present day. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p><p>In 1990, a sandy beach ran along the southern edge of the village, beside a small harbour used by fishing boats. A single coastal road connected a handful of cottages in the west to a lighthouse on the eastern point, and open fields lay to the north. Today, the fishing harbour has been enlarged into a marina for private yachts, and a row of hotels and restaurants has been built along the beach in place of the cottages. The fields in the north have been replaced by a large car park and a holiday resort, while the coastal road has been widened, and the lighthouse in the east now stands within a small public park.</p>",
+    "word_limit_min": 150
+  }
+]

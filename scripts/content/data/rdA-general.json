@@ -1,0 +1,162 @@
+[
+  {
+    "skill": "reading",
+    "module": "general",
+    "difficulty": "easy",
+    "topic_tags": ["environment", "gardening"],
+    "title": "A Beginner's Guide to Home Composting",
+    "body_html": "<p>Composting is one of the simplest ways to reduce household waste and improve your garden at the same time. When food scraps and garden clippings are thrown away with ordinary rubbish, they end up in landfill sites, where they rot slowly and release gases that are harmful to the environment. Composting at home turns that same material into a dark, crumbly substance that gardeners often call black gold. It costs almost nothing to start, and it can make a real difference to the health of your plants.</p><p>Getting started does not require special equipment. Many people use a simple open heap in a corner of the garden, while others prefer a closed bin that keeps the contents tidy and warm. A closed bin is a good choice if you have a small space or if you want to keep animals away from the pile. Whatever container you choose, it should sit directly on bare soil so that worms and other helpful creatures can move up into the compost from below.</p><p>The secret to good compost is balance. Gardeners usually talk about two kinds of material: greens and browns. Greens are soft, moist things such as vegetable peelings, grass cuttings and coffee grounds, and they are rich in nitrogen. Browns are dry materials such as dead leaves, cardboard and small twigs, and they provide carbon. A healthy heap needs roughly equal amounts of each. Too many greens will make the pile wet and smelly, while too many browns will cause it to break down very slowly.</p><p>Some items should never go into a home compost bin. Meat, fish and dairy products can attract rats and other pests, and they tend to produce unpleasant smells as they decay. Cooked food and oily leftovers cause similar problems. It is also wise to avoid adding the roots of persistent weeds or any plant that is clearly diseased, because a home heap rarely gets hot enough to destroy them.</p><p>Once your bin is set up, a little regular care will speed things along. Turning the heap with a fork every couple of weeks lets air reach the centre, and the tiny organisms doing the work need that air to survive. If the pile looks dry, add a little water; if it seems soggy, mix in more browns. In warm weather the process is faster, and a well-managed heap can produce usable compost in a few months.</p><p>You will know the compost is ready when it looks dark and crumbly and smells pleasantly of damp earth rather than of rotting food. At that point you can spread it over flower beds, dig it into vegetable patches, or mix it into pots to give seedlings a healthy start. By turning kitchen and garden waste into something so useful, home composting closes a natural loop and rewards a small amount of effort with richer soil and stronger plants.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Composting requires expensive equipment to begin.", "answer": "false", "evidence": "Getting started does not require special equipment." },
+          { "prompt_text": "A compost container should be placed on bare soil.", "answer": "true", "evidence": "it should sit directly on bare soil so that worms and other helpful creatures can move up into the compost from below." },
+          { "prompt_text": "A healthy compost heap needs roughly equal amounts of greens and browns.", "answer": "true", "evidence": "A healthy heap needs roughly equal amounts of each." },
+          { "prompt_text": "Meat and fish are good materials to add to a home compost bin.", "answer": "false", "evidence": "Meat, fish and dairy products can attract rats and other pests, and they tend to produce unpleasant smells as they decay." },
+          { "prompt_text": "Closed compost bins produce better compost than open heaps.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Compost tends to break down more quickly in warm weather.", "answer": "true", "evidence": "In warm weather the process is faster, and a well-managed heap can produce usable compost in a few months." }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "Why does the passage say a closed bin can be a good choice?", "options": ["It produces compost faster than any other method.", "It suits a small space and keeps animals away.", "It removes the need to add any browns.", "It heats the compost enough to kill diseased plants."], "answer_index": 1, "evidence": "A closed bin is a good choice if you have a small space or if you want to keep animals away from the pile." },
+          { "prompt_text": "What kind of material are grass cuttings and coffee grounds described as?", "options": ["Browns, which provide carbon", "Greens, which are rich in nitrogen", "Items that should never be added", "Materials that make the heap dry"], "answer_index": 1, "evidence": "Greens are soft, moist things such as vegetable peelings, grass cuttings and coffee grounds, and they are rich in nitrogen." },
+          { "prompt_text": "According to the passage, why should the heap be turned with a fork?", "options": ["To let air reach the organisms doing the work", "To remove the greens from the pile", "To add extra carbon to the mixture", "To cool the compost down"], "answer_index": 0, "evidence": "Turning the heap with a fork every couple of weeks lets air reach the centre, and the tiny organisms doing the work need that air to survive." },
+          { "prompt_text": "How can you tell that compost is ready to use?", "options": ["It smells strongly of rotting food.", "It has turned pale and dry.", "It is dark, crumbly and smells of damp earth.", "It has stopped attracting worms."], "answer_index": 2, "evidence": "You will know the compost is ready when it looks dark and crumbly and smells pleasantly of damp earth rather than of rotting food." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "difficulty": "easy",
+    "topic_tags": ["health", "safety"],
+    "title": "Staying Safe in the Summer Sun",
+    "body_html": "<p>Warm, sunny days are one of the great pleasures of summer, but the same sunshine that lifts our mood can also harm our skin if we are not careful. Sunlight contains ultraviolet rays, often shortened to UV, which we cannot see or feel directly. These invisible rays are the cause of sunburn, and over many years they can lead to more serious damage. The good news is that a few simple habits are enough to let most people enjoy the sun safely.</p><p>The strength of the sun changes through the day. It is usually at its most powerful in the middle of the day, roughly between eleven in the morning and three in the afternoon. During these hours the UV rays are most intense, so it is sensible to seek shade when you can. Sitting under a tree, an umbrella or a canopy gives your skin a welcome rest without forcing you to stay indoors. Even on a cloudy day the rays can still reach you, so it is worth remembering that a grey sky does not mean the sun has switched off.</p><p>Clothing is one of the oldest and most reliable forms of protection. A wide-brimmed hat shades the face, ears and neck, which are areas that people often forget. Loose, long-sleeved shirts made from tightly woven fabric keep the sun off the arms and shoulders. Sunglasses matter too, because UV rays can harm the eyes as well as the skin, and a good pair helps you see comfortably in bright light.</p><p>Sunscreen is an important part of any summer routine, but it works best when it is used properly. Many people apply far too little, so it is worth being generous and covering every exposed area. Sunscreen also needs to be reapplied every couple of hours, and always after swimming or heavy sweating, because water and towelling rub it away. No sunscreen blocks the sun completely, so it should be combined with shade and clothing rather than relied on alone.</p><p>Children need extra care, as their skin is more delicate than that of adults. Babies under six months old should be kept out of direct sunlight altogether. For older children, the same rules apply as for adults, but parents should watch them closely and encourage them to take breaks in the shade. A sunburn in childhood is best avoided entirely.</p><p>Heat brings its own risks alongside the sun. On hot days the body loses water through sweat, and it is easy to become dehydrated without noticing. Drinking plenty of water helps you stay cool and alert. If someone becomes dizzy, develops a headache or feels sick in the heat, they should move to a cool place, rest and sip water. It also helps to avoid heavy exercise during the hottest hours and to wear light, pale clothing that reflects rather than absorbs the heat. With a little planning, the summer sun can be enjoyed safely from the first warm day to the last.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Ultraviolet rays can be seen and felt directly.", "answer": "false", "evidence": "Sunlight contains ultraviolet rays, often shortened to UV, which we cannot see or feel directly." },
+          { "prompt_text": "The sun is usually strongest in the middle of the day.", "answer": "true", "evidence": "It is usually at its most powerful in the middle of the day, roughly between eleven in the morning and three in the afternoon." },
+          { "prompt_text": "Sunglasses protect the eyes from UV rays.", "answer": "true", "evidence": "Sunglasses matter too, because UV rays can harm the eyes as well as the skin" },
+          { "prompt_text": "Sunscreen alone provides complete protection from the sun.", "answer": "false", "evidence": "No sunscreen blocks the sun completely, so it should be combined with shade and clothing rather than relied on alone." },
+          { "prompt_text": "Expensive sunscreen works better than cheaper brands.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Babies under six months old should be kept out of direct sunlight.", "answer": "true", "evidence": "Babies under six months old should be kept out of direct sunlight altogether." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "What are the invisible rays in sunlight that cause sunburn commonly called?", "accepted": ["ultraviolet rays", "UV", "UV rays"], "word_limit": 2, "evidence": "Sunlight contains ultraviolet rays, often shortened to UV, which we cannot see or feel directly." },
+          { "prompt_text": "What type of hat is recommended to shade the face, ears and neck?", "accepted": ["a wide-brimmed hat", "wide-brimmed hat", "wide-brimmed"], "word_limit": 3, "evidence": "A wide-brimmed hat shades the face, ears and neck, which are areas that people often forget." },
+          { "prompt_text": "What two things does the passage say rub sunscreen away?", "accepted": ["water and towelling", "water, towelling"], "word_limit": 3, "evidence": "because water and towelling rub it away." },
+          { "prompt_text": "What does the body lose through sweat on hot days?", "accepted": ["water"], "word_limit": 1, "evidence": "On hot days the body loses water through sweat, and it is easy to become dehydrated without noticing." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "difficulty": "easy",
+    "topic_tags": ["technology", "environment"],
+    "title": "Simple Ways to Save Energy at Home",
+    "body_html": "<p>Most households use far more energy than they realise, and a great deal of it is quietly wasted. Reducing that waste is one of the easiest ways to cut monthly bills and to lighten the strain we place on the planet. The best part is that saving energy rarely means going without comfort. In my view, a handful of small changes, repeated day after day, adds up to far more than most people expect.</p><p>Heating and cooling usually account for the largest share of a home's energy use, so this is where the biggest savings can be found. Turning a thermostat down by just one degree in winter makes very little difference to how warm a room feels, yet over a whole season it can noticeably lower the amount of energy burned. I firmly believe that draught-proofing is money well spent, because sealing the gaps around doors and windows stops warm air escaping and keeps cold air out.</p><p>Lighting is another area where change is simple and worthwhile. Older bulbs waste much of their energy as heat rather than light, whereas modern LED bulbs produce the same brightness while using only a fraction of the power. Switching to LED lighting throughout the house is, to my mind, one of the smartest decisions a household can make. Remembering to switch off lights when leaving a room costs nothing at all and should become second nature.</p><p>Many appliances continue to draw power even when they appear to be switched off. Televisions, chargers and games consoles left on standby quietly consume electricity around the clock, and this hidden waste is entirely unnecessary. Switching devices off at the wall, or using a power strip that can be turned off with a single button, is a habit well worth forming. It seems to me that these standby savings are among the most painless of all.</p><p>The way we use everyday machines matters too. Washing clothes at a lower temperature cleans most laundry perfectly well while using less energy to heat the water. Filling the kettle with only as much water as you need, and running the dishwasher only when it is full, are further examples of small choices that make a real difference over time. None of these habits demands any sacrifice in the quality of daily life.</p><p>For those willing to invest a little more, larger improvements are possible. Adding insulation to a loft, fitting thicker curtains, or upgrading an old boiler can reduce energy use for many years to come. Such measures cost money at the outset, but they usually pay for themselves in time. I am convinced that a home which wastes less energy is not only cheaper to run but also a more comfortable and responsible place to live.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the views/claims of the writer? Write YES if the statement agrees with the views of the writer, NO if it contradicts, or NOT GIVEN if it is impossible to say what the writer thinks.",
+        "questions": [
+          { "prompt_text": "Saving energy usually means giving up comfort.", "answer": "no", "evidence": "The best part is that saving energy rarely means going without comfort." },
+          { "prompt_text": "Draught-proofing is a worthwhile use of money.", "answer": "yes", "evidence": "I firmly believe that draught-proofing is money well spent, because sealing the gaps around doors and windows stops warm air escaping and keeps cold air out." },
+          { "prompt_text": "Switching to LED lighting is one of the smartest decisions a household can make.", "answer": "yes", "evidence": "Switching to LED lighting throughout the house is, to my mind, one of the smartest decisions a household can make." },
+          { "prompt_text": "Solar panels are the best long-term investment for a home.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "The electricity used by devices on standby is a necessary cost.", "answer": "no", "evidence": "Televisions, chargers and games consoles left on standby quietly consume electricity around the clock, and this hidden waste is entirely unnecessary." },
+          { "prompt_text": "A home that wastes less energy is more comfortable to live in.", "answer": "yes", "evidence": "I am convinced that a home which wastes less energy is not only cheaper to run but also a more comfortable and responsible place to live." }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "According to the writer, where can the biggest energy savings be found?", "options": ["In lighting", "In washing clothes", "In charging devices", "In heating and cooling"], "answer_index": 3, "evidence": "Heating and cooling usually account for the largest share of a home's energy use, so this is where the biggest savings can be found." },
+          { "prompt_text": "What does the writer say about older light bulbs?", "options": ["They produce more light than LED bulbs.", "They waste much of their energy as heat.", "They are cheaper to run than LED bulbs.", "They should be left on to save power."], "answer_index": 1, "evidence": "Older bulbs waste much of their energy as heat rather than light, whereas modern LED bulbs produce the same brightness while using only a fraction of the power." },
+          { "prompt_text": "What does the writer suggest about washing clothes?", "options": ["Hot water is always necessary for clean clothes.", "Clothes should be washed one item at a time.", "A lower temperature cleans most laundry well while using less energy.", "The dishwasher should be run half full."], "answer_index": 2, "evidence": "Washing clothes at a lower temperature cleans most laundry perfectly well while using less energy to heat the water." },
+          { "prompt_text": "What does the writer say about larger improvements such as loft insulation?", "options": ["They rarely make any difference to energy use.", "They cost money at first but usually pay for themselves in time.", "They are cheaper than switching off standby devices.", "They should only be done by people who enjoy comfort."], "answer_index": 1, "evidence": "Such measures cost money at the outset, but they usually pay for themselves in time." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "difficulty": "easy",
+    "topic_tags": ["nutrition", "consumer"],
+    "title": "How to Read Food Labels",
+    "body_html": "<p>Walk down the aisle of any supermarket and you will find that almost every packaged product carries a label full of numbers and lists. These labels can look confusing at first, but learning to read them is one of the most useful shopping skills you can develop. A few minutes spent understanding the information on a packet can help you compare products, avoid unwanted ingredients and make choices that suit your needs.</p><p>The most detailed part of the label is usually the nutrition panel. This is the small table that lists how much energy the food provides, along with amounts of fat, sugar, salt and other nutrients. The figures are often given in two ways: per one hundred grams of the product, and per serving. The per hundred gram column is the most useful for comparing two similar products, because it puts them on an equal footing regardless of packet size.</p><p>Energy is measured in units called calories, or sometimes in kilojoules. It is easy to assume that a low calorie figure automatically means a food is healthy, but this is not always the case. A product might be low in calories yet high in salt, or contain very little of the vitamins and fibre your body needs. The number of calories is only one piece of a much larger picture.</p><p>The ingredients list tells its own story. By law, ingredients are written in order of weight, from the most to the least. This simple rule reveals a great deal: if sugar appears near the top of the list, the product contains a large amount of it, even if the front of the packet suggests otherwise. Reading the first few ingredients often tells you more about a food than the pictures and slogans on the front.</p><p>Many shoppers are surprised by how much salt and sugar hide in everyday products. Foods that do not taste sweet, such as bread, sauces and ready meals, can still contain a surprising amount of sugar, while savoury snacks are often high in salt. Some labels use a colour-coded system, with red, amber and green marks, to show at a glance whether a food is high, medium or low in these nutrients. A quick look at these colours can guide a busy shopper in seconds.</p><p>Dates on packaging are a further source of confusion. A use-by date is about safety and should be taken seriously, because eating a food after this date could make you ill. A best-before date, by contrast, is about quality rather than safety; a food may be past its best but still be perfectly safe to eat. Understanding this difference can help reduce the amount of good food that is thrown away. With a little practice, reading a label becomes second nature and puts you firmly in control of what you buy.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "The per hundred gram figures are the most useful for comparing similar products.", "answer": "true", "evidence": "The per hundred gram column is the most useful for comparing two similar products, because it puts them on an equal footing regardless of packet size." },
+          { "prompt_text": "A low calorie figure always means a food is healthy.", "answer": "false", "evidence": "It is easy to assume that a low calorie figure automatically means a food is healthy, but this is not always the case." },
+          { "prompt_text": "Ingredients are listed in order of weight, from most to least.", "answer": "true", "evidence": "By law, ingredients are written in order of weight, from the most to the least." },
+          { "prompt_text": "Colour-coded labels are required by law in every country.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "A best-before date is mainly about safety rather than quality.", "answer": "false", "evidence": "A best-before date, by contrast, is about quality rather than safety; a food may be past its best but still be perfectly safe to eat." },
+          { "prompt_text": "Some foods that do not taste sweet can still contain a lot of sugar.", "answer": "true", "evidence": "Foods that do not taste sweet, such as bread, sauces and ready meals, can still contain a surprising amount of sugar" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          { "prompt_text": "What does the nutrition panel list?", "options": ["Only the price of the product", "The energy, fat, sugar, salt and other nutrients", "The order of the ingredients by weight", "The use-by and best-before dates"], "answer_index": 1, "evidence": "This is the small table that lists how much energy the food provides, along with amounts of fat, sugar, salt and other nutrients." },
+          { "prompt_text": "In what units is energy in food measured?", "options": ["Grams or litres", "Servings or portions", "Percentages", "Calories or kilojoules"], "answer_index": 3, "evidence": "Energy is measured in units called calories, or sometimes in kilojoules." },
+          { "prompt_text": "What does it mean if sugar appears near the top of the ingredients list?", "options": ["The product contains a large amount of sugar.", "The product is free of sugar.", "The sugar has been added last.", "The product is low in salt."], "answer_index": 0, "evidence": "if sugar appears near the top of the list, the product contains a large amount of it, even if the front of the packet suggests otherwise." },
+          { "prompt_text": "Why should a use-by date be taken seriously?", "options": ["Because the food will taste better after it", "Because it shows the food's quality only", "Because eating the food after it could make you ill", "Because it indicates the packet size"], "answer_index": 2, "evidence": "A use-by date is about safety and should be taken seriously, because eating a food after this date could make you ill." }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "general",
+    "difficulty": "easy",
+    "topic_tags": ["hobbies", "biology"],
+    "title": "Getting Started with Backyard Birdwatching",
+    "body_html": "<p>Birdwatching is a hobby that almost anyone can enjoy, and you do not need to travel to a distant nature reserve to begin. A garden, a balcony or even a window overlooking a street can become a window into the lives of wild birds. Many people who take up birdwatching are surprised by how much activity is happening just outside their homes, once they learn to look and listen for it. What begins as an idle glance out of the kitchen window can quickly grow into a rewarding lifelong interest.</p><p>The easiest way to attract birds is to offer them food. A simple feeder hung from a branch or a hook will soon draw visitors, especially in the colder months when natural food is scarce. Different birds prefer different foods, so offering a variety, such as seeds, nuts and pieces of fat, will bring a wider range of species. It is important to keep feeders clean, because dirty feeders can spread disease among the birds that gather there.</p><p>Water is just as valuable as food, and it is often overlooked. Birds need water both for drinking and for keeping their feathers clean, and a shallow dish topped up regularly will be well used throughout the year. In winter, when ponds and puddles freeze, a reliable source of unfrozen water can be especially precious to the birds in your area.</p><p>You do not need expensive equipment to start watching. A pair of binoculars is helpful for seeing distant birds clearly, but many species will come close enough to enjoy with the naked eye. A simple field guide, whether a book or an application on a phone, helps you put names to the birds you see. Keeping a small notebook of your sightings can be surprisingly satisfying, and over time it builds a record of the seasons in your own patch.</p><p>Patience and stillness are a birdwatcher's greatest tools. Birds are easily frightened, so sudden movements and loud noises will send them away. Sitting quietly near a window, or standing still in the garden, allows the birds to relax and behave naturally. The more time you spend watching, the more you will begin to recognise individual species by their colours, their shapes and even the songs they sing. It is often the sound of a bird, rather than the sight of it, that first gives away its presence among the leaves.</p><p>Birdwatching offers more than simple enjoyment. Paying attention to the birds around you can deepen your understanding of the changing seasons, as different species arrive and depart through the year. Some birdwatchers take part in national surveys, counting the birds in their gardens on a chosen day and sending the results to researchers who study wildlife populations. In this way a quiet hobby can also make a genuine contribution to the protection of nature.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "You must travel to a nature reserve to begin birdwatching.", "answer": "false", "evidence": "you do not need to travel to a distant nature reserve to begin." },
+          { "prompt_text": "Offering a variety of foods attracts a wider range of bird species.", "answer": "true", "evidence": "offering a variety, such as seeds, nuts and pieces of fat, will bring a wider range of species." },
+          { "prompt_text": "Dirty feeders can spread disease among birds.", "answer": "true", "evidence": "It is important to keep feeders clean, because dirty feeders can spread disease among the birds that gather there." },
+          { "prompt_text": "Birds in cities sing more loudly than birds in the countryside.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Expensive equipment is essential for anyone who wants to start watching birds.", "answer": "false", "evidence": "You do not need expensive equipment to start watching." },
+          { "prompt_text": "Some birdwatchers send the results of garden bird counts to researchers.", "answer": "true", "evidence": "counting the birds in their gardens on a chosen day and sending the results to researchers who study wildlife populations." }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "What is the easiest way to attract birds, according to the passage?", "accepted": ["food", "offer them food", "to offer them food"], "word_limit": 3, "evidence": "The easiest way to attract birds is to offer them food." },
+          { "prompt_text": "Besides drinking, birds use water to keep what part of themselves clean?", "accepted": ["their feathers", "feathers"], "word_limit": 2, "evidence": "Birds need water both for drinking and for keeping their feathers clean" },
+          { "prompt_text": "What piece of equipment helps you see distant birds clearly?", "accepted": ["binoculars", "a pair of binoculars"], "word_limit": 3, "evidence": "A pair of binoculars is helpful for seeing distant birds clearly" },
+          { "prompt_text": "Along with stillness, what quality is described as a birdwatcher's greatest tool?", "accepted": ["patience"], "word_limit": 1, "evidence": "Patience and stillness are a birdwatcher's greatest tools." }
+        ]
+      }
+    ]
+  }
+]

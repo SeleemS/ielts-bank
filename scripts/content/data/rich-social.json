@@ -1,0 +1,165 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Invention of the Supermarket",
+    "difficulty": "medium",
+    "topic_tags": ["social science", "innovation", "commerce"],
+    "body_html": "<p><strong>A</strong> Not so long ago, buying groceries meant standing at a counter and asking for what you wanted. Behind the counter a shopkeeper or assistant would fetch each item in turn from shelves the customer could not reach, weigh out loose goods, add up the bill by hand and often write it down on credit to be settled later. Shopping was slow and personal; the shopkeeper knew the customers by name, chose much of what they bought and stood physically between them and the goods on the shelves. The pace of it all was leisurely by modern standards: a single customer might occupy an assistant for several minutes, discussing the week's needs, and a busy shop kept a number of assistants darting back and forth behind its long wooden counter. Shopping was as much a social occasion as an errand.</p><p><strong>B</strong> The break with this ancient pattern came in 1916, in the American city of Memphis, when a grocer named Clarence Saunders opened a store he called Piggly Wiggly. Its novelty was startling. Customers passed through a turnstile, walked along aisles lined with clearly priced goods, took whatever they wanted from the shelves themselves and carried it to a checkout near the door to pay. Saunders had invented self-service, and he was proud enough of the idea to take out a patent on it. Contemporaries found the arrangement strange, even alarming; the sight of customers wandering freely among the stock, handling goods that no assistant had passed to them, overturned everything that shopkeeping had assumed for generations. Yet the crowds came, curious at first and then loyal.</p><p><strong>C</strong> The new system spread quickly because it made sound commercial sense. A store in which customers served themselves needed far fewer assistants, and the savings could be passed on as lower prices, which in turn drew still more customers. Just as important, shoppers left free to wander among the shelves turned out to buy more than they had intended, picking up tempting items they would never have thought to ask an assistant for. Self-service, in other words, quietly encouraged buying on impulse. Retailers were quick to grasp how valuable this was. A shop that could tempt each customer into a handful of unplanned purchases would, over thousands of visits, sell a great deal more than one that merely handed over what was asked for, and the whole business of selling began to shift from serving demand towards creating it.</p><p><strong>D</strong> Retailers soon learned to arrange their stores to make the most of this. Everyday staples such as milk and bread were placed at the back, so that customers had to walk the length of the shop, past hundreds of other products, in order to reach them. The most profitable goods were set at eye level, where they are easiest to notice and to reach, and eye-catching displays were built at the ends of the aisles. Little about the layout of a modern supermarket is accidental; almost all of it is designed to keep shoppers moving, and buying. Even the width of the aisles and the music played overhead have been studied for their effect on how long people linger and how much they place in their baskets. The modern shop is, in a quiet way, a carefully engineered machine for selling.</p><p><strong>E</strong> The rise of self-service changed far more than the way people shop. With no assistant to describe or recommend a product, each item now had to sell itself directly from the shelf, and so the look of the packaging and the strength of the brand name became enormously important. Manufacturers poured effort into striking boxes and memorable labels, and the whole modern culture of packaging and branding grew, in large part, out of the simple decision to let customers help themselves. In this sense the supermarket did not merely change where people bought their food; it changed the whole relationship between shoppers and the things they buy, putting the product, and its packaging, at the very centre of the transaction where the shopkeeper had once stood. Today the same logic governs online shopping too, where the arrangement of a screen has replaced the arrangement of the shelves, but the founding insight remains the one Saunders stumbled upon in Memphis: that customers left to choose for themselves will, more often than not, choose to buy a little more. In little more than a century, self-service has spread from a single curious store to become, quite simply, the way the world shops.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has five paragraphs, A-E. Which paragraph contains the following information? Write the correct letter, A-E.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" }
+        ],
+        "questions": [
+          { "prompt_text": "a description of shopping before self-service existed", "correct_option_keys": ["A"] },
+          { "prompt_text": "the name of the first self-service store and the man who opened it", "correct_option_keys": ["B"] },
+          { "prompt_text": "the reason self-service made lower prices possible", "correct_option_keys": ["C"] },
+          { "prompt_text": "how the placement of goods encourages extra buying", "correct_option_keys": ["D"] },
+          { "prompt_text": "the growing importance of packaging and brand names", "correct_option_keys": ["E"] }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 6-10. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>Before self-service, a customer asked an assistant to fetch each item from behind a <strong>(6)&nbsp;______</strong>. This changed in 1916, when Clarence Saunders opened a store called <strong>(7)&nbsp;______</strong> in Memphis, where customers collected goods themselves and paid at a <strong>(8)&nbsp;______</strong>. The system needed fewer staff, so prices could fall, and shoppers who wandered the aisles bought more on <strong>(9)&nbsp;______</strong>. Stores were carefully arranged, with everyday staples placed at the <strong>(10)&nbsp;______</strong> so that customers walked past many other goods.</p>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["counter"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["Piggly Wiggly"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["checkout"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["impulse"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["back", "the back"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Question 11. Choose TWO letters, A-E.",
+        "options": [
+          { "key": "A", "text": "Fewer shop assistants were needed." },
+          { "key": "B", "text": "Customers tended to buy more on impulse." },
+          { "key": "C", "text": "Goods could more easily be sold on credit." },
+          { "key": "D", "text": "Shopping took much longer than before." },
+          { "key": "E", "text": "Every customer received personal advice." }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO advantages of self-service does the passage mention? Choose TWO letters.", "correct_option_keys": ["A", "B"] }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 12-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Clarence Saunders obtained a patent for the self-service system.", "answer": "true" },
+          { "prompt_text": "The first self-service store was opened in New York.", "answer": "false" },
+          { "prompt_text": "Modern supermarkets deliberately avoid putting clocks on their walls.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Science of Waiting in Line",
+    "difficulty": "medium",
+    "topic_tags": ["social science", "psychology", "design"],
+    "body_html": "<p><strong>A</strong> Almost nobody enjoys waiting in a line, yet queues are among the most universal experiences of modern life, forming wherever more people want something than can be served at once. The serious study of queues began not in psychology but in mathematics. In the early years of the twentieth century a Danish telephone engineer, Agner Krarup Erlang, worked out how to predict the build-up of calls waiting at a telephone exchange, and his equations founded the discipline now known as queueing theory, which today is used to design everything from call centres to computer networks. What began as a way of keeping telephone lines from clogging turned out to describe almost any situation in which arrivals must wait for a limited service, and the same equations now help to plan hospital wards, supermarket tills and the flow of traffic through a busy junction.</p><p><strong>B</strong> One of the first practical questions is whether to form a single line or several. If each server has its own separate queue, customers must gamble on which line will move fastest, and there is little so infuriating as watching a neighbouring lane surge ahead while one's own stands still. A single serpentine line that feeds several servers in turn removes the gamble: everyone is dealt with in strict order of arrival, which feels fairer and spares people the anxiety of choosing. For this reason banks and airports have widely adopted the single line. There is a small cost, for one long line can look more daunting than several short ones, but it usually moves faster than it appears to, and most people quickly come to trust that their turn will arrive in due course.</p><p><strong>C</strong> Yet how long a wait feels can matter more than how long it actually is. Researchers have found that time which is occupied feels shorter than time spent doing nothing, and that a distracted mind is a more patient one. The classic illustration comes from office towers where guests complained about slow lifts. Rather than speed up the machinery, the owners hung large mirrors beside the lift doors, and the complaints faded away, because people happily passed the time studying themselves and the others around them. The lesson was clear, and has been applied ever since: a wait that gives the mind something to do, a screen to watch, a view to enjoy or a small task to complete, feels far shorter than an identical wait spent staring at a blank wall.</p><p><strong>D</strong> Uncertainty is another powerful ingredient. A wait that is open-ended, with no visible end and no explanation, feels far longer and more unpleasant than one of the same length whose end is known. This is why a sign announcing a twenty-minute wait, or a simple explanation of the delay, can soothe a restless line even though it makes nobody move any faster. People will endure a great deal of waiting if only they are told what to expect. This is why so many services now display a running estimate of the delay, and why a driver stuck in traffic grows calmer once a sign explains the cause; knowledge, even of bad news, restores a small but valuable sense of control.</p><p><strong>E</strong> Waiting also stirs surprisingly strong feelings about fairness. The rule that service should go in order of arrival, first come, first served, is deeply held, and someone who jumps the queue can provoke an anger quite out of proportion to the few seconds actually lost. People dislike, too, being overtaken, and even dislike being last in a line with no one behind them. A well-run queue is one that is not only efficient but visibly just. Designers of waiting systems ignore this at their peril, for a queue that is quick but seems unfair will anger people more than one that is slow but scrupulously orderly, and the memory of being unjustly overtaken can sour an entire visit.</p><p><strong>F</strong> Businesses have learned to put all of this to use. Theme parks, which sell an experience built almost entirely around waiting, entertain guests with scenery, music and screens along the line, and offer timed or virtual queues that let people wait somewhere more pleasant. The lesson, learned again and again, is that managing a queue well means shaping how the wait feels, and not merely how long it lasts. Get that shaping right and a queue can even become part of the pleasure, building anticipation for whatever lies at its end; get it wrong and no amount of speed will save the experience from feeling like a chore.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "When a wait has no clear end" },
+          { "key": "ii", "text": "The mathematics behind the waiting line" },
+          { "key": "iii", "text": "One line or many?" },
+          { "key": "iv", "text": "Turning waiting into a business tool" },
+          { "key": "v", "text": "Why the mind matters more than the minutes" },
+          { "key": "vi", "text": "The strong feelings stirred by unfairness" },
+          { "key": "vii", "text": "How to design a comfortable chair" },
+          { "key": "viii", "text": "Charging customers to skip the line" },
+          { "key": "ix", "text": "A short history of the cash register" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["vi"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["iv"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 7-11. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "The mathematical study of waiting lines is known as ______.", "accepted": ["queueing theory", "queuing theory"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Banks and airports often use a single ______ line that feeds several servers.", "accepted": ["serpentine"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Time that is ______ feels shorter than time spent doing nothing.", "accepted": ["occupied"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "A wait feels much longer when it is ______, with no visible end.", "accepted": ["open-ended", "open ended", "uncertain"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "People feel strong anger when someone ______ the queue.", "accepted": ["jumps"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 12-14. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Who founded queueing theory while studying telephone calls?", "accepted": ["Erlang", "A K Erlang", "Agner Krarup Erlang", "Agner Erlang"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What did office-tower owners hang beside the lifts to reduce complaints?", "accepted": ["mirrors", "large mirrors", "big mirrors"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What feeling does jumping the queue tend to provoke?", "accepted": ["anger"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Rethinking the Psychology of Crowds",
+    "difficulty": "hard",
+    "topic_tags": ["social science", "psychology", "safety"],
+    "body_html": "<p>For more than a century, the behaviour of people in crowds has fascinated and worried those who study society. The tone was set in 1895 by the French writer Gustave Le Bon, whose short book on the crowd became enormously influential. In a crowd, Le Bon argued, the thinking individual disappears. People are gripped by a kind of collective mind, lose their sense of individuality and self-control, and sink to a more primitive and emotional level, so that a gathering of reasonable citizens can behave, in his view, like a single irrational beast. Le Bon wrote at a time of revolutions, strikes and mass movements, and his dark portrait of the crowd reflected the anxieties of the comfortable classes of his day, who feared the gatherings of ordinary people in the streets and were glad of a theory that painted them as dangerous and unthinking.</p><p>Central to this gloomy picture was the idea of contagion. Le Bon believed that emotions and impulses spread through a crowd almost like a disease, leaping from person to person until the whole mass was swept along by feelings that no individual would have acted on alone. This notion of the mindless, dangerous mob proved remarkably durable, and for much of the twentieth century talk of 'mass panic' and 'mob mentality' shaped the way governments, journalists and police forces thought about large gatherings of people. The idea was convenient as well as vivid, for if crowds were simply mindless mobs, then those in authority bore little responsibility for understanding them, and force could be excused as the only language such a mob was thought to understand.</p><p>Modern research tells a very different story. Psychologists such as Stephen Reicher and John Drury have argued that crowds are far from mindless. Rather than losing their identity, people in a crowd often take on a shared social identity, a strong sense of belonging to the group, and it is this common identity that gives collective behaviour its order and its meaning. Crowds do not act at random; they act in ways that make sense given who their members feel themselves to be at that moment. A crowd of football supporters, a crowd of worshippers and a crowd of protesters behave in strikingly different ways, not because the psychology of crowds changes but because the identity that binds each one is different, and that shared sense of who 'we' are shapes what the group considers right and reasonable to do.</p><p>Nowhere is this clearer than in emergencies. The popular image is of a terrified mob trampling one another in blind panic, yet careful studies of real disasters repeatedly find something else: people remaining surprisingly calm, forming orderly lines, and going out of their way to help complete strangers to escape. A shared sense of common fate, it seems, tends to produce cooperation rather than every-person-for-themselves chaos, and genuine mass panic turns out to be far rarer than newspaper headlines would suggest. Survivors of fires, sinkings and stadium emergencies describe again and again how strangers helped one another, held doors, guided the injured and waited their turn even in mortal danger, a picture almost the opposite of the stampeding mob of popular imagination.</p><p>This matters, because the old view could itself be dangerous. When crowd disasters do occur, the cause is usually not madness but a physical crush, in which too many bodies are forced into too small a space, often as a result of poor design or mismanagement, until people are injured simply by the pressure of those around them. Blaming such tragedies on the supposed hysteria of the victims conveniently hides their real, and preventable, causes. Treating crowds instead as reasoning groups of people, with shared purposes and a keen sense of fairness, has become the foundation of modern thinking about how to keep large gatherings safe. Crowd managers now plan for the way real people actually behave, designing entrances, exits and barriers to prevent dangerous build-ups of pressure, and communicating clearly with those present rather than treating them as an enemy to be contained. The shift in thinking has almost certainly saved lives. It has also changed the way such events are described after the fact, replacing lazy talk of hysteria and stampede with harder questions about how a space was designed, how a crowd was managed and who, if anyone, had failed in their duty of care. In this way a better understanding of ordinary human behaviour has quietly become a matter of public safety.</p>",
+    "groups": [
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 1-5. Match each statement with the correct view, A or B. You may use either letter more than once.",
+        "options": [
+          { "key": "A", "text": "the classic view of Gustave Le Bon" },
+          { "key": "B", "text": "the findings of modern research" }
+        ],
+        "questions": [
+          { "prompt_text": "Being in a crowd strips away individuality and makes people irrational.", "correct_option_keys": ["A"] },
+          { "prompt_text": "In an emergency, people often cooperate and help strangers.", "correct_option_keys": ["B"] },
+          { "prompt_text": "Emotions spread through a crowd by contagion.", "correct_option_keys": ["A"] },
+          { "prompt_text": "A shared social identity gives crowd behaviour order and meaning.", "correct_option_keys": ["B"] },
+          { "prompt_text": "Many crowd disasters are caused by physical crushing rather than panic.", "correct_option_keys": ["B"] }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-10. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p><strong>Views of crowd behaviour</strong></p><ul><li>1895: Gustave <strong>(6)&nbsp;______</strong> argued that crowds are irrational and primitive.</li><li>He believed that people in a crowd lose their sense of <strong>(7)&nbsp;______</strong>.</li><li>Modern researchers say a shared social <strong>(8)&nbsp;______</strong> shapes how crowds behave.</li><li>In emergencies, people often <strong>(9)&nbsp;______</strong> one another rather than panic.</li><li>Many crowd disasters are actually caused by a physical <strong>(10)&nbsp;______</strong>.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["Le Bon"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["individuality"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["identity"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["help"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["crush"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Gustave Le Bon published his book on crowds in 1895.", "answer": "true" },
+          { "prompt_text": "Le Bon believed that being in a crowd makes people more rational.", "answer": "false" },
+          { "prompt_text": "Modern research suggests that mass panic is less common than is often believed.", "answer": "true" },
+          { "prompt_text": "Crowd safety is now a compulsory subject in schools.", "answer": "not given" }
+        ]
+      }
+    ]
+  }
+]

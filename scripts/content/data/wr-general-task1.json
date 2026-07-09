@@ -1,0 +1,102 @@
+[
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter of Complaint About a Hotel Stay",
+    "task": 1,
+    "topic_tags": ["tourism", "complaint"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You recently stayed at a hotel for a short holiday and were very unhappy with the service you received.</p><p>Write a letter to the manager of the hotel. In your letter:</p><ul><li>explain why you were staying at the hotel and when</li><li>describe the problems you experienced during your stay</li><li>say what you would like the manager to do about it</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sir or Madam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Requesting a Training Course at Work",
+    "task": 1,
+    "topic_tags": ["work", "request"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You would like to attend a training course that would help you do your job better, but you need your employer's approval and support to take part.</p><p>Write a letter to your manager. In your letter:</p><ul><li>describe the training course you would like to attend</li><li>explain how it would help you in your current role</li><li>say what support you are asking your manager to provide</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Mr Anderson,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Apologising to a Friend for Missing an Event",
+    "task": 1,
+    "topic_tags": ["family", "apology"],
+    "essay_type": "letter",
+    "prompt_html": "<p>A close friend recently held a special celebration, but you were unable to attend at the last minute.</p><p>Write a letter to your friend. In your letter:</p><ul><li>apologise for not being able to come to the event</li><li>explain what happened that prevented you from attending</li><li>suggest a way you could make it up to your friend</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Inviting a Former Colleague to a Reunion",
+    "task": 1,
+    "topic_tags": ["work", "invitation"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You are organising a reunion for people who used to work together at a company several years ago, and you would like a former colleague to come.</p><p>Write a letter to your former colleague. In your letter:</p><ul><li>explain why you are organising the reunion</li><li>give the details of when and where it will take place</li><li>encourage your colleague to attend and help spread the word</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Priya,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Applying for a Volunteer Position",
+    "task": 1,
+    "topic_tags": ["society", "application"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You have seen an advertisement for volunteers to help at a local community centre and you would like to apply.</p><p>Write a letter to the volunteer coordinator. In your letter:</p><ul><li>say which volunteer role you are interested in and where you saw it advertised</li><li>describe any relevant skills or experience you have</li><li>explain when you would be available to help</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sir or Madam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Explaining a Decision to Postpone a Course",
+    "task": 1,
+    "topic_tags": ["education", "explanation"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You have enrolled in a course at a college but you now need to delay the start of your studies until the following year.</p><p>Write a letter to the college admissions office. In your letter:</p><ul><li>give the details of the course you have enrolled in</li><li>explain why you need to postpone your studies</li><li>ask what you must do to keep your place on the course</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sir or Madam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Telling a Friend About Your New City",
+    "task": 1,
+    "topic_tags": ["culture", "information"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You have recently moved to a new city in another part of the country, and a friend has written to ask how you are settling in.</p><p>Write a letter to your friend. In your letter:</p><ul><li>describe the city you have moved to</li><li>explain what you like and dislike about living there so far</li><li>invite your friend to come and visit you</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Alex,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter of Complaint About a Local Park",
+    "task": 1,
+    "topic_tags": ["society", "complaint"],
+    "essay_type": "letter",
+    "prompt_html": "<p>The public park near your home has been poorly maintained recently, and you feel that the local council should take action.</p><p>Write a letter to the local council. In your letter:</p><ul><li>explain how often you and your family use the park</li><li>describe the problems you have noticed there</li><li>suggest what the council should do to improve it</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sir or Madam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Asking a Neighbour to Watch Your Home",
+    "task": 1,
+    "topic_tags": ["family", "request"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You are going away on holiday for two weeks and would like a neighbour to keep an eye on your home while you are gone.</p><p>Write a letter to your neighbour. In your letter:</p><ul><li>tell your neighbour when you will be away</li><li>explain what you would like them to do while you are gone</li><li>say how they can contact you if there is a problem</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Mrs Kelly,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter Apologising to a Manager for a Work Error",
+    "task": 1,
+    "topic_tags": ["work", "apology"],
+    "essay_type": "letter",
+    "prompt_html": "<p>You made a mistake at work that caused a problem for your team, and you would like to apologise to your manager and explain the situation.</p><p>Write a letter to your manager. In your letter:</p><ul><li>describe the mistake that you made</li><li>explain how it happened and what its effects were</li><li>say what you will do to prevent it from happening again</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Ms Owens,</em></p>",
+    "word_limit_min": 150
+  }
+]

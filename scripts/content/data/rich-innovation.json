@@ -1,0 +1,181 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How the World Agreed on the Time",
+    "difficulty": "medium",
+    "topic_tags": ["innovation", "history", "communication"],
+    "body_html": "<p>For most of human history, every town kept its own time, and no one thought this strange. Noon was simply the moment when the sun stood highest in that particular sky, and the town clocks were set to match. Since a place a little to the east saw the sun reach its peak a few minutes earlier than a place to the west, neighbouring towns ran on slightly different times; but when the fastest way to travel was a horse, a difference of a few minutes between one town and the next was of no importance to anybody. A traveller might reset a pocket watch on reaching a new town, if the difference was even worth noticing, and life ran comfortably by the rhythm of the local sun. The very idea that distant places ought to share the same time would have struck most people as pointless, if not absurd.</p><p>The railways changed everything. Trains moved far faster than anything before them, and they ran to timetables that had to be obeyed to the minute. If every station along a line kept its own local time, a timetable became a nightmare to read and, worse, a danger: two trains running on clocks that disagreed could find themselves on the same stretch of track at the same moment. As accidents and confusion multiplied, it became clear that the growing railway networks needed a single, shared time. The problem was not merely one of convenience. A guard reading a timetable, a signalman clearing a line and a driver deciding when to depart all had to agree on the hour, and any disagreement between their clocks could send two trains hurtling towards the same point on a single track.</p><p>The railway companies themselves supplied the solution. In Britain they adopted one uniform standard, taken from the Greenwich observatory in London, and spread it along their lines, a system that became known as railway time. The electric telegraph, which could carry a signal down the wires almost instantly, made it possible to distribute the correct time from a central clock to distant stations, so that for the first time places hundreds of kilometres apart could be made to agree on the hour. Great railway stations began to display a single official clock, and the time it showed, carried down the wires from the observatory, gradually became the time of the surrounding town as well, whether the townsfolk had asked for it or not.</p><p>Across the Atlantic, the same problem was solved on a larger scale. In 1883 the railroads of the United States and Canada agreed to divide the continent into a handful of broad time zones, within each of which all clocks would read the same, jumping by a whole hour at the boundaries between them. This tidy arrangement, invented for the convenience of the railways, is essentially the system of time zones the whole world still uses today. The scheme was elegant precisely because it was simple: within each broad band everyone kept the same time, and only at the borders did the clocks jump, so that a traveller crossing the continent had to change a watch just a handful of times rather than at every station along the way.</p><p>The final step was international. In 1884 delegates from many nations gathered at a conference in Washington and agreed to measure the world's time from a single line, the meridian passing through Greenwich, which was chosen as the prime meridian from which all longitude and all time zones would be counted. Not everyone welcomed these changes; some towns clung stubbornly to their old local time for years, resenting a schedule that seemed imposed from far away. But the logic of a connected world was overwhelming, and the clock on the wall, once a purely local affair, had become part of a single global system. In time even the most reluctant communities fell into step, for a farmer or a shopkeeper who wished to catch a train, send a telegram or read a national newspaper had little choice but to live by the same clock as everyone else. The sun still rose when it always had, but the hour on the wall now belonged to the world. What had begun as a practical fix for the railways ended as one of the quiet revolutions of modern life, binding together distant strangers who would never meet but who could now, at last, agree on exactly when to meet. Few inventions have reshaped daily experience so completely while attracting so little notice.</p>",
+    "groups": [
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 1-5. Complete each sentence with the correct ending, A-H, from the box below.",
+        "options": [
+          { "key": "A", "text": "by the position of the sun in its own sky." },
+          { "key": "B", "text": "began to cause confusion and even accidents." },
+          { "key": "C", "text": "adopted a single standard time for all their trains." },
+          { "key": "D", "text": "divided the continent into a set of time zones." },
+          { "key": "E", "text": "as the starting point for the world's time zones." },
+          { "key": "F", "text": "because sundials were more accurate than clocks." },
+          { "key": "G", "text": "so that farmers could plan their harvests." },
+          { "key": "H", "text": "in order to reduce the cost of building track." }
+        ],
+        "questions": [
+          { "prompt_text": "Before the railways, each town set its clocks", "correct_option_keys": ["A"] },
+          { "prompt_text": "As trains grew faster, differences between local times", "correct_option_keys": ["B"] },
+          { "prompt_text": "To make their timetables work, the railway companies", "correct_option_keys": ["C"] },
+          { "prompt_text": "In 1883 the railroads of North America", "correct_option_keys": ["D"] },
+          { "prompt_text": "The 1884 conference chose the Greenwich meridian", "correct_option_keys": ["E"] }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-10. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p><strong>The standardisation of time</strong></p><ul><li>Traditionally, noon was the moment the <strong>(6)&nbsp;______</strong> was highest in the sky.</li><li>Faster travel by <strong>(7)&nbsp;______</strong> made local time differences a serious problem.</li><li>In Britain, the correct time was distributed using the <strong>(8)&nbsp;______</strong>.</li><li>In 1883 North American railroads created several <strong>(9)&nbsp;______</strong>.</li><li>In 1884 a conference chose <strong>(10)&nbsp;______</strong> as the world's prime meridian.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["sun"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["railway", "rail", "train", "trains", "the railway"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["telegraph", "electric telegraph", "the telegraph"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["time zones"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["Greenwich"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Question 11. Choose TWO letters, A-E.",
+        "options": [
+          { "key": "A", "text": "the railway companies" },
+          { "key": "B", "text": "makers of sundials" },
+          { "key": "C", "text": "an international conference held in 1884" },
+          { "key": "D", "text": "individual farmers" },
+          { "key": "E", "text": "ship captains alone" }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO groups introduced or agreed on standard time, according to the passage? Choose TWO letters.", "correct_option_keys": ["A", "C"] }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 12-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Before the railways, towns set their clocks by the position of the sun.", "answer": "true" },
+          { "prompt_text": "The North American time zones were introduced in 1900.", "answer": "false" },
+          { "prompt_text": "Standard time was adopted in Asia before it was adopted in Europe.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Box That Changed the World",
+    "difficulty": "medium",
+    "topic_tags": ["innovation", "trade", "design"],
+    "body_html": "<p><strong>A</strong> Before the middle of the twentieth century, loading a ship was a slow and back-breaking business. Cargo arrived at the docks as a jumble of barrels, sacks, crates and boxes of every size, and gangs of dockworkers had to carry or winch each piece aboard by hand and pack it carefully into the hold, item by item. A large ship might sit in port for a week or more while this went on; loading and unloading were among the greatest costs of any voyage, and goods left lying on the quayside were an easy target for thieves. A single voyage might involve dozens of separate handlings of the same crate as it passed from warehouse to quayside to hold, and every one of them cost time, money and the occasional broken back, while pilfering from the open cargo was so routine that it was quietly built into the price of shipping.</p><p><strong>B</strong> The man who changed this was not a sailor but a trucking businessman from the United States named Malcom McLean. Frustrated by the hours wasted watching his lorries wait to be unloaded, he reasoned that it would be far quicker to lift a whole truck-sized box straight onto a ship without unpacking it at all. In 1956 he put the idea to the test, sending out the first voyage of a ship loaded with identical metal boxes, and the modern shipping container was born. McLean was not the first person to imagine such a thing, but he had the determination and the resources to make it work in practice, buying ships, redesigning them to carry the boxes and pressing ports to build the equipment his idea required.</p><p><strong>C</strong> The genius of the system lay in standardisation. Because the containers were built to agreed shapes and sizes, the very same steel box could be lifted by crane from a lorry onto a ship, carried across an ocean, and set down directly onto a railway wagon or another truck at the far end, all without its contents ever being touched. This ability to move smoothly between different forms of transport, known as intermodal shipping, is what made the container so powerful. Agreement on a handful of standard sizes was the key that unlocked everything else, for it meant that a box loaded in one country could be handled by cranes, lorries and railways on the far side of the world that had never seen it before, and that ships, ports and vehicles everywhere could be built to the same convenient measurements.</p><p><strong>D</strong> The consequences were enormous. The cost of loading cargo, once a huge share of the price of shipping, fell to almost nothing, and ports that adopted containers could handle many times the volume of goods they had before. Cheap, reliable shipping made it practical to manufacture goods on one side of the world and sell them on the other, and the container quietly became one of the engines of modern global trade, carrying a large part of everything we buy. Goods that would once have been far too costly to send across the world could now travel cheaply from factory to distant shop, and long chains of production stretched across many countries, with parts made in one place, assembled in another and sold in a third, all held together by the steady, inexpensive flow of containers. It is often said that the plain steel box did as much to knit the modern world together as any treaty or invention, and yet, because it is so dull to look at, hardly anyone notices it at all. The cheapness it created has become so ordinary that we now take for granted goods gathered from a dozen countries, forgetting that not long ago such abundance would have been unthinkable.</p><p><strong>E</strong> Not everyone gained. The armies of dockworkers who had once loaded ships by hand were no longer needed, and their skilled, dangerous trade largely disappeared. Old, crowded ports set among city streets could not make room for the cranes and vast yards that containers demanded, and many of them declined as huge, highly automated container terminals rose in their place, often on cheaper land away from the old waterfronts. The steel box had reshaped not only trade but the very cities that trade had built. Whole districts that had lived by the docks for centuries fell quiet, their warehouses abandoned or turned to other uses, while new port cities rose around the container terminals, often in places that had been of little importance before the box arrived.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has five paragraphs, A-E. Which paragraph contains the following information? Write the correct letter, A-E.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" }
+        ],
+        "questions": [
+          { "prompt_text": "a description of how cargo was handled before containers", "correct_option_keys": ["A"] },
+          { "prompt_text": "the person who introduced the container and the year he did so", "correct_option_keys": ["B"] },
+          { "prompt_text": "the importance of agreed, standard sizes", "correct_option_keys": ["C"] },
+          { "prompt_text": "the effect of cheap shipping on world trade", "correct_option_keys": ["D"] },
+          { "prompt_text": "the loss of jobs among dock workers", "correct_option_keys": ["E"] }
+        ]
+      },
+      {
+        "question_type": "table_completion",
+        "prompt": "Questions 6-10. Complete the table below.",
+        "instructions_html": "<p>Complete the table using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><table><thead><tr><th>Aspect</th><th>Detail</th></tr></thead><tbody><tr><td>Old method</td><td>Cargo was loaded piece by piece by gangs of <strong>(6)&nbsp;______</strong>.</td></tr><tr><td>Pioneer</td><td>Malcom <strong>(7)&nbsp;______</strong> launched the first container ship in 1956.</td></tr><tr><td>Key idea</td><td>Standard steel <strong>(8)&nbsp;______</strong> could move between ship, train and lorry.</td></tr><tr><td>Handling</td><td>The boxes were lifted by <strong>(9)&nbsp;______</strong> without being unpacked.</td></tr><tr><td>Result</td><td>The cost of <strong>(10)&nbsp;______</strong> cargo fell dramatically.</td></tr></tbody></table>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["dockworkers", "dock workers"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["McLean"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["boxes", "box", "containers", "container"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["crane", "cranes"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["loading"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-14. Answer the questions below using NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In what year did the first container ship sail?", "accepted": ["1956"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What was McLean's original line of business?", "accepted": ["trucking", "road haulage", "haulage", "trucks"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What word describes moving a container between ship, train and lorry?", "accepted": ["intermodal", "intermodal shipping"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What kind of terminals replaced the old crowded ports?", "accepted": ["container terminals", "automated container terminals", "container ports"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "A History of the World in Board Games",
+    "difficulty": "medium",
+    "topic_tags": ["design", "history", "culture"],
+    "body_html": "<p><strong>A</strong> Board games are among the oldest of all human pastimes, older than writing, older than most of the world's religions, older than nearly everything we think of as civilisation. In the ruins of the ancient Mesopotamian city of Ur, archaeologists found beautifully made game boards some four and a half thousand years old, complete with playing pieces and dice, and games of comparable age have turned up across the ancient world. Wherever people gathered, it seems, they found the time to sit down and play. Dice, counters and marked boards turn up in the graves and rubbish heaps of the earliest cities, and the impulse behind them, the pleasure of a contest bounded by agreed rules, seems to be almost as old as human society itself.</p><p><strong>B</strong> These early games were often bound up with belief. In ancient Egypt the game of Senet, played on a grid of thirty squares, came to be seen as a symbol of the soul's dangerous journey through the afterlife, and fine sets were placed in tombs so that the dead might play their way safely to the next world. To the Egyptians a board game was not merely idle fun; it could carry the deepest meanings of life and death, which is why so many boards survive buried alongside their owners. Similar beliefs attached to games elsewhere in the ancient world, where the fall of the dice could be read as the will of the gods, and to play was, in a sense, to seek their favour or to glimpse one's fate.</p><p><strong>C</strong> No game has travelled further or changed more than chess. It is thought to have begun in India, around fifteen hundred years ago, as a game called chaturanga that represented the four divisions of an army. Carried westward through Persia and the Islamic world and on into Europe, it slowly transformed: pieces were renamed and their powers altered to fit each new society, so that the weak counsellor who once stood beside the king became, in Europe, the most powerful piece on the board, the queen. In its very design chess came to mirror the world of those who played it. The slow spread of the game, from court to court and country to country over many centuries, also makes it a kind of map of the connections between civilisations, each of which left its mark on the rules before passing the game along to the next.</p><p><strong>D</strong> Some games were built to teach. The game known in English as Snakes and Ladders began in India as a lesson in morality: the ladders that carried a player upward stood for good deeds and virtues, while the snakes that dragged them down represented sins and vices, so that the passage across the board became a small parable of a life lived well or badly. Only later, stripped of its message, did it become the simple children's game of luck that is familiar today. It is a neat illustration of how a game can outlive the ideas that first gave it shape, keeping its board and its pieces while quietly shedding the meaning they once carried.</p><p><strong>E</strong> Even the most famous modern board game hides a surprising history. Monopoly, in which players grow rich by buying property and charging rents, grew out of an earlier game called The Landlord's Game, patented in 1904 by an American woman named Lizzie Magie. Her intention was the very opposite of the modern game's spirit: she designed it to show how a few landlords could grow wealthy while everyone else was ruined, as a warning against the greed her game laid bare. In time the design was reworked, credited to another inventor, and sold as a celebration of the very fortune-hunting it had been meant to criticise. Magie received little credit and less money for her invention, and for many years the game was told as the story of a single clever man who had struck it rich in hard times, an irony that fits a game about the uneven rewards of the property market rather too well.</p><p><strong>F</strong> Far from dying out in the age of screens, board games are enjoying a remarkable revival. A new wave of cleverly designed games, many of them from Europe, has drawn millions of players back to the table, prizing skilful decisions over mere luck and the pleasure of sitting face to face over any glowing display. The oldest of pastimes, it turns out, has lost none of its power to bring people together. If anything, the very presence of screens seems to have sharpened the appetite for an evening spent around a physical board, talking, laughing and plotting face to face, and designers today enjoy a freedom and an audience that the makers of ancient Ur could never have foreseen.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "Games buried with the dead" },
+          { "key": "ii", "text": "A pastime as old as civilisation itself" },
+          { "key": "iii", "text": "A game that crossed continents and changed its pieces" },
+          { "key": "iv", "text": "Teaching right and wrong through play" },
+          { "key": "v", "text": "A protest that became a celebration" },
+          { "key": "vi", "text": "A surprising modern revival" },
+          { "key": "vii", "text": "The rules of professional gambling" },
+          { "key": "viii", "text": "Why children lose interest in games" },
+          { "key": "ix", "text": "Carving board games out of wood" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["vi"] }
+        ]
+      },
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 7-11. Complete each sentence with the correct ending, A-H, from the box below.",
+        "options": [
+          { "key": "A", "text": "are among the oldest of all human pastimes." },
+          { "key": "B", "text": "linked to beliefs about the journey after death." },
+          { "key": "C", "text": "as a game named chaturanga." },
+          { "key": "D", "text": "designed to teach players about virtue and vice." },
+          { "key": "E", "text": "to warn people against the greed of landlords." },
+          { "key": "F", "text": "invented only in the twentieth century." },
+          { "key": "G", "text": "played only by kings and priests." },
+          { "key": "H", "text": "banned for many years by the church." }
+        ],
+        "questions": [
+          { "prompt_text": "The game boards found at Ur show that board games", "correct_option_keys": ["A"] },
+          { "prompt_text": "In ancient Egypt the game of Senet was", "correct_option_keys": ["B"] },
+          { "prompt_text": "Chess is thought to have begun in India", "correct_option_keys": ["C"] },
+          { "prompt_text": "The game we call Snakes and Ladders was originally", "correct_option_keys": ["D"] },
+          { "prompt_text": "Monopoly grew out of an earlier game that was meant", "correct_option_keys": ["E"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 12-14. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "The ancient Egyptian board game played on thirty squares was called ______.", "accepted": ["Senet"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Chess reached Europe after passing through ______ and the Islamic world.", "accepted": ["Persia"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The Landlord's Game was patented in 1904 by ______.", "accepted": ["Lizzie Magie", "Magie"], "word_limit": 2, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]

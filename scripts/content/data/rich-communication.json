@@ -1,0 +1,167 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Silent Grammar of Gesture",
+    "difficulty": "medium",
+    "topic_tags": ["communication", "psychology", "language"],
+    "body_html": "<p><strong>A</strong> For as long as people have spoken to one another, they have also moved their hands. Gesture is not an ornament added to language but a companion that appears wherever speech is found, in every documented society and at every age. Blind children, who have never seen anyone gesture, still move their hands as they talk, and speakers on the telephone gesture busily to listeners who cannot possibly see them. This stubborn universality has convinced many researchers that gesturing and speaking are not two separate skills but two branches of a single system, produced together by the same mind and unfolding in the very same moment. Cultures that prize complete stillness in a speaker are very much the exception, and even people who are convinced that they never gesture can be filmed moving their hands freely the instant they warm to a subject.</p><p><strong>B</strong> The most common gestures are the small, rhythmic flicks of the hand that researchers call beats. Beats carry no picture and no dictionary meaning; instead they fall on the words a speaker wishes to stress, rising and dropping in time with the voice like the movements of a conductor keeping an orchestra together. Because they are bound so tightly to the music of speech, beats vanish the moment a person stops talking and return the instant they resume. Their task is not to describe the world but to mark its most important points, steering a listener's attention towards whatever the speaker judges to matter most.</p><p><strong>C</strong> A very different class of gesture is the emblem, a movement with a fixed meaning that can stand on its own without any accompanying words. The thumbs-up, the beckoning finger and the ring made of thumb and forefinger are all emblems, and it is precisely because their meanings are agreed by a community rather than given by nature that they refuse to travel. A gesture that signals warm approval in one country may be a grave insult a few hundred kilometres away. Travellers who assume that their hands will be understood everywhere are frequently caught out, for emblems must be learned deliberately, exactly as the words of a foreign language are learned. Because emblems are agreed upon rather than natural, a community can coin new ones whenever it pleases, and a movement that is fashionable in one generation may look quaint or baffling to the next. It is for this reason that a dictionary of gestures, like an ordinary dictionary, has to be compiled afresh for each culture.</p><p><strong>D</strong> Long before they can say anything at all, infants reach out and point. Pointing appears at around the end of the first year, weeks or months ahead of a child's first spoken word, and it is one of the surest early signs that a baby has begun to share attention with the people around it. By directing an adult's gaze towards a distant object, the infant is already doing what language will later do more precisely: drawing another mind towards a chosen part of the world. Children who point early tend, on average, to start speaking sooner, as though the hand were quietly preparing the ground for the voice that follows.</p><p><strong>E</strong> Gesture does not only assist the listener; it also assists the very person producing it. When speakers are told to keep their hands still, they become noticeably less fluent, pause more often and struggle to retrieve the words they are hunting for. Experiments in which people describe how they solved a puzzle show that moving the hands lightens the mental effort of talking, freeing memory for other work and making it easier to hold an idea steady while a sentence is assembled. On this view the hands are not merely broadcasting a thought that is already finished; they are part of the machinery that helps to build it in the first place. The effect seems to grow stronger as a task becomes harder: the more demanding the idea a person is struggling to put into words, the more the hands come to the rescue, sketching shapes and directions in the air that the mouth has not yet found.</p><p><strong>F</strong> Perhaps the most surprising discovery concerns moments when the hands and the voice disagree. A child asked why two rows of coins contain the same number may insist in words that one row has more, while the hands quietly say something else, matching the coins one to one. Researchers call this a gesture-speech mismatch, and far from being mere muddle it is a dependable signal that the child is standing on the threshold of a new understanding. Learners who produce such mismatches are the ones most likely to profit from teaching, and skilful teachers, whether or not they realise they are doing it, read these silent clues and adjust their explanations to suit. Some researchers have gone further still, deliberately teaching children to make particular gestures as they work through a problem, and have found that the right movement of the hands can nudge a wavering learner towards the correct answer. Thought and gesture, it seems, are woven together far more tightly than we usually notice.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A movement that reveals a readiness to learn" },
+          { "key": "ii", "text": "How gestures help the person who makes them" },
+          { "key": "iii", "text": "The earliest way children draw attention to things" },
+          { "key": "iv", "text": "Signs whose meaning depends on where you are" },
+          { "key": "v", "text": "Movements that keep time with the voice" },
+          { "key": "vi", "text": "A behaviour found wherever people speak" },
+          { "key": "vii", "text": "Why certain gestures are banned in public" },
+          { "key": "viii", "text": "The gradual disappearance of gesture in modern life" },
+          { "key": "ix", "text": "Machines that measure the speed of the hands" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["vi"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["i"] }
+        ]
+      },
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 7-10. Complete each sentence with the correct ending, A-G, from the box below.",
+        "options": [
+          { "key": "A", "text": "before they are able to produce their first words." },
+          { "key": "B", "text": "it may signal that they are ready to grasp a new idea." },
+          { "key": "C", "text": "can carry an offensive meaning in another country." },
+          { "key": "D", "text": "at the points a speaker most wishes to emphasise." },
+          { "key": "E", "text": "only when a person is speaking a foreign language." },
+          { "key": "F", "text": "because they have been formally taught in school." },
+          { "key": "G", "text": "and this makes their speech impossible to follow." }
+        ],
+        "questions": [
+          { "prompt_text": "Beat gestures tend to fall", "correct_option_keys": ["D"] },
+          { "prompt_text": "An emblem such as the thumbs-up", "correct_option_keys": ["C"] },
+          { "prompt_text": "Children usually begin to point", "correct_option_keys": ["A"] },
+          { "prompt_text": "When a learner's gestures do not match their words,", "correct_option_keys": ["B"] }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Beat gestures have a fixed meaning that is recognised in every culture.", "answer": "false" },
+          { "prompt_text": "Infants typically begin to point before they can speak.", "answer": "true" },
+          { "prompt_text": "Preventing speakers from moving their hands tends to make them less fluent.", "answer": "true" },
+          { "prompt_text": "Emblems are easier for children to learn than spoken words.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Esperanto and the Universal Language Dream",
+    "difficulty": "medium",
+    "topic_tags": ["communication", "language", "history"],
+    "body_html": "<p>In the closing years of the nineteenth century, a young eye doctor in the Russian Empire set out to solve a problem that had troubled him since childhood. L. L. Zamenhof had grown up in Bialystok, a crowded town where Poles, Russians, Germans and Jews lived side by side but rarely trusted one another, each group speaking its own tongue. The boy came to believe that much of the hostility around him sprang from simple misunderstanding, and that a shared, neutral language belonging to no single nation might allow strangers to meet as equals. In 1887 he published the plan for such a language, hiding his identity behind the pen name Doktoro Esperanto, meaning 'one who hopes'. The pseudonym soon became the name of the language itself. Zamenhof was still a young man when he completed his scheme, and he gave it away freely rather than trying to make money from it, believing that a language could truly belong to everyone only if it belonged to no one.</p><p>Esperanto was built to be learned quickly. Its entire grammar was set out in just sixteen rules, printed on a single sheet, and these rules had no exceptions whatever. There were no irregular verbs to memorise, no unpredictable plurals, and every word was spelled exactly as it was pronounced. The vocabulary was assembled from roots already familiar to many Europeans, drawn chiefly from Latin, the Romance languages and German, so that a reader who knew one of these often recognised a good deal at first sight. Crucially, Zamenhof never intended his creation to replace the world's living tongues. He hoped only that people would keep their native languages for home and add Esperanto as a shared second language for dealings across borders. This modesty of aim was quite deliberate. Zamenhof had seen how fiercely people defend their mother tongue, and he judged that a language offered as a humble helper, rather than a rival, stood a far better chance of being welcomed. The regular grammar served the same purpose, for he hoped that even a clerk or a farmer with little schooling might master the essentials in a matter of weeks.</p><p>The idea spread with unexpected speed. Clubs sprang up across Europe, magazines appeared, and in 1905 the first international gathering of speakers was held at Boulogne-sur-Mer in France, where several hundred enthusiasts from many countries discovered that they could understand one another after only modest study. Such congresses became an annual fixture and continue to this day. A small but genuine community of native speakers also emerged over the following generations: children raised in Esperanto-speaking households, known to the movement as denaskuloj, who learned the planned language from birth alongside, or even ahead of, a national one. The movement soon developed its own flag, its own anthem and a lively literature of original poems, novels and translations, so that within a single generation Esperanto had gathered around it many of the trappings of a natural language.</p><p>Esperanto was not the first attempt at a made-to-order world language. A few years earlier, in 1879, a German priest named Johann Martin Schleyer had launched Volapuk, which briefly attracted tens of thousands of followers and a flurry of textbooks and journals. Yet Volapuk was awkward to use. Its sounds were difficult for many speakers, its grammar was intricate, and bitter quarrels among its supporters over how it should be reformed helped the whole enterprise to collapse almost as quickly as it had risen. When Esperanto arrived, many disappointed Volapuk students simply moved across to the newer, simpler language. The contrast was not lost on onlookers, who drew the lesson that a constructed language would live or die not by the ingenuity of its inventor but by how easily ordinary people could take it up.</p><p>Even Esperanto could not escape the urge to tinker. In 1907 a group of reformers, unhappy with certain features they thought clumsy, broke away to promote a modified version called Ido, which adjusted the spelling and grammar in the hope of wider acceptance. The split drew off some talented supporters but never rivalled the original in numbers, and most speakers stayed loyal to Zamenhof's design. History treated the language harshly in other ways too: both Hitler and Stalin regarded a movement dedicated to international friendship with suspicion, and Esperanto speakers were persecuted under each regime. Despite all this, the language survived, sustained by a devoted worldwide community, and today it remains the most successful constructed language ever devised, still taught, spoken and written more than a century after that single printed sheet first appeared. Its survival owes much to the very ordinary people who kept it alive, meeting in small clubs, exchanging letters across frontiers and teaching it to their children, long after the grander dream of one language for all humanity had faded from public view.</p>",
+    "groups": [
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 1-6. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>Esperanto was published in 1887 by L. L. Zamenhof, who concealed his identity behind the pen name Doktoro <strong>(1)&nbsp;______</strong>. He had grown up in the town of <strong>(2)&nbsp;______</strong>, where the different communities distrusted one another. The language was designed to be easy: its grammar consisted of only <strong>(3)&nbsp;______</strong> rules, and, unlike national languages, it contained no <strong>(4)&nbsp;______</strong> verbs. Zamenhof did not want Esperanto to replace people's <strong>(5)&nbsp;______</strong> languages, only to serve as a neutral second one. The first international <strong>(6)&nbsp;______</strong> of speakers took place in France in 1905.</p>",
+        "questions": [
+          { "prompt_text": "Gap 1", "accepted": ["Esperanto"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 2", "accepted": ["Bialystok", "Białystok"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 3", "accepted": ["sixteen", "16"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 4", "accepted": ["irregular"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 5", "accepted": ["native", "living"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 6", "accepted": ["congress", "gathering"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 7-10. Match each statement with the correct language, A, B or C. You may use any letter more than once.",
+        "options": [
+          { "key": "A", "text": "Volapuk" },
+          { "key": "B", "text": "Esperanto" },
+          { "key": "C", "text": "Ido" }
+        ],
+        "questions": [
+          { "prompt_text": "It was created by a doctor who worked with people's eyes.", "correct_option_keys": ["B"] },
+          { "prompt_text": "It was the first constructed language to attract a mass following.", "correct_option_keys": ["A"] },
+          { "prompt_text": "It began as a reformed version of an existing constructed language.", "correct_option_keys": ["C"] },
+          { "prompt_text": "Its speakers still meet at an annual international event.", "correct_option_keys": ["B"] }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-13. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which country was the first Esperanto congress held?", "accepted": ["France"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What nationality was the man who created Volapuk?", "accepted": ["German", "a German"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What name does the movement give to people who speak Esperanto from birth?", "accepted": ["denaskuloj"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Birth of Nicaraguan Sign Language",
+    "difficulty": "hard",
+    "topic_tags": ["communication", "language", "social science"],
+    "body_html": "<p><strong>A</strong> For most of the twentieth century, deaf children in Nicaragua grew up in near-total isolation from one another. Scattered across a poor and largely rural country, they seldom met another deaf person, and there was no shared sign language for them to learn. Within their own families each child improvised a private set of gestures, known to researchers as home sign, to ask for food, name relatives and comment on daily events. These home systems could be surprisingly expressive, but they were invented afresh in every household and could not carry a child beyond the walls of the family home. A deaf child in one village might possess a rich set of signs for the animals, tools and relatives of the household, and yet be quite unable to communicate with a deaf child in the next village, whose gestures were entirely different. Deafness, under such conditions, meant a life of profound isolation.</p><p><strong>B</strong> This changed abruptly at the end of the 1970s. In 1977 a special school for deaf children opened in the capital, Managua, and a vocational centre followed a few years later. For the first time, hundreds of deaf youngsters were gathered together and travelled to and from the schools on the same buses. In the classroom, teachers concentrated on training the pupils to read lips and to speak Spanish, an approach that produced very little success. Out of the teachers' sight, however, in the playground and on the buses, something remarkable was taking shape as the children pooled their scattered home gestures and began to sign to one another. The buses in particular became unlikely classrooms, for it was there, jolting through the streets of Managua with no adult looking on, that the children had both the freedom and the time to hammer out a common way of communicating.</p><p><strong>C</strong> The system that first emerged among the oldest pupils was, in the judgement of the linguists who later studied it, more like a pidgin than a full language. It was variable and inconsistent: signs differed from one child to the next, word order was loose, and it lacked the settled grammatical machinery that lets a language express fine distinctions reliably. It was, nevertheless, a genuine shared code, good enough for the first generation of signers to understand one another far better than their old home signs had ever allowed. In this it behaved much as other pidgins do, the rough contact languages that spring up when adults who share no common tongue are thrown together and must somehow trade and talk.</p><p><strong>D</strong> The decisive transformation came from the youngest children. As new waves of four- and five-year-olds entered the schools, they learned the rough signing of the older pupils but did not simply copy it. Instead they tightened and regularised it, adding consistent word order and grammatical devices that the first generation had never used. Within a few years these young signers were producing something far richer and more systematic than their models had ever managed. The language, now called Idioma de Senas de Nicaragua, had in effect been completed by the children who inherited it rather than by those who began it. Observers were astonished to find that the youngest signers were not merely quicker or more fluent, but were using grammatical devices that simply did not exist in the signing of their older schoolmates.</p><p><strong>E</strong> News of the schools eventually reached the wider world. In 1986 an American linguist, Judy Kegl, was invited to investigate, and she and her colleagues gradually realised that they were watching something almost never available to science: the birth of a brand-new language, arising with no adult model to copy. Among its most striking features was the use of the space around the signer's body to show which noun a verb referred to, a grammatical trick that the youngest signers used fluently but that the first generation had largely lacked. Kegl and her colleagues had to tread carefully, aware that their very presence might alter the thing they were trying to observe, and much of their work involved patiently recording how children of different ages told the same simple stories.</p><p><strong>F</strong> For scholars of language the case has been extraordinarily valuable. Because the children were never taught a sign language and had no fully formed one to imitate, their achievement is powerful evidence that the human mind comes equipped with a capacity to create language, and that young children in particular drive the growth of grammatical structure. No researcher could ethically design such an experiment on purpose; only the accident of history, which brought isolated children together at just the right moment, made it possible to observe. For that reason the language of the Managua schools is often described as a natural experiment, a rare gift to science thrown up by circumstance rather than contrived in any laboratory.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "a reference to the failure of an attempt to teach speech", "correct_option_keys": ["B"] },
+          { "prompt_text": "the claim that grammatical complexity was added by the youngest signers", "correct_option_keys": ["D"] },
+          { "prompt_text": "a description of how deaf people lived before the schools existed", "correct_option_keys": ["A"] },
+          { "prompt_text": "the moment an outside researcher became involved", "correct_option_keys": ["E"] },
+          { "prompt_text": "the reason such a situation could not be created deliberately", "correct_option_keys": ["F"] },
+          { "prompt_text": "an account of an early signing system that lacked consistent rules", "correct_option_keys": ["C"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 7-12. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Before the schools opened, each deaf child invented a private set of gestures called ______.", "accepted": ["home sign", "home signs", "homesign"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The first special school for deaf children opened in the capital city, ______.", "accepted": ["Managua"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "In the classroom, teachers tried to train the pupils to read lips and to speak ______.", "accepted": ["Spanish"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Linguists judged that the signing of the oldest pupils resembled a ______ rather than a full language.", "accepted": ["pidgin"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The younger children added consistent ______ that the first generation had never used.", "accepted": ["word order"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "To show which noun a verb refers to, signers make use of the ______ around the body.", "accepted": ["space"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Question 13. Choose TWO letters, A-E.",
+        "options": [
+          { "key": "A", "text": "Grammar is mainly inherited from adult teachers." },
+          { "key": "B", "text": "Humans have an inborn capacity to create language." },
+          { "key": "C", "text": "Spoken language is superior to sign language." },
+          { "key": "D", "text": "The youngest learners drove the growth of grammar." },
+          { "key": "E", "text": "Sign languages are merely gestures without grammar." }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO conclusions does the case of Nicaraguan Sign Language support? Choose TWO letters.", "correct_option_keys": ["B", "D"] }
+        ]
+      }
+    ]
+  }
+]

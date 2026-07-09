@@ -1,0 +1,622 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Economics of the Spice Trade",
+    "difficulty": "medium",
+    "topic_tags": ["economics", "history"],
+    "body_html": "<p>For many centuries, a handful of aromatic plant products were among the most valuable commodities in the world. Spices such as pepper, cloves, nutmeg and cinnamon were prized in distant markets far from the tropical regions where they grew, and the trade in them shaped economies, drove exploration and even changed the political map of the world. To understand why dried seeds and bark could command such extraordinary prices, one must consider the economics of scarcity, distance and demand.</p><p>The spices most sought after in European markets came from regions of southern and south-eastern Asia, and some of the rarest grew only on a few small islands. Because these plants would not flourish in European climates, there was no possibility of local production, and every gram had to be transported across enormous distances. The journey from the places of origin to the markets where the spices were sold could take many months and pass through many hands, and each stage of the route added to the final cost. Scarcity at the source combined with the expense of transport to keep prices high.</p><p>Demand, meanwhile, remained strong. Spices were valued for the flavour they gave to food, and in an age without refrigeration they helped to make preserved and monotonous diets more palatable. They were also used in medicines and in the making of perfumes, and the possession of costly spices became a mark of wealth and status among the well-to-do. Because those who could afford them were willing to pay handsomely, and because supply was limited, the conditions were set for a highly profitable trade.</p><p>For a long time this trade was controlled by a series of intermediaries. The spices passed along established routes through the Middle East, where merchants bought and sold them before they reached the Mediterranean and finally the markets of Europe. Each set of middlemen took a share of the profit, and the merchants who controlled key points along the route grew rich. European buyers at the far end of the chain paid prices vastly higher than those at the source, with the difference absorbed by the many traders in between.</p><p>It was partly the desire to break this chain of intermediaries that spurred the great voyages of exploration. European rulers and merchants reasoned that if they could find a sea route directly to the regions where spices were grown, they could buy at the source and cut out the middlemen, capturing the enormous profits for themselves. The search for such a route led to voyages that opened new sea lanes around Africa and across the oceans, transforming the pattern of world trade in the process.</p><p>Once direct sea routes were established, competition to control the spice trade became fierce. Powerful trading companies were formed, backed by their governments, and these organisations sought not merely to trade but to dominate. In some cases they attempted to establish a monopoly over particular spices by seizing control of the islands where they grew and preventing anyone else from buying or selling them. By restricting supply in this way, a company that held a monopoly could keep prices artificially high and reap huge rewards.</p><p>Such monopolies, however, were difficult to maintain. Where enormous profits were to be had, others were always tempted to enter the market, whether by smuggling, by force or by cultivating the valuable plants elsewhere. Over time, some spices that had once grown only in a few closely guarded locations were successfully transplanted to other tropical regions, breaking the grip of those who had controlled the original sources. As production spread and supply increased, the scarcity that had underpinned the high prices began to erode.</p><p>Gradually the spices that had once been worth their weight in precious metals became ordinary items available to almost everyone. As supply expanded and competition grew, prices fell until spices that had once been luxuries for the rich could be found in the kitchens of ordinary households. The trade that had launched voyages, enriched merchants and shaped empires lost its extraordinary character, though the spices themselves remained in daily use. The story of the spice trade is, in economic terms, a lesson in how scarcity creates value, and how the pursuit of profit can drive people to reshape the world.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The most valuable spices could not be grown in European climates.",
+            "answer": "true",
+            "evidence": "Because these plants would not flourish in European climates, there was no possibility of local production, and every gram had to be transported across enormous distances."
+          },
+          {
+            "prompt_text": "Spices were used only for adding flavour to food.",
+            "answer": "false",
+            "evidence": "They were also used in medicines and in the making of perfumes, and the possession of costly spices became a mark of wealth and status among the well-to-do."
+          },
+          {
+            "prompt_text": "European buyers paid roughly the same price as buyers at the source of the spices.",
+            "answer": "false",
+            "evidence": "European buyers at the far end of the chain paid prices vastly higher than those at the source, with the difference absorbed by the many traders in between."
+          },
+          {
+            "prompt_text": "The desire to bypass intermediaries helped to motivate voyages of exploration.",
+            "answer": "true",
+            "evidence": "It was partly the desire to break this chain of intermediaries that spurred the great voyages of exploration."
+          },
+          {
+            "prompt_text": "Cloves were more valuable than nutmeg in European markets.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Trading companies sometimes tried to keep prices high by restricting the supply of spices.",
+            "answer": "true",
+            "evidence": "By restricting supply in this way, a company that held a monopoly could keep prices artificially high and reap huge rewards."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "According to the passage, what combination kept spice prices high?",
+            "options": [
+              "scarcity at the source and the expense of transport",
+              "low demand and abundant supply",
+              "cheap transport and local production",
+              "government subsidies and free trade"
+            ],
+            "answer_index": 0,
+            "evidence": "Scarcity at the source combined with the expense of transport to keep prices high."
+          },
+          {
+            "prompt_text": "Why were spices particularly useful in an age without refrigeration?",
+            "options": [
+              "they could be used as money",
+              "they helped to make preserved and monotonous diets more palatable",
+              "they prevented food from being grown",
+              "they replaced the need for cooking"
+            ],
+            "answer_index": 1,
+            "evidence": "in an age without refrigeration they helped to make preserved and monotonous diets more palatable."
+          },
+          {
+            "prompt_text": "How did some trading companies attempt to dominate the trade in particular spices?",
+            "options": [
+              "by lowering their prices below cost",
+              "by seizing control of the islands where the spices grew",
+              "by giving the spices away for free",
+              "by refusing to sell to the wealthy"
+            ],
+            "answer_index": 1,
+            "evidence": "they attempted to establish a monopoly over particular spices by seizing control of the islands where they grew and preventing anyone else from buying or selling them."
+          },
+          {
+            "prompt_text": "What ultimately caused the extraordinary value of spices to decline?",
+            "options": [
+              "a fall in demand for flavoured food",
+              "the closing of all sea routes",
+              "an expansion of production and increased competition",
+              "the banning of the spice trade"
+            ],
+            "answer_index": 2,
+            "evidence": "As supply expanded and competition grew, prices fell until spices that had once been luxuries for the rich could be found in the kitchens of ordinary households."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "From which broad region did the most sought-after spices come?",
+            "accepted": ["Asia", "southern and south-eastern Asia", "south-eastern Asia"],
+            "word_limit": 3,
+            "evidence": "The spices most sought after in European markets came from regions of southern and south-eastern Asia."
+          },
+          {
+            "prompt_text": "Through which region did the spices pass before reaching the Mediterranean?",
+            "accepted": ["the Middle East", "Middle East"],
+            "word_limit": 3,
+            "evidence": "The spices passed along established routes through the Middle East, where merchants bought and sold them before they reached the Mediterranean."
+          },
+          {
+            "prompt_text": "What did a company try to establish over a particular spice in order to control it?",
+            "accepted": ["a monopoly", "monopoly"],
+            "word_limit": 2,
+            "evidence": "they attempted to establish a monopoly over particular spices by seizing control of the islands where they grew."
+          },
+          {
+            "prompt_text": "Some spices were eventually moved and grown in other tropical regions through what process?",
+            "accepted": ["transplanting", "being transplanted", "transplanted"],
+            "word_limit": 2,
+            "evidence": "some spices that had once grown only in a few closely guarded locations were successfully transplanted to other tropical regions."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Hanseatic League and Medieval Trade",
+    "difficulty": "medium",
+    "topic_tags": ["history", "economics", "business"],
+    "body_html": "<p>During the later Middle Ages, much of the trade of northern Europe was dominated not by a single kingdom but by an alliance of merchant towns known as the Hanseatic League. Stretching around the shores of the Baltic and North Seas, this loose association of trading cities came to exercise remarkable economic power, controlling the flow of goods across a vast region. It was not a country, and it had no king, army or fixed capital, yet for several centuries it shaped the commerce and politics of northern Europe.</p><p>The origins of the League lay in the practical needs of merchants who travelled far from home to trade. In an age of weak central authority, such traders faced many dangers, including piracy at sea, robbery on land and unfair treatment in foreign markets. By banding together, merchants from different towns could protect one another, share the costs and risks of long journeys, and bargain more effectively with local rulers. What began as informal cooperation between groups of traders gradually developed into a more organised and durable alliance of towns.</p><p>At the heart of the League's success was the trade in bulk goods that were needed across the region. The northern lands produced and demanded a range of everyday commodities: timber, furs, wax and grain from the east; fish, especially preserved herring, from the northern seas; cloth from the west; and salt, which was essential for preserving food. By moving these goods from the places where they were plentiful to the places where they were scarce, the merchants of the League earned steady profits and made themselves indispensable to the economies of the towns and countries they served.</p><p>To conduct this trade, the League established permanent bases in important foreign cities. These trading posts served as warehouses, lodgings and meeting places for the League's merchants, who often lived apart from the local population under their own rules. From such bases the merchants could store goods, conduct business and negotiate as a group with the authorities of the host city. The most important of these foreign stations were located in major commercial centres around the edges of the League's trading world.</p><p>The power of the League rested ultimately on its control of trade rather than on military strength, but it was prepared to defend its interests when necessary. Member towns could agree to act together, and one of their most effective weapons was the trade embargo: by collectively refusing to trade with a ruler or town that had offended them, they could inflict serious economic damage and force concessions. On occasion the League even went to war to protect its privileges, and it was capable of assembling fleets from its member towns.</p><p>Yet the League was always a loose and somewhat fragile organisation. It had no permanent government and depended on the cooperation of independent towns that had their own separate interests. Representatives of the member towns met from time to time at assemblies to discuss common concerns and agree on joint action, but decisions could not easily be enforced on a town that chose not to comply. This lack of firm central authority gave the League flexibility, but it also made united action difficult to sustain over the long term.</p><p>From the later medieval period onward, the League faced growing challenges that gradually undermined its dominance. The rise of stronger, more centralised nation states meant that powerful kings were increasingly able to control trade within their own borders and to resist the demands of foreign merchants. Rival traders from other regions competed for the same markets, and shifts in the patterns of European commerce reduced the importance of the routes the League had controlled. Without a central authority strong enough to adapt, the alliance found it harder to defend its old privileges.</p><p>The decline of the Hanseatic League was gradual rather than sudden, and its assemblies continued to meet, ever more sparsely attended, long after its greatest days had passed. In the end the League faded away rather than being destroyed, overtaken by the growth of the nation states that would dominate the modern world. Nevertheless, its legacy endured in the prosperity of the trading cities it had helped to build and in the memory of a time when an alliance of merchants, rather than a king, held sway over the commerce of northern Europe.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The Hanseatic League was a kingdom ruled by a single monarch.",
+            "answer": "false",
+            "evidence": "It was not a country, and it had no king, army or fixed capital, yet for several centuries it shaped the commerce and politics of northern Europe."
+          },
+          {
+            "prompt_text": "Merchants joined together partly to protect one another from dangers such as piracy.",
+            "answer": "true",
+            "evidence": "such traders faced many dangers, including piracy at sea, robbery on land and unfair treatment in foreign markets. By banding together, merchants from different towns could protect one another."
+          },
+          {
+            "prompt_text": "Salt was important to the trade because it was used for preserving food.",
+            "answer": "true",
+            "evidence": "and salt, which was essential for preserving food."
+          },
+          {
+            "prompt_text": "The League's foreign trading posts were run entirely by local officials.",
+            "answer": "false",
+            "evidence": "the League's merchants, who often lived apart from the local population under their own rules."
+          },
+          {
+            "prompt_text": "The League's assemblies were held in the same city every year.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The rise of stronger nation states weakened the League's dominance.",
+            "answer": "true",
+            "evidence": "The rise of stronger, more centralised nation states meant that powerful kings were increasingly able to control trade within their own borders and to resist the demands of foreign merchants."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "How did the merchants of the League earn steady profits?",
+            "options": [
+              "by producing luxury goods themselves",
+              "by moving goods from where they were plentiful to where they were scarce",
+              "by lending money to kings",
+              "by charging tolls on all roads"
+            ],
+            "answer_index": 1,
+            "evidence": "By moving these goods from the places where they were plentiful to the places where they were scarce, the merchants of the League earned steady profits."
+          },
+          {
+            "prompt_text": "What was one of the League's most effective weapons against rulers who offended it?",
+            "options": [
+              "a large standing army",
+              "the trade embargo",
+              "control of the seas",
+              "the printing of money"
+            ],
+            "answer_index": 1,
+            "evidence": "one of their most effective weapons was the trade embargo: by collectively refusing to trade with a ruler or town that had offended them, they could inflict serious economic damage and force concessions."
+          },
+          {
+            "prompt_text": "What made united action within the League difficult to sustain?",
+            "options": [
+              "the great distances between towns",
+              "the absence of a firm central authority to enforce decisions",
+              "the lack of any common language",
+              "the refusal of merchants to travel"
+            ],
+            "answer_index": 1,
+            "evidence": "decisions could not easily be enforced on a town that chose not to comply. This lack of firm central authority... made united action difficult to sustain over the long term."
+          },
+          {
+            "prompt_text": "How did the League ultimately come to an end?",
+            "options": [
+              "it was suddenly destroyed in a single war",
+              "it merged with a powerful kingdom",
+              "it faded away gradually rather than being destroyed",
+              "it was banned by all its member towns at once"
+            ],
+            "answer_index": 2,
+            "evidence": "In the end the League faded away rather than being destroyed, overtaken by the growth of the nation states that would dominate the modern world."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What kind of towns formed the Hanseatic League?",
+            "accepted": ["merchant towns", "trading towns", "merchant"],
+            "word_limit": 3,
+            "evidence": "much of the trade of northern Europe was dominated not by a single kingdom but by an alliance of merchant towns known as the Hanseatic League."
+          },
+          {
+            "prompt_text": "Which preserved fish was among the goods traded from the northern seas?",
+            "accepted": ["herring", "preserved herring"],
+            "word_limit": 2,
+            "evidence": "fish, especially preserved herring, from the northern seas."
+          },
+          {
+            "prompt_text": "What did the League establish in important foreign cities to conduct its trade?",
+            "accepted": ["permanent bases", "trading posts", "bases", "permanent bases in important foreign cities"],
+            "word_limit": 3,
+            "evidence": "the League established permanent bases in important foreign cities. These trading posts served as warehouses, lodgings and meeting places."
+          },
+          {
+            "prompt_text": "Representatives of the member towns met from time to time at what kind of gatherings?",
+            "accepted": ["assemblies"],
+            "word_limit": 2,
+            "evidence": "Representatives of the member towns met from time to time at assemblies to discuss common concerns and agree on joint action."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Behavioural Economics and Decision Making",
+    "difficulty": "medium",
+    "topic_tags": ["economics", "psychology"],
+    "body_html": "<p>For a long time, the study of economics rested on a convenient assumption about human behaviour. People were treated as rational decision-makers who carefully weighed the costs and benefits of every choice and acted so as to maximise their own advantage. This imagined figure, sometimes described as the perfectly rational economic actor, always had clear preferences, processed information accurately and never allowed emotion or habit to cloud judgement. The assumption made economic models simpler to construct, but it bore only a loose resemblance to the way real people actually behave.</p><p>Behavioural economics emerged from the recognition of this gap between theory and reality. Drawing on psychology, researchers began to study how people really make decisions, and they found that human behaviour departs from the rational ideal in consistent and predictable ways. People, it turned out, are influenced by a range of mental shortcuts, biases and emotional factors that lead them to make choices a perfectly rational actor would not make. Importantly, these departures from rationality are not random errors but follow regular patterns, which means they can be studied systematically.</p><p>One of the most influential findings concerns the way people respond to gains and losses. Researchers discovered that most people feel the pain of a loss more strongly than the pleasure of an equivalent gain. Losing a sum of money, in other words, hurts more than gaining the same sum feels good. This tendency, known as loss aversion, helps to explain why people often cling to things they already have and are reluctant to take risks that might leave them worse off, even when the potential rewards are attractive.</p><p>Another important discovery is that the way a choice is presented, rather than its actual content, can strongly influence the decision people make. The same option can seem more or less appealing depending on how it is described, or framed. For example, a medical treatment described as giving a ninety per cent chance of survival is likely to be viewed more favourably than the same treatment described as carrying a ten per cent chance of death, even though the two statements convey identical information. This sensitivity to framing shows how far people are from the coolly rational calculators of traditional theory.</p><p>People also rely heavily on reference points when judging value. Rather than assessing an option in absolute terms, they compare it with some standard, such as a previous price or a neighbouring alternative. A price that seems high next to one reference point may seem reasonable next to another, which is why the presence of an expensive option can make a moderately priced one appear more attractive. Such effects reveal that judgements of value are relative and can be shaped by the context in which choices are offered.</p><p>These insights have practical consequences, for they suggest that the way choices are arranged can influence the decisions people make without restricting their freedom. The person or organisation that decides how options are presented, sometimes called a choice architect, can guide behaviour in particular directions simply by changing the default option or the order in which choices appear. A well-known example is the finding that far more people participate in a savings or organ-donation scheme when they are enrolled automatically and must opt out than when they must actively choose to opt in.</p><p>The use of such techniques to steer behaviour, often described as nudging, has attracted both interest and criticism. Supporters argue that since choices must be presented in some way, it is sensible to arrange them so as to encourage decisions that benefit people and society. Critics worry that deliberately exploiting people's biases, even for good ends, risks manipulating them and undermining their autonomy. The debate raises difficult questions about who decides what counts as a beneficial outcome and how much influence over people's choices is acceptable.</p><p>Whatever the outcome of these debates, behavioural economics has permanently changed the way many scholars think about human decision-making. By replacing the idealised rational actor with a more realistic picture of people as imperfect but predictable decision-makers, it has deepened understanding of behaviour in markets, public policy and everyday life. Its central lesson is that human choices are shaped not only by the objective features of the options available but also by the workings of the human mind and the way those options are presented.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Traditional economics assumed that people always make rational, self-interested choices.",
+            "answer": "yes",
+            "evidence": "People were treated as rational decision-makers who carefully weighed the costs and benefits of every choice and acted so as to maximise their own advantage."
+          },
+          {
+            "prompt_text": "The ways in which people depart from rationality are completely random and unpredictable.",
+            "answer": "no",
+            "evidence": "these departures from rationality are not random errors but follow regular patterns, which means they can be studied systematically."
+          },
+          {
+            "prompt_text": "Most people feel the pain of a loss more strongly than the pleasure of an equivalent gain.",
+            "answer": "yes",
+            "evidence": "most people feel the pain of a loss more strongly than the pleasure of an equivalent gain."
+          },
+          {
+            "prompt_text": "Behavioural economics is now taught in most of the world's universities.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The way a choice is presented can affect the decision people make.",
+            "answer": "yes",
+            "evidence": "the way a choice is presented, rather than its actual content, can strongly influence the decision people make."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What does loss aversion help to explain?",
+            "options": [
+              "why people enjoy taking large risks",
+              "why people cling to what they have and avoid risks that might leave them worse off",
+              "why people ignore the value of money",
+              "why people always act rationally"
+            ],
+            "answer_index": 1,
+            "evidence": "This tendency, known as loss aversion, helps to explain why people often cling to things they already have and are reluctant to take risks that might leave them worse off."
+          },
+          {
+            "prompt_text": "The example of a medical treatment is used to illustrate the effect of what?",
+            "options": [
+              "loss aversion",
+              "reference points",
+              "framing",
+              "choice architecture"
+            ],
+            "answer_index": 2,
+            "evidence": "a medical treatment described as giving a ninety per cent chance of survival is likely to be viewed more favourably than the same treatment described as carrying a ten per cent chance of death... This sensitivity to framing."
+          },
+          {
+            "prompt_text": "Why can the presence of an expensive option make a moderately priced one appear more attractive?",
+            "options": [
+              "because people judge value relative to reference points",
+              "because expensive options are always better",
+              "because people ignore prices completely",
+              "because framing has no effect on price"
+            ],
+            "answer_index": 0,
+            "evidence": "which is why the presence of an expensive option can make a moderately priced one appear more attractive. Such effects reveal that judgements of value are relative."
+          },
+          {
+            "prompt_text": "What concern do critics raise about nudging?",
+            "options": [
+              "that it removes people's freedom to choose",
+              "that it is too expensive to use",
+              "that it risks manipulating people and undermining their autonomy",
+              "that it never changes people's behaviour"
+            ],
+            "answer_index": 2,
+            "evidence": "Critics worry that deliberately exploiting people's biases, even for good ends, risks manipulating them and undermining their autonomy."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What is the tendency to feel losses more strongly than equivalent gains called?",
+            "accepted": ["loss aversion"],
+            "word_limit": 2,
+            "evidence": "This tendency, known as loss aversion, helps to explain why people often cling to things they already have."
+          },
+          {
+            "prompt_text": "What standard do people use when judging value in relative rather than absolute terms?",
+            "accepted": ["reference points", "reference point", "a reference point"],
+            "word_limit": 3,
+            "evidence": "they compare it with some standard, such as a previous price or a neighbouring alternative... People also rely heavily on reference points when judging value."
+          },
+          {
+            "prompt_text": "What term describes a person or organisation that decides how options are presented?",
+            "accepted": ["a choice architect", "choice architect"],
+            "word_limit": 3,
+            "evidence": "The person or organisation that decides how options are presented, sometimes called a choice architect, can guide behaviour in particular directions."
+          },
+          {
+            "prompt_text": "What is the use of techniques to steer behaviour without restricting freedom often called?",
+            "accepted": ["nudging"],
+            "word_limit": 2,
+            "evidence": "The use of such techniques to steer behaviour, often described as nudging, has attracted both interest and criticism."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Development of Trial by Jury",
+    "difficulty": "medium",
+    "topic_tags": ["law", "society", "history"],
+    "body_html": "<p>In many countries today, a person accused of a serious crime may be judged not by professional officials but by a group of ordinary citizens chosen from the community. This institution, known as trial by jury, is often regarded as a cornerstone of justice, a safeguard that places the fate of the accused in the hands of their fellow citizens rather than the state alone. Yet the jury as we know it was not designed all at once; it developed slowly over many centuries, and its role changed profoundly along the way.</p><p>To appreciate how significant the jury was, it helps to consider the methods of judgement it replaced. In earlier times, guilt or innocence was sometimes determined by procedures that seem strange and cruel to modern eyes. In one such method, known as trial by ordeal, an accused person might be made to undergo a painful or dangerous test, such as grasping a piece of hot iron, on the belief that a higher power would protect the innocent and reveal the guilty. Such practices rested on the assumption that divine intervention, rather than human reasoning, would deliver the verdict.</p><p>The early jury that began to take shape differed from the modern one in a crucial respect. At first, the members of the jury were not neutral strangers hearing evidence for the first time, but local people who were expected to know something about the case or the parties involved. They were summoned precisely because they were familiar with the neighbourhood and could speak to what they knew. In effect, the earliest jurors were more like witnesses than judges, drawing on their own knowledge of local affairs to reach a decision.</p><p>Over time, this understanding of the jury's role was gradually reversed. As society changed and communities grew larger and more mobile, the idea that jurors should personally know the facts became impractical and eventually undesirable. The jury came to be seen instead as a body that should approach a case with an open mind, forming its verdict solely on the basis of evidence presented in court. What had once been a virtue, personal knowledge of the case, came to be regarded as a disqualification, and jurors were now expected to be impartial and uninformed at the outset.</p><p>This transformation gave the jury its modern character as an impartial judge of fact. In a jury trial, the professional judge presides over the proceedings and rules on questions of law, but it is the jury that decides what actually happened by weighing the evidence and the testimony of witnesses. The jury listens, considers, and then delivers its verdict, typically after discussing the case in private. This division of labour, with law entrusted to the judge and fact to the jury, lies at the heart of the system.</p><p>Supporters of trial by jury have long valued it for reasons that go beyond mere accuracy. The involvement of ordinary citizens is seen as a check on the power of the state and of professional officials, making it harder for the authorities to secure a conviction against the conscience of the community. A jury, it is argued, brings the common sense and moral judgement of ordinary people into the courtroom, and its verdicts carry a legitimacy that a decision by a single official might lack. For these reasons the jury has often been praised as a protection of liberty.</p><p>The institution has not been without its critics, however. Some have questioned whether ordinary citizens, without legal training, are well equipped to understand complex evidence or complicated points of law. Others point to the cost and time involved in jury trials, or worry that jurors may be swayed by prejudice or emotion rather than reason. As a result, the use of juries varies considerably from one legal system to another, and in some places their role has been limited to only the most serious cases.</p><p>Despite such doubts, trial by jury remains a deeply rooted feature of justice in many parts of the world, valued as much for what it symbolises as for how it functions. Its long evolution, from a group of knowledgeable neighbours to a panel of impartial strangers, reflects wider changes in ideas about fairness and the proper relationship between the individual, the community and the state. In placing judgement in the hands of ordinary people, the jury embodies a particular vision of justice as something that belongs to the whole of society.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The modern jury system was created all at once by a single reform.",
+            "answer": "false",
+            "evidence": "the jury as we know it was not designed all at once; it developed slowly over many centuries, and its role changed profoundly along the way."
+          },
+          {
+            "prompt_text": "Trial by ordeal assumed that a higher power would protect the innocent.",
+            "answer": "true",
+            "evidence": "an accused person might be made to undergo a painful or dangerous test... on the belief that a higher power would protect the innocent and reveal the guilty."
+          },
+          {
+            "prompt_text": "The earliest jurors were chosen because they knew nothing about the case.",
+            "answer": "false",
+            "evidence": "the members of the jury were not neutral strangers hearing evidence for the first time, but local people who were expected to know something about the case or the parties involved."
+          },
+          {
+            "prompt_text": "In a modern jury trial, the judge decides questions of law.",
+            "answer": "true",
+            "evidence": "the professional judge presides over the proceedings and rules on questions of law, but it is the jury that decides what actually happened."
+          },
+          {
+            "prompt_text": "Juries reach their verdicts more quickly than professional judges do.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The use of juries is the same in every legal system.",
+            "answer": "false",
+            "evidence": "the use of juries varies considerably from one legal system to another, and in some places their role has been limited to only the most serious cases."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "How were the earliest jurors best described?",
+            "options": [
+              "as impartial strangers",
+              "as more like witnesses than judges",
+              "as trained legal officials",
+              "as representatives of the state"
+            ],
+            "answer_index": 1,
+            "evidence": "In effect, the earliest jurors were more like witnesses than judges, drawing on their own knowledge of local affairs to reach a decision."
+          },
+          {
+            "prompt_text": "How did the understanding of the jury's role change over time?",
+            "options": [
+              "jurors came to be expected to know the facts personally",
+              "jurors were expected to approach a case with an open mind, judging only on the evidence",
+              "jurors were replaced by professional judges",
+              "jurors were required to give reasons for their verdicts"
+            ],
+            "answer_index": 1,
+            "evidence": "The jury came to be seen instead as a body that should approach a case with an open mind, forming its verdict solely on the basis of evidence presented in court."
+          },
+          {
+            "prompt_text": "Why do supporters value the involvement of ordinary citizens in trials?",
+            "options": [
+              "because it makes trials cheaper",
+              "because ordinary citizens have legal training",
+              "because it acts as a check on the power of the state and officials",
+              "because it speeds up the legal process"
+            ],
+            "answer_index": 2,
+            "evidence": "The involvement of ordinary citizens is seen as a check on the power of the state and of professional officials, making it harder for the authorities to secure a conviction against the conscience of the community."
+          },
+          {
+            "prompt_text": "What is one criticism of trial by jury mentioned in the passage?",
+            "options": [
+              "that juries are too small",
+              "that untrained citizens may struggle to understand complex evidence",
+              "that judges refuse to work with juries",
+              "that juries always agree with the state"
+            ],
+            "answer_index": 1,
+            "evidence": "Some have questioned whether ordinary citizens, without legal training, are well equipped to understand complex evidence or complicated points of law."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What was the name of the older method in which an accused underwent a painful test?",
+            "accepted": ["trial by ordeal", "ordeal"],
+            "word_limit": 3,
+            "evidence": "In one such method, known as trial by ordeal, an accused person might be made to undergo a painful or dangerous test."
+          },
+          {
+            "prompt_text": "The earliest jurors were summoned because they were familiar with what?",
+            "accepted": ["the neighbourhood", "the case", "local affairs", "the neighborhood"],
+            "word_limit": 3,
+            "evidence": "They were summoned precisely because they were familiar with the neighbourhood and could speak to what they knew."
+          },
+          {
+            "prompt_text": "In a modern trial, on the basis of what must the jury form its verdict?",
+            "accepted": ["evidence", "the evidence", "evidence presented in court"],
+            "word_limit": 3,
+            "evidence": "forming its verdict solely on the basis of evidence presented in court."
+          },
+          {
+            "prompt_text": "Where does the jury typically discuss the case before delivering its verdict?",
+            "accepted": ["in private", "private"],
+            "word_limit": 2,
+            "evidence": "then delivers its verdict, typically after discussing the case in private."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Anthropology of Gift-Giving",
+    "difficulty": "medium",
+    "topic_tags": ["anthropology", "world cultures", "society"],
+    "body_html": "<p>Giving gifts might seem one of the simplest and most spontaneous of human acts, an expression of generosity requiring no explanation. Yet anthropologists who have studied gift-giving in societies around the world have argued that it is a far more complex and revealing practice than it first appears. Far from being a purely private matter of kindness, the exchange of gifts is bound up with social relationships, obligations and the very structure of communities, and it follows rules that people may not even be aware they are obeying.</p><p>A key insight of anthropological research is that gifts, despite appearing to be freely given, in fact create obligations. When a person receives a gift, they are placed under a subtle but real pressure to give something in return, whether immediately or at some point in the future. A gift that is never reciprocated can strain or even end a relationship, because it leaves the receiver in a position of unrepaid debt. In this sense the apparently one-way act of giving is really part of a continuing cycle of exchange that binds giver and receiver together over time.</p><p>Scholars have often analysed this cycle in terms of three connected obligations. There is, first, the obligation to give, since offering gifts is expected of those who wish to maintain their standing and their relationships. Second, there is the obligation to receive, for to refuse a gift may be taken as an insult or a rejection of the relationship it represents. Third, and crucially, there is the obligation to reciprocate, to return a gift of appropriate value in due course. Together these three duties keep the cycle of exchange in motion and hold social bonds in place.</p><p>Gift exchange can also serve as a means of establishing status and prestige. In some societies, generous giving is a route to influence and respect, and a person who gives lavishly may gain honour precisely because of what they part with. In certain well-documented cases, competitive giving was taken to remarkable lengths, with rival leaders trying to outdo one another in the scale of their generosity at great ceremonial feasts. Here the giving of gifts, and even the deliberate destruction of valuable goods, became a way of demonstrating wealth and power rather than of accumulating possessions.</p><p>The objects exchanged in such systems are not always valued for their usefulness. In many gift economies, certain items circulate endlessly as gifts without ever being consumed or put to practical use, their significance lying entirely in their role within the exchange. What matters is not the material worth of the object but the relationships and obligations that its movement creates and sustains. A gift, in this view, carries with it something of the giver, and its passing from hand to hand weaves an invisible web of connection through the community.</p><p>Anthropologists have contrasted this kind of exchange with the impersonal buying and selling of the modern marketplace. In a commercial transaction, goods are exchanged for money, the deal is completed on the spot, and buyer and seller need have no further relationship with one another once the exchange is done. Gift exchange works quite differently. It is personal rather than impersonal, it is not concluded immediately but extends over time, and its very purpose is to create and maintain a lasting bond rather than to settle accounts and move on.</p><p>These ideas have influenced the way scholars understand even the familiar gift-giving of modern industrial societies. The exchange of presents on birthdays and at festivals, the giving of hospitality, and the countless small acts of offering and returning that fill everyday life can all be seen as expressions of the same underlying logic. People are often uneasy about giving a gift that is too obviously calculated, or about receiving one they cannot repay, precisely because the old rules of obligation and reciprocity continue to operate beneath the surface of modern manners.</p><p>The study of gift-giving thus opens a window onto something fundamental about human society. It suggests that beneath the apparent simplicity of generosity lies a powerful mechanism for creating trust, obligation and solidarity between people. In every society, the giving and returning of gifts helps to knit individuals into a wider whole, reminding us that even our most personal gestures are shaped by shared social rules that stretch far back into the human past.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Gift-giving is a more complex practice than it first appears.",
+            "answer": "yes",
+            "evidence": "anthropologists who have studied gift-giving in societies around the world have argued that it is a far more complex and revealing practice than it first appears."
+          },
+          {
+            "prompt_text": "Gifts, though seemingly freely given, in fact create obligations.",
+            "answer": "yes",
+            "evidence": "A key insight of anthropological research is that gifts, despite appearing to be freely given, in fact create obligations."
+          },
+          {
+            "prompt_text": "Refusing a gift is generally regarded as a polite and acceptable act.",
+            "answer": "no",
+            "evidence": "there is the obligation to receive, for to refuse a gift may be taken as an insult or a rejection of the relationship it represents."
+          },
+          {
+            "prompt_text": "The objects exchanged as gifts are always valued for their practical usefulness.",
+            "answer": "no",
+            "evidence": "In many gift economies, certain items circulate endlessly as gifts without ever being consumed or put to practical use, their significance lying entirely in their role within the exchange."
+          },
+          {
+            "prompt_text": "Gift-giving is more important in rural societies than in urban ones.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What may happen if a gift is never reciprocated?",
+            "options": [
+              "the giver becomes wealthier",
+              "the relationship may be strained or even end",
+              "the receiver gains higher status",
+              "the gift loses its material value"
+            ],
+            "answer_index": 1,
+            "evidence": "A gift that is never reciprocated can strain or even end a relationship, because it leaves the receiver in a position of unrepaid debt."
+          },
+          {
+            "prompt_text": "Which three obligations do scholars associate with gift exchange?",
+            "options": [
+              "to buy, to sell and to profit",
+              "to give, to receive and to reciprocate",
+              "to save, to spend and to lend",
+              "to make, to keep and to destroy"
+            ],
+            "answer_index": 1,
+            "evidence": "the obligation to give... the obligation to receive... the obligation to reciprocate, to return a gift of appropriate value in due course."
+          },
+          {
+            "prompt_text": "In some societies, how could a person gain honour through gift-giving?",
+            "options": [
+              "by keeping their possessions to themselves",
+              "by giving lavishly and parting with a great deal",
+              "by refusing all gifts offered to them",
+              "by selling gifts for money"
+            ],
+            "answer_index": 1,
+            "evidence": "a person who gives lavishly may gain honour precisely because of what they part with."
+          },
+          {
+            "prompt_text": "How does gift exchange differ from a commercial transaction?",
+            "options": [
+              "it is completed immediately and impersonally",
+              "it involves money rather than objects",
+              "it is personal and aims to create a lasting bond rather than settle accounts",
+              "it requires no relationship between the parties"
+            ],
+            "answer_index": 2,
+            "evidence": "It is personal rather than impersonal, it is not concluded immediately but extends over time, and its very purpose is to create and maintain a lasting bond rather than to settle accounts and move on."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "The apparently one-way act of giving is really part of a continuing cycle of what?",
+            "accepted": ["exchange"],
+            "word_limit": 2,
+            "evidence": "the apparently one-way act of giving is really part of a continuing cycle of exchange that binds giver and receiver together over time."
+          },
+          {
+            "prompt_text": "Through generous giving, a person in some societies could gain influence and what else?",
+            "accepted": ["respect", "prestige", "status"],
+            "word_limit": 2,
+            "evidence": "In some societies, generous giving is a route to influence and respect."
+          },
+          {
+            "prompt_text": "In a commercial transaction, goods are exchanged for what?",
+            "accepted": ["money"],
+            "word_limit": 2,
+            "evidence": "In a commercial transaction, goods are exchanged for money, the deal is completed on the spot."
+          },
+          {
+            "prompt_text": "Gift-giving is described as a powerful mechanism for creating trust, obligation and what?",
+            "accepted": ["solidarity"],
+            "word_limit": 2,
+            "evidence": "beneath the apparent simplicity of generosity lies a powerful mechanism for creating trust, obligation and solidarity between people."
+          }
+        ]
+      }
+    ]
+  }
+]

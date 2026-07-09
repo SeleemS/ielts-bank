@@ -1,0 +1,168 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Mapping the Ocean Floor",
+    "difficulty": "medium",
+    "topic_tags": ["exploration", "science", "oceans"],
+    "body_html": "<p><strong>A</strong> Until surprisingly recently, the floor of the deep ocean was less well known than the surface of the Moon. For thousands of years the only way to measure the depth of the sea was to lower a weighted rope over the side of a ship and wait for it to touch the bottom, a slow technique called sounding. Each cast produced a single number at a single spot, and in deep water one measurement could take hours as the line was paid out and hauled back in. Sailors built up their charts one laborious sounding at a time, and vast stretches of the ocean floor remained entirely blank, imagined rather than mapped. A captain might know the depth beneath his own keel at a single instant, yet have not the faintest idea what lay a mile ahead, and wrecks on uncharted shoals were a constant hazard of long voyages.</p><p><strong>B</strong> The first attempt to survey the deep sea across the whole globe was the voyage of HMS Challenger, which sailed from England in 1872 and did not return until 1876. Over three and a half years its crew lowered their lines many hundreds of times, recording depths in every ocean they crossed and hauling up mud and unfamiliar creatures from the bottom. Among their soundings was an astonishingly deep trench in the western Pacific, the deepest point then known to science. The expedition is widely regarded as the moment the modern study of the oceans began, and it kept scientists busy analysing its samples for decades afterwards. The Challenger carried a team of naturalists as well as sailors, and the reports they eventually published filled dozens of thick volumes, describing hundreds of creatures never seen before and laying the foundations of the science of oceanography.</p><p><strong>C</strong> Everything changed after the First World War with the arrival of echo sounding. Instead of a rope, a ship now sent a pulse of sound down towards the seabed and measured the time the echo took to return; because the speed of sound in water is known, that time could be turned directly into a depth. Readings that had once taken hours could be made in a matter of seconds, and a vessel steaming along could trace a continuous line of the bottom beneath it. For the first time the ocean floor could be drawn as a landscape, with slopes and ridges, rather than as a scatter of isolated dots. Warships and survey vessels alike were soon fitted with the new devices, and over the following decades the outlines of features no one had suspected, deep trenches, broad plains and towering underwater peaks, began to emerge from the once-featureless dark.</p><p><strong>D</strong> In the middle of the twentieth century two American scientists, Marie Tharp and Bruce Heezen, set about turning columns of echo-sounding figures into a picture. Working mostly with data gathered in the Atlantic, Tharp plotted profile after profile by hand and noticed a long undersea mountain range running down the very middle of the ocean. More striking still, a deep valley ran along the crest of this range, like a groove cut into its spine from end to end. At first she could scarcely believe her own plots, and she checked them over and over, but the valley refused to go away.</p><p><strong>E</strong> Tharp suspected that the central valley was a place where the sea floor was slowly splitting apart, an idea that fitted the then-controversial notion that the continents drift. At first her interpretation was brushed aside; Heezen himself is said to have dismissed it as mere 'girl talk'. Yet as more of the world's oceans were surveyed, the same ridge-and-rift pattern turned up everywhere, encircling the globe like the seam on a baseball. Her reading of the data proved correct and became one of the foundations of the theory of plate tectonics.</p><p><strong>F</strong> Mapping has since moved into space. Satellites cannot see the sea floor directly, but they can measure the height of the sea surface with great precision, and that surface is not perfectly flat: the gravity of an undersea mountain pulls a little extra water into a slight bump above it. From these tiny bumps the shape of the hidden floor can be worked out. Even so, most of the ocean bottom has still been charted only at coarse resolution, and an international effort called Seabed 2030 is now racing to produce a detailed map of the entire ocean floor before the decade is out. Knowing the true shape of the sea floor is far from an idle curiosity: it sharpens forecasts of how tsunamis will travel, guides the laying of the cables that carry the internet between continents, and helps scientists understand the deep currents that shape the world's climate.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "a description of the slowest and earliest way of measuring depth", "correct_option_keys": ["A"] },
+          { "prompt_text": "the first survey to record depths in every ocean of the world", "correct_option_keys": ["B"] },
+          { "prompt_text": "the invention of a method that produced continuous readings", "correct_option_keys": ["C"] },
+          { "prompt_text": "an interpretation that was at first dismissed on account of the scientist's gender", "correct_option_keys": ["E"] },
+          { "prompt_text": "a modern technique that relies on measurements taken from space", "correct_option_keys": ["F"] },
+          { "prompt_text": "the discovery of an undersea mountain range with a valley along its crest", "correct_option_keys": ["D"] }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 7-11. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><p><strong>Measuring the ocean floor</strong></p><ul><li>Oldest method was known as <strong>(7)&nbsp;______</strong>: a weighted line was lowered to the bottom.</li><li>The <strong>(8)&nbsp;______</strong> expedition (1872-1876) made the first worldwide set of soundings.</li><li>After the First World War, <strong>(9)&nbsp;______</strong> sounding measured depth by timing a returning pulse of sound.</li><li>Tharp and Heezen mapped the <strong>(10)&nbsp;______</strong> Ocean and found a central rift valley.</li><li>Modern <strong>(11)&nbsp;______</strong> measure small bumps in the sea surface caused by gravity.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 7", "accepted": ["sounding"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["Challenger"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["echo"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["Atlantic"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 11", "accepted": ["satellites"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 12-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Echo sounding could measure depth more quickly than the older method of lowering a line.", "answer": "true" },
+          { "prompt_text": "Marie Tharp's interpretation of the rift valley was immediately accepted by other scientists.", "answer": "false" },
+          { "prompt_text": "More women than men now work on ocean-floor mapping projects.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Lost Cities of the Amazon",
+    "difficulty": "hard",
+    "topic_tags": ["exploration", "archaeology", "discovery"],
+    "body_html": "<p><strong>A</strong> For most of the twentieth century, the Amazon rainforest was pictured as a pristine wilderness, a green ocean of trees almost untouched by human hands. Scholars argued that its thin, acidic soils could never have supported large or settled populations, and that the scattered groups living there today were the remnants of people who had always been few and always on the move. The forest, in this view, was a natural cathedral that civilisation had never entered. The very lushness of the vegetation was taken as proof of its emptiness, for surely, it was argued, land rich enough to grow such giant trees would long ago have been cleared and farmed had large numbers of people ever settled there.</p><p><strong>B</strong> This picture sat awkwardly with an old and troubling report. In 1542 the Spanish soldier Francisco de Orellana became the first European to travel the length of the Amazon, and the chronicle of his voyage described banks crowded with people, fields stretching inland and towns strung along the river for mile after mile. For centuries these claims were treated as tall tales, the exaggerations of a desperate expedition trying to make its sufferings sound grander. Surely, critics said, such a poor land could never have held such multitudes. The expedition's chronicler wrote of well-defended towns and of roads leading away inland, but his report was easy to dismiss, for the Spaniards never returned to those places and no ruins of stone cities were ever found standing above the trees.</p><p><strong>C</strong> In recent decades new tools have forced a reappraisal. The most powerful is airborne laser scanning, or LIDAR, which fires pulses of light from an aircraft and measures how long they take to bounce back. Enough of these pulses slip between the leaves to reach the ground, allowing researchers to strip away the canopy on a computer and reveal the bare earth beneath. Where the eye saw only forest, the laser has exposed a hidden geometry of raised platforms, ditches, geoglyphs and dead-straight causeways linking one settlement to the next. In parts of the Bolivian lowlands and the upper reaches of the basin, these surveys have exposed whole networks of mounds, reservoirs and avenues laid out with obvious care, the unmistakable fingerprints of large and organised communities.</p><p><strong>D</strong> A second clue lies in the soil itself. Across large areas of the basin, patches of unusually dark, fertile earth can be found, quite unlike the pale ground around them. Known as terra preta, or dark earth, this soil is not natural but was created by people who enriched it with charcoal, ash, bones and household waste over many generations. Its very existence implies dense, stable communities large enough to transform the land they lived on, and productive enough to feed themselves from it year after year. Remarkably, terra preta remains fertile to this day, long after the people who made it disappeared, and modern farmers prize the patches they come across, while scientists study them in the hope of learning how such long-lasting soils were created.</p><p><strong>E</strong> If such societies existed, why did they vanish so completely? The answer appears to be catastrophe. When Europeans arrived, they brought diseases to which the inhabitants had no resistance, and epidemics swept through the population with terrible speed, often running ahead of the newcomers themselves. Within a century the great riverside communities had collapsed, their fields were abandoned, and the fast-growing forest reclaimed the clearings, swallowing houses, roads and monuments beneath a fresh blanket of trees. So complete was this green burial that later travellers passed directly over the remains of once-teeming settlements without noticing a thing, which is why the old tales of a crowded Amazon came, for so long, to seem like pure invention.</p><p><strong>F</strong> The result is a strikingly different understanding of the region. Far from being a virgin wilderness, much of the Amazon now looks like a landscape shaped over thousands of years by human beings, a mosaic of managed forests, orchards and garden cities. Some researchers even argue that the mix of useful plants growing there today is partly a living legacy of ancient cultivation. The forest, it turns out, may be less a thing that people never touched than a thing that people helped to make. If that is so, then protecting the Amazon may mean recognising it not simply as a wilderness to be left alone, but as an inheritance long tended by human hands.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A soil that proves people once thrived here" },
+          { "key": "ii", "text": "Technology that sees through the trees" },
+          { "key": "iii", "text": "A long-held belief that the region was empty" },
+          { "key": "iv", "text": "An eyewitness report that few would trust" },
+          { "key": "v", "text": "How disease erased a civilisation" },
+          { "key": "vi", "text": "A forest shaped by human hands" },
+          { "key": "vii", "text": "The dangers faced by modern explorers" },
+          { "key": "viii", "text": "Rivers that repeatedly changed their course" },
+          { "key": "ix", "text": "Trade routes reaching the Pacific coast" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["vi"] }
+        ]
+      },
+      {
+        "question_type": "table_completion",
+        "prompt": "Questions 7-11. Complete the table below.",
+        "instructions_html": "<p>Complete the table using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><table><thead><tr><th>Type of evidence</th><th>Detail</th></tr></thead><tbody><tr><td>Written account</td><td>In 1542 Orellana described densely populated <strong>(7)&nbsp;______</strong>.</td></tr><tr><td>Remote sensing</td><td>Airborne <strong>(8)&nbsp;______</strong> reveals earthworks beneath the canopy.</td></tr><tr><td>Soil</td><td>A dark, fertile, human-made earth known as <strong>(9)&nbsp;______</strong>.</td></tr><tr><td>Cause of collapse</td><td>European <strong>(10)&nbsp;______</strong> killed much of the population.</td></tr><tr><td>New interpretation</td><td>The rainforest is now seen as a partly <strong>(11)&nbsp;______</strong> landscape.</td></tr></tbody></table>",
+        "questions": [
+          { "prompt_text": "Gap 7", "accepted": ["banks", "riverbanks", "the banks"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["LIDAR", "laser scanning", "laser"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["terra preta", "dark earth"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["diseases", "disease", "epidemics"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 11", "accepted": ["managed", "shaped", "cultivated"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 12-14. Answer the questions below using NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which year did Orellana travel the length of the Amazon?", "accepted": ["1542"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What straight structures were found linking one settlement to another?", "accepted": ["causeways", "straight causeways"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What grew back and hid the ancient settlements after the population fell?", "accepted": ["the forest", "forest", "the rainforest", "rainforest", "trees"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Finding the Way Across the Pacific",
+    "difficulty": "medium",
+    "topic_tags": ["exploration", "navigation", "culture"],
+    "body_html": "<p>Long before Europeans learned to cross the open ocean, the peoples of the Pacific were settling islands scattered across a third of the globe. From South East Asia they spread eastwards across thousands of kilometres of empty water, reaching Hawaii, Easter Island and New Zealand at the far corners of a vast triangle. They did all of this without a magnetic compass, without printed charts and without any of the instruments that European sailors came to depend upon. To later observers it seemed almost impossible, and for a long time some scholars insisted that these islands must have been reached by accident, by canoes blown off course and carried helplessly downwind. The distances involved were staggering. From one island group to the next might lie a thousand kilometres of open sea with nothing at all to steer by, and to find a small island in that immensity, and then to find the way home again, demanded a mastery of the ocean that outsiders could scarcely imagine.</p><p>In truth the voyagers relied on an intricate body of knowledge, memorised and passed on by word of mouth from one generation of navigators to the next. The most important guide was the night sky. Navigators learned the points on the horizon where particular stars rise and set, and by holding a course towards a known rising star, and then the next star to rise behind it, they could keep a steady bearing through the hours of darkness. This mental framework of star positions is often called a star compass, though it exists only in the navigator's trained memory. Learning it took many years. A pupil would sit with an experienced teacher, sometimes arranging pieces of coral on a mat to stand for the stars, memorising which star rose over which island and in what order, until the whole sky and the whole ocean were fixed firmly in the mind.</p><p>The sea itself offered further signs. Long ocean swells, generated by distant and dependable winds, travel in steady directions, and an experienced navigator lying in the hull of a canoe could feel the way these swells lifted and rocked the vessel, using them like the lines of an invisible grid. When such a swell struck an island it bent around the obstacle and was thrown back, and this disturbance in the familiar rhythm could betray the presence of land that was still far below the horizon and quite out of sight. The most skilled navigators were said to be able to pick out several different swells crossing the ocean at once, each running in its own direction, and to read from the way they met and combined the presence of islands lying days of sailing away.</p><p>Living things were read as carefully as the waves. Certain seabirds, such as terns and frigatebirds, feed at sea during the day but return to land each evening to roost; a navigator who spotted them flying purposefully at dusk knew that an island lay in the direction of their flight, and roughly how far. The green tint that land can cast on the underside of clouds, floating vegetation, and even the behaviour of the water were all folded into the same rich picture. No single sign was ever trusted on its own; instead the navigator wove dozens of small clues together, weighing the stars against the swells and the birds against the clouds, constantly correcting and refining a running estimate of where the canoe had reached.</p><p>By the twentieth century this art was close to being lost, surviving in only a few communities. Its dramatic revival owed much to a master navigator named Mau Piailug, from the small island of Satawal in Micronesia, one of the last people fully trained in the traditional way. In 1976 he guided a double-hulled voyaging canoe named Hokulea from Hawaii to Tahiti using no instruments at all, steering by stars, swells and birds across more than four thousand kilometres of ocean. The voyage was a triumph. It demonstrated beyond reasonable doubt that such journeys could be made deliberately rather than by chance, and it inspired a wider renaissance of traditional navigation across the Pacific that continues today. Piailug went on to teach a new generation of navigators, passing on knowledge he had feared might die with him, and voyaging canoes built in the old style now sail once more between the islands, keeping alive a science that was very nearly lost forever.</p>",
+    "groups": [
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 1-4. Match each statement with the correct natural guide, A, B or C. You may use any letter more than once.",
+        "options": [
+          { "key": "A", "text": "the stars" },
+          { "key": "B", "text": "ocean swells" },
+          { "key": "C", "text": "seabirds" },
+          { "key": "D", "text": "the wind" }
+        ],
+        "questions": [
+          { "prompt_text": "Their rising and setting points helped fix a direction through the night.", "correct_option_keys": ["A"] },
+          { "prompt_text": "The way they bend around an island can reveal hidden land.", "correct_option_keys": ["B"] },
+          { "prompt_text": "Watching them fly at dusk showed which way land lay.", "correct_option_keys": ["C"] },
+          { "prompt_text": "A navigator lying in the hull could feel them lifting the canoe.", "correct_option_keys": ["B"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 5-10. Complete the sentences below using NO MORE THAN TWO WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Pacific voyagers crossed the ocean without printed charts or a magnetic ______.", "accepted": ["compass"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The navigator's memorised framework of star positions is called a ______.", "accepted": ["star compass"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Seabirds such as terns and ______ return to land each evening.", "accepted": ["frigatebirds", "frigate birds"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "In 1976 a canoe named ______ sailed from Hawaii to Tahiti.", "accepted": ["Hokulea", "Hokule'a"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The voyage was guided by a master navigator from the island of ______.", "accepted": ["Satawal"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The success of the voyage proved that such journeys were ______ rather than accidental.", "accepted": ["deliberate", "intentional"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Question 11. Choose TWO letters, A-E.",
+        "options": [
+          { "key": "A", "text": "reading the positions of the stars" },
+          { "key": "B", "text": "following printed sea charts" },
+          { "key": "C", "text": "observing the flight of seabirds" },
+          { "key": "D", "text": "using a magnetic compass" },
+          { "key": "E", "text": "measuring depth with a weighted line" }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO methods did Pacific navigators use to find their way? Choose TWO letters.", "correct_option_keys": ["A", "C"] }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 12-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Pacific navigators recorded their routes on written charts.", "answer": "false" },
+          { "prompt_text": "The 1976 voyage helped to revive traditional navigation in the Pacific.", "answer": "true" },
+          { "prompt_text": "Women were traditionally trained as navigators in Pacific communities.", "answer": "not given" }
+        ]
+      }
+    ]
+  }
+]

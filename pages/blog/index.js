@@ -11,6 +11,10 @@ const PAGE_TITLE = "IELTS Blog: Tips, Strategies and Band Score Guides | IELTS-B
 const PAGE_DESCRIPTION =
   "Free IELTS preparation articles covering Reading, Writing, Listening and Speaking strategies, band score calculation, and proven tips to raise your score.";
 
+const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
+  "Strategies, tips and band score guides"
+)}&type=blog&subtitle=${encodeURIComponent("IELTS Blog")}`;
+
 export default function BlogIndex({ posts }) {
   const canonical = `${SITE_URL}/blog`;
 
@@ -41,10 +45,19 @@ export default function BlogIndex({ posts }) {
         <meta property="og:description" content={PAGE_DESCRIPTION} />
         <meta property="og:url" content={canonical} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta
+          property="og:image:alt"
+          content="IELTS-Bank Blog — strategies, tips and band score guides"
+        />
 
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+        <meta name="twitter:image" content={OG_IMAGE} />
 
         <script
           type="application/ld+json"

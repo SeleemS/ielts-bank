@@ -1,0 +1,149 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Sourdough: Bread That Is Alive",
+    "difficulty": "medium",
+    "topic_tags": ["food", "science", "culture"],
+    "body_html": "<p><strong>A</strong> Sourdough is the oldest form of leavened bread, and also, in a sense, the most alive. What raises it is not the packet of yeast a modern baker buys from a shop but a starter: a soft, living culture of flour and water in which wild yeasts and particular bacteria have made their home. Mixed into fresh dough, this culture ferments it, producing the gas that lifts the loaf and the acids that give sourdough its name. A bread is called sourdough precisely because it is raised by such a natural culture rather than by manufactured yeast. Making one from scratch requires nothing but flour, water and patience: left to stand and fed with fresh flour each day, a simple paste will, within a week or two, begin to bubble and turn sour of its own accord, as wild microbes drift in from the flour and the surrounding air and settle down to work. No two starters turn out quite the same, which is part of their fascination.</p><p><strong>B</strong> The starter is really a tiny partnership between two kinds of microbe. The wild yeasts feed on the sugars in the flour and give off carbon dioxide, the gas that inflates thousands of little bubbles and makes the dough rise. Alongside them live lactic acid bacteria, or lactobacilli, which produce the sour-tasting acids that flavour the bread and, by making the dough acidic, help to keep the finished loaf from going mouldy as quickly as ordinary bread does. Yeast and bacteria live together in a stable balance, each thriving on what the flour, and the other, provides. The acids the bacteria produce do more than flavour the loaf. They also change the very texture of the dough, strengthening it and giving a good sourdough its characteristic chewy crumb, its open holes and its crisp, blistered crust, so that the microbes shape not only the taste of the bread but its whole character.</p><p><strong>C</strong> For almost all of human history, every raised bread was a sourdough of one kind or another, for there was simply no other way to make dough rise. The practice is ancient, and is usually traced back to Egypt thousands of years ago. This long reign ended only in the nineteenth century, when scientists learned to isolate and grow a single fast-acting species of baker's yeast. This purified yeast raised dough quickly and predictably, and without any sourness, and it swept through industrial bakeries, pushing the slow old cultures to the margins. For much of the twentieth century sourdough survived mainly in out-of-the-way places and in a few stubborn local traditions, such as the famous sour loaves of San Francisco, rather than in the ordinary bakery, where speed and predictability had become everything and the long wait of a natural culture was simply bad business.</p><p><strong>D</strong> In recent years sourdough has been prized not only for its flavour but for possible benefits to health. During the long, slow fermentation, the bacteria and yeasts break down some of the components of the flour that can be hard to handle, including a portion of the gluten and a substance called phytic acid that hinders the body's absorption of minerals. Partly for this reason, many people report finding sourdough easier to digest than quickly risen bread, and some studies suggest it may raise blood sugar more gently, though the research is still going on. None of this makes sourdough a miracle food, and a great deal depends on how long the dough is left to ferment and on the kind of flour that is used. Even so, the slow method clearly does something to bread that the fast one does not, and that difference is now the subject of serious scientific attention.</p><p><strong>E</strong> Perhaps the most charming feature of sourdough is that a starter is a living heirloom. Because the particular yeasts and bacteria in each one depend on the flour, the kitchen and the very hands that tend it, no two starters are exactly alike, and each is in effect a small local ecosystem. Fed regularly with fresh flour and water, a starter can be kept alive indefinitely, and some bakeries treasure cultures that have been handed from baker to baker for decades, or even longer. This blend of science, craft and inheritance lies behind the worldwide revival of artisan sourdough today. In recent years, when many people found themselves at home with time on their hands, the keeping of a starter became a small craze, and countless kitchens acquired a bubbling jar on the shelf, fed and watched over as carefully as a household pet. This mixture of the very old and the very new has given the oldest of breads an unexpectedly bright future.</p>",
+    "groups": [
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 1-6. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>Sourdough bread is raised not by shop-bought yeast but by a <strong>(1)&nbsp;______</strong>, a living culture of wild yeasts and <strong>(2)&nbsp;______</strong>. The yeasts give off gas that makes the dough <strong>(3)&nbsp;______</strong>, while the bacteria produce acids that give the bread its <strong>(4)&nbsp;______</strong> taste and help it keep longer. For thousands of years all raised bread was made this way, until industrial baker's <strong>(5)&nbsp;______</strong> was isolated in the nineteenth century. Slow fermentation also breaks down some of the <strong>(6)&nbsp;______</strong> in the flour, which may make the bread easier to digest.</p>",
+        "questions": [
+          { "prompt_text": "Gap 1", "accepted": ["starter"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 2", "accepted": ["bacteria", "lactobacilli", "lactic acid bacteria"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 3", "accepted": ["rise"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 4", "accepted": ["sour"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 5", "accepted": ["yeast"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 6", "accepted": ["gluten"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 7-11. The passage has five paragraphs, A-E. Which paragraph contains the following information? Write the correct letter, A-E.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" }
+        ],
+        "questions": [
+          { "prompt_text": "a claim that sourdough may be easier to digest", "correct_option_keys": ["D"] },
+          { "prompt_text": "a description of two kinds of microbe working together", "correct_option_keys": ["B"] },
+          { "prompt_text": "the point at which a faster-acting yeast became available", "correct_option_keys": ["C"] },
+          { "prompt_text": "the idea that a starter can be kept alive for a very long time", "correct_option_keys": ["E"] },
+          { "prompt_text": "a definition of what makes a bread sourdough", "correct_option_keys": ["A"] }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 12-14. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which ancient country is sourdough thought to have originated?", "accepted": ["Egypt", "ancient Egypt"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What gas do the yeasts produce that makes the dough rise?", "accepted": ["carbon dioxide", "CO2"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "Besides gluten, what substance does slow fermentation break down?", "accepted": ["phytic acid", "phytic"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Global Spread of the Chilli",
+    "difficulty": "medium",
+    "topic_tags": ["food", "history", "biology"],
+    "body_html": "<p><strong>A</strong> Few flavours have travelled so far from home as the heat of the chilli. Today chillies are central to the cooking of India, Thailand, China, Mexico, Hungary and much of the rest of the world, yet the plant is a native of the Americas alone. Archaeologists believe that peoples in Mexico and further south had already been growing and eating chillies for thousands of years before any European set eyes on one, making it among the oldest cultivated crops of the New World. Wild chillies still grow across Central and South America, small and fiercely hot, and it was from these that farmers, over countless generations, coaxed the enormous variety of shapes, sizes and strengths that fill the world's markets today.</p><p><strong>B</strong> The famous heat comes from a single family of chemicals, chiefly one called capsaicin. Capsaicin does no real harm to the flesh of the mouth; instead it plays a trick on the nervous system. It binds to the very receptors that normally warn the body of dangerous heat, so that the brain is fooled into feeling a fierce burning even though nothing is actually being burned. This is why a mouthful of chilli feels hot in much the way a scalding drink does, and why a gulp of cold water does so little to help. The chemical dissolves in fat and oil but not in water, which is why a mouthful of milk or a spoonful of yoghurt soothes the burn far better than a glass of water ever could, a piece of practical knowledge long built into the cooking of chilli-loving cultures.</p><p><strong>C</strong> Why should a plant go to the trouble of making such a chemical? The answer appears to be a clever piece of self-defence. The receptors that capsaicin inflames are found in mammals, whose grinding teeth would destroy a chilli's seeds, but birds do not react to capsaicin at all. Birds can therefore eat the fruit freely and carry the seeds, still able to sprout, to new ground. In effect the chilli punishes the animals that would waste its seeds while rewarding those that spread them. The arrangement is beautifully precise: the seeds pass through a bird unharmed and are dropped, together with a little natural fertiliser, far from the parent plant, so that the chilli's fire is not a weapon against all comers but a carefully aimed instruction about which animals may, and may not, eat its fruit.</p><p><strong>D</strong> The plant's confinement to the Americas ended suddenly with the voyages of Columbus at the close of the fifteenth century. Portuguese and Spanish ships carried chillies along their trade routes, and within roughly a hundred years the plant had taken root across Africa and Asia, transforming cuisines that had never known it. So thoroughly did the chilli conquer these kitchens that many people still assume it must be native to India or Thailand rather than a newcomer from across the sea. In some places the chilli was taken up so eagerly that it reshaped entire national cuisines within a few generations, and it is now hard to picture the food of Sichuan, Bengal or Hungary without it, even though none of these places had so much as tasted the plant before the sixteenth century.</p><p><strong>E</strong> Because some chillies are mild and others ferocious, a way of measuring their strength was eventually needed. In 1912 a pharmacist named Wilbur Scoville devised the scale that still bears his name, ranking chillies by how much they must be diluted before the heat can no longer be tasted. Sweet peppers sit at the bottom with a score of zero, while the fiercest cultivated varieties reach into the millions of Scoville units. Modern laboratories can now measure the exact amount of capsaicin in a chilli far more precisely than Scoville's original taste tests ever could, but his scale, and the vivid idea behind it, have stuck, and growers still compete fiercely to breed the hottest pepper in the world.</p><p><strong>F</strong> Given that capsaicin causes what the body reads as pain, the human love of chillies is something of a puzzle. Part of the answer is that the burn prompts the brain to release endorphins, the body's own painkillers, producing a mild natural high that many people find pleasurable. A taste for chilli must usually be learned, often in childhood, but once acquired it can become a genuine craving, a rare case of humans deliberately seeking out a sensation that nature designed to drive them away. Some researchers suspect that part of the appeal is the thrill of a danger that is not truly dangerous, the same safe flirtation with fear that draws people to frightening films or fast rides, with the mouth, rather than the mind, doing the trembling.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A defence aimed at some animals but not others" },
+          { "key": "ii", "text": "The chemical that creates the burning sensation" },
+          { "key": "iii", "text": "A pleasure born out of pain" },
+          { "key": "iv", "text": "Spreading around the world within a single century" },
+          { "key": "v", "text": "A way of putting a number on spiciness" },
+          { "key": "vi", "text": "A spice that travelled far from its birthplace" },
+          { "key": "vii", "text": "Growing chillies in the home garden" },
+          { "key": "viii", "text": "The medical dangers of eating chillies" },
+          { "key": "ix", "text": "Festivals held in honour of food" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["vi"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["iii"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 7-11. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "The heat of a chilli comes mainly from a chemical called ______.", "accepted": ["capsaicin"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Capsaicin binds to receptors that normally warn the body of dangerous ______.", "accepted": ["heat"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Chilli seeds are carried to new ground by ______, which are unaffected by capsaicin.", "accepted": ["birds"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Chillies began to spread around the world after the voyages of ______.", "accepted": ["Columbus"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The strength of a chilli is measured on the ______ scale.", "accepted": ["Scoville"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 12-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Chilli peppers were first domesticated in Asia.", "answer": "false" },
+          { "prompt_text": "Birds are not deterred from eating chillies by capsaicin.", "answer": "true" },
+          { "prompt_text": "The chilli is the most widely grown spice in the world today.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Marathon and the Limits of Endurance",
+    "difficulty": "medium",
+    "topic_tags": ["sport", "history", "human body"],
+    "body_html": "<p>The marathon is measured today at exactly 42.195 kilometres, an oddly precise figure with a curious history. Its name comes from an ancient Greek legend. After the Athenians defeated an invading army of Persians on the plain of Marathon in 490 BC, a messenger, traditionally named Pheidippides, is said to have run all the way to Athens to gasp out news of the victory before collapsing and dying on the spot. Whether or not the tale is true, it gave the modern race both its name and its aura of heroic exhaustion. The story may owe more to legend than to history, for the ancient sources disagree and some place a far longer run at the heart of the tale, but its grip on the imagination has never loosened, and the picture of a lone runner spending his last breath on a message has become inseparable from the race.</p><p>When the modern Olympic Games were founded, the organisers revived the story as a sporting event, and the first marathon was run at the 1896 Games in Athens over a rough version of the legendary route. The distance was not yet fixed, however, and early marathons varied in length from one occasion to the next. The now-standard 42.195 kilometres was settled only at the 1908 Olympics in London, where, according to the usual account, the course was lengthened so that it could start beneath the walls of Windsor Castle and finish directly in front of the royal box inside the stadium. That extra distance, added almost as an afterthought for the comfort of royal spectators, was later fixed as the official length for all marathons, so that runners ever since have chased a finish line whose exact position was decided by the width of a palace lawn.</p><p>Behind the sporting drama lies a deeper biological story, for humans are, by the standards of the animal kingdom, extraordinary long-distance runners. According to what is known as the endurance running hypothesis, our ancestors evolved bodies suited to covering great distances on foot, quite possibly in order to hunt. Rather than trying to out-sprint their prey, early humans may have chased animals at a steady jog until the animals overheated and gave up. A surprising number of features of the human body seem built for precisely this kind of effort. The idea is still debated, but it draws support from the fact that humans, though hopelessly slow over short distances compared with a deer or a dog, can keep going at a steady pace for hour after hour in a way that very few other animals can match.</p><p>The most important is the way we keep cool. Most mammals shed heat by panting, which cannot be sustained at full speed for long, whereas humans sweat over a nearly hairless skin, allowing the body to lose heat continuously even while running hard. Springy tendons, above all the Achilles tendon at the heel, store energy at each footfall and return it like a catapult, and the large gluteus muscle of the buttock, unusually big in humans, braces the trunk with every stride. Taken together, these traits make sustained running remarkably efficient. On its own, none of them would be decisive, but combined they add up to a body unusually well tuned for covering ground, a legacy that every marathon runner unknowingly puts to the test.</p><p>None of this makes the marathon easy. Somewhere after about thirty kilometres many runners meet what they call the wall, a sudden and crushing fatigue that strikes when the body's store of glycogen, its most readily available fuel, begins to run out. To hold it off, runners train their bodies to burn fuel efficiently and take in carbohydrates, in the form of drinks or gels, throughout the race. Even elite athletes must ration their effort with great care, and the very fastest have pushed the limits astonishingly far: in a specially arranged event in 2019, the Kenyan runner Eliud Kipchoge covered the marathon distance in under two hours, a time so remarkable that it was not accepted as an official record but which showed just how far human endurance can be stretched. Reaching such times demands not only rare natural gifts but years of punishing training, a carefully managed diet and a shrewd sense of pace, and even then the body's limits are never far away, waiting in the closing kilometres for anyone who has misjudged the effort.</p>",
+    "groups": [
+      {
+        "question_type": "table_completion",
+        "prompt": "Questions 1-5. Complete the table below.",
+        "instructions_html": "<p>Complete the table using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><table><thead><tr><th>Topic</th><th>Detail</th></tr></thead><tbody><tr><td>Origin legend</td><td>In 490 BC the Athenians defeated an army of <strong>(1)&nbsp;______</strong> at Marathon.</td></tr><tr><td>First modern race</td><td>The marathon was revived at the 1896 Olympic Games in <strong>(2)&nbsp;______</strong>.</td></tr><tr><td>Standard distance</td><td>The distance was fixed at the 1908 Olympics in <strong>(3)&nbsp;______</strong>.</td></tr><tr><td>The 'wall'</td><td>Runners tire suddenly when the body's store of <strong>(4)&nbsp;______</strong> runs low.</td></tr><tr><td>Fuel</td><td>During the race, runners take in <strong>(5)&nbsp;______</strong> to keep going.</td></tr></tbody></table>",
+        "questions": [
+          { "prompt_text": "Gap 1", "accepted": ["Persians"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 2", "accepted": ["Athens"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 3", "accepted": ["London"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 4", "accepted": ["glycogen"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 5", "accepted": ["carbohydrates", "carbohydrate"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-10. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><p><strong>Why humans are good long-distance runners</strong></p><ul><li>Unlike most mammals, humans cool themselves by <strong>(6)&nbsp;______</strong> rather than panting.</li><li>Human skin is almost <strong>(7)&nbsp;______</strong>, which helps the body lose heat.</li><li>Elastic tendons, especially the <strong>(8)&nbsp;______</strong> tendon, store and return energy.</li><li>A large <strong>(9)&nbsp;______</strong> muscle steadies the body while running.</li><li>Early humans may have used running to <strong>(10)&nbsp;______</strong> animals over long distances.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["sweating", "sweat"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["hairless"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["Achilles"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["gluteus"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["hunt", "chase"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-14. Answer the questions below using NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "What is the standard length of a marathon in kilometres?", "accepted": ["42.195", "42.195 km", "42.195 kilometres"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "According to legend, who ran to Athens to announce the victory?", "accepted": ["Pheidippides"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "Which runner covered the marathon distance in under two hours in 2019?", "accepted": ["Eliud Kipchoge", "Kipchoge"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What name do runners give to the sudden fatigue caused by low glycogen?", "accepted": ["the wall", "wall", "hitting the wall"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]

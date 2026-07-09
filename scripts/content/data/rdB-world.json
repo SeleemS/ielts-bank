@@ -1,0 +1,627 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Formation of River Deltas",
+    "difficulty": "medium",
+    "topic_tags": ["geography", "environment"],
+    "body_html": "<p>Where a river meets the sea or a lake, it often builds a broad, fan-shaped expanse of low-lying land known as a delta. These features are among the most fertile and densely populated places on Earth, home to some of the world's great cities and to vast areas of productive farmland. Yet a delta is not a permanent, solid piece of ground so much as a slowly shifting deposit, constantly being built up and worn away by the interplay of river and sea. Understanding how deltas form reveals much about the restless processes that shape the surface of the planet.</p><p>A delta is created from sediment, the fine particles of sand, silt and clay that a river carries along its course. As water flows across the land, it picks up and transports these particles, sometimes over enormous distances. A fast-flowing river has the energy to keep even quite heavy particles suspended in its water, but when the river reaches the still water of the sea or a lake, its current slows abruptly. Deprived of the energy needed to carry its load, the river drops the sediment it has been transporting, and over time this deposited material accumulates to form new land.</p><p>The building of a delta therefore depends on the river delivering more sediment than the sea can carry away. Waves, tides and coastal currents constantly work to erode and redistribute the deposited material, and only where the supply of sediment outpaces this removal can a delta grow. The shape a delta takes reflects the balance between these opposing forces. Where the river dominates, the delta may extend far out to sea in long fingers; where waves or tides are strong, the deposited sediment is reworked into smoother, more rounded forms.</p><p>As a delta grows, the main river channel often divides into a network of smaller branches, called distributaries, that spread across the delta and carry the water and sediment towards the sea by many separate paths. These channels are not fixed. Over time a channel may become blocked with its own sediment, forcing the water to break out and find a new route, so that the pattern of channels shifts and the delta builds outward in different directions at different times. This continual switching helps to spread sediment across the whole delta rather than piling it up in one place.</p><p>The soils of deltas are typically very fertile, which is one reason these regions attract dense human settlement. The sediment deposited by a river is often rich in nutrients, and in the past regular flooding renewed this fertility by spreading a fresh layer of material across the land. Many of the earliest civilisations arose on deltas and river floodplains precisely because the reliable fertility of the soil could support intensive agriculture and large populations. The very processes that build a delta also make it valuable to those who live there.</p><p>Yet the same low-lying, watery character that makes deltas fertile also makes them vulnerable. Because they lie barely above sea level, deltas are exposed to flooding from both the river and the sea, and storms can drive seawater far inland across the flat terrain. Living on a delta has always involved a degree of risk, and communities have developed various means of managing the waters on which their prosperity and their safety both depend.</p><p>Human activity has increasingly disturbed the natural balance that sustains deltas. The building of dams and other structures upstream can trap sediment before it ever reaches the delta, starving the coast of the material it needs to maintain itself. When the supply of sediment is cut off while erosion by the sea continues, a delta may begin to shrink, and land that took thousands of years to build can be lost. At the same time, the extraction of water and other resources can cause the surface of a delta to sink, making it still more exposed to the sea.</p><p>The future of the world's deltas is therefore a matter of serious concern, particularly as sea levels rise. These regions, so productive and so heavily populated, are among the areas most threatened by changes to the coastal environment. Protecting them requires an understanding of the delicate balance of deposition and erosion that created them in the first place. A delta is, in the end, a living record of the ceaseless movement of sediment from the land to the sea, and its fate depends on keeping that ancient process in motion.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "A delta is a permanent and unchanging piece of solid ground.",
+            "answer": "false",
+            "evidence": "a delta is not a permanent, solid piece of ground so much as a slowly shifting deposit, constantly being built up and worn away by the interplay of river and sea."
+          },
+          {
+            "prompt_text": "A river drops its sediment when its current slows on reaching still water.",
+            "answer": "true",
+            "evidence": "when the river reaches the still water of the sea or a lake, its current slows abruptly. Deprived of the energy needed to carry its load, the river drops the sediment it has been transporting."
+          },
+          {
+            "prompt_text": "A delta can only grow where the river delivers more sediment than the sea removes.",
+            "answer": "true",
+            "evidence": "The building of a delta therefore depends on the river delivering more sediment than the sea can carry away... only where the supply of sediment outpaces this removal can a delta grow."
+          },
+          {
+            "prompt_text": "The smaller branches that spread across a delta always remain in fixed positions.",
+            "answer": "false",
+            "evidence": "These channels are not fixed. Over time a channel may become blocked with its own sediment, forcing the water to break out and find a new route."
+          },
+          {
+            "prompt_text": "Deltas contain a larger share of the world's population than any other type of landscape.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Dams built upstream can prevent sediment from reaching a delta.",
+            "answer": "true",
+            "evidence": "The building of dams and other structures upstream can trap sediment before it ever reaches the delta, starving the coast of the material it needs to maintain itself."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What is a delta created from?",
+            "options": [
+              "solid rock eroded from cliffs",
+              "sediment such as sand, silt and clay carried by a river",
+              "salt deposited by the sea",
+              "volcanic ash from nearby eruptions"
+            ],
+            "answer_index": 1,
+            "evidence": "A delta is created from sediment, the fine particles of sand, silt and clay that a river carries along its course."
+          },
+          {
+            "prompt_text": "What determines the shape a delta takes?",
+            "options": [
+              "the temperature of the water",
+              "the depth of the sea alone",
+              "the balance between the river and forces such as waves and tides",
+              "the age of the river"
+            ],
+            "answer_index": 2,
+            "evidence": "The shape a delta takes reflects the balance between these opposing forces. Where the river dominates, the delta may extend far out to sea in long fingers; where waves or tides are strong, the deposited sediment is reworked into smoother, more rounded forms."
+          },
+          {
+            "prompt_text": "Why did many early civilisations arise on deltas?",
+            "options": [
+              "because the soil was reliably fertile and could support agriculture",
+              "because deltas were safe from all flooding",
+              "because deltas were far from the sea",
+              "because the land was high above sea level"
+            ],
+            "answer_index": 0,
+            "evidence": "Many of the earliest civilisations arose on deltas and river floodplains precisely because the reliable fertility of the soil could support intensive agriculture and large populations."
+          },
+          {
+            "prompt_text": "What may happen to a delta when its sediment supply is cut off but erosion continues?",
+            "options": [
+              "it grows more quickly",
+              "it may begin to shrink",
+              "it becomes higher above sea level",
+              "its channels stop shifting"
+            ],
+            "answer_index": 1,
+            "evidence": "When the supply of sediment is cut off while erosion by the sea continues, a delta may begin to shrink, and land that took thousands of years to build can be lost."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What general term describes the fine particles of sand, silt and clay carried by a river?",
+            "accepted": ["sediment"],
+            "word_limit": 2,
+            "evidence": "A delta is created from sediment, the fine particles of sand, silt and clay that a river carries along its course."
+          },
+          {
+            "prompt_text": "What are the smaller branches into which a main river channel divides on a delta called?",
+            "accepted": ["distributaries"],
+            "word_limit": 2,
+            "evidence": "the main river channel often divides into a network of smaller branches, called distributaries, that spread across the delta."
+          },
+          {
+            "prompt_text": "In the past, what regularly renewed the fertility of delta soils?",
+            "accepted": ["flooding", "regular flooding"],
+            "word_limit": 2,
+            "evidence": "in the past regular flooding renewed this fertility by spreading a fresh layer of material across the land."
+          },
+          {
+            "prompt_text": "Besides trapping sediment, the extraction of water can cause the surface of a delta to do what?",
+            "accepted": ["sink"],
+            "word_limit": 2,
+            "evidence": "the extraction of water and other resources can cause the surface of a delta to sink, making it still more exposed to the sea."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Nomads of the Eurasian Steppe",
+    "difficulty": "medium",
+    "topic_tags": ["anthropology", "history", "world cultures"],
+    "body_html": "<p>Across the heart of the Eurasian landmass stretches a vast band of open grassland known as the steppe, running for thousands of kilometres from eastern Europe towards the borders of China. This immense, treeless expanse, too dry for reliable farming over much of its area, was for many centuries the home of nomadic peoples whose way of life was built around the herding of animals. Far from being empty or unimportant, the steppe was the stage for some of the most significant developments in world history, and its inhabitants exerted an influence out of all proportion to their numbers.</p><p>The nomads of the steppe were pastoralists, meaning that they depended for their living on domesticated herd animals such as horses, sheep, goats and cattle. Because the grassland could not support these herds in one place all year round, the people moved with their animals from pasture to pasture, following the seasons in search of fresh grazing and water. This constant movement shaped every aspect of their lives, from their portable dwellings to their social organisation, and it made them very different from the settled farmers of the neighbouring regions.</p><p>Of all their animals, the horse was the most important, and mastery of the horse lay at the centre of steppe culture. The domestication of the horse and the development of riding transformed the possibilities of life on the grassland, allowing people to manage large herds over great distances and to travel far more quickly than those on foot. The mobility that the horse provided became the defining feature of steppe society, and skill in riding was prized from an early age. A people who could move rapidly across enormous distances possessed advantages that their settled neighbours could not easily match.</p><p>This mobility also gave the steppe nomads formidable military power. Mounted warriors, often expert with the bow, could strike swiftly and unexpectedly, then withdraw before a slower enemy could respond. From time to time, leaders arose who were able to unite the normally fragmented and quarrelsome steppe peoples into a single force, and when this happened the result could be a wave of conquest that swept across neighbouring civilisations. Some of the largest empires in history were created in this way by nomadic peoples originating on the steppe.</p><p>Yet it would be a mistake to see the relationship between the nomads and the settled world as one of pure conflict. The two ways of life were, in fact, deeply interdependent. The nomads produced animals, hides and other goods, but they needed the grain, cloth, metalwork and luxuries that only settled societies could provide. Trade between the grassland and the farming lands was therefore constant, and the nomads often played a vital role in carrying goods and ideas across the vast distances of Eurasia. The steppe acted as a bridge as much as a barrier between distant civilisations.</p><p>The nomadic way of life was well adapted to its harsh environment, but it was also demanding and precarious. Herds could be devastated by disease or by unusually severe winters, and the loss of animals could bring disaster to a community that depended on them for almost everything. Survival required detailed knowledge of the land, the weather and the needs of the animals, as well as the flexibility to move quickly when conditions changed. This was not a life of aimless wandering but a carefully managed use of a difficult landscape.</p><p>Over the long course of history, the power and independence of the steppe nomads gradually declined. Settled states grew stronger and better organised, and the spread of new military technologies eventually eroded the advantages that mobility and horsemanship had once conferred. As farming, fixed borders and centralised governments extended across former grasslands, the open range on which the nomadic way of life depended was increasingly enclosed and controlled. The great age of the steppe empires came to an end.</p><p>Today the traditional nomadic life of the steppe survives only in reduced and altered forms, but its historical importance is beyond doubt. The peoples of the grassland connected the civilisations of Europe and Asia, spread technologies and ideas across continents, and repeatedly reshaped the political map of the Old World. Their story is a reminder that history was made not only in cities and farmlands but also on the open plains, by peoples whose homes could be packed up and carried to the next horizon.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Much of the steppe was too dry for reliable farming.",
+            "answer": "true",
+            "evidence": "This immense, treeless expanse, too dry for reliable farming over much of its area, was for many centuries the home of nomadic peoples."
+          },
+          {
+            "prompt_text": "The nomads moved with their herds in search of fresh grazing and water.",
+            "answer": "true",
+            "evidence": "the people moved with their animals from pasture to pasture, following the seasons in search of fresh grazing and water."
+          },
+          {
+            "prompt_text": "The horse was of only minor importance to steppe culture.",
+            "answer": "false",
+            "evidence": "Of all their animals, the horse was the most important, and mastery of the horse lay at the centre of steppe culture."
+          },
+          {
+            "prompt_text": "The relationship between nomads and settled societies was one of pure conflict.",
+            "answer": "false",
+            "evidence": "Yet it would be a mistake to see the relationship between the nomads and the settled world as one of pure conflict. The two ways of life were, in fact, deeply interdependent."
+          },
+          {
+            "prompt_text": "The nomads valued sheep more highly than horses.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Herds could be devastated by disease or by unusually severe winters.",
+            "answer": "true",
+            "evidence": "Herds could be devastated by disease or by unusually severe winters, and the loss of animals could bring disaster to a community that depended on them for almost everything."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What does the term 'pastoralist' mean in the passage?",
+            "options": [
+              "a person who farms crops in one place",
+              "a person who depends on domesticated herd animals",
+              "a person who lives in a city",
+              "a person who trades in luxury goods"
+            ],
+            "answer_index": 1,
+            "evidence": "The nomads of the steppe were pastoralists, meaning that they depended for their living on domesticated herd animals such as horses, sheep, goats and cattle."
+          },
+          {
+            "prompt_text": "How did some of the largest empires in history come to be created on the steppe?",
+            "options": [
+              "by settled farmers conquering the nomads",
+              "by leaders uniting the fragmented steppe peoples into a single force",
+              "by the building of great cities on the grassland",
+              "by trade alone, without any conquest"
+            ],
+            "answer_index": 1,
+            "evidence": "leaders arose who were able to unite the normally fragmented and quarrelsome steppe peoples into a single force... Some of the largest empires in history were created in this way."
+          },
+          {
+            "prompt_text": "What role did the nomads often play across the vast distances of Eurasia?",
+            "options": [
+              "they prevented all contact between civilisations",
+              "they carried goods and ideas between distant societies",
+              "they produced grain and cloth for the cities",
+              "they abandoned trade entirely"
+            ],
+            "answer_index": 1,
+            "evidence": "the nomads often played a vital role in carrying goods and ideas across the vast distances of Eurasia. The steppe acted as a bridge as much as a barrier."
+          },
+          {
+            "prompt_text": "Why did the power of the steppe nomads eventually decline?",
+            "options": [
+              "because they lost interest in horses",
+              "because the grassland disappeared entirely",
+              "because settled states grew stronger and new military technologies eroded their advantages",
+              "because they stopped trading with settled societies"
+            ],
+            "answer_index": 2,
+            "evidence": "Settled states grew stronger and better organised, and the spread of new military technologies eventually eroded the advantages that mobility and horsemanship had once conferred."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What name is given to the vast band of open grassland across Eurasia?",
+            "accepted": ["the steppe", "steppe"],
+            "word_limit": 2,
+            "evidence": "a vast band of open grassland known as the steppe, running for thousands of kilometres from eastern Europe towards the borders of China."
+          },
+          {
+            "prompt_text": "Which animal was the most important to steppe culture?",
+            "accepted": ["the horse", "horse", "horses"],
+            "word_limit": 2,
+            "evidence": "Of all their animals, the horse was the most important, and mastery of the horse lay at the centre of steppe culture."
+          },
+          {
+            "prompt_text": "Mounted warriors were often expert with what weapon?",
+            "accepted": ["the bow", "bow"],
+            "word_limit": 2,
+            "evidence": "Mounted warriors, often expert with the bow, could strike swiftly and unexpectedly."
+          },
+          {
+            "prompt_text": "The steppe is described as acting as both a bridge and a what between civilisations?",
+            "accepted": ["barrier", "a barrier"],
+            "word_limit": 2,
+            "evidence": "The steppe acted as a bridge as much as a barrier between distant civilisations."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Bystander Effect",
+    "difficulty": "medium",
+    "topic_tags": ["psychology", "society"],
+    "body_html": "<p>It might seem obvious that a person in trouble is more likely to receive help if many people are present to give it. Common sense suggests that the more witnesses there are to an emergency, the greater the chance that someone will step in. Yet research in psychology has repeatedly shown that the opposite is often true. In many situations, an individual is actually less likely to be helped when a large number of people are present than when there is only a single witness. This surprising phenomenon has come to be known as the bystander effect.</p><p>Psychologists began to study the effect systematically in the second half of the twentieth century, partly in response to reports of incidents in which people in distress had apparently been ignored by numerous onlookers. Rather than concluding that the witnesses were simply callous or indifferent, researchers suspected that something about the presence of a crowd itself was discouraging people from helping. They set out to test this idea through controlled experiments in which they could observe how individuals responded to a staged emergency, sometimes alone and sometimes in the company of others.</p><p>These experiments confirmed that the number of bystanders made a real difference to how people behaved. When participants believed they were the only witness to an emergency, they usually acted quickly to help. When they believed that others were also present, they were slower to respond, and in many cases did not intervene at all. The larger the group of supposed witnesses, the less likely any single individual was to take action. The effect proved robust and could be reproduced under a variety of conditions.</p><p>Psychologists have proposed several explanations for why the presence of others should have this discouraging effect. One important factor is what is known as the diffusion of responsibility. When a person is the only witness to an emergency, the responsibility to act falls entirely on them, and they feel its full weight. When many people are present, however, that responsibility is shared out among them, so that each individual feels only a small part of it. Each may assume that someone else will take action, or that it is not particularly their job to do so, and as a result no one acts at all.</p><p>A second explanation involves the way people look to others for guidance about how to behave in uncertain situations. Emergencies are often ambiguous, and a witness may be unsure whether what they are seeing really requires intervention. In such moments, people naturally glance at those around them to judge how serious the situation is. If everyone else appears calm and does nothing, each observer may conclude that there is no real emergency and that action is unnecessary. Ironically, the very calmness of the crowd, itself produced by this same process, reinforces everyone's inaction.</p><p>A third factor concerns people's fear of behaving inappropriately in front of others. Stepping in to help carries the risk of embarrassment if one has misjudged the situation, and the presence of an audience heightens this concern. A person may hesitate to act for fear of overreacting and appearing foolish before onlookers, especially if no one else is doing anything. This anxiety about the judgement of others can be enough to prevent a witness from offering help that they might readily give if they were alone.</p><p>Understanding the bystander effect has practical value, because awareness of it can help to counteract it. Experts point out that a person in need of assistance is more likely to receive it if they can overcome the diffusion of responsibility by singling out a specific individual and addressing them directly, rather than appealing vaguely to a crowd. By making one particular person feel personally responsible, an appeal for help becomes much harder to ignore, and the paralysis that grips an undirected group can be broken.</p><p>The bystander effect is a striking example of how human behaviour can be shaped in powerful and unexpected ways by the mere presence of other people. It reminds us that individuals do not respond to situations in isolation but are constantly influenced by those around them, often without realising it. Far from being a simple sign of indifference, the failure of crowds to help reflects deep features of human social psychology, and recognising these features is the first step towards ensuring that help is given when it is needed.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Research suggests that people are sometimes less likely to be helped when many witnesses are present.",
+            "answer": "yes",
+            "evidence": "an individual is actually less likely to be helped when a large number of people are present than when there is only a single witness."
+          },
+          {
+            "prompt_text": "Researchers concluded that witnesses who failed to help were simply callous and indifferent.",
+            "answer": "no",
+            "evidence": "Rather than concluding that the witnesses were simply callous or indifferent, researchers suspected that something about the presence of a crowd itself was discouraging people from helping."
+          },
+          {
+            "prompt_text": "The bystander effect could only be produced under one very specific set of conditions.",
+            "answer": "no",
+            "evidence": "The effect proved robust and could be reproduced under a variety of conditions."
+          },
+          {
+            "prompt_text": "Women were found to help more often than men in the experiments.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Addressing a specific individual can make an appeal for help harder to ignore.",
+            "answer": "yes",
+            "evidence": "By making one particular person feel personally responsible, an appeal for help becomes much harder to ignore."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What did the controlled experiments confirm?",
+            "options": [
+              "that people always help when others are present",
+              "that the number of bystanders made a real difference to behaviour",
+              "that people never help strangers",
+              "that emergencies are always ignored"
+            ],
+            "answer_index": 1,
+            "evidence": "These experiments confirmed that the number of bystanders made a real difference to how people behaved."
+          },
+          {
+            "prompt_text": "What is meant by the 'diffusion of responsibility'?",
+            "options": [
+              "responsibility is shared among many people so each feels only a small part of it",
+              "responsibility is given entirely to one leader",
+              "people take turns to help",
+              "responsibility disappears once help is given"
+            ],
+            "answer_index": 0,
+            "evidence": "When many people are present, however, that responsibility is shared out among them, so that each individual feels only a small part of it."
+          },
+          {
+            "prompt_text": "According to the passage, why might a calm crowd discourage helping?",
+            "options": [
+              "because calmness makes people happy",
+              "because each observer concludes there is no real emergency",
+              "because calm people are more likely to act",
+              "because crowds cannot see the emergency"
+            ],
+            "answer_index": 1,
+            "evidence": "If everyone else appears calm and does nothing, each observer may conclude that there is no real emergency and that action is unnecessary."
+          },
+          {
+            "prompt_text": "How can a person in need best overcome the diffusion of responsibility?",
+            "options": [
+              "by waiting quietly for help",
+              "by appealing vaguely to the whole crowd",
+              "by singling out a specific individual and addressing them directly",
+              "by leaving the scene of the emergency"
+            ],
+            "answer_index": 2,
+            "evidence": "a person in need of assistance is more likely to receive it if they can overcome the diffusion of responsibility by singling out a specific individual and addressing them directly."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "What name is given to the phenomenon in which a crowd is less likely to help?",
+            "accepted": ["the bystander effect", "bystander effect"],
+            "word_limit": 3,
+            "evidence": "This surprising phenomenon has come to be known as the bystander effect."
+          },
+          {
+            "prompt_text": "What is the sharing out of responsibility among many witnesses called?",
+            "accepted": ["diffusion of responsibility", "the diffusion of responsibility"],
+            "word_limit": 3,
+            "evidence": "One important factor is what is known as the diffusion of responsibility."
+          },
+          {
+            "prompt_text": "Besides misjudging a situation, people fear the risk of what if they intervene?",
+            "accepted": ["embarrassment"],
+            "word_limit": 2,
+            "evidence": "Stepping in to help carries the risk of embarrassment if one has misjudged the situation."
+          },
+          {
+            "prompt_text": "Emergencies are described as often being what, which makes witnesses unsure?",
+            "accepted": ["ambiguous"],
+            "word_limit": 2,
+            "evidence": "Emergencies are often ambiguous, and a witness may be unsure whether what they are seeing really requires intervention."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Montessori Method of Education",
+    "difficulty": "medium",
+    "topic_tags": ["education", "psychology"],
+    "body_html": "<p>At the beginning of the twentieth century, an Italian physician named Maria Montessori developed an approach to educating children that would go on to influence schools around the world. Trained in medicine rather than in teaching, she brought the eye of a scientific observer to the study of children, watching closely how they learned and behaved. From these observations she drew conclusions that challenged many of the assumptions of the conventional classroom of her day, and the method she created continues to bear her name more than a century later.</p><p>The schooling of Montessori's time typically involved rows of children sitting still at fixed desks, listening to a teacher who delivered the same lesson to everyone at once and expected them to memorise and repeat what they were told. Montessori came to believe that this approach worked against the natural way in which young children learn. Her observations suggested that children have a powerful, spontaneous desire to learn and to master their environment, and that education should build on this natural drive rather than suppress it through rigid discipline and passive instruction.</p><p>A central principle of her method is that children learn best through activity and direct experience rather than by being told things. In a Montessori classroom, children are encouraged to handle objects and to carry out tasks themselves, learning through their senses and their hands as much as through their minds. For this purpose Montessori designed a range of specially made materials, each intended to teach a particular concept or skill, which children could use on their own. The materials were often self-correcting, so that a child could see and fix a mistake without needing a teacher to point it out.</p><p>Another distinctive feature of the method is the freedom given to children to choose their own activities. Instead of following a single timetable imposed by the teacher, children in a Montessori classroom are generally free to select what they will work on and to continue with it for as long as their interest holds. Montessori believed that when children are allowed to follow their own interests in this way, they become deeply absorbed in their work and learn with a concentration that cannot be forced upon them. The role of the environment, carefully prepared and full of inviting activities, is central to making this freedom productive.</p><p>Within this system, the role of the teacher is very different from the traditional one. Rather than standing at the front and directing the whole class, the Montessori teacher acts more as a guide and an observer, preparing the environment, introducing children to materials when they are ready, and then stepping back to allow them to work. The teacher intervenes as little as possible, watching each child closely and offering help only when it is genuinely needed. In this way the child, rather than the teacher, becomes the active centre of the learning process.</p><p>Montessori also emphasised the importance of practical, everyday activities in the education of young children. Tasks such as pouring water, arranging objects, dressing and caring for the classroom were treated not as trivial chores but as valuable exercises through which children could develop coordination, independence and a sense of order. Mastering such ordinary skills, she argued, gave children confidence and a feeling of competence, and helped to prepare them for more demanding intellectual work later on.</p><p>The Montessori approach was not universally accepted, and it attracted criticism as well as praise. Some educators questioned whether so much freedom was appropriate, or whether children given such latitude would acquire the knowledge and discipline they would later need. Others admired the method's respect for the child but found it difficult or expensive to put into practice on a large scale. Debates about the balance between freedom and structure in education, which the method brought sharply into focus, have continued ever since.</p><p>Despite such disagreements, Montessori's ideas have had a lasting and widespread influence. Schools based on her method operate in many countries, catering above all to young children, and many of her insights have filtered into mainstream education even where the full method is not followed. The notions that children are naturally eager to learn, that they benefit from hands-on activity, and that teaching should respond to the individual child rather than force every child into the same mould have become widely accepted. In placing the child at the centre of education, Maria Montessori helped to change the way the world thinks about learning.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Maria Montessori was originally trained as a physician rather than as a teacher.",
+            "answer": "true",
+            "evidence": "an Italian physician named Maria Montessori... Trained in medicine rather than in teaching, she brought the eye of a scientific observer to the study of children."
+          },
+          {
+            "prompt_text": "Montessori believed the conventional classroom of her day suited the natural way children learn.",
+            "answer": "false",
+            "evidence": "Montessori came to believe that this approach worked against the natural way in which young children learn."
+          },
+          {
+            "prompt_text": "The special materials she designed were often able to show children their own mistakes.",
+            "answer": "true",
+            "evidence": "The materials were often self-correcting, so that a child could see and fix a mistake without needing a teacher to point it out."
+          },
+          {
+            "prompt_text": "In a Montessori classroom, children must all follow the same timetable set by the teacher.",
+            "answer": "false",
+            "evidence": "Instead of following a single timetable imposed by the teacher, children in a Montessori classroom are generally free to select what they will work on."
+          },
+          {
+            "prompt_text": "Montessori schools charge higher fees than traditional schools.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The Montessori method was accepted by everyone without criticism.",
+            "answer": "false",
+            "evidence": "The Montessori approach was not universally accepted, and it attracted criticism as well as praise."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What did Montessori's observations suggest about young children?",
+            "options": [
+              "that they dislike learning",
+              "that they have a powerful, spontaneous desire to learn",
+              "that they learn best by memorising and repeating",
+              "that they need constant discipline"
+            ],
+            "answer_index": 1,
+            "evidence": "Her observations suggested that children have a powerful, spontaneous desire to learn and to master their environment."
+          },
+          {
+            "prompt_text": "According to the method, how do children learn best?",
+            "options": [
+              "by being told things by a teacher",
+              "by sitting still and listening",
+              "through activity and direct experience",
+              "by copying from a textbook"
+            ],
+            "answer_index": 2,
+            "evidence": "A central principle of her method is that children learn best through activity and direct experience rather than by being told things."
+          },
+          {
+            "prompt_text": "How does the role of the Montessori teacher differ from the traditional one?",
+            "options": [
+              "the teacher acts more as a guide and observer than as a director",
+              "the teacher delivers longer lectures",
+              "the teacher chooses every activity for the class",
+              "the teacher plays no part at all"
+            ],
+            "answer_index": 0,
+            "evidence": "the Montessori teacher acts more as a guide and an observer, preparing the environment, introducing children to materials when they are ready, and then stepping back."
+          },
+          {
+            "prompt_text": "How did Montessori regard practical everyday tasks such as pouring water?",
+            "options": [
+              "as trivial chores of no value",
+              "as valuable exercises for developing coordination and independence",
+              "as a distraction from real learning",
+              "as suitable only for older children"
+            ],
+            "answer_index": 1,
+            "evidence": "Tasks such as pouring water... were treated not as trivial chores but as valuable exercises through which children could develop coordination, independence and a sense of order."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which field was Montessori originally trained, rather than in teaching?",
+            "accepted": ["medicine"],
+            "word_limit": 2,
+            "evidence": "Trained in medicine rather than in teaching, she brought the eye of a scientific observer to the study of children."
+          },
+          {
+            "prompt_text": "Besides their minds, through what two things do Montessori children learn?",
+            "accepted": ["senses and hands", "their senses and hands", "their senses and their hands"],
+            "word_limit": 3,
+            "evidence": "learning through their senses and their hands as much as through their minds."
+          },
+          {
+            "prompt_text": "What quality do children show when allowed to follow their own interests, according to Montessori?",
+            "accepted": ["concentration", "deep concentration"],
+            "word_limit": 2,
+            "evidence": "they become deeply absorbed in their work and learn with a concentration that cannot be forced upon them."
+          },
+          {
+            "prompt_text": "Montessori schools cater above all to which age group of children?",
+            "accepted": ["young children", "the young", "young"],
+            "word_limit": 3,
+            "evidence": "Schools based on her method operate in many countries, catering above all to young children."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Garden City Movement",
+    "difficulty": "medium",
+    "topic_tags": ["urban studies", "history"],
+    "body_html": "<p>By the end of the nineteenth century, the great industrial cities had become, for many of their inhabitants, places of overcrowding, pollution and squalor. Rapid growth had packed enormous numbers of people into cramped and unhealthy housing, often close to the smoking factories where they worked. At the same time, the countryside beyond the cities was emptying as people left the land in search of work. It was against this background that an Englishman named Ebenezer Howard put forward a bold proposal for a new kind of settlement that would combine the best of town and country while avoiding the worst of each.</p><p>Howard set out his ideas in an influential book published near the end of the century. He argued that neither the crowded, dirty city nor the quiet but economically stagnant countryside offered a good life on its own. The city provided work, society and opportunity, but at the cost of poor health and grim surroundings; the country offered fresh air and natural beauty, but little employment or social life. Howard's solution was to create settlements that would marry the advantages of both, offering the economic opportunities of the town within a healthy, green environment. He called this new kind of settlement the garden city.</p><p>The garden city, as Howard envisaged it, was to be carefully planned and limited in size. Rather than being allowed to sprawl outward indefinitely as existing cities did, it would be built to a fixed plan for a set number of inhabitants, and once it reached its intended size, growth would be accommodated by founding a new city nearby rather than by expanding the old one. In this way each city could remain compact and manageable, and its residents would never be far from open country.</p><p>A defining feature of the design was the belt of open land that was to surround each city. This ring of countryside, kept permanently free from building, would provide space for farming and recreation and would prevent the city from merging into its neighbours. The green belt, as this surrounding land came to be known, ensured that the benefits of the countryside remained within easy reach of every inhabitant and set a firm limit to the city's physical spread.</p><p>Howard's vision was also concerned with how such a city would be owned and paid for. He proposed that the land on which a garden city stood should be held in common on behalf of the community rather than by private landlords. As the city grew and the value of the land rose, the resulting increase in value would benefit the community as a whole and could be used to fund public services, rather than enriching private owners. In this way the prosperity generated by the city would be shared among its people.</p><p>Howard did not merely write about his ideas but worked to put them into practice. With the support of others who shared his vision, a company was formed and land was acquired to build the first garden city, which was begun in the early years of the twentieth century a short distance from London. A second garden city followed some years later. These pioneering settlements attracted great interest and served as practical demonstrations of the principles Howard had described, showing that a planned community of the kind he imagined could actually be built.</p><p>The influence of the garden city movement extended far beyond these first experiments. Planners and reformers in many countries were inspired by Howard's ideas, and elements of his thinking were adopted in the design of new towns, suburbs and housing developments around the world. Not everything was carried out as he had intended, and many places that borrowed the label 'garden' adopted the leafy appearance of his cities without their underlying principles of planning and common ownership. Nevertheless, the basic ideals of combining town and country and of planning settlements as coherent wholes proved enormously influential.</p><p>The legacy of the movement can still be seen today, both in the surviving garden cities themselves and in the wider practice of town planning that it helped to shape. Ideas that Howard championed, such as limiting urban sprawl, preserving green space around cities and designing communities deliberately rather than letting them grow haphazardly, have become part of the standard vocabulary of planning. In seeking a remedy for the ills of the industrial city, the garden city movement helped to establish the very idea that the growth of cities could and should be consciously guided for the good of those who live in them.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The garden city was intended to combine the advantages of both town and country.",
+            "answer": "true",
+            "evidence": "Howard's solution was to create settlements that would marry the advantages of both, offering the economic opportunities of the town within a healthy, green environment."
+          },
+          {
+            "prompt_text": "Howard intended garden cities to grow without any limit on their size.",
+            "answer": "false",
+            "evidence": "it would be built to a fixed plan for a set number of inhabitants, and once it reached its intended size, growth would be accommodated by founding a new city nearby rather than by expanding the old one."
+          },
+          {
+            "prompt_text": "The green belt around each city was to be kept permanently free from building.",
+            "answer": "true",
+            "evidence": "This ring of countryside, kept permanently free from building, would provide space for farming and recreation."
+          },
+          {
+            "prompt_text": "Howard proposed that the land of a garden city should be owned by private landlords.",
+            "answer": "false",
+            "evidence": "He proposed that the land on which a garden city stood should be held in common on behalf of the community rather than by private landlords."
+          },
+          {
+            "prompt_text": "The first garden city attracted more visitors than any other town in England.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Some places used the 'garden' label without adopting Howard's underlying principles.",
+            "answer": "true",
+            "evidence": "many places that borrowed the label 'garden' adopted the leafy appearance of his cities without their underlying principles of planning and common ownership."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What problem in industrial cities helped inspire Howard's proposal?",
+            "options": [
+              "a shortage of factories",
+              "overcrowding, pollution and squalor",
+              "too much open countryside",
+              "a lack of workers"
+            ],
+            "answer_index": 1,
+            "evidence": "the great industrial cities had become, for many of their inhabitants, places of overcrowding, pollution and squalor."
+          },
+          {
+            "prompt_text": "According to Howard, what did the countryside offer but the city lack?",
+            "options": [
+              "work and social life",
+              "fresh air and natural beauty",
+              "factories and employment",
+              "large populations"
+            ],
+            "answer_index": 1,
+            "evidence": "the country offered fresh air and natural beauty, but little employment or social life."
+          },
+          {
+            "prompt_text": "How, in Howard's plan, would the community benefit from the rising value of the land?",
+            "options": [
+              "the increase in value would fund public services rather than enrich private owners",
+              "the land would be sold to the highest bidder",
+              "the value would be given to the factories",
+              "the land would be left undeveloped"
+            ],
+            "answer_index": 0,
+            "evidence": "the resulting increase in value would benefit the community as a whole and could be used to fund public services, rather than enriching private owners."
+          },
+          {
+            "prompt_text": "What lasting idea did the garden city movement help to establish?",
+            "options": [
+              "that cities should be left to grow haphazardly",
+              "that the growth of cities could be consciously guided for the good of residents",
+              "that green space around cities was unnecessary",
+              "that all cities should be as large as possible"
+            ],
+            "answer_index": 1,
+            "evidence": "the garden city movement helped to establish the very idea that the growth of cities could and should be consciously guided for the good of those who live in them."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Who put forward the proposal for the garden city?",
+            "accepted": ["Ebenezer Howard", "Howard"],
+            "word_limit": 2,
+            "evidence": "an Englishman named Ebenezer Howard put forward a bold proposal for a new kind of settlement."
+          },
+          {
+            "prompt_text": "What name came to be given to the ring of countryside surrounding each city?",
+            "accepted": ["the green belt", "green belt"],
+            "word_limit": 3,
+            "evidence": "The green belt, as this surrounding land came to be known, ensured that the benefits of the countryside remained within easy reach."
+          },
+          {
+            "prompt_text": "Near which city was the first garden city begun?",
+            "accepted": ["London"],
+            "word_limit": 2,
+            "evidence": "land was acquired to build the first garden city, which was begun in the early years of the twentieth century a short distance from London."
+          },
+          {
+            "prompt_text": "Howard proposed that the land should be held in what way, on behalf of the community?",
+            "accepted": ["in common", "common"],
+            "word_limit": 2,
+            "evidence": "the land on which a garden city stood should be held in common on behalf of the community."
+          }
+        ]
+      }
+    ]
+  }
+]

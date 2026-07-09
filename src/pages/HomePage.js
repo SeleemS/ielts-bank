@@ -24,6 +24,9 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 
 const SITE_URL = 'https://ielts-bank.com';
+const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
+  'Master IELTS with real, auto-scored practice'
+)}&type=home`;
 const PAGE_TITLE =
   'IELTS-Bank — Free IELTS Practice Questions: Reading, Writing, Listening';
 const PAGE_DESCRIPTION =
@@ -144,10 +147,18 @@ const HomePage = ({ counts = {} }) => {
         <meta property="og:description" content={PAGE_DESCRIPTION} />
         <meta property="og:url" content={`${SITE_URL}/`} />
         <meta property="og:site_name" content="IELTS-Bank" />
-        <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta
+          property="og:image:alt"
+          content="IELTS-Bank — free, auto-scored IELTS Reading, Writing and Listening practice"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+        <meta name="twitter:image" content={OG_IMAGE} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}

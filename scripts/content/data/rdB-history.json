@@ -1,0 +1,627 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Rosetta Stone and the Decipherment of Hieroglyphs",
+    "difficulty": "medium",
+    "topic_tags": ["history", "archaeology"],
+    "body_html": "<p>For centuries the writing of ancient Egypt was a closed book. The elegant picture-signs known as hieroglyphs covered the walls of temples and tombs, but no one living could read them, and scholars could only guess at their meaning. Many assumed that each sign stood for a whole idea rather than a sound, an assumption that made translation impossible. The breakthrough that finally unlocked the script came not from a temple inscription but from a broken slab of dark stone, uncovered almost by accident during a military campaign.</p><p>The stone was found in 1799 by soldiers of a French expedition in Egypt, near the town that Europeans called Rosetta, in the delta of the Nile. The men were strengthening the defences of a fort when they came across the slab built into an old wall. An officer recognised that it carried writing and that the inscription appeared in more than one script, and the object was carefully set aside for study rather than being discarded as rubble. It was this decision that gave the stone its later fame.</p><p>What made the Rosetta Stone so valuable was that it presented the same text three times, in three different scripts. At the top was a passage in hieroglyphs; in the middle was a cursive Egyptian script known as Demotic, used for everyday documents; and at the bottom was a version in ancient Greek. Because scholars of the period could still read ancient Greek, they could understand what the whole inscription said. The text turned out to be a decree issued by priests in 196 BC in honour of the young king Ptolemy V, recording the privileges granted to him and to the temples. In principle, then, the Greek offered a key to the two Egyptian scripts above it.</p><p>Turning that principle into a genuine translation proved far harder than it first appeared. An important early contribution was made by the English scholar Thomas Young, who studied the Demotic section and also examined the hieroglyphs. Young correctly recognised that the oval rings, or cartouches, that appear in royal inscriptions enclosed the names of rulers, and he worked out the sounds of several signs used to write the name of Ptolemy. Yet Young continued to believe that most hieroglyphs were symbolic rather than phonetic, and this assumption held back his progress.</p><p>The decisive advance was the work of the French scholar Jean-François Champollion, who announced his results in 1822. Champollion's crucial insight was that the hieroglyphic script was not purely a system of pictures standing for ideas, nor purely a set of signs standing for sounds, but a combination of the two: many signs recorded sounds, while others indicated the general category to which a word belonged. This mixed nature explained why earlier attempts had failed. Champollion was helped by his knowledge of Coptic, a later form of the Egyptian language still used in church services, which preserved clues to how ancient Egyptian words had been pronounced.</p><p>By comparing the names of foreign rulers such as Ptolemy and Cleopatra, whose spellings shared certain signs, Champollion was able to build up a reliable list of sound values. He then showed that the same phonetic principle applied to native Egyptian words as well, not merely to foreign names, which demonstrated that the system had always been partly phonetic. With this framework in place, the once-silent inscriptions of Egypt could gradually be made to speak, and the long history recorded on temple walls and papyrus scrolls became accessible to scholarship.</p><p>The stone itself had meanwhile changed hands. After British forces defeated the French in Egypt, the object was handed over under the terms of a treaty and transported to London, where it entered a major museum and has remained on public display ever since. It quickly became one of the most visited exhibits in the collection, admired as much for its role in the history of scholarship as for the decree it records.</p><p>The importance of the Rosetta Stone lies less in the words of the decree, which is fairly ordinary in content, than in what the object made possible. By providing the same text in a known language alongside two unknown scripts, it gave scholars the foothold they needed to recover an entire written civilisation. Its name has since passed into everyday language as a term for any clue that unlocks a mystery, a fitting tribute to a broken slab that restored the voice of ancient Egypt.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "Before the stone was studied, many scholars wrongly believed that each hieroglyph stood for a complete idea rather than a sound.",
+            "answer": "true",
+            "evidence": "Many assumed that each sign stood for a whole idea rather than a sound, an assumption that made translation impossible."
+          },
+          {
+            "prompt_text": "The soldiers who found the stone were building a new temple at the time.",
+            "answer": "false",
+            "evidence": "The men were strengthening the defences of a fort when they came across the slab built into an old wall."
+          },
+          {
+            "prompt_text": "Scholars of the period were able to read the ancient Greek section of the inscription.",
+            "answer": "true",
+            "evidence": "Because scholars of the period could still read ancient Greek, they could understand what the whole inscription said."
+          },
+          {
+            "prompt_text": "Thomas Young believed that most hieroglyphs represented sounds rather than ideas.",
+            "answer": "false",
+            "evidence": "Yet Young continued to believe that most hieroglyphs were symbolic rather than phonetic, and this assumption held back his progress."
+          },
+          {
+            "prompt_text": "Champollion could speak several modern European languages fluently.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "The stone was moved to London after British forces defeated the French in Egypt.",
+            "answer": "true",
+            "evidence": "After British forces defeated the French in Egypt, the object was handed over under the terms of a treaty and transported to London."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Why was the Rosetta Stone especially useful to scholars?",
+            "options": [
+              "It was the largest inscription ever discovered in Egypt.",
+              "It presented the same text in three different scripts.",
+              "It was the only surviving example of Demotic writing.",
+              "It had been written by the king Ptolemy V himself."
+            ],
+            "answer_index": 1,
+            "evidence": "What made the Rosetta Stone so valuable was that it presented the same text three times, in three different scripts."
+          },
+          {
+            "prompt_text": "What did the text of the inscription actually record?",
+            "options": [
+              "a decree issued by priests in honour of Ptolemy V",
+              "a list of the kings of ancient Egypt",
+              "instructions for building a temple",
+              "an account of a military victory"
+            ],
+            "answer_index": 0,
+            "evidence": "The text turned out to be a decree issued by priests in 196 BC in honour of the young king Ptolemy V, recording the privileges granted to him and to the temples."
+          },
+          {
+            "prompt_text": "What was Champollion's crucial insight about the hieroglyphic script?",
+            "options": [
+              "that it was entirely made up of pictures standing for ideas",
+              "that it had been copied from the Greek alphabet",
+              "that it combined signs for sounds with signs indicating categories",
+              "that it could only be used to write royal names"
+            ],
+            "answer_index": 2,
+            "evidence": "Champollion's crucial insight was that the hieroglyphic script was not purely a system of pictures standing for ideas, nor purely a set of signs standing for sounds, but a combination of the two."
+          },
+          {
+            "prompt_text": "According to the passage, why is the Rosetta Stone important?",
+            "options": [
+              "because the decree it records is unusually detailed",
+              "because it made the recovery of an entire written civilisation possible",
+              "because it is the oldest object in the museum",
+              "because it was the first stone slab ever discovered in Egypt"
+            ],
+            "answer_index": 1,
+            "evidence": "By providing the same text in a known language alongside two unknown scripts, it gave scholars the foothold they needed to recover an entire written civilisation."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "Near which town in the Nile delta was the stone discovered?",
+            "accepted": ["Rosetta"],
+            "word_limit": 2,
+            "evidence": "The stone was found in 1799 by soldiers of a French expedition in Egypt, near the town that Europeans called Rosetta, in the delta of the Nile."
+          },
+          {
+            "prompt_text": "What is the name of the cursive Egyptian script used for everyday documents?",
+            "accepted": ["Demotic"],
+            "word_limit": 2,
+            "evidence": "in the middle was a cursive Egyptian script known as Demotic, used for everyday documents."
+          },
+          {
+            "prompt_text": "What are the oval rings that enclose royal names called?",
+            "accepted": ["cartouches", "cartouche"],
+            "word_limit": 2,
+            "evidence": "Young correctly recognised that the oval rings, or cartouches, that appear in royal inscriptions enclosed the names of rulers."
+          },
+          {
+            "prompt_text": "Knowledge of which later form of the Egyptian language helped Champollion?",
+            "accepted": ["Coptic"],
+            "word_limit": 2,
+            "evidence": "Champollion was helped by his knowledge of Coptic, a later form of the Egyptian language still used in church services."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Silk Road and the Exchange of Ideas",
+    "difficulty": "medium",
+    "topic_tags": ["history", "world cultures"],
+    "body_html": "<p>The term 'Silk Road' conjures an image of a single paved highway stretching from China to the Mediterranean, but the reality was quite different. What historians describe by this name was in fact a shifting network of overland routes, caravan tracks and sea lanes that connected the civilisations of Asia, the Middle East and Europe over many centuries. Goods, people and ideas passed along these routes in both directions, and the network had no fixed course, changing according to politics, warfare and the fortunes of the towns that lay along it.</p><p>The name itself is misleading in another way, for it was coined only in the nineteenth century by a German geographer and was unknown to the traders who actually used the routes. Silk was certainly one of the most prized goods carried westward from China, where the secret of its manufacture was guarded for a long time, but it was far from the only commodity in circulation. Spices, precious stones, glassware, metals, horses and countless other items travelled the network, and few merchants covered the entire distance. Instead, goods typically passed through many hands, being bought and sold repeatedly as they moved from one region to the next.</p><p>Because the journeys were long and dangerous, merchants generally travelled together in caravans for safety, often using camels that were well suited to the arid conditions of Central Asia. Along the way, oasis towns grew wealthy by supplying food, water and lodging to passing traders, and some of these settlements developed into rich and cosmopolitan cities where people of many languages and faiths mingled. The prosperity of such towns depended heavily on the continued flow of trade, and they could decline sharply when the routes shifted or when conflict made travel unsafe.</p><p>Yet the lasting significance of the Silk Road lies less in the goods it carried than in the ideas that travelled with them. Religions spread along the routes, carried by merchants, missionaries and pilgrims. Buddhism, in particular, moved from its homeland in India into Central Asia and then into China, where it took root and profoundly shaped the culture. Other beliefs also travelled the network in various directions, and the towns along the way often contained communities practising several different religions side by side.</p><p>Technologies and inventions likewise moved between distant societies. Knowledge of papermaking, which had been developed in China, gradually spread westward, eventually reaching the Islamic world and later Europe, where it would transform record-keeping and learning. Artistic styles, musical instruments, agricultural crops and scientific ideas all crossed the same corridors, so that the influence of one civilisation could appear, in altered form, thousands of miles from its origin. In this sense the network functioned as a vast channel for cultural exchange rather than merely a trade route.</p><p>The movement of people also spread things that were far from welcome. Diseases could travel along the same routes as silk and spices, carried by traders and their animals from one population to another. Some historians argue that outbreaks of devastating epidemics were able to spread across continents partly because of the connections created by long-distance trade. The very links that allowed goods and ideas to flow so freely also exposed distant societies to shared dangers.</p><p>The importance of the overland routes gradually diminished in later centuries. As seafaring technology improved, sea routes became a more efficient way of moving bulky goods over long distances, and much of the trade that had once crossed the deserts of Central Asia shifted to the oceans. Political changes, including the fragmentation of the great empires that had once protected the caravan routes, further weakened the overland network. The oasis cities that had depended on passing trade often faded in importance as the traffic that had sustained them declined.</p><p>Today the Silk Road is remembered as a powerful symbol of connection between East and West. Modern scholars are careful to stress that it was never a single road, and that its greatest legacy was the meeting of cultures it made possible. Long before the age of global communication, the routes allowed distant peoples to exchange not only goods but also beliefs, skills and knowledge, weaving together civilisations that might otherwise have remained strangers to one another.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The Silk Road was a single fixed highway that never changed its course.",
+            "answer": "false",
+            "evidence": "What historians describe by this name was in fact a shifting network of overland routes, caravan tracks and sea lanes... the network had no fixed course, changing according to politics, warfare and the fortunes of the towns that lay along it."
+          },
+          {
+            "prompt_text": "The name 'Silk Road' was used by the merchants who originally travelled the routes.",
+            "answer": "false",
+            "evidence": "The name itself is misleading in another way, for it was coined only in the nineteenth century by a German geographer and was unknown to the traders who actually used the routes."
+          },
+          {
+            "prompt_text": "Most merchants travelled the entire length of the network themselves.",
+            "answer": "false",
+            "evidence": "few merchants covered the entire distance. Instead, goods typically passed through many hands, being bought and sold repeatedly as they moved from one region to the next."
+          },
+          {
+            "prompt_text": "Buddhism spread from India into Central Asia and then into China along the routes.",
+            "answer": "true",
+            "evidence": "Buddhism, in particular, moved from its homeland in India into Central Asia and then into China, where it took root and profoundly shaped the culture."
+          },
+          {
+            "prompt_text": "Camels were more expensive to keep than horses on the trade routes.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          },
+          {
+            "prompt_text": "Diseases could spread along the same routes as trade goods.",
+            "answer": "true",
+            "evidence": "Diseases could travel along the same routes as silk and spices, carried by traders and their animals from one population to another."
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Why did oasis towns along the routes become wealthy?",
+            "options": [
+              "because they produced silk themselves",
+              "because they supplied food, water and lodging to traders",
+              "because they controlled the manufacture of paper",
+              "because they were protected by large armies"
+            ],
+            "answer_index": 1,
+            "evidence": "oasis towns grew wealthy by supplying food, water and lodging to passing traders, and some of these settlements developed into rich and cosmopolitan cities."
+          },
+          {
+            "prompt_text": "According to the passage, what was the most lasting significance of the Silk Road?",
+            "options": [
+              "the goods it carried",
+              "the wealth of its cities",
+              "the ideas that travelled along it",
+              "the camels used by traders"
+            ],
+            "answer_index": 2,
+            "evidence": "Yet the lasting significance of the Silk Road lies less in the goods it carried than in the ideas that travelled with them."
+          },
+          {
+            "prompt_text": "Why did the importance of the overland routes decline in later centuries?",
+            "options": [
+              "because silk was no longer in demand",
+              "because the oasis towns refused to trade",
+              "because sea routes became a more efficient way to move goods",
+              "because papermaking was forgotten"
+            ],
+            "answer_index": 2,
+            "evidence": "As seafaring technology improved, sea routes became a more efficient way of moving bulky goods over long distances, and much of the trade that had once crossed the deserts of Central Asia shifted to the oceans."
+          },
+          {
+            "prompt_text": "How do modern scholars describe the greatest legacy of the Silk Road?",
+            "options": [
+              "the invention of new trade goods",
+              "the meeting of cultures it made possible",
+              "the building of permanent roads",
+              "the guarding of the secret of silk"
+            ],
+            "answer_index": 1,
+            "evidence": "Modern scholars are careful to stress that it was never a single road, and that its greatest legacy was the meeting of cultures it made possible."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which century was the name 'Silk Road' coined?",
+            "accepted": ["the nineteenth century", "nineteenth century", "nineteenth"],
+            "word_limit": 3,
+            "evidence": "it was coined only in the nineteenth century by a German geographer and was unknown to the traders who actually used the routes."
+          },
+          {
+            "prompt_text": "Which animals, well suited to arid conditions, were often used by caravans?",
+            "accepted": ["camels"],
+            "word_limit": 2,
+            "evidence": "often using camels that were well suited to the arid conditions of Central Asia."
+          },
+          {
+            "prompt_text": "Knowledge of making which material spread westward from China?",
+            "accepted": ["paper", "papermaking"],
+            "word_limit": 2,
+            "evidence": "Knowledge of papermaking, which had been developed in China, gradually spread westward, eventually reaching the Islamic world and later Europe."
+          },
+          {
+            "prompt_text": "What is the Silk Road remembered today as a powerful symbol of, between East and West?",
+            "accepted": ["connection"],
+            "word_limit": 2,
+            "evidence": "Today the Silk Road is remembered as a powerful symbol of connection between East and West."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Terracotta Army of the First Emperor",
+    "difficulty": "medium",
+    "topic_tags": ["archaeology", "history"],
+    "body_html": "<p>In the spring of 1974, farmers digging a well in the dry countryside of northern China struck fragments of hard-baked clay that turned out to be part of a life-sized human figure. The discovery led archaeologists to one of the most astonishing finds of the twentieth century: an enormous underground army of thousands of pottery soldiers, buried for more than two thousand years beside the tomb of China's first emperor. The site transformed understanding of the period and drew visitors from around the world.</p><p>The figures had been created to accompany Qin Shi Huang, the ruler who unified the warring states of China into a single empire in the third century BC and declared himself its first emperor. He was a man of immense ambition, responsible for standardising weights, measures and writing across his realm and for early work on what would later become the Great Wall. According to ancient accounts, he was also preoccupied with death and with the search for immortality, and he devoted vast resources to the construction of a tomb complex that would serve him in the afterlife.</p><p>The terracotta soldiers were a part of that complex, arranged in military formation in a series of underground pits a short distance from the burial mound itself. Estimates of their number run into the thousands, and they include not only infantry but also archers, cavalry and officers, along with horses and wooden chariots that have largely decayed. What has most amazed observers is the individuality of the figures: no two faces are exactly alike, and the soldiers vary in height, hairstyle and expression, so that the army gives an impression of a real body of men rather than a set of identical copies.</p><p>Producing so many distinct figures on this scale required an organised system of manufacture. Scholars believe that the bodies were made from separately moulded parts, such as legs, torsos and arms, which were then assembled and finished by hand, with individual features added afterwards. This combination of standardised components and hand-finishing allowed the workshops to achieve both mass production and variety. The figures were originally painted in bright colours, though most of this pigment has flaked away or faded after long exposure once the pits were opened.</p><p>The soldiers were also equipped with real weapons, including bronze swords, spearheads and crossbow mechanisms, many of which have survived in remarkable condition. The quality of the bronze work has impressed modern metallurgists, and some of the blades were found to be still sharp when excavated. These weapons show that the army was not intended merely as a decorative display but as a fully armed force meant to protect the emperor beyond death.</p><p>Despite decades of study, much of the wider tomb complex remains unexcavated, including the great burial mound believed to contain the emperor himself. Ancient writers described the interior of the tomb in vivid terms, claiming that it contained models of rivers and seas represented by flowing mercury and a ceiling decorated to resemble the heavens. Archaeologists have detected unusually high concentrations of mercury in the soil of the mound, a finding that appears to lend some support to these old descriptions, though the tomb chamber itself has not been opened.</p><p>Excavating the site presents serious difficulties. When the coloured surfaces of the figures are exposed to air, the paint can deteriorate rapidly, and specialists have been cautious about uncovering further areas until better methods of preservation are available. There is a widely shared reluctance to open the central tomb until it can be guaranteed that its contents would not be damaged in the process. As a result, a great deal of the complex has deliberately been left undisturbed for future generations with more advanced techniques.</p><p>The terracotta army has become one of the most celebrated archaeological sites in the world and a powerful symbol of ancient China. For historians it offers rich evidence about the military organisation, craftsmanship and beliefs of the Qin period, while for millions of visitors it provides a direct and moving encounter with the past. What began as the chance discovery of a few clay fragments in a farmer's field has proved to be a window onto the ambitions of a ruler who sought to command an empire even in death.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The terracotta army was discovered by farmers digging a well.",
+            "answer": "true",
+            "evidence": "In the spring of 1974, farmers digging a well in the dry countryside of northern China struck fragments of hard-baked clay that turned out to be part of a life-sized human figure."
+          },
+          {
+            "prompt_text": "Qin Shi Huang introduced standard weights, measures and writing across his empire.",
+            "answer": "true",
+            "evidence": "responsible for standardising weights, measures and writing across his realm and for early work on what would later become the Great Wall."
+          },
+          {
+            "prompt_text": "The clay figures all share exactly the same facial features.",
+            "answer": "false",
+            "evidence": "no two faces are exactly alike, and the soldiers vary in height, hairstyle and expression, so that the army gives an impression of a real body of men rather than a set of identical copies."
+          },
+          {
+            "prompt_text": "The bronze weapons found at the site were of poor quality.",
+            "answer": "false",
+            "evidence": "The quality of the bronze work has impressed modern metallurgists, and some of the blades were found to be still sharp when excavated."
+          },
+          {
+            "prompt_text": "The emperor's central burial mound has been fully excavated.",
+            "answer": "false",
+            "evidence": "much of the wider tomb complex remains unexcavated, including the great burial mound believed to contain the emperor himself."
+          },
+          {
+            "prompt_text": "The workshops that made the figures employed thousands of workers.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "Why were the terracotta soldiers created?",
+            "options": [
+              "to be sold to foreign rulers",
+              "to accompany and protect the emperor in the afterlife",
+              "to serve as a training model for the real army",
+              "to decorate the emperor's palace during his lifetime"
+            ],
+            "answer_index": 1,
+            "evidence": "an enormous underground army of thousands of pottery soldiers... created to accompany Qin Shi Huang... a fully armed force meant to protect the emperor beyond death."
+          },
+          {
+            "prompt_text": "How were the many distinct figures produced?",
+            "options": [
+              "each was carved individually from a single block of clay",
+              "they were cast entirely from bronze moulds",
+              "separately moulded parts were assembled and then finished by hand",
+              "they were imported ready-made from other regions"
+            ],
+            "answer_index": 2,
+            "evidence": "the bodies were made from separately moulded parts, such as legs, torsos and arms, which were then assembled and finished by hand, with individual features added afterwards."
+          },
+          {
+            "prompt_text": "What finding appears to support ancient descriptions of the tomb's interior?",
+            "options": [
+              "high concentrations of mercury in the soil of the mound",
+              "the discovery of flowing rivers beneath the pits",
+              "paintings of the heavens on the surviving figures",
+              "the presence of gold models of seas"
+            ],
+            "answer_index": 0,
+            "evidence": "Archaeologists have detected unusually high concentrations of mercury in the soil of the mound, a finding that appears to lend some support to these old descriptions."
+          },
+          {
+            "prompt_text": "Why have archaeologists been cautious about further excavation?",
+            "options": [
+              "because the site is too far from any city",
+              "because the exposed paint on the figures can deteriorate rapidly",
+              "because the weapons are too dangerous to handle",
+              "because the pits are in danger of flooding"
+            ],
+            "answer_index": 1,
+            "evidence": "When the coloured surfaces of the figures are exposed to air, the paint can deteriorate rapidly, and specialists have been cautious about uncovering further areas until better methods of preservation are available."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which year was the terracotta army discovered?",
+            "accepted": ["1974"],
+            "word_limit": 1,
+            "evidence": "In the spring of 1974, farmers digging a well in the dry countryside of northern China struck fragments of hard-baked clay."
+          },
+          {
+            "prompt_text": "What was the name of the first emperor whose tomb the army accompanied?",
+            "accepted": ["Qin Shi Huang"],
+            "word_limit": 3,
+            "evidence": "The figures had been created to accompany Qin Shi Huang, the ruler who unified the warring states of China into a single empire in the third century BC."
+          },
+          {
+            "prompt_text": "In what formation were the soldiers arranged in the underground pits?",
+            "accepted": ["military formation", "military"],
+            "word_limit": 2,
+            "evidence": "arranged in military formation in a series of underground pits a short distance from the burial mound itself."
+          },
+          {
+            "prompt_text": "What metal were the soldiers' swords and spearheads made from?",
+            "accepted": ["bronze"],
+            "word_limit": 1,
+            "evidence": "The soldiers were also equipped with real weapons, including bronze swords, spearheads and crossbow mechanisms."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Cave Paintings of Lascaux",
+    "difficulty": "medium",
+    "topic_tags": ["archaeology", "art"],
+    "body_html": "<p>In September 1940, four teenage boys exploring the wooded hills of south-western France stumbled upon a narrow opening in the ground. Squeezing down into the darkness, they found themselves in a series of underground chambers whose walls were covered with paintings of animals. The boys had discovered the cave of Lascaux, home to some of the finest examples of prehistoric art ever found, created by people living many thousands of years before the invention of writing.</p><p>The paintings at Lascaux are extremely old, dating from a period of the last ice age. They depict a vivid procession of creatures familiar to the hunters of the time: large wild cattle, horses, deer and other animals stride and gallop across the rock. The artists made use of the natural bumps and hollows of the cave walls to give their figures a sense of volume and movement, so that the animals seem almost to surge out of the stone. The scale of some of the images is striking, with certain bulls measuring several metres in length.</p><p>To create these works, the prehistoric painters relied on materials available in their environment. They ground natural minerals to produce pigments, using iron-rich earths for reds and yellows and manganese or charcoal for black. These powders could be mixed and applied to the walls with the fingers, with pads of moss or fur, or by blowing the pigment through hollow tubes to produce a sprayed effect. Because the deeper chambers received no daylight, the artists must have worked by the flickering light of lamps that burned animal fat, examples of which have been found at similar sites.</p><p>The meaning of the paintings remains one of the great puzzles of prehistory. It is notable that the images are overwhelmingly of animals, while depictions of human beings are rare and, where they occur, are often crude by comparison. Scenes of plants or landscapes are almost entirely absent. Many theories have been proposed to explain why ice-age people went to such trouble to decorate deep and inaccessible caverns. Some scholars have suggested that the paintings were connected with hunting, perhaps intended to bring success in the chase; others have linked them to religious or magical rituals, or to the passing on of knowledge between generations. No single explanation has won universal acceptance, and it is possible that the images served more than one purpose.</p><p>What is clear is that the location of the paintings was deliberate. Many of the finest images are found deep inside the cave system rather than near the entrance, in places that would have been difficult and even dangerous to reach. This suggests that the chambers were not ordinary living spaces but sites reserved for special activity. The effort involved in reaching them, carrying materials and lighting the darkness points to the importance that these images must have held for the community that made them.</p><p>After its discovery, Lascaux quickly became famous, and in the years that followed the cave was opened to the public. Visitors arrived in large numbers to marvel at the paintings, but their presence brought unforeseen problems. The breath of the crowds raised the levels of carbon dioxide and humidity inside the cave, and before long algae and mineral deposits began to appear on the painted surfaces, threatening the very art that people had come to see. The delicate balance that had preserved the images for so long was being disturbed.</p><p>Faced with this deterioration, the authorities took the difficult decision to close the original cave to the general public in order to protect the paintings. To satisfy the continuing interest of visitors, a detailed replica of the most important chambers was later constructed nearby, reproducing the paintings with great care. This copy allows people to experience something of the wonder of Lascaux without endangering the fragile originals, which remain under close scientific supervision.</p><p>The cave of Lascaux stands as a powerful reminder that the impulse to create art is extraordinarily ancient. Long before cities, farming or writing, people gathered in the depths of the earth to paint the animals that filled their world, leaving behind images of such skill and vitality that they continue to move those who see them today. Whatever their original purpose, the paintings speak across an immense gulf of time, connecting the modern viewer with the imagination of the distant human past.</p>",
+    "groups": [
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "The paintings at Lascaux were created before writing had been invented.",
+            "answer": "yes",
+            "evidence": "created by people living many thousands of years before the invention of writing."
+          },
+          {
+            "prompt_text": "The artists ignored the natural shape of the cave walls when painting the animals.",
+            "answer": "no",
+            "evidence": "The artists made use of the natural bumps and hollows of the cave walls to give their figures a sense of volume and movement."
+          },
+          {
+            "prompt_text": "Human figures appear more frequently in the paintings than animals do.",
+            "answer": "no",
+            "evidence": "It is notable that the images are overwhelmingly of animals, while depictions of human beings are rare."
+          },
+          {
+            "prompt_text": "A single accepted explanation has been found for why the paintings were made.",
+            "answer": "no",
+            "evidence": "No single explanation has won universal acceptance, and it is possible that the images served more than one purpose."
+          },
+          {
+            "prompt_text": "The teenage boys who found the cave later became professional archaeologists.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "How did the painters produce the colours they used?",
+            "options": [
+              "by importing dyes from distant regions",
+              "by grinding natural minerals into pigments",
+              "by mixing coloured sand with water",
+              "by using the juices of plants and berries"
+            ],
+            "answer_index": 1,
+            "evidence": "They ground natural minerals to produce pigments, using iron-rich earths for reds and yellows and manganese or charcoal for black."
+          },
+          {
+            "prompt_text": "How must the artists have lit the deeper chambers?",
+            "options": [
+              "by the light of lamps that burned animal fat",
+              "by reflecting daylight with polished stones",
+              "by lighting large fires inside the cave",
+              "by working only near the entrance"
+            ],
+            "answer_index": 0,
+            "evidence": "the artists must have worked by the flickering light of lamps that burned animal fat, examples of which have been found at similar sites."
+          },
+          {
+            "prompt_text": "What does the location of the finest paintings suggest?",
+            "options": [
+              "that the caves were ordinary living quarters",
+              "that the artists wanted them to be easily seen",
+              "that the chambers were reserved for special activity",
+              "that the paintings were made in a great hurry"
+            ],
+            "answer_index": 2,
+            "evidence": "This suggests that the chambers were not ordinary living spaces but sites reserved for special activity."
+          },
+          {
+            "prompt_text": "Why was the original cave eventually closed to the general public?",
+            "options": [
+              "because the paintings had already faded away completely",
+              "because visitors' breath was damaging the painted surfaces",
+              "because the entrance had become too dangerous",
+              "because a better cave had been discovered nearby"
+            ],
+            "answer_index": 1,
+            "evidence": "The breath of the crowds raised the levels of carbon dioxide and humidity inside the cave, and before long algae and mineral deposits began to appear on the painted surfaces."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "In which country is the cave of Lascaux located?",
+            "accepted": ["France"],
+            "word_limit": 2,
+            "evidence": "four teenage boys exploring the wooded hills of south-western France stumbled upon a narrow opening in the ground."
+          },
+          {
+            "prompt_text": "During which major geological period were the paintings made?",
+            "accepted": ["ice age", "the ice age", "the last ice age"],
+            "word_limit": 3,
+            "evidence": "They depict a vivid procession of creatures... dating from a period of the last ice age."
+          },
+          {
+            "prompt_text": "What black-coloured materials were used, besides manganese, to make pigment?",
+            "accepted": ["charcoal"],
+            "word_limit": 1,
+            "evidence": "using iron-rich earths for reds and yellows and manganese or charcoal for black."
+          },
+          {
+            "prompt_text": "What was built nearby to allow visitors to see the paintings safely?",
+            "accepted": ["a replica", "replica", "a detailed replica"],
+            "word_limit": 3,
+            "evidence": "a detailed replica of the most important chambers was later constructed nearby, reproducing the paintings with great care."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Standardisation of Time Zones",
+    "difficulty": "medium",
+    "topic_tags": ["history", "geography"],
+    "body_html": "<p>Today we take for granted that the time shown on a clock in one city bears a fixed and predictable relationship to the time in another. Yet for most of human history there was no such system. Each town simply set its clocks by the sun, so that noon was the moment the sun stood highest in the local sky. Because the sun reaches this point at slightly different moments as one travels east or west, neighbouring towns kept times that differed by a few minutes, and no one regarded this as a problem.</p><p>This patchwork of local times worked well enough as long as travel and communication were slow. A traveller journeying by horse or on foot moved so gradually that the small differences between one town and the next were of no consequence. The situation began to change dramatically with the coming of the railway. Trains could carry people across long distances at speeds that had never before been possible, and suddenly the multitude of local times became a serious source of confusion.</p><p>The difficulty was especially acute for the railway companies themselves, which needed to publish timetables and to run trains safely on shared tracks. If every station along a line kept its own slightly different time, drawing up a coherent schedule became a nightmare, and the risk of collisions was real. In response, railway operators began to adopt a single standard time along their lines, regardless of the varying local times of the towns they served. In Britain, this railway time gradually spread until it was accepted across the whole country.</p><p>In larger nations the problem was greater still, because the distances involved meant that the difference between local times in the east and the west could amount to hours rather than minutes. The many separate railway companies operating across such territories used a bewildering variety of time standards, and a single journey might cross several of them. Passengers and station staff struggled to make sense of the resulting confusion, and pressure grew for a more rational arrangement.</p><p>The solution that eventually emerged was to divide the world into a series of broad zones, within each of which the same standard time would be kept. These zones were conceived as bands running roughly north to south, spaced so that the time changed by one hour from one zone to the next. This meant that clocks within a zone would no longer show the exact local solar time everywhere, but the small discrepancy was a price worth paying for the enormous convenience of a shared, predictable system.</p><p>A crucial requirement for any such system was an agreed starting point from which the zones could be measured. In the 1880s an international conference was held to address this and related questions. After much discussion, the delegates agreed to adopt the meridian passing through the observatory at Greenwich, near London, as the prime meridian, the line of zero longitude from which the zones would be counted. Not every country accepted the decision immediately, and some continued to use their own arrangements for years afterwards, but over time the Greenwich-based system became the international standard.</p><p>The adoption of standard time zones did not please everyone. Some people objected that clocks would no longer tell the 'true' time given by the sun, and there was a lingering attachment to the old local times in various places. Yet the practical advantages were overwhelming. As telegraph lines, railways and later other forms of communication tied distant regions ever more closely together, the ability to coordinate activities across great distances became indispensable, and this depended on everyone agreeing what time it was.</p><p>The system of time zones we use today is the direct descendant of these nineteenth-century reforms. Later refinements, including the adjustment of zone boundaries to follow political frontiers and the introduction of seasonal clock changes in many countries, have added complications, but the underlying principle remains the same. A message sent by telegraph could cross a continent in moments, and without a shared framework of time the senders and receivers could not easily agree when it had been dispatched or when a reply might be expected. What began as a practical response to the confusion caused by the railways has become one of the invisible frameworks that make modern global life possible, a shared grid of time laid across the whole surface of the planet.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          {
+            "prompt_text": "For most of history, towns set their clocks according to the position of the sun.",
+            "answer": "true",
+            "evidence": "Each town simply set its clocks by the sun, so that noon was the moment the sun stood highest in the local sky."
+          },
+          {
+            "prompt_text": "The differences between local times caused serious problems for travellers on foot or on horseback.",
+            "answer": "false",
+            "evidence": "A traveller journeying by horse or on foot moved so gradually that the small differences between one town and the next were of no consequence."
+          },
+          {
+            "prompt_text": "Railway companies needed a standard time in order to publish timetables and run trains safely.",
+            "answer": "true",
+            "evidence": "which needed to publish timetables and to run trains safely on shared tracks... railway operators began to adopt a single standard time along their lines."
+          },
+          {
+            "prompt_text": "Every country accepted the Greenwich meridian as soon as the conference had agreed on it.",
+            "answer": "false",
+            "evidence": "Not every country accepted the decision immediately, and some continued to use their own arrangements for years afterwards."
+          },
+          {
+            "prompt_text": "The introduction of standard time zones was welcomed by absolutely everyone.",
+            "answer": "false",
+            "evidence": "The adoption of standard time zones did not please everyone. Some people objected that clocks would no longer tell the 'true' time given by the sun."
+          },
+          {
+            "prompt_text": "The first railway to adopt a standard time was located in Britain.",
+            "answer": "not given",
+            "evidence": "ABSENT: not stated or contradicted"
+          }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Choose the correct letter, A, B, C or D.",
+        "questions": [
+          {
+            "prompt_text": "What invention mainly created the need for standard time?",
+            "options": [
+              "the telegraph",
+              "the railway",
+              "the mechanical clock",
+              "the printing press"
+            ],
+            "answer_index": 1,
+            "evidence": "The situation began to change dramatically with the coming of the railway. Trains could carry people across long distances at speeds that had never before been possible."
+          },
+          {
+            "prompt_text": "How were the time zones conceived?",
+            "options": [
+              "as bands running roughly north to south",
+              "as circles centred on major cities",
+              "as regions following the coastlines",
+              "as squares of equal area"
+            ],
+            "answer_index": 0,
+            "evidence": "These zones were conceived as bands running roughly north to south, spaced so that the time changed by one hour from one zone to the next."
+          },
+          {
+            "prompt_text": "What did the international conference of the 1880s decide to adopt?",
+            "options": [
+              "a single world clock kept in one city",
+              "the meridian through Greenwich as the prime meridian",
+              "the abolition of all local times immediately",
+              "a system based on the position of the moon"
+            ],
+            "answer_index": 1,
+            "evidence": "the delegates agreed to adopt the meridian passing through the observatory at Greenwich, near London, as the prime meridian, the line of zero longitude from which the zones would be counted."
+          },
+          {
+            "prompt_text": "Why did the practical advantages of standard time outweigh the objections?",
+            "options": [
+              "because the sun's position had become impossible to observe",
+              "because clocks had become more accurate",
+              "because coordinating activities across great distances had become indispensable",
+              "because people no longer travelled by railway"
+            ],
+            "answer_index": 2,
+            "evidence": "the ability to coordinate activities across great distances became indispensable, and this depended on everyone agreeing what time it was."
+          }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          {
+            "prompt_text": "By how much does the time change from one zone to the next?",
+            "accepted": ["one hour", "an hour"],
+            "word_limit": 2,
+            "evidence": "spaced so that the time changed by one hour from one zone to the next."
+          },
+          {
+            "prompt_text": "Near which city is the observatory whose meridian was chosen as zero longitude?",
+            "accepted": ["London"],
+            "word_limit": 2,
+            "evidence": "the meridian passing through the observatory at Greenwich, near London, as the prime meridian."
+          },
+          {
+            "prompt_text": "What is the line of zero longitude called?",
+            "accepted": ["the prime meridian", "prime meridian"],
+            "word_limit": 3,
+            "evidence": "as the prime meridian, the line of zero longitude from which the zones would be counted."
+          },
+          {
+            "prompt_text": "What seasonal practice, introduced in many countries, has added complications to the system?",
+            "accepted": ["seasonal clock changes", "clock changes", "seasonal clock change"],
+            "word_limit": 3,
+            "evidence": "the introduction of seasonal clock changes in many countries, have added complications."
+          }
+        ]
+      }
+    ]
+  }
+]

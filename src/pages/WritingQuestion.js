@@ -8,9 +8,41 @@ import { Progress } from '../../components/ui/progress';
 import { cn } from '../lib/utils';
 
 const SITE_URL = 'https://ielts-bank.com';
-const SCORE_ENDPOINT = 'https://wamm2ytjk5.execute-api.us-east-1.amazonaws.com/IELTSWritingBot';
+const SCORE_API = '/api/score/writing';
 const PROMPT_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
+
+// Strip HTML tags from the site's prompt markup to send plain text to the
+// scorer (the model does not need the markup, and this keeps the payload lean).
+function htmlToText(html) {
+  if (!html) return '';
+  if (typeof window !== 'undefined' && window.DOMParser) {
+    try {
+      const doc = new window.DOMParser().parseFromString(html, 'text/html');
+      return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+    } catch {
+      /* fall through */
+    }
+  }
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Criterion metadata: key in the API response -> display label.
+const TASK2_CRITERIA = [
+  ['taskResponse', 'Task Response'],
+  ['coherenceCohesion', 'Coherence & Cohesion'],
+  ['lexicalResource', 'Lexical Resource'],
+  ['grammaticalRange', 'Grammatical Range & Accuracy'],
+];
+const TASK1_CRITERIA = [
+  ['taskAchievement', 'Task Achievement'],
+  ['coherenceCohesion', 'Coherence & Cohesion'],
+  ['lexicalResource', 'Lexical Resource'],
+  ['grammaticalRange', 'Grammatical Range & Accuracy'],
+];
 
 function Modal({ open, onClose, title, children, dismissible = true }) {
   if (!open) return null;
@@ -40,14 +72,131 @@ function Modal({ open, onClose, title, children, dismissible = true }) {
   );
 }
 
+function formatBand(band) {
+  return typeof band === 'number' ? band.toFixed(1) : '—';
+}
+
+function bandTone(band) {
+  if (typeof band !== 'number') return 'bg-secondary text-secondary-foreground';
+  if (band >= 7) return 'bg-accent text-accent-foreground';
+  if (band >= 5.5) return 'bg-primary text-primary-foreground';
+  return 'bg-destructive text-destructive-foreground';
+}
+
+function BandPill({ band, className }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex min-w-[2.75rem] items-center justify-center rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums',
+        bandTone(band),
+        className
+      )}
+    >
+      {formatBand(band)}
+    </span>
+  );
+}
+
+function ScoreReport({ task, result }) {
+  const criteriaMeta = task === 1 ? TASK1_CRITERIA : TASK2_CRITERIA;
+  const criteria = result.criteria || {};
+  const improvements = Array.isArray(result.improvements) ? result.improvements : [];
+  const corrected = Array.isArray(result.correctedExamples)
+    ? result.correctedExamples
+    : [];
+
+  return (
+    <div className="space-y-5">
+      {/* Overall band */}
+      <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-5 py-4">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Overall Band
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Writing Task {task}
+            {result.wordCount ? ` · ${result.wordCount} words` : ''}
+          </div>
+        </div>
+        <span
+          className={cn(
+            'inline-flex h-14 w-14 items-center justify-center rounded-full text-2xl font-extrabold tabular-nums',
+            bandTone(result.overallBand)
+          )}
+        >
+          {formatBand(result.overallBand)}
+        </span>
+      </div>
+
+      {/* Per-criterion cards */}
+      <div className="space-y-3">
+        {criteriaMeta.map(([key, label]) => {
+          const c = criteria[key] || {};
+          return (
+            <div key={key} className="rounded-lg border border-border bg-card p-4">
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-bold text-foreground">{label}</h3>
+                <BandPill band={c.band} />
+              </div>
+              {c.feedback && (
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {c.feedback}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Summary */}
+      {result.summary && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="mb-1.5 text-sm font-bold text-foreground">Examiner Summary</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
+        </div>
+      )}
+
+      {/* Improvements */}
+      {improvements.length > 0 && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="mb-2 text-sm font-bold text-foreground">How to Improve</h3>
+          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+            {improvements.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Corrected examples */}
+      {corrected.length > 0 && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="mb-2 text-sm font-bold text-foreground">Corrected Examples</h3>
+          <div className="space-y-3">
+            {corrected.map((ex, i) => (
+              <div key={i} className="rounded-md border border-border/70 bg-secondary/30 p-3">
+                <p className="text-sm text-destructive line-through decoration-destructive/50">
+                  {ex.original}
+                </p>
+                <p className="mt-1 text-sm font-medium text-accent">{ex.suggestion}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const WritingQuestion = ({ id: docId, passage, description }) => {
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
   const title = passage?.title || '';
-  const minWords = passage?.writing?.wordLimitMin || 250;
+  const task = passage?.writing?.task === 1 ? 1 : 2;
+  const minWords = passage?.writing?.wordLimitMin || (task === 1 ? 150 : 250);
   const storageKey = passage?.slug || docId;
 
   const [userResponse, setUserResponse] = useState('');
-  const [apiResponse, setApiResponse] = useState('');
+  const [result, setResult] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -102,21 +251,39 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(SCORE_ENDPOINT, {
+      const response = await fetch(SCORE_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: promptHtml, answer: userResponse }),
+        body: JSON.stringify({
+          prompt: htmlToText(promptHtml),
+          essay: userResponse,
+          task,
+        }),
       });
-      if (response.ok) {
-        const data = await response.json();
-        setApiResponse(data.message || '');
+
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        /* non-JSON error body */
+      }
+
+      if (response.ok && data) {
+        setResult(data);
         setFeedbackOpen(true);
         confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 });
+      } else if (response.status === 429) {
+        setErrorMsg(
+          (data && data.error) ||
+            'You have reached the scoring limit. Please try again later.'
+        );
       } else {
-        setErrorMsg('Failed to score the answer. Please try again.');
+        setErrorMsg(
+          (data && data.error) || 'Failed to score your answer. Please try again.'
+        );
       }
     } catch {
-      setErrorMsg('An error occurred. Please try again.');
+      setErrorMsg('A network error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +296,9 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
     description ||
     `AI-powered IELTS grading for your writing. Practise with a real IELTS question like: '${title}'.`;
   const canonicalUrl = `${SITE_URL}/writingquestion/${encodeURIComponent(docId || '')}`;
+  const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
+    title || 'IELTS Writing Practice'
+  )}&type=writing&subtitle=${encodeURIComponent(`Task ${task}`)}`;
 
   if (!passage) {
     return (
@@ -152,8 +322,14 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={`IELTS Writing Task ${task} practice: ${title}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
       </Head>
 
       <div className="tw-root min-h-screen bg-background">
@@ -219,13 +395,14 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
         </main>
       </div>
 
-      {/* Feedback modal */}
-      <Modal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} title="Your AI Feedback & Score">
-        <div
-          className="text-sm leading-relaxed text-foreground [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:font-bold [&_p]:mb-3 [&_strong]:font-semibold"
-          dangerouslySetInnerHTML={{ __html: apiResponse }}
-        />
-        <div className="mt-4 flex justify-end">
+      {/* Feedback modal — structured, plain-text render (no HTML injection) */}
+      <Modal
+        open={feedbackOpen && !!result}
+        onClose={() => setFeedbackOpen(false)}
+        title="Your AI Feedback & Score"
+      >
+        {result && <ScoreReport task={task} result={result} />}
+        <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>
       </Modal>

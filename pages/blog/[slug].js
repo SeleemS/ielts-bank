@@ -25,6 +25,9 @@ const PROSE = [
 
 export default function BlogPost({ post }) {
   const canonical = `${SITE_URL}/blog/${post.slug}`;
+  const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
+    post.title
+  )}&type=blog&subtitle=${encodeURIComponent("IELTS Blog")}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -61,10 +64,16 @@ export default function BlogPost({ post }) {
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:url" content={canonical} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={`IELTS-Bank Blog — ${post.title}`} />
 
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
+        <meta name="twitter:image" content={ogImage} />
 
         <script
           type="application/ld+json"

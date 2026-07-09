@@ -59,13 +59,53 @@ const ReadingQuestion = ({ id, passage, description }) => {
     );
   }
 
-  const { title, bodyHtml, groups, difficulty, slug } = passage;
+  const { title, bodyHtml, groups, difficulty, slug, legacyId } = passage;
   const pageTitle = title
     ? `${title} | IELTS Reading Practice | IELTS-Bank`
     : 'IELTS Reading Practice | IELTS-Bank';
   const metaDescription =
     description || `Read and answer IELTS Reading questions for the passage: ${title}.`;
-  const canonicalUrl = `${SITE_URL}/readingquestion/${encodeURIComponent(id || '')}`;
+  // Canonicalise to the SAME URL the sitemap emits: the legacy Firestore id when
+  // one exists (already-indexed URLs), otherwise the slug. Both URLs pre-render,
+  // so a single stable canonical prevents duplicate-content indexing.
+  const canonicalId = legacyId || slug || id || '';
+  const canonicalUrl = `${SITE_URL}/readingquestion/${encodeURIComponent(canonicalId)}`;
+  const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
+    title || 'IELTS Reading Practice'
+  )}&type=reading${difficulty ? `&subtitle=${encodeURIComponent(difficulty)}` : ''}`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'LearningResource',
+        '@id': `${canonicalUrl}#resource`,
+        name: title,
+        description: metaDescription,
+        url: canonicalUrl,
+        learningResourceType: 'IELTS Reading practice test',
+        educationalUse: 'IELTS exam preparation',
+        educationalLevel: difficulty || 'Intermediate to Advanced',
+        inLanguage: 'en',
+        isAccessibleForFree: true,
+        teaches: 'IELTS Academic and General Reading skills',
+        about: { '@type': 'Thing', name: 'IELTS Reading' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'IELTS Reading',
+            item: `${SITE_URL}/readingquestion`,
+          },
+          { '@type': 'ListItem', position: 3, name: title, item: canonicalUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <>
@@ -82,8 +122,18 @@ const ReadingQuestion = ({ id, passage, description }) => {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content={`${SITE_URL}/logo512.png`} />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={`IELTS Reading practice: ${title}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </Head>
 
       <div className="tw-root min-h-screen bg-background">

@@ -1,0 +1,162 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Design of the Everyday Chair",
+    "difficulty": "medium",
+    "topic_tags": ["design", "innovation", "history"],
+    "body_html": "<p><strong>A</strong> A chair is one of the most ordinary objects in the world, and one of the most quietly difficult to design well. Its task sounds simple: to hold a seated human body comfortably for as long as that body wishes to remain there. In practice this means supporting an uneven, shifting weight, coping with people of wildly different shapes and sizes, and doing so without collapsing, without costing too much and, ideally, while looking attractive. Few everyday things ask their makers to reconcile so many competing demands at once, which is why the chair has occupied designers for centuries. Get any of these wrong and the failure is immediate and personal: a chair that is too hard grows painful within minutes, one that is too soft leaves the sitter slumped, and one that is poorly balanced can tip its occupant onto the floor.</p><p><strong>B</strong> For most of history the chair was not ordinary at all. In many societies ordinary people sat on the floor, on mats, on low stools or on shared benches, while a chair with a back and arms was reserved for those of high rank. To sit in a chair while others stood or crouched was to display authority, and a trace of this old meaning survives in our language: the person who leads a meeting is still called the chair or chairman, and the seat of a king is a throne, the grandest chair of all. In grand houses a single fine chair might be reserved for the master or an honoured guest, while everyone else made do with whatever was to hand, so that simply being offered a chair was a courtesy heavy with meaning.</p><p><strong>C</strong> When designers try to make a chair fit the body, they enter the field of ergonomics. A well-made seat supports the natural curve of the lower back, spreads the sitter's weight so that no single part is under too much pressure, and places the feet and arms at comfortable angles. Because human bodies vary so much, many modern office chairs are adjustable, allowing the height, the back and the arms to be moved until the chair fits its particular owner rather than forcing the owner to fit the chair. The stakes are high, because so many people now spend their working lives seated. A chair that quietly forces the spine into an awkward curve, hour after hour and day after day, can contribute to lasting aches and injuries, and the study of how to prevent this has grown into a serious field of its own.</p><p><strong>D</strong> A turning point in the story of the chair came in 1859, when the German-Austrian maker Michael Thonet produced his Model No. 14. Instead of being carved by hand from solid timber, it was built from a small number of lengths of beech that had been bent into graceful curves using steam. The design used so few parts that the chairs could be packed unassembled into a crate, shipped cheaply across the world and screwed together on arrival. Simple, light and inexpensive, the No. 14 sold in the tens of millions and brought the chair within reach of almost everyone. Versions of the design are still made today, more than a century and a half later, and its light, curving shape can be seen in cafes around the world, a quiet monument to the idea that good design need not be costly.</p><p><strong>E</strong> In the twentieth century the chair became a playground for ambitious designers. New materials, including tubular steel, moulded plywood and later plastic, allowed shapes that solid wood could never achieve; designers such as Marcel Breuer, who bent tubular steel, and Charles and Ray Eames, who moulded plywood and plastic, turned the seat into a canvas. Some of these creations were prized as much for their sculptural beauty as for their comfort, appearing in galleries and photographs as statements about how modern life should look. The chair had become, among other things, a work of art. A single celebrated chair could be reproduced in its thousands and yet still carry the name of its designer, and museums began to collect chairs much as they collected paintings or sculpture.</p><p><strong>F</strong> More recently, attention has turned to a problem the chair itself may create. Research suggests that sitting still for long stretches, however well supported, is bad for human health, and that the body benefits from frequent movement. Designers have responded with seats that encourage small shifts of posture, with desks that can be raised so that people work standing up, and with a general reminder that the healthiest chair may be the one a person does not stay in for too long. The humble seat, it seems, is still being reinvented. The newest thinking treats a chair less as a fixed resting place than as one posture among many, to be left as readily as it is taken up.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "The chair as a mark of power" },
+          { "key": "ii", "text": "Fitting furniture to the human body" },
+          { "key": "iii", "text": "A breakthrough in making chairs affordable" },
+          { "key": "iv", "text": "When sitting still becomes a health problem" },
+          { "key": "v", "text": "An everyday object that is harder to design than it looks" },
+          { "key": "vi", "text": "The chair as a work of art and a statement" },
+          { "key": "vii", "text": "Traditional methods of joining wood" },
+          { "key": "viii", "text": "The rising cost of raw materials" },
+          { "key": "ix", "text": "Chairs designed especially for children" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["vi"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["iv"] }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 7-12. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>For most of history, a chair signalled the <strong>(7)&nbsp;______</strong> of the person sitting in it, which is why the leader of a meeting is still called the <strong>(8)&nbsp;______</strong>. Ordinary people more often used benches or low <strong>(9)&nbsp;______</strong>. A key change came in 1859 with Thonet's Model No. 14, made of only a few pieces of <strong>(10)&nbsp;______</strong> bent with steam; because it could be shipped <strong>(11)&nbsp;______</strong> and put together later, it was very cheap. Today, designers know that sitting for long <strong>(12)&nbsp;______</strong> can be bad for health.</p>",
+        "questions": [
+          { "prompt_text": "Gap 7", "accepted": ["authority", "status", "rank", "power"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["chairman", "chair"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["stools"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["beech", "wood"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 11", "accepted": ["unassembled", "flat", "disassembled"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 12", "accepted": ["stretches", "periods"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Question 13. Choose TWO letters, A-E.",
+        "options": [
+          { "key": "A", "text": "It was built from very few parts." },
+          { "key": "B", "text": "It could be shipped unassembled and put together later." },
+          { "key": "C", "text": "It was carved by hand from solid timber." },
+          { "key": "D", "text": "It was made from a rare imported hardwood." },
+          { "key": "E", "text": "It was sold only to wealthy customers." }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO features helped make the Thonet No. 14 cheap? Choose TWO letters.", "correct_option_keys": ["A", "B"] }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Bridges Stand Up",
+    "difficulty": "medium",
+    "topic_tags": ["design", "engineering", "innovation"],
+    "body_html": "<p>A bridge is a structure with a single stubborn purpose: to carry a load across a gap without falling into it. Everything about its design follows from the way it manages two opposing forces. When part of a structure is squeezed, it is said to be in compression; when it is stretched, it is in tension. Some materials, such as stone and brick, are excellent at resisting compression but weak in tension, while others, such as steel cable, are superb in tension. The art of the bridge builder lies in arranging materials so that each is used for the kind of force it handles best. A good design, in the end, is one in which nothing is asked to do a job it is unsuited for, and much of the history of bridges is the story of engineers learning this lesson, sometimes at great cost.</p><p>The simplest bridge of all is the beam, a flat deck laid across two supports, as when a plank is thrown over a stream. Under a load the top of the beam is compressed while its underside is stretched, and if the gap grows too wide the beam sags and eventually breaks under its own weight. For this reason beam bridges are cheap and easy but suited only to relatively short spans. To cross wider gaps, engineers have had to be more inventive. Even so, the humble beam remains by far the most common bridge in the world, carrying countless roads over rivers, valleys and other roads wherever the gap to be crossed is modest.</p><p>The arch offered an elegant answer, and it was used to spectacular effect by the Romans, whose stone arches still stand across Europe two thousand years later. In an arch the weight of the load is carried mainly in compression, travelling down the curve and pushing outwards on solid supports at either end. Because stone is so strong in compression, an arch can bear enormous loads and endure for centuries, which is why so many ancient examples survive. Its weakness is that it needs firm ground or heavy abutments to resist the outward push. The Romans grasped this instinctively, building their arches on solid foundations and repeating them in long rows of identical spans to carry roads and water across wide valleys, and the survival of so many of these structures is a lasting tribute to the strength of the form.</p><p>For the very longest spans, the suspension bridge is unrivalled. Here the deck hangs from cables that sweep between tall towers and are anchored firmly at each end. The cables are held under great tension, doing exactly the work that steel does best, while the towers carry the whole weight down in compression. Famous examples such as the Golden Gate Bridge, and later the record-breaking Akashi Kaikyo Bridge in Japan, cross distances that no beam or arch could ever hope to manage. The price of this reach is complexity and cost, for the towers must be sunk deep, the cables spun from many thousands of steel wires, and the anchorages built massive enough to hold the whole structure in tension for a century or more.</p><p>Yet strength against gravity is not the only danger a bridge must face. In 1940 the newly built Tacoma Narrows Bridge in the United States began to twist and heave in a moderate wind, its long, slender deck rippling like a ribbon until it tore itself apart and fell into the water below. No vehicle overloaded it; the wind alone had set it swaying. The disaster taught engineers that a bridge must be designed to resist the forces of moving air as carefully as those of any load, and the study of how wind flows around structures has been central to bridge design ever since. Today the decks of long bridges are shaped in wind tunnels and tested against gusts long before any steel is cut, and some carry special devices designed to damp out dangerous swaying before it can build.</p><p>Behind all these forms lies the long story of materials. The Romans had only stone and timber; the eighteenth and nineteenth centuries brought first cast iron and then wrought iron; and the modern age is built above all on steel and on reinforced concrete, in which steel bars lend tension-resisting strength to concrete that is otherwise strong only in compression. Each new material, lighter and stronger than the last, has allowed engineers to throw their bridges across ever greater gaps, for the ambition to span the longest distances always demands materials that are at once strong and light. Each advance in materials has therefore opened the way to a new generation of longer and bolder bridges, and engineers continue to experiment with fresh alloys and composites in the endless effort to span a little further still.</p>",
+    "groups": [
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 1-5. Complete each sentence with the correct ending, A-H, from the box below.",
+        "options": [
+          { "key": "A", "text": "mainly in compression, pushing outwards on its supports." },
+          { "key": "B", "text": "is suited only to relatively short distances." },
+          { "key": "C", "text": "under tension, stretched tight between tall towers." },
+          { "key": "D", "text": "that wind alone could set a bridge dangerously swaying." },
+          { "key": "E", "text": "both strong and light in weight." },
+          { "key": "F", "text": "because stone was always cheaper than steel." },
+          { "key": "G", "text": "that bridges should never be built across water." },
+          { "key": "H", "text": "to shelter travellers from the rain." }
+        ],
+        "questions": [
+          { "prompt_text": "A beam bridge is cheap and simple but", "correct_option_keys": ["B"] },
+          { "prompt_text": "In an arch bridge the load is carried", "correct_option_keys": ["A"] },
+          { "prompt_text": "In a suspension bridge the deck hangs from cables held", "correct_option_keys": ["C"] },
+          { "prompt_text": "The collapse of the Tacoma Narrows Bridge showed", "correct_option_keys": ["D"] },
+          { "prompt_text": "To span the greatest distances, engineers need materials that are", "correct_option_keys": ["E"] }
+        ]
+      },
+      {
+        "question_type": "table_completion",
+        "prompt": "Questions 6-10. Complete the table below.",
+        "instructions_html": "<p>Complete the table using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><table><thead><tr><th>Feature</th><th>Detail</th></tr></thead><tbody><tr><td>Beam bridge</td><td>A flat deck on supports; good only for <strong>(6)&nbsp;______</strong> spans.</td></tr><tr><td>Arch bridge</td><td>Carries the load mainly in <strong>(7)&nbsp;______</strong>.</td></tr><tr><td>Suspension bridge</td><td>The deck hangs from cables held up by tall <strong>(8)&nbsp;______</strong>.</td></tr><tr><td>Materials</td><td>After iron, bridges were increasingly built from <strong>(9)&nbsp;______</strong>.</td></tr><tr><td>Tacoma Narrows</td><td>The bridge was destroyed by the <strong>(10)&nbsp;______</strong>.</td></tr></tbody></table>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["short"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["compression"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["towers"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["steel"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["wind"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "The Romans built arch bridges out of stone.", "answer": "true" },
+          { "prompt_text": "The suspension bridge is the best design for the longest spans.", "answer": "true" },
+          { "prompt_text": "The Tacoma Narrows Bridge collapsed because too many vehicles crossed it at once.", "answer": "false" },
+          { "prompt_text": "Reinforced concrete is stronger than every type of steel.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Reinvention of the Bicycle",
+    "difficulty": "medium",
+    "topic_tags": ["design", "innovation", "transport"],
+    "body_html": "<p>The bicycle was not invented in a single flash of genius but reinvented again and again over most of a century, each version correcting the faults of the last. Its earliest ancestor appeared in 1817, when the German inventor Karl von Drais built a two-wheeled wooden machine with a seat and a steerable front wheel. It had no pedals; the rider simply pushed along the ground with the feet, coasting where the road allowed. Nicknamed the hobby-horse, it caused a brief craze and then faded, but it had established the crucial idea that a person could balance and travel on two wheels in line. Von Drais had designed it partly as a substitute for the horse, at a time when a failed harvest had left many horses starving, and for a brief season fashionable young men could be seen sweeping along smooth paths on the strange contraption before the craze, and the paths, gave out.</p><p>Pedals arrived in the 1860s, fixed directly to the front wheel of a machine so jarring to ride over cobbled streets that it earned the name boneshaker. Because one turn of the pedals gave exactly one turn of the wheel, the only way to go faster was to make the driven wheel larger. This logic led, in the 1870s, to the extraordinary high-wheeler, or penny-farthing, whose front wheel grew enormous while the rear shrank to a tiny trailer. It was fast and, for a time, fashionable, but the rider perched high above the axle, and a sudden stop could pitch him head first onto the road. Riding one was a feat of nerve as much as skill. Falls were common, and the very phrase for a tumble over the handlebars, a header, dates from these years; the riders were almost always young men, for the machine demanded strength, courage and a certain disregard for one's own neck.</p><p>The decisive breakthrough came in 1885, when the English manufacturer John Kemp Starley produced what he called the safety bicycle. It abandoned the giant wheel altogether. Two wheels of equal, moderate size carried a rider seated low between them, and the pedals now turned a chain that drove the rear wheel, so that gearing could be chosen freely without enlarging any wheel. The machine was stable, easy to mount and far less likely to throw its rider, and its basic layout, the diamond-shaped frame and the chain drive, is essentially the bicycle we still ride today. Because the rider now sat low and could put both feet to the ground, the bicycle was suddenly safe for almost anyone to learn, and sales climbed steeply as ordinary people discovered that they could travel further and faster than they ever had on foot.</p><p>Comfort followed close behind. In 1888 the Scottish inventor John Boyd Dunlop reintroduced the air-filled, or pneumatic, tyre, a cushion of trapped air that smoothed away the jolts that had tormented earlier riders. With a safe frame and a soft ride, the bicycle at last became a machine that almost anyone could enjoy, and its price fell steadily as factories turned them out in growing numbers. Prices tumbled through the 1890s during a great bicycle boom, and for the first time a working family could realistically hope to own one, opening up the surrounding countryside to people who had never before been able to leave their own town.</p><p>The social effects were remarkable. Cheap and needing neither rails nor horses, the bicycle gave ordinary people, and especially women, a new and unprecedented freedom to travel where and when they wished. Campaigners for women's rights hailed it as a machine of emancipation, and it even helped to loosen the heavy, restrictive clothing that fashion had imposed on women, since long skirts were plainly unsuited to a moving chain. The bicycle also seeded later technologies: the brothers who built the first successful aeroplane, Wilbur and Orville Wright, earned their living as bicycle mechanics, and much of their feel for lightweight structures and balance came straight from the workshop. In its lightness, in the balancing of forces and in the careful shaping of thin metal tubes, the modest bicycle turned out to be a rehearsal for machines its earliest makers could never have dreamed of. More than a hundred years on, the basic design has scarcely changed, a rare example of a machine so nearly perfected at birth that later generations have found little to add. In an age of engines and screens, the bicycle endures as one of the most efficient means of travel ever devised, and one of the very few that runs on nothing but human effort.</p>",
+    "groups": [
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 1-6. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><p><strong>The development of the bicycle</strong></p><ul><li>1817: Karl von Drais built a machine pushed along by the rider's <strong>(1)&nbsp;______</strong>.</li><li>1860s: the 'boneshaker' had pedals fixed to the <strong>(2)&nbsp;______</strong> wheel.</li><li>1870s: the penny-farthing used a huge front wheel to increase <strong>(3)&nbsp;______</strong>.</li><li>1885: the 'safety bicycle' used a <strong>(4)&nbsp;______</strong> to drive the rear wheel.</li><li>1888: the <strong>(5)&nbsp;______</strong> tyre, filled with air, made riding smoother.</li><li>The bicycle gave new freedom to travel, especially to <strong>(6)&nbsp;______</strong>.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 1", "accepted": ["feet"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 2", "accepted": ["front"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 3", "accepted": ["speed"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 4", "accepted": ["chain"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 5", "accepted": ["pneumatic"], "word_limit": 1, "spelling_variants": true },
+          { "prompt_text": "Gap 6", "accepted": ["women"], "word_limit": 1, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 7-10. Match each description with the correct machine, A, B or C. You may use any letter more than once.",
+        "options": [
+          { "key": "A", "text": "the penny-farthing (high-wheeler)" },
+          { "key": "B", "text": "the safety bicycle" },
+          { "key": "C", "text": "the hobby-horse (draisine)" }
+        ],
+        "questions": [
+          { "prompt_text": "It had no pedals and was moved by pushing the feet on the ground.", "correct_option_keys": ["C"] },
+          { "prompt_text": "Its front wheel was made very large to allow higher speeds.", "correct_option_keys": ["A"] },
+          { "prompt_text": "It had two wheels of equal size and a chain driving the rear wheel.", "correct_option_keys": ["B"] },
+          { "prompt_text": "Its high seat made a fall over the front a serious risk.", "correct_option_keys": ["A"] }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-13. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Who produced the safety bicycle in 1885?", "accepted": ["John Kemp Starley", "Starley", "J K Starley", "John Starley"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What kind of tyre did Dunlop reintroduce in 1888?", "accepted": ["pneumatic", "the pneumatic tyre", "pneumatic tyre", "air-filled"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What was the trade of the Wright brothers before they built aircraft?", "accepted": ["bicycle mechanics", "bicycle mechanic", "mechanics", "bicycle repair"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]
