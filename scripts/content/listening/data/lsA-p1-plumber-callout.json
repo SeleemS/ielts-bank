@@ -1,0 +1,79 @@
+{
+  "title": "Reporting a Leak to a Plumbing Company",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "reporting an issue", "form completion", "note completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Gary", "role": "Plumbing company call handler", "voice": "sage" },
+    { "name": "Helen", "role": "Customer reporting a leak", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Gary", "voice": "sage", "text": "Hello, Brightwater Plumbing, Gary speaking. How can I help you today?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "Oh, hello. I've got a leak under my kitchen sink and there's water all over the floor. I really need someone to come out." },
+        { "speaker": "Gary", "voice": "sage", "text": "I'm sorry to hear that. Let's get an engineer booked in. First, if you can, turn off the water at the stopcock — it's usually under the sink. Now, could I take your name?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "Yes, it's Helen Ashworth." },
+        { "speaker": "Gary", "voice": "sage", "text": "And how do you spell the surname?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "It's A-S-H-W-O-R-T-H. Ashworth." },
+        { "speaker": "Gary", "voice": "sage", "text": "Thank you. And the address, including the postcode?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "It's eight Meadow Lane — sorry, no, that's my mum's. My address is eight Marlow Lane. Postcode M-twenty, three-R-G." },
+        { "speaker": "Gary", "voice": "sage", "text": "Not to worry — eight Marlow Lane, postcode M20 3RG. And a phone number where the engineer can reach you?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "Yes, it's oh-seven-seven-hundred, nine-double-oh, one-two-four." },
+        { "speaker": "Gary", "voice": "sage", "text": "Let me just check — oh-seven-seven-zero-zero, nine-zero-zero, one-two-four. Is that correct?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "That's right." },
+        { "speaker": "Gary", "voice": "sage", "text": "Good. Now, can you describe exactly where the water's coming from? Is it from the pipe or from the tap itself?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "It's definitely from the pipe — the joint underneath. The tap's fine, it's the pipe that's dripping, quite fast now." },
+        { "speaker": "Gary", "voice": "sage", "text": "Understood — a leaking pipe joint. I can get someone to you this afternoon. Our engineer, Dave, can be with you between two and four o'clock. Does that work?" },
+        { "speaker": "Helen", "voice": "ballad", "text": "Between two and four is perfect, thank you." },
+        { "speaker": "Gary", "voice": "sage", "text": "Now, a quick word about charges. There's a call-out fee of forty-five pounds, and that covers the first hour of labour. After that it's thirty pounds per hour, plus any parts. For a leaking joint like this, though, it's usually a quick fix." },
+        { "speaker": "Helen", "voice": "ballad", "text": "That's fine, I just want it sorted. Do I pay Dave directly?" },
+        { "speaker": "Gary", "voice": "sage", "text": "Yes, Dave can take card payment at the door. I'll log this now — your job reference is J, then seven-one-four-two, so J7142. He'll phone you when he's about twenty minutes away." },
+        { "speaker": "Helen", "voice": "ballad", "text": "J7142, got it. Is there anything I should do in the meantime, while I'm waiting for Dave?" },
+        { "speaker": "Gary", "voice": "sage", "text": "Yes, a couple of things. Keep the water turned off at the stopcock if you can, and pop a bucket or a bowl under the leak to catch the drips. Lay some old towels down too, just to stop the water spreading across the floor. And try not to use the kitchen tap until Dave's had a look." },
+        { "speaker": "Helen", "voice": "ballad", "text": "That makes sense. I've already put a bowl under there and it's filling up quite quickly, so I'm glad someone's coming today." },
+        { "speaker": "Gary", "voice": "sage", "text": "You did exactly the right thing calling straight away. Leaks like this only get worse if they're left. Dave's very good — he'll have it sorted in no time. And if anything changes before then, just call us back and quote that reference." },
+        { "speaker": "Helen", "voice": "ballad", "text": "Wonderful. Thank you so much, Gary." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "PLUMBING CALL-OUT FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Ashworth"], "word_limit": 1 },
+        { "prompt_text": "Address: 8 ______", "accepted": ["Marlow Lane", "Marlow"], "word_limit": 2 },
+        { "prompt_text": "Postcode:", "accepted": ["M20 3RG", "M203RG"], "word_limit": 2 },
+        { "prompt_text": "Contact number:", "accepted": ["07700900124", "07700 900 124", "07700 900124"], "word_limit": 2 },
+        { "prompt_text": "Job reference:", "accepted": ["J7142"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Details of the problem and visit",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The water is leaking from the ______ (not the tap).", "accepted": ["pipe", "pipe joint", "joint"], "word_limit": 2 },
+        { "prompt_text": "Engineer will arrive between 2 pm and ______.", "accepted": ["4 pm", "4pm", "four pm", "4 o'clock", "16:00", "four o'clock"], "word_limit": 2 },
+        { "prompt_text": "Call-out fee (covers first hour): £", "accepted": ["45", "£45", "45 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How will Helen pay for the work?</p>",
+      "options": [
+        { "key": "A", "text": "by card, to the engineer at the door" },
+        { "key": "B", "text": "in cash, in advance" },
+        { "key": "C", "text": "by bank transfer after the visit" }
+      ],
+      "questions": [
+        { "prompt_text": "Helen will pay", "correct_option_keys": ["A"] }
+      ]
+    }
+  ]
+}

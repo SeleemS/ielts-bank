@@ -1,0 +1,89 @@
+{
+  "title": "Tutorial: Planning a Cycling-to-Campus Study",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "research methods", "multiple choice", "matching"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Hughes", "role": "Tutor", "voice": "coral" },
+    { "name": "Tom", "role": "Student", "voice": "echo" },
+    { "name": "Sara", "role": "Student", "voice": "shimmer" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Hughes", "voice": "coral", "text": "Come in, Tom, Sara. So, how's the project on cycling to campus coming along? Have you settled on your methods yet?" },
+        { "speaker": "Tom", "voice": "echo", "text": "We think so. We're planning to combine an online survey with a set of interviews." },
+        { "speaker": "Sara", "voice": "shimmer", "text": "Right. The survey gives us the numbers — how many people cycle, how far, and so on — and the interviews let us dig into why people choose to cycle, or why they don't." },
+        { "speaker": "Dr Hughes", "voice": "coral", "text": "Good. A mixed-methods approach makes a lot of sense here. Now, have you thought carefully about your sample? A very common mistake is to only survey people who already cycle." },
+        { "speaker": "Sara", "voice": "shimmer", "text": "Yes, we talked about exactly that. If we only ask cyclists, we'll miss the whole point — we really need to hear from people who've given up cycling, or who've never started." },
+        { "speaker": "Dr Hughes", "voice": "coral", "text": "Precisely. So make sure you recruit widely." },
+        { "speaker": "Tom", "voice": "echo", "text": "We were actually going to hand out flyers at the bike racks, but you're right, that would completely bias the sample. So we'll advertise through the whole student email list instead." },
+        { "speaker": "Dr Hughes", "voice": "coral", "text": "Much better. That way you reach cyclists and non-cyclists alike. Now, let's divide up the work. Who's going to do what?" },
+        { "speaker": "Sara", "voice": "shimmer", "text": "Well, I'll design the survey questions — that's honestly the part I enjoy most." },
+        { "speaker": "Tom", "voice": "echo", "text": "And I'll set up and run the interviews, and do the transcribing afterwards. I've done interviewing before, so it makes sense for me to take that on." },
+        { "speaker": "Sara", "voice": "shimmer", "text": "The one thing is the statistics. Neither of us is very confident with the numbers side of it." },
+        { "speaker": "Dr Hughes", "voice": "coral", "text": "That's absolutely fine — I'll run the statistical analysis together with you in our weekly sessions, so leave that part to me for now. You two focus on collecting good data." },
+        { "speaker": "Tom", "voice": "echo", "text": "That's a relief. Thanks, Dr Hughes." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>According to Sara, what is the main advantage of adding interviews?</p>",
+      "options": [
+        { "key": "A", "text": "They reach a larger number of people." },
+        { "key": "B", "text": "They reveal people's reasons for cycling or not." },
+        { "key": "C", "text": "They take less time than a survey." }
+      ],
+      "questions": [
+        { "prompt_text": "The main advantage of the interviews is that", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does the tutor warn the students not to do?</p>",
+      "options": [
+        { "key": "A", "text": "survey only people who already cycle" },
+        { "key": "B", "text": "use an online survey at all" },
+        { "key": "C", "text": "interview too many people" }
+      ],
+      "questions": [
+        { "prompt_text": "Dr Hughes warns them not to", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How do the students decide to recruit participants?</p>",
+      "options": [
+        { "key": "A", "text": "by handing out flyers at the bike racks" },
+        { "key": "B", "text": "through the student email list" },
+        { "key": "C", "text": "by stopping people on campus" }
+      ],
+      "questions": [
+        { "prompt_text": "Participants will be recruited", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will be responsible for each part of the project?",
+      "instructions_html": "<p>Choose your answers from the list of people <strong>A–C</strong> and select the correct letter for each task. You may choose any letter more than once.</p>",
+      "options": [
+        { "key": "A", "text": "Tom" },
+        { "key": "B", "text": "Sara" },
+        { "key": "C", "text": "Dr Hughes" }
+      ],
+      "questions": [
+        { "prompt_text": "designing the survey questions", "correct_option_keys": ["B"] },
+        { "prompt_text": "setting up and running the interviews", "correct_option_keys": ["A"] },
+        { "prompt_text": "transcribing the recordings", "correct_option_keys": ["A"] },
+        { "prompt_text": "carrying out the statistical analysis", "correct_option_keys": ["C"] }
+      ]
+    }
+  ]
+}

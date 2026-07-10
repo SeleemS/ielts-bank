@@ -1,0 +1,65 @@
+{
+  "title": "Lecture: Seagrass Meadows and the Ocean",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "marine biology", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "sage" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "sage", "text": "Good morning. Today I want to turn our attention to one of the most undervalued habitats in the ocean — seagrass meadows. Now, despite the name, seagrasses are not seaweeds at all. They are true flowering plants, with roots, stems and leaves, and they are the only flowering plants that have returned to live entirely in the sea." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Let me begin with where they grow. Seagrasses need sunlight to photosynthesise, so they are restricted to shallow, clear coastal water — typically no deeper than about ten metres. They form dense underwater lawns, and a single meadow can stretch for many kilometres along a coastline." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "So why should we care about them? Let me give you three reasons. The first, and perhaps the most important, is carbon. Seagrass meadows are remarkably good at capturing carbon dioxide and locking it away in the mud beneath them. In fact, per square kilometre, they store carbon up to thirty-five times faster than a tropical rainforest. Scientists call this stored carbon blue carbon, because it is held in the ocean rather than on land." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "The second reason is that seagrass meadows act as a nursery. Their leaves provide shelter for the young of many fish species, hiding them from predators until they are large enough to survive in open water. A great many of the fish we eat spend the earliest part of their lives among seagrass." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "The third reason is coastal protection. The roots of seagrass bind the seabed together, and the leaves slow down the movement of water. This reduces erosion, so the coastline behind the meadow is far better protected from storms. In this way seagrass acts rather like a natural sea wall." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Now let me turn to the bad news, because seagrass is disappearing fast. Around the world we are losing roughly a football pitch of seagrass every thirty minutes. What is driving this decline? The single greatest cause is poor water quality. When fertiliser washes off farmland into the sea, it feeds a bloom of tiny algae. This algae clouds the water and blocks the sunlight the seagrass needs, and without light the plants simply starve." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "A second threat is physical damage. Boat anchors and propellers tear up the meadows directly, leaving bare scars that can take years to recover. And a third pressure, of course, is the warming of the ocean, which pushes some seagrass species beyond the temperatures they can tolerate." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "The encouraging news is that seagrass can recover if we help it. Restoration projects now collect seagrass seeds by hand and scatter them across damaged areas. One project in the United Kingdom has already replanted several hectares this way, and the young plants are spreading. So the message I want to leave you with is one of cautious hope: this humble plant is far more valuable than its appearance suggests, and it is not yet too late to save it. Let's stop there for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "What seagrasses are and where they grow",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Seagrasses are not seaweeds but true ______ plants.", "accepted": ["flowering"], "word_limit": 1 },
+        { "prompt_text": "They grow only in shallow water, usually no deeper than ______ metres.", "accepted": ["ten", "10"], "word_limit": 1 },
+        { "prompt_text": "They form dense underwater ______ along the coast.", "accepted": ["lawns", "lawn"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "Why seagrass meadows matter",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Seagrass stores carbon very fast; this ocean-held carbon is known as ______ carbon.", "accepted": ["blue"], "word_limit": 1 },
+        { "prompt_text": "The meadows act as a ______ where young fish shelter from predators.", "accepted": ["nursery"], "word_limit": 1 },
+        { "prompt_text": "By slowing the water and binding the seabed, seagrass reduces ______ of the coast.", "accepted": ["erosion"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Threats to seagrass",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The greatest cause of decline is poor water ______.", "accepted": ["quality"], "word_limit": 1 },
+        { "prompt_text": "Fertiliser from farmland feeds a bloom of ______ that blocks sunlight.", "accepted": ["algae"], "word_limit": 1 },
+        { "prompt_text": "Direct physical damage is caused by boat anchors and ______.", "accepted": ["propellers", "propeller"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the questions below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN THREE WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "How do restoration projects gather seagrass to replant?", "accepted": ["seeds", "collect seeds", "seeds by hand", "collect seeds by hand"], "word_limit": 3 }
+      ]
+    }
+  ]
+}

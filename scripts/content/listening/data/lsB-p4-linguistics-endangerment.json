@@ -1,0 +1,63 @@
+{
+  "title": "Lecture: The Loss of the World's Languages",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "linguistics", "note completion", "table completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "fable" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "fable", "text": "Good afternoon. Today we're going to talk about a quiet crisis, one that rarely makes the headlines but which is unfolding all around us — the disappearance of human languages. Let me open with a striking figure. There are roughly seven thousand languages spoken in the world today, but linguists estimate that around half of them will fall silent by the end of this century." },
+        { "speaker": "Lecturer", "voice": "fable", "text": "To grasp the scale of this, you need to understand how unevenly languages are distributed. A tiny handful of languages have enormous numbers of speakers — Mandarin, English, Spanish and so on. But the vast majority are spoken by very small communities. In fact, more than half of all languages have fewer than ten thousand speakers each. When a community is that small, the language is fragile, and it can vanish within a generation or two." },
+        { "speaker": "Lecturer", "voice": "fable", "text": "So how, exactly, does a language die? Let me distinguish two quite different processes. The first is sudden death, where a language disappears abruptly because its speakers themselves die — through disease, natural disaster or, tragically, violence. The second, and far more common, is gradual death. Here the language fades over time as, generation by generation, parents stop passing it on to their children, who grow up speaking a more dominant language instead." },
+        { "speaker": "Lecturer", "voice": "fable", "text": "Let me turn now to why parents make that choice, because it's rarely careless. The main driver is economic. If speaking the dominant national language is the path to a good job and a good education, families understandably steer their children towards it. A second factor is prestige — minority languages are too often looked down on as backward, while the dominant language carries status. And a third factor is simply the reach of mass media, where the dominant language is everywhere, on every screen." },
+        { "speaker": "Lecturer", "voice": "fable", "text": "Now, you might ask: does it really matter? Languages have always come and gone. Why should we try to save them? I'd offer you two reasons. The first is knowledge. Each language encodes a unique way of understanding the world — the names of local plants and their medicinal uses, for instance, knowledge that is simply lost when the language dies. The second reason is identity. A language is central to who a community is, and losing it can leave people feeling cut off from their own history and their ancestors." },
+        { "speaker": "Lecturer", "voice": "fable", "text": "Finally, let me say a word about what can be done, because the picture is not entirely bleak. The single most effective step is what linguists call revitalisation, and the key to it is the young. Programmes that work best are those that get children speaking the language again — often through so-called language nests, where elderly fluent speakers spend time with very young children, passing the language on directly. New Zealand's efforts to revive Maori are the classic success story here. And modern technology helps too: recording apps and online dictionaries can preserve a language even after the last fluent speaker has gone. So there is hope, but the clock is ticking. Let's finish there." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "The scale of the crisis",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "There are roughly ______ thousand languages spoken today.", "accepted": ["seven", "7"], "word_limit": 1 },
+        { "prompt_text": "About ______ of these may disappear by the end of the century.", "accepted": ["half"], "word_limit": 1 },
+        { "prompt_text": "More than half of all languages have fewer than ______ thousand speakers.", "accepted": ["ten", "10"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "table_completion",
+      "prompt": "Two ways a language can die",
+      "instructions_html": "<p>Complete the table below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Sudden death: the language disappears abruptly because its ______ die.", "accepted": ["speakers"], "word_limit": 1 },
+        { "prompt_text": "Gradual death: this type is more ______ than sudden death.", "accepted": ["common"], "word_limit": 1 },
+        { "prompt_text": "Gradual death: it happens as ______ stop passing the language to their children.", "accepted": ["parents"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Why languages are given up and why they matter",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The main reason parents drop a language is ______.", "accepted": ["economic"], "word_limit": 1 },
+        { "prompt_text": "Minority languages are often wrongly seen as lacking ______ compared with dominant ones.", "accepted": ["prestige", "status"], "word_limit": 1 },
+        { "prompt_text": "Losing a language can weaken a community's sense of ______.", "accepted": ["identity"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS</strong>.</p>",
+      "questions": [
+        { "prompt_text": "Which language is given as the classic success story of revival?", "accepted": ["maori", "the maori language"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "title": "Booking an Airport Taxi",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "booking", "form completion", "note completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Karen", "role": "Taxi firm dispatcher", "voice": "echo" },
+    { "name": "Raj", "role": "Customer", "voice": "shimmer" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Karen", "voice": "echo", "text": "Good evening, Streamline Cars, Karen speaking. How can I help?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Hi, I'd like to book a taxi to the airport, please, for early tomorrow morning." },
+        { "speaker": "Karen", "voice": "echo", "text": "Certainly. Let me take the details. Could I have your name first?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Yes, it's Raj Patel." },
+        { "speaker": "Karen", "voice": "echo", "text": "And could you spell the surname for me?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Of course. It's P-A-T-E-L. Patel." },
+        { "speaker": "Karen", "voice": "echo", "text": "Thank you. And where would you like to be picked up?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "From nineteen Chestnut Avenue — sorry, no, nineteen Chestnut Close. It's easy to mix them up. Chestnut Close." },
+        { "speaker": "Karen", "voice": "echo", "text": "Not a problem — nineteen Chestnut Close. And which airport are you heading to?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Gatwick, please. My flight's at nine in the morning, so I'll need to leave nice and early." },
+        { "speaker": "Karen", "voice": "echo", "text": "For a nine o'clock flight from Gatwick, I'd recommend leaving at half past five in the morning to be safe — the roads can be busy. Does that suit?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Half past five, yes, let's do that." },
+        { "speaker": "Karen", "voice": "echo", "text": "Great. And how many passengers, and how much luggage?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Just me, and two large suitcases plus a rucksack." },
+        { "speaker": "Karen", "voice": "echo", "text": "That's fine, we'll send an estate car so there's plenty of room. The fare to Gatwick is a fixed price of fifty-five pounds. You can pay the driver by card or cash." },
+        { "speaker": "Raj", "voice": "shimmer", "text": "Fifty-five pounds, that's fine. Can I pay by card?" },
+        { "speaker": "Karen", "voice": "echo", "text": "Yes, all our cars take card. Now, could I take a mobile number, so the driver can let you know he's outside?" },
+        { "speaker": "Raj", "voice": "shimmer", "text": "It's oh-seven-six-three-two, five-five-one, four-nine-oh." },
+        { "speaker": "Karen", "voice": "echo", "text": "Let me repeat that — oh-seven-six-three-two, five-five-one, four-nine-oh. Perfect. Your booking reference is T, then three-zero-seven-four, so T3074. The driver will text you when he arrives." },
+        { "speaker": "Raj", "voice": "shimmer", "text": "T3074. And will he wait if I'm a couple of minutes late coming out?" },
+        { "speaker": "Karen", "voice": "echo", "text": "Of course, he'll wait. But do try to be ready, as it's a long drive. One tip — please double-check you've got your passport before you leave, we get so many people who forget it. Have a good trip, Raj." },
+        { "speaker": "Raj", "voice": "shimmer", "text": "I definitely won't forget the passport this time. One more thing — will I be able to book a car for the return journey too, when I fly back next week?" },
+        { "speaker": "Karen", "voice": "echo", "text": "Absolutely. Just give us a ring the day before with your flight details and we'll pick you up from the airport. It's the same fixed price back into town, and the driver will be waiting in the arrivals hall with a sign showing your name." },
+        { "speaker": "Raj", "voice": "shimmer", "text": "That's very reassuring, thank you. And roughly how long does the drive to Gatwick take at that time of the morning?" },
+        { "speaker": "Karen", "voice": "echo", "text": "At half past five the roads are usually quiet, so you're looking at around an hour and a quarter. That gives you plenty of time to check in and have a relaxed coffee before your flight." },
+        { "speaker": "Raj", "voice": "shimmer", "text": "That's perfect. Thank you very much for all your help, Karen. Good night." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "TAXI BOOKING FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Patel"], "word_limit": 1 },
+        { "prompt_text": "Pick-up address: 19 ______", "accepted": ["Chestnut Close", "Chestnut"], "word_limit": 2 },
+        { "prompt_text": "Destination airport:", "accepted": ["Gatwick"], "word_limit": 1 },
+        { "prompt_text": "Mobile number:", "accepted": ["07632551490", "07632 551 490", "07632 551490"], "word_limit": 2 },
+        { "prompt_text": "Booking reference:", "accepted": ["T3074"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Journey details",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Pick-up time:", "accepted": ["5:30", "5.30", "half past five", "5:30 am", "530"], "word_limit": 2 },
+        { "prompt_text": "Number of large suitcases:", "accepted": ["2", "two"], "word_limit": 1 },
+        { "prompt_text": "Fixed fare: £", "accepted": ["55", "£55", "55 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong>.</p>",
+      "questions": [
+        { "prompt_text": "Before leaving, Raj is reminded to check he has his ______.", "accepted": ["passport"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How will Raj pay for the taxi?</p>",
+      "options": [
+        { "key": "A", "text": "by card" },
+        { "key": "B", "text": "in cash only" },
+        { "key": "C", "text": "in advance online" }
+      ],
+      "questions": [
+        { "prompt_text": "Raj will pay the driver", "correct_option_keys": ["A"] }
+      ]
+    }
+  ]
+}

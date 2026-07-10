@@ -1,0 +1,53 @@
+{
+  "title": "Lecture: The Rise of Urban Beekeeping",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "ash" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "ash", "text": "Okay everyone, let's make a start. Today I want to look at urban beekeeping — that is, the keeping of honeybees in towns and cities — which has grown remarkably popular over the last twenty years or so." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Now, you might reasonably assume that the countryside would suit bees far better than the city. In fact, research suggests the opposite can be true. City bees often produce more honey than their rural cousins, and the main reason for this is variety. A city has parks, gardens, balconies and street trees, all planted with many different species that flower at different times of year." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "This means there's a steady supply of nectar right through the season. In the countryside, by contrast, a large farm will often grow just a single crop, which may flower brilliantly, but only for a few short weeks, leaving the bees with little to eat for the rest of the year." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Temperature matters too. Cities are noticeably warmer than the surrounding countryside — an effect that scientists call the urban heat island. This extra warmth means that city bees can begin foraging earlier in the spring and carry on later into the autumn." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "There are challenges, of course. The single biggest threat to bees, wherever they happen to live, is a tiny parasite called the varroa mite. It weakens the colony and spreads disease, so beekeepers have to inspect their hives regularly to keep it under control." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Water is another issue that people often overlook. Bees need to drink, and in a hot, dry city they can struggle to find a safe source. A simple solution is to leave out a shallow dish of water with a few stones in it, which give the bees somewhere to land safely." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Finally, a word about the honey itself. Many new beekeepers are surprised to learn that a single healthy hive can produce as much as twenty-five kilograms of honey in a really good year. But my advice is always the same: keep bees for the bees, not for the honey. Look after the colony well, and the honey will take care of itself. Right, let's pause there for a moment." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "summary_completion",
+      "prompt": "Why city bees often do well",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "City bees benefit from the greater ______ of flowering plants found in parks and gardens.", "accepted": ["variety"], "word_limit": 1 },
+        { "prompt_text": "On a large farm, a single ______ often flowers for only a few weeks.", "accepted": ["crop"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS</strong>.</p>",
+      "questions": [
+        { "prompt_text": "Scientists call the extra warmth of cities the urban ______.", "accepted": ["heat island"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Challenges for city beekeepers",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The biggest threat to bees is a parasite known as the ______ mite.", "accepted": ["varroa"], "word_limit": 1, "spelling_variants": true },
+        { "prompt_text": "To provide water, keepers leave out a shallow ______ containing stones.", "accepted": ["dish"], "word_limit": 1 },
+        { "prompt_text": "In a good year, a single hive can produce up to ______ kilograms of honey.", "accepted": ["25", "twenty-five", "twenty five"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

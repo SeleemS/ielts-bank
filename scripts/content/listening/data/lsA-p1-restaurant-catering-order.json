@@ -1,0 +1,86 @@
+{
+  "title": "Placing a Party Catering Order",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "order", "form completion", "table completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Nadia", "role": "Restaurant catering coordinator", "voice": "fable" },
+    { "name": "Ben", "role": "Customer placing an order", "voice": "nova" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Nadia", "voice": "fable", "text": "Good morning, The Olive Tree restaurant, catering team, Nadia speaking. How can I help?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Hi. I'm organising a birthday lunch and I'd like to place a catering order for delivery, please." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Of course, I can take that for you now. Could I start with your name?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Yes, it's Ben Kowalski." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Could you spell the surname for me?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Sure, it's K-O-W-A-L-S-K-I. Kowalski." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Thank you, Ben. And what date is the party?" },
+        { "speaker": "Ben", "voice": "nova", "text": "It's on Saturday the seventh of June. We'd like the food delivered for midday." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Saturday the seventh of June, delivery for twelve noon. And how many people are you catering for?" },
+        { "speaker": "Ben", "voice": "nova", "text": "There'll be twenty guests — actually, make that twenty-five, a couple more just confirmed." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Twenty-five guests, noted. Now, our most popular option for a party is the Sharing Platter menu. That's twelve pounds a head, and it includes a selection of breads, salads, dips and grilled vegetables." },
+        { "speaker": "Ben", "voice": "nova", "text": "That sounds ideal. Can we add some meat dishes as well?" },
+        { "speaker": "Nadia", "voice": "fable", "text": "Absolutely. We can add the Grilled Chicken skewers at three pounds a head, or the Lamb Kofta at four pounds a head. Both are very popular." },
+        { "speaker": "Ben", "voice": "nova", "text": "Let's add the lamb kofta, please. And can we have a birthday cake too?" },
+        { "speaker": "Nadia", "voice": "fable", "text": "Of course. A chocolate sponge to serve twenty-five is thirty-five pounds. Would you like any writing on it?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Yes please — could it say 'Happy Birthday Grace'? That's G-R-A-C-E." },
+        { "speaker": "Nadia", "voice": "fable", "text": "Happy Birthday Grace, lovely. Now, one thing to check — does anyone have allergies I should know about?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Yes, two of the guests can't eat nuts, so please make sure everything is nut-free." },
+        { "speaker": "Nadia", "voice": "fable", "text": "I'll flag the whole order as nut-free, don't worry. Now, delivery within town is free, and there's a fifty-pound refundable deposit on the serving dishes, which we return when you bring them back. Your order reference is O, then four-eight-two-six, so O4826." },
+        { "speaker": "Ben", "voice": "nova", "text": "O4826. Perfect. And what time will the driver arrive?" },
+        { "speaker": "Nadia", "voice": "fable", "text": "The driver will aim to arrive at half past eleven, so everything's set out well before your midday start. Could I take a contact number in case there's any hold-up?" },
+        { "speaker": "Ben", "voice": "nova", "text": "Yes, it's oh-seven-nine-four-one, six-two-two, eight-five-oh. Thanks so much, Nadia." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "CATERING ORDER FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Kowalski"], "word_limit": 1 },
+        { "prompt_text": "Date of party:", "accepted": ["7 June", "7th June", "June 7", "7/06", "Saturday 7 June"], "word_limit": 2 },
+        { "prompt_text": "Number of guests:", "accepted": ["25", "twenty-five", "twenty five"], "word_limit": 1 },
+        { "prompt_text": "Order reference:", "accepted": ["O4826"], "word_limit": 1 },
+        { "prompt_text": "Contact number:", "accepted": ["07941622850", "07941 622 850", "07941 622850"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "table_completion",
+      "prompt": "Food order",
+      "instructions_html": "<p>Complete the table below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Sharing Platter menu — price per head: £", "accepted": ["12", "£12", "12 pounds"], "word_limit": 2 },
+        { "prompt_text": "Meat dish added:", "accepted": ["Lamb Kofta", "lamb kofta", "kofta"], "word_limit": 2 },
+        { "prompt_text": "Birthday cake (chocolate sponge) — price: £", "accepted": ["35", "£35", "35 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What special requirement does Ben mention for the food?</p>",
+      "options": [
+        { "key": "A", "text": "it must be vegetarian" },
+        { "key": "B", "text": "it must be nut-free" },
+        { "key": "C", "text": "it must be dairy-free" }
+      ],
+      "questions": [
+        { "prompt_text": "The whole order must be", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "There is a refundable deposit of £______ on the serving dishes.", "accepted": ["50", "£50", "50 pounds"], "word_limit": 2 },
+        { "prompt_text": "The driver will aim to arrive at ______.", "accepted": ["11:30", "11.30", "half past eleven", "11:30 am", "1130"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

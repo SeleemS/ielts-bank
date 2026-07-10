@@ -1,0 +1,71 @@
+{
+  "title": "A Walking Tour of Ashcombe Old Town",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "map", "local guide", "matching"],
+  "partStyle": "Part 2 (local guide monologue)",
+  "speakers": [
+    { "name": "Peter", "role": "Local tour guide", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Peter", "voice": "ballad", "text": "Good morning, everyone, and welcome to Ashcombe. My name's Peter, and I'll be your guide this morning as we walk around the old town. Before we set off, let me give you an idea of the route, using the little map I've handed out." },
+        { "speaker": "Peter", "voice": "ballad", "text": "We're starting here in the Market Square, where you can see the old stone cross in the middle. From here, we'll walk up the High Street, which is the road leading north out of the square, straight ahead of us." },
+        { "speaker": "Peter", "voice": "ballad", "text": "The first place I'll show you is the Town Hall. It's the grand building with the clock tower, on your right just as you enter the High Street. It's over three hundred years old and still used for council meetings today." },
+        { "speaker": "Peter", "voice": "ballad", "text": "A little further up, where the High Street meets Church Lane, we'll turn left, and there you'll find St Mary's Church. It's set back from the road behind some fine old yew trees, on the left-hand side of Church Lane." },
+        { "speaker": "Peter", "voice": "ballad", "text": "Opposite the church, on the right of Church Lane, is the old Coaching Inn. Travellers used to stop there to change horses, and it's still a pub today, so it might be a good spot for lunch afterwards." },
+        { "speaker": "Peter", "voice": "ballad", "text": "We'll then carry on down to the river. Right on the riverbank, at the bottom of Mill Street, stands the Watermill. It's been beautifully restored, and inside there's a small museum about the town's history. Next to the mill, on the same side, is the old Packhorse Bridge, a lovely narrow stone bridge that's the most photographed spot in Ashcombe." },
+        { "speaker": "Peter", "voice": "ballad", "text": "Now, a few practical notes for our walk. The whole tour is about two miles, and takes roughly ninety minutes at a gentle pace. Most of it is on the flat, but there are a few cobbled streets, so I hope you're all in sensible shoes." },
+        { "speaker": "Peter", "voice": "ballad", "text": "The tour itself is free, but I do collect for charity at the end, and anything you can spare is very welcome. If you'd like to go inside the Watermill museum afterwards, there's a small entry charge of two pounds fifty." },
+        { "speaker": "Peter", "voice": "ballad", "text": "One last thing before we go — do keep together as a group, especially crossing the High Street, as it can get busy with traffic. There are no public toilets on the route until we reach the mill, so do bear that in mind. Right, if everyone's ready, let's begin. Follow me up the High Street." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Label the town map. Where is each place on the route?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each place from the list.</p>",
+      "options": [
+        { "key": "A", "text": "on the right as you enter the High Street" },
+        { "key": "B", "text": "set back on the left of Church Lane" },
+        { "key": "C", "text": "on the right of Church Lane, opposite the church" },
+        { "key": "D", "text": "at the bottom of Mill Street, on the riverbank" },
+        { "key": "E", "text": "next to the Watermill, on the same side" },
+        { "key": "F", "text": "in the middle of the Market Square" }
+      ],
+      "questions": [
+        { "prompt_text": "the Town Hall", "correct_option_keys": ["A"] },
+        { "prompt_text": "St Mary's Church", "correct_option_keys": ["B"] },
+        { "prompt_text": "the old Coaching Inn", "correct_option_keys": ["C"] },
+        { "prompt_text": "the Watermill", "correct_option_keys": ["D"] },
+        { "prompt_text": "the Packhorse Bridge", "correct_option_keys": ["E"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Practical details of the walk",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Total length of walk (miles):", "accepted": ["2", "two"], "word_limit": 1 },
+        { "prompt_text": "Time the walk takes (minutes):", "accepted": ["90", "ninety"], "word_limit": 1 },
+        { "prompt_text": "Entry charge for the Watermill museum: £", "accepted": ["2.50", "£2.50", "2 pounds 50", "two pounds fifty"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Where on the route are the first public toilets?</p>",
+      "options": [
+        { "key": "A", "text": "in the Market Square" },
+        { "key": "B", "text": "at the Town Hall" },
+        { "key": "C", "text": "at the Watermill" }
+      ],
+      "questions": [
+        { "prompt_text": "The first toilets on the route are", "correct_option_keys": ["C"] }
+      ]
+    }
+  ]
+}

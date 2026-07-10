@@ -1,0 +1,91 @@
+{
+  "title": "Seminar Prep: Sources on the Industrial Revolution",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "discussion", "history", "sources", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Alvarez", "role": "Tutor", "voice": "sage" },
+    { "name": "Chloe", "role": "Student", "voice": "shimmer" },
+    { "name": "Ben", "role": "Student", "voice": "ash" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "So, next week's seminar is on daily life during the Industrial Revolution, and you're leading it. Let's make sure your choice of sources is well balanced. What have you gathered so far?" },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "We've got four main sources. The first is a set of factory inspection reports from the eighteen-thirties — official government documents describing conditions inside the mills." },
+        { "speaker": "Ben", "voice": "ash", "text": "The second is a collection of workers' diaries. They're much more personal, but of course only a small number of workers could actually write, so they're not fully representative." },
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "That's a shrewd point, Ben. The diaries give you vivid detail, but you must warn the seminar that literate workers were a minority. What's the third?" },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "The third is a series of newspaper cartoons. They're wonderful for showing public attitudes, but they exaggerate for effect, so we can't treat them as literal descriptions." },
+        { "speaker": "Ben", "voice": "ash", "text": "And the fourth is a modern economic dataset — wages and prices reconstructed by historians. It's reliable on the numbers, but it tells you nothing about how people actually felt." },
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "Good. So you've got a nice spread — official, personal, visual and statistical. My one concern is that the inspection reports may paint too rosy a picture. Why might that be?" },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "Because the factory owners often knew when the inspectors were coming, so they cleaned everything up in advance. The reports show the mill on its best behaviour, not its normal state." },
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "Exactly right. Now, I want to challenge you on one thing. Ben, you called the diaries unrepresentative — but couldn't you say the same about every source here?" },
+        { "speaker": "Ben", "voice": "ash", "text": "That's a fair challenge. I suppose no single source is representative on its own. The point is to read them against each other, so the weaknesses of one are covered by the strengths of another." },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "Yes — that's actually the argument we want to make in the seminar. Triangulation. No source is trustworthy alone, but together they give a fuller picture." },
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "Excellent. That's exactly the intellectual message. Now, practical matters — who's presenting which part? Keep it even." },
+        { "speaker": "Ben", "voice": "ash", "text": "I'll introduce the official and statistical sources, since I'm most comfortable with the economic side." },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "And I'll take the diaries and the cartoons — the human and visual material. That's where my interest really lies." },
+        { "speaker": "Dr Alvarez", "voice": "sage", "text": "Good division. I'll chair the discussion afterwards and keep the questions on track. Last thing: circulate your reading list to the group by Monday, so everyone comes prepared." },
+        { "speaker": "Chloe", "voice": "shimmer", "text": "Reading list out by Monday. Got it. Thanks, Dr Alvarez — I feel much clearer about how the sources fit together now." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_features",
+      "prompt": "What is the main limitation of each source?",
+      "instructions_html": "<p>Choose the main limitation from the list <strong>A–E</strong> for each source. There are more limitations than sources.</p>",
+      "options": [
+        { "key": "A", "text": "Owners tidied up before inspections." },
+        { "key": "B", "text": "Only a minority of workers could write." },
+        { "key": "C", "text": "They exaggerate for effect." },
+        { "key": "D", "text": "They reveal nothing about people's feelings." },
+        { "key": "E", "text": "They were written long after the events." }
+      ],
+      "questions": [
+        { "prompt_text": "the factory inspection reports", "correct_option_keys": ["A"] },
+        { "prompt_text": "the workers' diaries", "correct_option_keys": ["B"] },
+        { "prompt_text": "the newspaper cartoons", "correct_option_keys": ["C"] },
+        { "prompt_text": "the modern economic dataset", "correct_option_keys": ["D"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What overall argument do the students want to make in the seminar?</p>",
+      "options": [
+        { "key": "A", "text": "that official documents are the most trustworthy" },
+        { "key": "B", "text": "that sources should be read against one another" },
+        { "key": "C", "text": "that personal diaries reveal the real truth" }
+      ],
+      "questions": [
+        { "prompt_text": "Their central argument is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How does Ben respond to the tutor's challenge about the diaries?</p>",
+      "options": [
+        { "key": "A", "text": "He admits no single source is representative alone." },
+        { "key": "B", "text": "He insists the diaries are fully reliable." },
+        { "key": "C", "text": "He decides to drop the diaries entirely." }
+      ],
+      "questions": [
+        { "prompt_text": "Ben concedes that", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The students describe their method of comparing sources as ______.", "accepted": ["triangulation"], "word_limit": 1 },
+        { "prompt_text": "Ben will present the official and ______ sources.", "accepted": ["statistical"], "word_limit": 1 },
+        { "prompt_text": "The reading list must be circulated to the group by ______.", "accepted": ["monday"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

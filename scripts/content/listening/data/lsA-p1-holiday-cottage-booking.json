@@ -1,0 +1,84 @@
+{
+  "title": "Booking a Holiday Cottage in the Lake District",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "booking", "form completion", "table completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Rachel", "role": "Holiday cottage booking agent", "voice": "coral" },
+    { "name": "Simon", "role": "Customer", "voice": "echo" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Rachel", "voice": "coral", "text": "Good afternoon, Lakeland Cottage Holidays, Rachel speaking. How can I help?" },
+        { "speaker": "Simon", "voice": "echo", "text": "Hello. I'm hoping to book a cottage for a short break in the summer, for my family." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Lovely, I'd be happy to help with that. Let me take a few details first. Could I have your surname, please?" },
+        { "speaker": "Simon", "voice": "echo", "text": "Yes, it's Whitaker." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Could you spell that for me?" },
+        { "speaker": "Simon", "voice": "echo", "text": "Certainly. It's W-H-I-T-A-K-E-R. Whitaker. First name Simon." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Thank you, Simon. And when were you thinking of coming?" },
+        { "speaker": "Simon", "voice": "echo", "text": "We'd like to arrive on Friday the fourteenth of August, and stay for four nights." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Friday the fourteenth of August, four nights — that's leaving on the Tuesday. And how many people will there be?" },
+        { "speaker": "Simon", "voice": "echo", "text": "There'll be four of us — two adults and two children." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Perfect. I've got two cottages free that week. The first is Foxglove Cottage, which sleeps four and costs ninety-five pounds a night. The second is Bluebell Barn, which is a bit bigger — it sleeps six and costs a hundred and twenty pounds a night." },
+        { "speaker": "Simon", "voice": "echo", "text": "And whereabouts are they? I'd love to be near the water." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Foxglove Cottage is in Keswick — oh, sorry, let me correct that, it's actually in Ambleside, right by the lake. Bluebell Barn is the one in Keswick, a little further from the shore." },
+        { "speaker": "Simon", "voice": "echo", "text": "In that case Foxglove Cottage sounds perfect — the one in Ambleside, by the lake. And four beds is plenty for us." },
+        { "speaker": "Rachel", "voice": "coral", "text": "Excellent choice. So that's Foxglove Cottage, four nights at ninety-five pounds a night. I should mention there's a one-off cleaning charge of thirty pounds added at the end." },
+        { "speaker": "Simon", "voice": "echo", "text": "That's fine. Do you need anything to hold the booking?" },
+        { "speaker": "Rachel", "voice": "coral", "text": "Yes, we take a deposit of one hundred and fifty pounds to secure it, with the balance due two weeks before you arrive. Now, one thing to note — the cottage doesn't allow pets, so if you were hoping to bring a dog, I'm afraid that one's not suitable." },
+        { "speaker": "Simon", "voice": "echo", "text": "No, no pets, that's fine. What time can we check in?" },
+        { "speaker": "Rachel", "voice": "coral", "text": "Check-in is from four o'clock in the afternoon, and we ask guests to check out by ten in the morning. I'll email you the key-safe code the day before. Your booking reference is B, then two-nine-six-one — so B2961." },
+        { "speaker": "Simon", "voice": "echo", "text": "B2961 — got it. Thank you so much, Rachel, that's brilliant." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "COTTAGE BOOKING FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Whitaker"], "word_limit": 1 },
+        { "prompt_text": "Arrival date:", "accepted": ["14 August", "14th August", "August 14", "14/08", "Friday 14 August"], "word_limit": 2 },
+        { "prompt_text": "Number of nights:", "accepted": ["4", "four"], "word_limit": 1 },
+        { "prompt_text": "Booking reference:", "accepted": ["B2961"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "table_completion",
+      "prompt": "Cottages available that week",
+      "instructions_html": "<p>Complete the table below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Foxglove Cottage — location:", "accepted": ["Ambleside"], "word_limit": 1 },
+        { "prompt_text": "Foxglove Cottage — price per night: £", "accepted": ["95", "£95", "95 pounds"], "word_limit": 2 },
+        { "prompt_text": "Bluebell Barn — number it sleeps:", "accepted": ["6", "six"], "word_limit": 1 },
+        { "prompt_text": "Bluebell Barn — price per night: £", "accepted": ["120", "£120", "120 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is NOT allowed at Foxglove Cottage?</p>",
+      "options": [
+        { "key": "A", "text": "children" },
+        { "key": "B", "text": "pets" },
+        { "key": "C", "text": "late check-out" }
+      ],
+      "questions": [
+        { "prompt_text": "At the cottage, guests may not bring", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A deposit of £______ is required to secure the booking.", "accepted": ["150", "£150", "150 pounds"], "word_limit": 2 },
+        { "prompt_text": "Guests must check out by ______.", "accepted": ["10 am", "10am", "10 a.m.", "ten am", "ten o'clock", "10:00", "10 o'clock"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

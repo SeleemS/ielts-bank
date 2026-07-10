@@ -1,0 +1,82 @@
+{
+  "title": "Reporting a Broadband Fault",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "reporting an issue", "form completion", "note completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Sam", "role": "Broadband support agent", "voice": "ash" },
+    { "name": "Fiona", "role": "Customer reporting a fault", "voice": "sage" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Sam", "voice": "ash", "text": "Good afternoon, Swiftlink Broadband technical support, Sam speaking. How can I help?" },
+        { "speaker": "Fiona", "voice": "sage", "text": "Hi. My internet has been down since this morning and I really need it working — I work from home." },
+        { "speaker": "Sam", "voice": "ash", "text": "I'm sorry to hear that, let's get it sorted. First, could I take the name on the account?" },
+        { "speaker": "Fiona", "voice": "sage", "text": "Yes, it's Fiona Macleod." },
+        { "speaker": "Sam", "voice": "ash", "text": "And how do you spell the surname?" },
+        { "speaker": "Fiona", "voice": "sage", "text": "It's M-A-C-L-E-O-D. Macleod. One word, no space." },
+        { "speaker": "Sam", "voice": "ash", "text": "Thank you. Do you have your account number to hand? It's on your bill." },
+        { "speaker": "Fiona", "voice": "sage", "text": "Yes, it's nine-four-two, six-one-eight, oh-five. So 942 618 05." },
+        { "speaker": "Sam", "voice": "ash", "text": "Got it — account nine-four-two, six-one-eight, zero-five. Now, can you tell me what the lights on the router are doing?" },
+        { "speaker": "Fiona", "voice": "sage", "text": "The power light is green, but the broadband light is flashing red — it's usually a steady blue." },
+        { "speaker": "Sam", "voice": "ash", "text": "A flashing red broadband light usually means there's no connection on the line. Have you tried turning the router off and on again?" },
+        { "speaker": "Fiona", "voice": "sage", "text": "Yes, twice. I switched it off at the wall, waited a minute, and switched it back on. No change." },
+        { "speaker": "Sam", "voice": "ash", "text": "Okay, thank you for trying that. I can see there's actually a known fault affecting your area — a damaged cable near your exchange. Our engineers are already working on it." },
+        { "speaker": "Fiona", "voice": "sage", "text": "Oh, that's a relief in a way. When will it be fixed?" },
+        { "speaker": "Sam", "voice": "ash", "text": "The estimate is that service will be restored by six o'clock this evening — actually, let me update that, the latest note says by eight o'clock tonight. I do apologise for the delay." },
+        { "speaker": "Fiona", "voice": "sage", "text": "By eight this evening, all right. Is there anything I can do in the meantime? I've got a video call at four." },
+        { "speaker": "Sam", "voice": "ash", "text": "For today, I'd suggest using your mobile as a hotspot for that call. And as a gesture of goodwill, I'll add a credit of ten pounds to your next bill for the inconvenience." },
+        { "speaker": "Fiona", "voice": "sage", "text": "That's very kind, thank you." },
+        { "speaker": "Sam", "voice": "ash", "text": "You're welcome. I'll log this as fault reference F, then five-two-nine-zero, so F5290. If it's still not working after eight, please call back and quote that. We'll also send you a text the moment the line is back up." },
+        { "speaker": "Fiona", "voice": "sage", "text": "F5290. Perfect. Thank you very much for your help, Sam." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "BROADBAND FAULT REPORT",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Macleod"], "word_limit": 1 },
+        { "prompt_text": "Account number:", "accepted": ["94261805", "942 618 05", "942618 05"], "word_limit": 2 },
+        { "prompt_text": "Fault reference:", "accepted": ["F5290"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Details of the fault",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The broadband light on the router is:", "accepted": ["flashing red", "red"], "word_limit": 2 },
+        { "prompt_text": "Cause: a damaged ______ near the exchange.", "accepted": ["cable"], "word_limit": 1 },
+        { "prompt_text": "Service will be restored by:", "accepted": ["8 pm", "8pm", "eight pm", "8 o'clock", "20:00", "eight o'clock"], "word_limit": 2 },
+        { "prompt_text": "Credit added to next bill: £", "accepted": ["10", "£10", "10 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does Sam suggest Fiona do for her video call today?</p>",
+      "options": [
+        { "key": "A", "text": "use her mobile as a hotspot" },
+        { "key": "B", "text": "go to a nearby café" },
+        { "key": "C", "text": "reschedule the call" }
+      ],
+      "questions": [
+        { "prompt_text": "For today's call, Fiona should", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong>.</p>",
+      "questions": [
+        { "prompt_text": "The company will send Fiona a ______ as soon as the line is back up.", "accepted": ["text", "message"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

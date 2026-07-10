@@ -1,0 +1,78 @@
+{
+  "title": "Community Garden Open Day Welcome",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "map", "matching features", "multiple choice"],
+  "partStyle": "Part 2 (event welcome monologue)",
+  "speakers": [
+    { "name": "Wendy", "role": "Community garden volunteer coordinator", "voice": "sage" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Wendy", "voice": "sage", "text": "Hello, and welcome, everybody, to the Bridgeton Community Garden open day. My name's Wendy, and I coordinate the volunteers here. We're so pleased you could come, and I'd love to show you what we've created and how you can get involved." },
+        { "speaker": "Wendy", "voice": "sage", "text": "Let me first point out the different areas, using the plan on your leaflet. You've just come in through the gate on Canal Street. Straight in front of you is the main lawn, where we're holding the plant sale and the refreshments today." },
+        { "speaker": "Wendy", "voice": "sage", "text": "To the left of the lawn, along the fence, are the vegetable beds — this is the heart of the garden, where we grow all our produce. On the right of the lawn, in the sunny corner, is the wildflower meadow, which is buzzing with bees at this time of year." },
+        { "speaker": "Wendy", "voice": "sage", "text": "Beyond the vegetable beds, at the far end, is the orchard, with apple, pear and plum trees. And tucked in the corner behind the orchard is the pond, a wonderful spot for frogs and dragonflies — though please do keep an eye on little ones there." },
+        { "speaker": "Wendy", "voice": "sage", "text": "The greenhouse is over on the far right, next to the meadow, and that's where we raise all our seedlings. Finally, the tool shed and the compost area are right by the gate where you came in, on your left." },
+        { "speaker": "Wendy", "voice": "sage", "text": "Now, we're always looking for new volunteers, and there are lots of ways to help, to suit different people. If you love being outdoors and getting your hands dirty, the vegetable growing team is for you — that's digging, planting and weeding, mostly at weekends." },
+        { "speaker": "Wendy", "voice": "sage", "text": "If you're good with people, we could really use help running the stall at the local market, where we sell our surplus produce — that's more about chatting and handling money than gardening. For anyone who enjoys working with young people, our schools programme brings classes in to learn about nature, and we need friendly helpers for that." },
+        { "speaker": "Wendy", "voice": "sage", "text": "And if you'd rather work quietly on your own, the seed-saving group is perfect — it's careful, detailed work, collecting and labelling seeds for next year, and you can do it at your own pace." },
+        { "speaker": "Wendy", "voice": "sage", "text": "A few practical points. Membership is just five pounds a year, and members can rent their own small plot for a further ten pounds. We meet every Saturday morning from ten o'clock, whatever the weather. And please note the garden is entirely organic — so we ask that no chemical weedkillers or pesticides are ever brought onto the site. Right, do help yourselves to tea and cake, and come and find me if you'd like to sign up!" }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Label the garden plan. Where is each area located?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each area from the list.</p>",
+      "options": [
+        { "key": "A", "text": "straight ahead from the Canal Street gate" },
+        { "key": "B", "text": "to the left of the lawn, along the fence" },
+        { "key": "C", "text": "on the right of the lawn, in the sunny corner" },
+        { "key": "D", "text": "at the far end, beyond the vegetable beds" },
+        { "key": "E", "text": "on the far right, next to the meadow" },
+        { "key": "F", "text": "by the entrance gate, on the left" }
+      ],
+      "questions": [
+        { "prompt_text": "the main lawn", "correct_option_keys": ["A"] },
+        { "prompt_text": "the vegetable beds", "correct_option_keys": ["B"] },
+        { "prompt_text": "the wildflower meadow", "correct_option_keys": ["C"] },
+        { "prompt_text": "the orchard", "correct_option_keys": ["D"] },
+        { "prompt_text": "the greenhouse", "correct_option_keys": ["E"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Which volunteer role suits each kind of person?",
+      "instructions_html": "<p>Choose your answers from the list of roles <strong>A–D</strong> and select the correct letter for each type of person.</p>",
+      "options": [
+        { "key": "A", "text": "the vegetable growing team" },
+        { "key": "B", "text": "the market stall" },
+        { "key": "C", "text": "the schools programme" },
+        { "key": "D", "text": "the seed-saving group" }
+      ],
+      "questions": [
+        { "prompt_text": "someone who loves being outdoors and getting their hands dirty", "correct_option_keys": ["A"] },
+        { "prompt_text": "someone who is good with people", "correct_option_keys": ["B"] },
+        { "prompt_text": "someone who enjoys working with young people", "correct_option_keys": ["C"] },
+        { "prompt_text": "someone who prefers quiet work on their own", "correct_option_keys": ["D"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What must visitors NOT bring onto the garden site?</p>",
+      "options": [
+        { "key": "A", "text": "chemical weedkillers or pesticides" },
+        { "key": "B", "text": "their own tools" },
+        { "key": "C", "text": "children" }
+      ],
+      "questions": [
+        { "prompt_text": "Because the garden is organic, nobody may bring", "correct_option_keys": ["A"] }
+      ]
+    }
+  ]
+}

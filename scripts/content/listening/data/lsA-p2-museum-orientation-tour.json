@@ -1,0 +1,72 @@
+{
+  "title": "Orientation Tour of the City Museum",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "map", "matching", "multiple choice"],
+  "partStyle": "Part 2 (facility tour monologue)",
+  "speakers": [
+    { "name": "Diane", "role": "Museum guide", "voice": "fable" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Diane", "voice": "fable", "text": "Hello everyone, and a very warm welcome to the City Museum. My name's Diane, and I'll give you a quick orientation before you set off to explore on your own. Let me point out where the main galleries and facilities are, using the map on the back of your leaflet." },
+        { "speaker": "Diane", "voice": "fable", "text": "We're standing now in the main entrance hall. As you look at your map, the first thing to find is the cloakroom, where you can leave coats and bags. That's immediately on your right as you come in through the front doors — do use it, as large bags aren't allowed in the galleries." },
+        { "speaker": "Diane", "voice": "fable", "text": "Straight ahead of you, at the far end of the entrance hall, is the Egyptian Gallery. That's our most famous collection, with the mummies and the great stone carvings, so most people head there first." },
+        { "speaker": "Diane", "voice": "fable", "text": "If you turn left out of the entrance hall and go up the main staircase, you'll reach the Natural History Gallery on the first floor. That's where you'll find the dinosaur skeletons — always a favourite with younger visitors." },
+        { "speaker": "Diane", "voice": "fable", "text": "Back down on the ground floor, in the corner to the left of the Egyptian Gallery, is the Coins and Medals room. It's a small, quiet space, easy to miss, but well worth a look if you're interested in history." },
+        { "speaker": "Diane", "voice": "fable", "text": "Now, for refreshments. The café is on the right-hand side, just past the cloakroom, overlooking the courtyard garden. They do a lovely soup of the day. And if you're after a souvenir, the gift shop is right next to the exit, so you'll pass it naturally on your way out." },
+        { "speaker": "Diane", "voice": "fable", "text": "A few practical points. Photography is fine in most of the museum, but please note that in the Egyptian Gallery, flash photography is not allowed, as the bright light can damage the ancient paintwork. Ordinary photos without flash are absolutely fine." },
+        { "speaker": "Diane", "voice": "fable", "text": "Entry to the museum is free, but we do suggest a donation of three pounds if you're able to, and there's a collection box by the door. Our special exhibition on Ancient Rome, though, does have a charge — that's five pounds for adults, and it's in the gallery downstairs." },
+        { "speaker": "Diane", "voice": "fable", "text": "Finally, if you'd like to learn more, there's a free guided tour of the highlights every day. It leaves from right here, by the information desk, at eleven o'clock and again at two o'clock, and it lasts about forty-five minutes. Do join if you can. Otherwise, enjoy exploring, and please don't hesitate to ask any of our staff if you need help." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Label the museum plan. Where is each place located?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each place from the list.</p>",
+      "options": [
+        { "key": "A", "text": "immediately on the right of the entrance" },
+        { "key": "B", "text": "straight ahead, at the far end of the entrance hall" },
+        { "key": "C", "text": "on the first floor, up the main staircase" },
+        { "key": "D", "text": "in the corner, left of the Egyptian Gallery" },
+        { "key": "E", "text": "on the right, past the cloakroom" },
+        { "key": "F", "text": "next to the exit" }
+      ],
+      "questions": [
+        { "prompt_text": "the cloakroom", "correct_option_keys": ["A"] },
+        { "prompt_text": "the Egyptian Gallery", "correct_option_keys": ["B"] },
+        { "prompt_text": "the Natural History Gallery", "correct_option_keys": ["C"] },
+        { "prompt_text": "the café", "correct_option_keys": ["E"] },
+        { "prompt_text": "the gift shop", "correct_option_keys": ["F"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is NOT permitted in the Egyptian Gallery?</p>",
+      "options": [
+        { "key": "A", "text": "taking any photographs" },
+        { "key": "B", "text": "using flash photography" },
+        { "key": "C", "text": "bringing children" }
+      ],
+      "questions": [
+        { "prompt_text": "In the Egyptian Gallery, visitors may not use", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Practical information",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Suggested donation on entry: £", "accepted": ["3", "£3", "3 pounds"], "word_limit": 2 },
+        { "prompt_text": "Adult charge for the Ancient Rome exhibition: £", "accepted": ["5", "£5", "5 pounds"], "word_limit": 2 },
+        { "prompt_text": "The free highlights tour leaves from the information desk at 11 am and again at:", "accepted": ["2 pm", "2pm", "two pm", "2 o'clock", "14:00", "two o'clock"], "word_limit": 2 },
+        { "prompt_text": "The guided tour lasts about ______ minutes.", "accepted": ["45", "forty-five", "forty five"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

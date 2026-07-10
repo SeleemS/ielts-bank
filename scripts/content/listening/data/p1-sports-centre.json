@@ -1,0 +1,84 @@
+{
+  "title": "Riverside Sports Centre Membership Enquiry",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "enquiry", "form completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Megan", "role": "Sports centre receptionist", "voice": "nova" },
+    { "name": "David", "role": "New member (caller)", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Megan", "voice": "nova", "text": "Good morning, Riverside Community Sports Centre, Megan speaking. How can I help you?" },
+        { "speaker": "David", "voice": "onyx", "text": "Oh, hello. I'd like to sign up for a membership, please. I've just moved to the area and I'd like to start using the gym." },
+        { "speaker": "Megan", "voice": "nova", "text": "Of course, I can set that up for you right now over the phone. Let me just take a few details. First of all, could I have your surname?" },
+        { "speaker": "David", "voice": "onyx", "text": "Yes, it's Ramsden." },
+        { "speaker": "Megan", "voice": "nova", "text": "Could you spell that for me, please?" },
+        { "speaker": "David", "voice": "onyx", "text": "Certainly. It's R-A-M-S-D-E-N. Ramsden. And my first name is David." },
+        { "speaker": "Megan", "voice": "nova", "text": "Lovely, thank you, David. And what's the best contact number for you?" },
+        { "speaker": "David", "voice": "onyx", "text": "It's my mobile. It's oh-seven-nine-six-six, four-one-two, oh-eight-five." },
+        { "speaker": "Megan", "voice": "nova", "text": "Let me just read that back to make sure I've got it right — that's oh-seven-nine-six-six, four-one-two, oh-eight-five?" },
+        { "speaker": "David", "voice": "onyx", "text": "That's the one, yes." },
+        { "speaker": "Megan", "voice": "nova", "text": "Perfect. Now, we offer two types of membership. There's the Standard, which is twenty-nine pounds a month and covers the gym and the swimming pool. And there's the Premium at forty-two pounds a month, which adds all of our fitness classes and free parking." },
+        { "speaker": "David", "voice": "onyx", "text": "Hmm. I think I'll just go for the Standard — actually, no. I really do want to do the classes, so let's make it the Premium, please." },
+        { "speaker": "Megan", "voice": "nova", "text": "Good choice. So that's the Premium at forty-two pounds a month. There's also a one-off joining fee of fifteen pounds, which covers your membership card and a locker key." },
+        { "speaker": "David", "voice": "onyx", "text": "That's fine, no problem." },
+        { "speaker": "Megan", "voice": "nova", "text": "Since you've gone for the Premium, shall I book you into a class to get you started?" },
+        { "speaker": "David", "voice": "onyx", "text": "Yes, please. I was thinking of the yoga on Monday evenings... actually, on second thoughts, could you put me down for the spinning class instead? I could really do with the cardio." },
+        { "speaker": "Megan", "voice": "nova", "text": "The spinning class it is. That one runs on Wednesday and Friday evenings — which of those suits you better?" },
+        { "speaker": "David", "voice": "onyx", "text": "Friday works best for me." },
+        { "speaker": "Megan", "voice": "nova", "text": "Friday evenings, noted. Now, when you come in to pay, please remember to bring a passport-sized photo for your membership card." },
+        { "speaker": "David", "voice": "onyx", "text": "Will do. Oh, one last thing — what are your opening hours at the weekend?" },
+        { "speaker": "Megan", "voice": "nova", "text": "On Saturdays and Sundays we open at seven in the morning and close at eight in the evening. During the week we stay open until ten." },
+        { "speaker": "David", "voice": "onyx", "text": "Great. Thanks so much for your help, Megan." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "MEMBERSHIP APPLICATION FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Ramsden"], "word_limit": 1 },
+        { "prompt_text": "Contact (mobile) number:", "accepted": ["07966412085", "07966 412 085", "07966 412085"], "word_limit": 2 },
+        { "prompt_text": "Membership type chosen:", "accepted": ["Premium"], "word_limit": 1 },
+        { "prompt_text": "Monthly fee: £", "accepted": ["42", "£42", "42 pounds"], "word_limit": 2 },
+        { "prompt_text": "One-off joining fee: £", "accepted": ["15", "£15", "15 pounds"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "First class booking",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Class booked:", "accepted": ["spinning"], "word_limit": 1 },
+        { "prompt_text": "Preferred evening:", "accepted": ["Friday"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is David asked to bring when he visits the centre?</p>",
+      "options": [
+        { "key": "A", "text": "proof of his new address" },
+        { "key": "B", "text": "a passport-sized photo" },
+        { "key": "C", "text": "his old membership card" }
+      ],
+      "questions": [
+        { "prompt_text": "David is asked to bring:", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong>.</p>",
+      "questions": [
+        { "prompt_text": "At weekends the centre closes at", "accepted": ["8 pm", "8pm", "8 p.m.", "eight pm", "eight o'clock", "20:00"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

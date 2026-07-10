@@ -1,0 +1,83 @@
+{
+  "title": "Enrolling in an Evening Cookery Course",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "enrolment", "form completion", "note completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Priya", "role": "Community college course adviser", "voice": "shimmer" },
+    { "name": "Tom", "role": "Prospective student", "voice": "ash" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Priya", "voice": "shimmer", "text": "Good evening, Meadowbank Community College, Priya speaking. How can I help?" },
+        { "speaker": "Tom", "voice": "ash", "text": "Hi. I saw a leaflet about your evening cookery courses and I'd like to sign up for one." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Great choice, they're very popular. Let me take your details and get you enrolled. Could I have your surname to start?" },
+        { "speaker": "Tom", "voice": "ash", "text": "Yes, it's Halloran." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Could you spell that for me, please?" },
+        { "speaker": "Tom", "voice": "ash", "text": "Sure. It's H-A-L-L-O-R-A-N. Halloran. First name Tom." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Thank you, Tom. And an email address so I can send confirmation?" },
+        { "speaker": "Tom", "voice": "ash", "text": "It's tom, dot, halloran, at, gmail, dot com. All lower case." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Lovely. Now, we run three courses this term. There's Italian Cooking, Thai Street Food, and French Pastry. Which one takes your fancy?" },
+        { "speaker": "Tom", "voice": "ash", "text": "Ooh, I was set on the Thai one — actually, no, on second thoughts, let's go with the French Pastry course. I've always wanted to learn to make proper croissants." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Excellent, the French Pastry course it is. That one runs on Thursday evenings, from half past six until half past eight, for eight weeks." },
+        { "speaker": "Tom", "voice": "ash", "text": "Thursdays are perfect. How much does it cost?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "The course fee is a hundred and forty pounds for the eight weeks. There's also a separate ingredients charge of twenty-five pounds, which you pay to the tutor on the first evening." },
+        { "speaker": "Tom", "voice": "ash", "text": "That's fine. Is there anything I need to bring along?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "The college provides all the equipment and the aprons, so you don't need to bring anything really — although we do suggest you bring a container to take your bakes home in. Oh, and please wear flat, closed shoes for safety in the kitchen." },
+        { "speaker": "Tom", "voice": "ash", "text": "Noted. When does it start?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "The first class is on Thursday the eighteenth of September. I'll put you down now. Your enrolment number is C, then five-one-eight-three — so C5183. Quote that if you need to get in touch." },
+        { "speaker": "Tom", "voice": "ash", "text": "C5183. Brilliant. And how do I pay the course fee?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "You can pay online through our website, or in person at reception. Just make sure it's settled at least one week before the course begins, or the place can't be held. Reception, by the way, is open until eight in the evening on weekdays." },
+        { "speaker": "Tom", "voice": "ash", "text": "Great, I'll pay online tonight. Thank you so much, Priya." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "COURSE ENROLMENT FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Halloran"], "word_limit": 1 },
+        { "prompt_text": "Course chosen:", "accepted": ["French Pastry", "French Pastry course", "French"], "word_limit": 2 },
+        { "prompt_text": "Course fee: £", "accepted": ["140", "£140", "140 pounds"], "word_limit": 2 },
+        { "prompt_text": "Enrolment number:", "accepted": ["C5183"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Course details",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Class evening:", "accepted": ["Thursday", "Thursdays"], "word_limit": 1 },
+        { "prompt_text": "Course lasts (weeks):", "accepted": ["8", "eight"], "word_limit": 1 },
+        { "prompt_text": "Ingredients charge paid to the tutor: £", "accepted": ["25", "£25", "25 pounds"], "word_limit": 2 },
+        { "prompt_text": "First class date:", "accepted": ["18 September", "18th September", "September 18", "18/09"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does the college advise Tom to wear?</p>",
+      "options": [
+        { "key": "A", "text": "an apron of his own" },
+        { "key": "B", "text": "flat, closed shoes" },
+        { "key": "C", "text": "a chef's hat" }
+      ],
+      "questions": [
+        { "prompt_text": "For safety, Tom should wear", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong>.</p>",
+      "questions": [
+        { "prompt_text": "The fee must be paid at least ______ before the course begins.", "accepted": ["one week", "1 week", "a week"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

@@ -99,8 +99,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: 'AI feedback (coming soon)',
-    desc: 'Detailed, criterion-by-criterion AI grading for your Writing and Speaking is on the way.',
+    title: 'AI Writing feedback',
+    desc: 'Get instant, criterion-by-criterion band scores and detailed feedback on your Writing essays. Speaking feedback is coming soon.',
   },
   {
     icon: Star,
@@ -193,8 +193,8 @@ const HomePage = ({ counts = {} }) => {
                 </h1>
                 <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-200">
                   Practise authentic-style Reading, Writing and Listening questions,
-                  get scored instantly, and study band-scored model answers — all
-                  completely free, no sign-up required.
+                  get instant auto-scoring plus AI band feedback on your essays, and
+                  study band-scored model answers — all completely free, no sign-up required.
                 </p>
                 <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Button asChild variant="accent" size="lg" className="w-full sm:w-auto">

@@ -1,0 +1,103 @@
+{
+  "title": "Tutorial: Designing a Loyalty-Card Consumer Survey",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "research methods", "marketing", "multiple choice", "matching"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Bennett", "role": "Tutor", "voice": "sage" },
+    { "name": "Priya", "role": "Student", "voice": "nova" },
+    { "name": "Marco", "role": "Student", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "Right, Priya, Marco, take a seat. So this is your dissertation on supermarket loyalty cards. Remind me what the central question is that you're actually trying to answer." },
+        { "speaker": "Priya", "voice": "nova", "text": "Well, at first we wanted to know whether loyalty cards increase how much people spend. But after reading around, we've narrowed it down. We now want to find out whether the cards change where people shop, rather than how much they spend overall." },
+        { "speaker": "Marco", "voice": "onyx", "text": "Exactly. Lots of studies already look at spending totals. Almost nobody has asked whether a card actually stops customers going to a rival shop. That's the gap we think we can fill." },
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "Good, that's a much sharper focus. Loyalty, not just spending. Now, you ran a small pilot survey last month, didn't you? How did that go?" },
+        { "speaker": "Priya", "voice": "nova", "text": "Honestly, it threw up two real problems. The first was that our questionnaire was simply too long — people gave up halfway through, so we lost a lot of responses." },
+        { "speaker": "Marco", "voice": "onyx", "text": "And the second thing was the wording. Several of our questions were leading — they pushed people towards saying the card was useful. That would obviously bias the results." },
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "Those are both very common pitfalls, and I'm glad you spotted them early. The length is easy to fix — cut it right down. The leading questions are more subtle, so rewrite those neutrally and I'll check them." },
+        { "speaker": "Priya", "voice": "nova", "text": "We also worried the sample was skewed. We only surveyed shoppers on a weekday morning, and that group was mostly retired people. It wasn't representative of all customers." },
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "Right, so vary the times. Survey on weekends and in the evenings as well, so you capture people who work full-time. Now, let's talk about who does what. There's a lot to organise here." },
+        { "speaker": "Marco", "voice": "onyx", "text": "I'm happy to handle the fieldwork — going into the stores, approaching shoppers, collecting the completed forms. I actually quite enjoy talking to strangers." },
+        { "speaker": "Priya", "voice": "nova", "text": "And I'll take responsibility for entering all the data and running it through the software. Numbers don't scare me the way they scare Marco." },
+        { "speaker": "Marco", "voice": "onyx", "text": "That's true, they really don't. What about the literature review, though? Neither of us has finished reading everything yet." },
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "Leave the framing of the literature review to me for now — I'll pull together a reading list and we can shape that section together. You two concentrate on getting clean data. When do you think you can start collecting?" },
+        { "speaker": "Priya", "voice": "nova", "text": "If we finalise the questionnaire this week, we could begin the main survey on the fifteenth of March and aim to finish within a month." },
+        { "speaker": "Dr Bennett", "voice": "sage", "text": "That timetable works. One last thing — make sure every participant signs a consent form before they answer. The ethics committee is strict about that. Don't skip it." },
+        { "speaker": "Marco", "voice": "onyx", "text": "Understood. Consent forms first, every time. Thanks, Dr Bennett, this has really helped us focus." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is the central question of the students' dissertation?</p>",
+      "options": [
+        { "key": "A", "text": "whether loyalty cards increase total spending" },
+        { "key": "B", "text": "whether loyalty cards change where people shop" },
+        { "key": "C", "text": "whether loyalty cards are worth their cost to shops" }
+      ],
+      "questions": [
+        { "prompt_text": "The dissertation now focuses on", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why do the students think their topic fills a gap?</p>",
+      "options": [
+        { "key": "A", "text": "No one has measured spending totals before." },
+        { "key": "B", "text": "Few studies ask whether a card keeps customers from rivals." },
+        { "key": "C", "text": "Loyalty cards have only recently been introduced." }
+      ],
+      "questions": [
+        { "prompt_text": "According to Marco, the gap in the research is that", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice_multi",
+      "prompt": "Choose TWO letters, A–E.",
+      "instructions_html": "<p>Which TWO problems did the pilot survey reveal?</p>",
+      "options": [
+        { "key": "A", "text": "The questionnaire was too long." },
+        { "key": "B", "text": "The software kept crashing." },
+        { "key": "C", "text": "Some questions were leading." },
+        { "key": "D", "text": "There were too few questions." },
+        { "key": "E", "text": "The forms were printed incorrectly." }
+      ],
+      "questions": [
+        { "prompt_text": "Two problems with the pilot survey", "correct_option_keys": ["A", "C"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will take responsibility for each task?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each task. You may choose any letter more than once.</p>",
+      "options": [
+        { "key": "A", "text": "Priya" },
+        { "key": "B", "text": "Marco" },
+        { "key": "C", "text": "Dr Bennett" }
+      ],
+      "questions": [
+        { "prompt_text": "approaching shoppers and collecting forms", "correct_option_keys": ["B"] },
+        { "prompt_text": "entering and analysing the data", "correct_option_keys": ["A"] },
+        { "prompt_text": "framing the literature review", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "To fix the sampling problem, they will survey at weekends and in the ______.", "accepted": ["evenings", "evening"], "word_limit": 1 },
+        { "prompt_text": "The main survey is planned to begin on the ______ of March.", "accepted": ["fifteenth", "15th", "15"], "word_limit": 1 },
+        { "prompt_text": "Before answering, every participant must sign a ______ form.", "accepted": ["consent"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

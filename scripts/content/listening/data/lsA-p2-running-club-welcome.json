@@ -1,0 +1,69 @@
+{
+  "title": "Welcome Talk for New Running Club Members",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "club welcome", "matching features", "note completion"],
+  "partStyle": "Part 2 (club welcome monologue)",
+  "speakers": [
+    { "name": "Angela", "role": "Running club organiser", "voice": "coral" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Angela", "voice": "coral", "text": "Hi everyone, and a big welcome to the Parkside Runners. I'm Angela, one of the organisers, and I'm delighted to see so many new faces tonight. Let me tell you how the club works and what you can look forward to." },
+        { "speaker": "Angela", "voice": "coral", "text": "First, a bit about us. The club was started twelve years ago by a small group of friends, and we now have over two hundred members, of every age and ability. So please don't worry that you won't be fast enough — we genuinely welcome everyone, from complete beginners to marathon runners." },
+        { "speaker": "Angela", "voice": "coral", "text": "We meet three times a week. There's a session here at the clubhouse every Tuesday and Thursday evening at half past six, and a longer run on Sunday mornings at nine o'clock. You don't have to come to all of them — just turn up whenever suits you." },
+        { "speaker": "Angela", "voice": "coral", "text": "Now, we run several different groups, and I want to help you choose the right one, because they're quite different in character. The Tuesday group is our beginners' group — we use a walk-and-run method, and nobody is ever left behind. If you've barely run before, that's the one for you." },
+        { "speaker": "Angela", "voice": "coral", "text": "The Thursday group is a speed session on the track. It's designed for experienced runners who want to get faster, with sprints and intervals, so it's quite demanding. The Sunday long run is all about building endurance — it's for people training for a half marathon or marathon, and can be up to two hours." },
+        { "speaker": "Angela", "voice": "coral", "text": "We've also just launched a social running group, which meets on the first Saturday of each month. There's no pressure on pace at all — the whole point is to chat, enjoy the scenery, and usually finish with coffee and cake. It's perfect if you mainly want to make friends." },
+        { "speaker": "Angela", "voice": "coral", "text": "On to membership. It costs forty pounds a year, which includes insurance, a club running vest, and discounts at the local sports shop. You can pay online through our website, or hand a cheque to me tonight." },
+        { "speaker": "Angela", "voice": "coral", "text": "A couple of important safety points. On the evening runs in winter, it's dark, so you must wear something bright or reflective — we can't let you run with us otherwise. And please always tell the group leader if you're dropping out early, so we don't waste time searching for you." },
+        { "speaker": "Angela", "voice": "coral", "text": "Finally, our big event of the year is the club's own ten-kilometre race, which this year is on Sunday the twelfth of October. All the money raised goes to the children's hospital, and last year we raised nearly four thousand pounds. Do put it in your diary. Right — shall we go for a gentle run together? Follow me!" }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_features",
+      "prompt": "Which type of runner is each group best suited to?",
+      "instructions_html": "<p>Choose your answers from the list <strong>A–D</strong> and select the correct letter for each group. You may choose any letter more than once.</p>",
+      "options": [
+        { "key": "A", "text": "complete beginners" },
+        { "key": "B", "text": "experienced runners wanting speed" },
+        { "key": "C", "text": "people training for a marathon" },
+        { "key": "D", "text": "people who mainly want to socialise" }
+      ],
+      "questions": [
+        { "prompt_text": "the Tuesday group", "correct_option_keys": ["A"] },
+        { "prompt_text": "the Thursday track session", "correct_option_keys": ["B"] },
+        { "prompt_text": "the Sunday long run", "correct_option_keys": ["C"] },
+        { "prompt_text": "the monthly Saturday group", "correct_option_keys": ["D"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Club information",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The club has over ______ members.", "accepted": ["200", "two hundred"], "word_limit": 2 },
+        { "prompt_text": "Sunday long run starts at:", "accepted": ["9 am", "9am", "nine am", "9 o'clock", "09:00", "nine o'clock"], "word_limit": 2 },
+        { "prompt_text": "Annual membership fee: £", "accepted": ["40", "£40", "40 pounds"], "word_limit": 2 },
+        { "prompt_text": "Date of the club's 10 km race:", "accepted": ["12 October", "12th October", "October 12", "12/10", "Sunday 12 October"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What must members wear on the winter evening runs?</p>",
+      "options": [
+        { "key": "A", "text": "the club running vest" },
+        { "key": "B", "text": "something bright or reflective" },
+        { "key": "C", "text": "a head torch" }
+      ],
+      "questions": [
+        { "prompt_text": "On dark evening runs, members must wear", "correct_option_keys": ["B"] }
+      ]
+    }
+  ]
+}

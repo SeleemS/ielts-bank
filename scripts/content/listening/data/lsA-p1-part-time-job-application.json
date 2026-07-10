@@ -1,0 +1,81 @@
+{
+  "title": "Applying for a Part-Time Café Job",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "application", "form completion", "note completion"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Laura", "role": "Café manager", "voice": "onyx" },
+    { "name": "Chloe", "role": "Job applicant", "voice": "coral" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Laura", "voice": "onyx", "text": "Hello, Cornerstone Café, Laura speaking." },
+        { "speaker": "Chloe", "voice": "coral", "text": "Hi, I saw your advert for a part-time weekend job in the window, and I'd like to apply, please." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Great, thanks for calling. Let me take a few details and set up an interview. Could I have your full name?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "Yes, it's Chloe Bennett." },
+        { "speaker": "Laura", "voice": "onyx", "text": "And how do you spell the surname?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "It's B-E-N-N-E-T-T. Bennett. Two Ns, two Ts." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Perfect, thank you. And a phone number I can reach you on?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "It's oh-seven-five-three-three, four-one-nine, seven-eight-two." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Let me read that back — oh-seven-five-three-three, four-one-nine, seven-eight-two. Right?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "That's it." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Now, have you done any similar work before?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "Yes, I worked in a bakery for about a year, mostly serving customers and using the till. So I've got some experience with the coffee machine too." },
+        { "speaker": "Laura", "voice": "onyx", "text": "That's really useful. The job is Saturdays and Sundays, from eight in the morning until two in the afternoon. The pay is eleven pounds fifty an hour, and you'd get a free lunch on shift." },
+        { "speaker": "Chloe", "voice": "coral", "text": "That sounds great. I can definitely do both weekend days." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Wonderful. Now, we'd need you to start fairly soon. When could you begin?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "I could start straight away — well, actually, I'm away next week, so the following weekend would be better. That would be the fourteenth." },
+        { "speaker": "Laura", "voice": "onyx", "text": "The fourteenth is fine. Let's get you in for an interview first, though. Could you come in this Thursday at half past four?" },
+        { "speaker": "Chloe", "voice": "coral", "text": "Thursday at half past four, yes, that works." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Lovely. When you come, please bring a form of ID and, if you can, the name of someone who can give you a reference — a previous manager, ideally, not a family member." },
+        { "speaker": "Chloe", "voice": "coral", "text": "No problem, I'll bring my passport and my old manager's details." },
+        { "speaker": "Laura", "voice": "onyx", "text": "Perfect. Just so you can find us, we're the café on the corner of King Street, right opposite the post office. See you Thursday, Chloe." },
+        { "speaker": "Chloe", "voice": "coral", "text": "Great, I know exactly where you mean. Is there anything I should know about the uniform, or what to wear?" },
+        { "speaker": "Laura", "voice": "onyx", "text": "We'll give you a branded apron and a T-shirt on your first day, so you don't need to buy anything. Just wear comfortable dark trousers and non-slip shoes, as the floor can get a bit wet behind the counter. And we ask staff to tie long hair back for hygiene." },
+        { "speaker": "Chloe", "voice": "coral", "text": "That's all fine. Will the interview involve any kind of trial, or is it just a chat?" },
+        { "speaker": "Laura", "voice": "onyx", "text": "It's mostly a chat, but I might ask you to make a couple of coffees on the machine, just so I can see how you get on. Nothing to worry about — I'll talk you through it. It usually takes about twenty minutes altogether." },
+        { "speaker": "Chloe", "voice": "coral", "text": "Perfect, that sounds fine. Brilliant. Thank you so much, Laura. See you Thursday." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "JOB APPLICANT DETAILS",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Bennett"], "word_limit": 1 },
+        { "prompt_text": "Phone number:", "accepted": ["07533419782", "07533 419 782", "07533 419782"], "word_limit": 2 },
+        { "prompt_text": "Previous workplace:", "accepted": ["bakery", "a bakery"], "word_limit": 2 },
+        { "prompt_text": "Interview day:", "accepted": ["Thursday"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Job details",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Working days:", "accepted": ["weekends", "Saturdays and Sundays", "Saturday and Sunday"], "word_limit": 2 },
+        { "prompt_text": "Shift ends at:", "accepted": ["2 pm", "2pm", "two pm", "2 o'clock", "14:00", "two o'clock"], "word_limit": 2 },
+        { "prompt_text": "Pay per hour: £", "accepted": ["11.50", "£11.50", "11 pounds 50", "eleven pounds fifty"], "word_limit": 2 },
+        { "prompt_text": "Interview time:", "accepted": ["4:30", "4.30", "half past four", "4:30 pm", "430"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Who does Laura suggest Chloe ask for a reference?</p>",
+      "options": [
+        { "key": "A", "text": "a family member" },
+        { "key": "B", "text": "a previous manager" },
+        { "key": "C", "text": "a school teacher" }
+      ],
+      "questions": [
+        { "prompt_text": "For a reference, Chloe should name", "correct_option_keys": ["B"] }
+      ]
+    }
+  ]
+}

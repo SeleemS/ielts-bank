@@ -1,0 +1,106 @@
+{
+  "title": "Fieldwork Debrief: Observing Children at Play",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "discussion", "psychology", "fieldwork", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Okafor", "role": "Tutor", "voice": "coral" },
+    { "name": "Leah", "role": "Student", "voice": "shimmer" },
+    { "name": "Sam", "role": "Student", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Okafor", "voice": "coral", "text": "So, you're both back from the playground observation. This was your first proper piece of fieldwork. Leah, how did it feel in practice compared with the theory we covered?" },
+        { "speaker": "Leah", "voice": "shimmer", "text": "Much harder than I expected, honestly. In the seminar it sounded straightforward — just watch and record. But children move so fast that I kept missing things while I was writing the last note down." },
+        { "speaker": "Sam", "voice": "ballad", "text": "I found the opposite, actually. My problem wasn't speed, it was deciding what counted as one behaviour and what counted as two. The categories on our coding sheet weren't as clear as we thought." },
+        { "speaker": "Dr Okafor", "voice": "coral", "text": "That's a really important observation, Sam. Ambiguous categories are the single biggest threat to reliability in this kind of study. Did the two of you ever code the same event differently?" },
+        { "speaker": "Sam", "voice": "ballad", "text": "Constantly. One child grabbed a toy from another, and I recorded it as aggressive, but Leah recorded exactly the same moment as playful. We couldn't both be right." },
+        { "speaker": "Leah", "voice": "shimmer", "text": "To be fair, I think mine was the wrong call there. Looking back at my notes, the two children were laughing, so playful probably wasn't accurate either. It was genuinely hard to judge intention." },
+        { "speaker": "Dr Okafor", "voice": "coral", "text": "And that's precisely why we measure inter-rater reliability — so we can be honest about how often observers disagree. The solution isn't to pretend you agreed; it's to refine the definitions until you would. Now, what about the practical set-up?" },
+        { "speaker": "Leah", "voice": "shimmer", "text": "Positioning was tricky. We sat on a bench at the edge, which felt discreet, but some children clearly noticed us and started performing — showing off for the strangers with notebooks." },
+        { "speaker": "Sam", "voice": "ballad", "text": "Yes, that reactivity was obvious. I think next time we should arrive earlier and let them get used to us before we start recording anything." },
+        { "speaker": "Dr Okafor", "voice": "coral", "text": "A habituation period, exactly. Good instinct. Now let's think about the write-up. I want each of you to take a clear section so the workload is fair. Any preferences?" },
+        { "speaker": "Sam", "voice": "ballad", "text": "I'd like to write up the methods section. I took the most detailed notes on the procedure, so it makes sense for me." },
+        { "speaker": "Leah", "voice": "shimmer", "text": "Then I'll do the discussion — I've got lots of ideas about what the disagreements actually mean for the theory. That's the part I find most interesting." },
+        { "speaker": "Dr Okafor", "voice": "coral", "text": "Fine. And I'll draft the introduction with the background reading, so you two can build on a solid frame. One deadline reminder: I need your combined first draft by the end of week eight, no later." },
+        { "speaker": "Leah", "voice": "shimmer", "text": "Week eight. We'll manage that. Thank you — I feel much less anxious about the disagreements now that I know they're actually useful data." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What did Leah find most difficult about the observation?</p>",
+      "options": [
+        { "key": "A", "text": "keeping up with fast-moving children while writing" },
+        { "key": "B", "text": "understanding the theory beforehand" },
+        { "key": "C", "text": "reaching the playground on time" }
+      ],
+      "questions": [
+        { "prompt_text": "Leah's main difficulty was", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does Dr Okafor identify as the biggest threat to reliability?</p>",
+      "options": [
+        { "key": "A", "text": "children performing for the observers" },
+        { "key": "B", "text": "unclear behaviour categories" },
+        { "key": "C", "text": "sitting too far from the action" }
+      ],
+      "questions": [
+        { "prompt_text": "According to the tutor, reliability is most threatened by", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What do the students agree to do differently next time?</p>",
+      "options": [
+        { "key": "A", "text": "arrive earlier so children get used to them" },
+        { "key": "B", "text": "record from a hidden camera instead" },
+        { "key": "C", "text": "observe only one child at a time" }
+      ],
+      "questions": [
+        { "prompt_text": "To reduce reactivity, they will", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "matching_sentence_endings",
+      "prompt": "Complete each sentence with the correct ending, A–E.",
+      "instructions_html": "<p>Choose the correct ending for each sentence from the list <strong>A–E</strong>. There are more endings than sentences.</p>",
+      "options": [
+        { "key": "A", "text": "because the children were clearly laughing together." },
+        { "key": "B", "text": "so that observers can be honest about disagreement." },
+        { "key": "C", "text": "because the coding categories overlapped." },
+        { "key": "D", "text": "so the study could be finished more quickly." },
+        { "key": "E", "text": "because there were not enough observers." }
+      ],
+      "questions": [
+        { "prompt_text": "Sam and Leah coded the same toy-grabbing event differently", "correct_option_keys": ["C"] },
+        { "prompt_text": "Leah decided her 'playful' label was probably wrong", "correct_option_keys": ["A"] },
+        { "prompt_text": "The study measures inter-rater reliability", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will write each section of the report?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each section.</p>",
+      "options": [
+        { "key": "A", "text": "Leah" },
+        { "key": "B", "text": "Sam" },
+        { "key": "C", "text": "Dr Okafor" }
+      ],
+      "questions": [
+        { "prompt_text": "the methods section", "correct_option_keys": ["B"] },
+        { "prompt_text": "the discussion section", "correct_option_keys": ["A"] },
+        { "prompt_text": "the introduction", "correct_option_keys": ["C"] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "title": "Design Review: A Student Footbridge Project",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "engineering", "design", "multiple choice", "matching"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Price", "role": "Tutor", "voice": "onyx" },
+    { "name": "Yasmin", "role": "Student", "voice": "coral" },
+    { "name": "Tom", "role": "Student", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Price", "voice": "onyx", "text": "Right, let's review your footbridge design. You were asked to bridge a fifteen-metre gap across the campus stream. Talk me through the concept you settled on." },
+        { "speaker": "Yasmin", "voice": "coral", "text": "We went for a simple beam bridge in the end. We did consider a suspension design, which looks more impressive, but for a fifteen-metre span it would have been unnecessarily complex and expensive." },
+        { "speaker": "Tom", "voice": "ballad", "text": "Right — the suspension idea was mostly me being ambitious. Yasmin talked me out of it, and she was correct. For this span, a beam is the sensible choice." },
+        { "speaker": "Dr Price", "voice": "onyx", "text": "I agree entirely. Engineers should never add complexity for its own sake. Now, the material — you chose weathering steel. What was the reasoning?" },
+        { "speaker": "Yasmin", "voice": "coral", "text": "Two reasons. First, it's strong enough for the loads we calculated. But mainly, weathering steel forms its own protective rust layer, so it never needs painting. That cuts the maintenance cost right down." },
+        { "speaker": "Dr Price", "voice": "onyx", "text": "Good — low maintenance is a genuine advantage for a bridge no one will inspect very often. Now, I do have a concern about your calculations. The dead load looked fine, but I wasn't happy with how you handled the live load. Tom?" },
+        { "speaker": "Tom", "voice": "ballad", "text": "Yes, I think I see the problem. We calculated for an average crowd of people, but we didn't account for everyone moving in step — a group walking in rhythm could set up a vibration." },
+        { "speaker": "Dr Price", "voice": "onyx", "text": "Exactly. Pedestrian bridges can sway alarmingly if the crowd's footsteps synchronise. It's a famous failure mode. You'll need to add a damping calculation." },
+        { "speaker": "Yasmin", "voice": "coral", "text": "That makes sense. I'd rather add a damper than make the whole beam heavier, which is what Tom first suggested." },
+        { "speaker": "Tom", "voice": "ballad", "text": "Fair. A damper is more elegant than just bulking up the steel. I'll concede that one." },
+        { "speaker": "Dr Price", "voice": "onyx", "text": "Good. Now let's assign the revisions. Someone redoes the live-load maths, someone updates the technical drawings, and I'll review your cost estimate. Preferences?" },
+        { "speaker": "Tom", "voice": "ballad", "text": "I'll redo the live-load calculations with the damping factor — it was my section that had the gap, so I should fix it." },
+        { "speaker": "Yasmin", "voice": "coral", "text": "And I'll update the drawings. I did them in the software originally, so it's quickest for me to make the changes." },
+        { "speaker": "Dr Price", "voice": "onyx", "text": "Perfect. I'll go through your costings and flag anything unrealistic. Submit the revised package by the end of week seven, and make sure the drawings are all to the same scale this time." },
+        { "speaker": "Yasmin", "voice": "coral", "text": "Same scale throughout, week seven. Understood. Thanks, Dr Price — the point about synchronised footsteps was one we'd completely missed." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why did the students reject a suspension design?</p>",
+      "options": [
+        { "key": "A", "text": "It would look too plain for the setting." },
+        { "key": "B", "text": "It was too complex and costly for the span." },
+        { "key": "C", "text": "It could not carry the required load." }
+      ],
+      "questions": [
+        { "prompt_text": "They chose a beam bridge because a suspension design was", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is the main advantage of the weathering steel they chose?</p>",
+      "options": [
+        { "key": "A", "text": "It never needs to be painted." },
+        { "key": "B", "text": "It is the cheapest steel available." },
+        { "key": "C", "text": "It is much lighter than ordinary steel." }
+      ],
+      "questions": [
+        { "prompt_text": "According to Yasmin, weathering steel's key benefit is that", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What problem does the tutor find in the load calculations?</p>",
+      "options": [
+        { "key": "A", "text": "The dead load was miscalculated." },
+        { "key": "B", "text": "They ignored crowds walking in step." },
+        { "key": "C", "text": "They overestimated the number of users." }
+      ],
+      "questions": [
+        { "prompt_text": "The live-load calculation failed to account for", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will carry out each revision?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each task.</p>",
+      "options": [
+        { "key": "A", "text": "Yasmin" },
+        { "key": "B", "text": "Tom" },
+        { "key": "C", "text": "Dr Price" }
+      ],
+      "questions": [
+        { "prompt_text": "redoing the live-load calculations", "correct_option_keys": ["B"] },
+        { "prompt_text": "updating the technical drawings", "correct_option_keys": ["A"] },
+        { "prompt_text": "reviewing the cost estimate", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "To control the vibration, they will add a ______ rather than more steel.", "accepted": ["damper"], "word_limit": 1 },
+        { "prompt_text": "The footbridge must cross a gap of ______ metres.", "accepted": ["fifteen", "15"], "word_limit": 1 },
+        { "prompt_text": "The revised package is due by the end of week ______.", "accepted": ["seven", "7"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "summary": {
+    "passages": 14,
+    "questions": 133,
+    "failed": 0,
+    "ttsChars": 38167
+  },
+  "report": [
+    {
+      "title": "Design Review: A Student Footbridge Project",
+      "slug": "design-review-a-student-footbridge-project-1yp92j",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/design-review-a-student-footbridge-project-1yp92j.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/design-review-a-student-footbridge-project-1yp92j.mp3",
+      "bytes": 2300928,
+      "ttsChars": 2328,
+      "turns": 15,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "matching_features",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Seminar Prep: Sources on the Industrial Revolution",
+      "slug": "seminar-prep-sources-on-the-industrial-revolution-cckjgx",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/seminar-prep-sources-on-the-industrial-revolution-cckjgx.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/seminar-prep-sources-on-the-industrial-revolution-cckjgx.mp3",
+      "bytes": 2550912,
+      "ttsChars": 2529,
+      "turns": 16,
+      "questionCount": 9,
+      "questionTypes": [
+        "matching_features",
+        "multiple_choice",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Research Proposal: A Primary-School Reading Scheme",
+      "slug": "research-proposal-a-primary-school-reading-scheme-1ty6d1",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/research-proposal-a-primary-school-reading-scheme-1ty6d1.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/research-proposal-a-primary-school-reading-scheme-1ty6d1.mp3",
+      "bytes": 2368896,
+      "ttsChars": 2495,
+      "turns": 16,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "multiple_choice_multi",
+        "matching_features",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Tutorial: Designing a Loyalty-Card Consumer Survey",
+      "slug": "tutorial-designing-a-loyalty-card-consumer-survey-l1p49b",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/tutorial-designing-a-loyalty-card-consumer-survey-l1p49b.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/tutorial-designing-a-loyalty-card-consumer-survey-l1p49b.mp3",
+      "bytes": 2638080,
+      "ttsChars": 2664,
+      "turns": 16,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "multiple_choice_multi",
+        "matching_features",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Tutorial: Planning a Student Diet Survey",
+      "slug": "tutorial-planning-a-student-diet-survey-1um8p4",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/tutorial-planning-a-student-diet-survey-1um8p4.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/tutorial-planning-a-student-diet-survey-1um8p4.mp3",
+      "bytes": 2275968,
+      "ttsChars": 2338,
+      "turns": 17,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "matching_features",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Fieldwork Debrief: Observing Children at Play",
+      "slug": "fieldwork-debrief-observing-children-at-play-1av2w3",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/fieldwork-debrief-observing-children-at-play-1av2w3.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/fieldwork-debrief-observing-children-at-play-1av2w3.mp3",
+      "bytes": 2475264,
+      "ttsChars": 2445,
+      "turns": 14,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "matching_sentence_endings",
+        "matching_features"
+      ]
+    },
+    {
+      "title": "Project Feedback: A River Restoration Study",
+      "slug": "project-feedback-a-river-restoration-study-d5vrkb",
+      "partStyle": "Part 3 (academic discussion, 3 speakers)",
+      "module": "academic",
+      "audioPath": "listening/project-feedback-a-river-restoration-study-d5vrkb.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/project-feedback-a-river-restoration-study-d5vrkb.mp3",
+      "bytes": 2284416,
+      "ttsChars": 2304,
+      "turns": 15,
+      "questionCount": 9,
+      "questionTypes": [
+        "multiple_choice",
+        "multiple_choice_multi",
+        "matching_features",
+        "sentence_completion"
+      ]
+    },
+    {
+      "title": "Lecture: Underwater Archaeology and Shipwrecks",
+      "slug": "lecture-underwater-archaeology-and-shipwrecks-v1p4vi",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-underwater-archaeology-and-shipwrecks-v1p4vi.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-underwater-archaeology-and-shipwrecks-v1p4vi.mp3",
+      "bytes": 3492096,
+      "ttsChars": 3245,
+      "turns": 7,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "summary_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: Nudges and Behavioural Economics",
+      "slug": "lecture-nudges-and-behavioural-economics-rwnu2q",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-nudges-and-behavioural-economics-rwnu2q.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-nudges-and-behavioural-economics-rwnu2q.mp3",
+      "bytes": 3205248,
+      "ttsChars": 3189,
+      "turns": 7,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "sentence_completion",
+        "table_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: The Loss of the World's Languages",
+      "slug": "lecture-the-loss-of-the-world-s-languages-5o7bua",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-the-loss-of-the-world-s-languages-5o7bua.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-the-loss-of-the-world-s-languages-5o7bua.mp3",
+      "bytes": 3177216,
+      "ttsChars": 2996,
+      "turns": 6,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "table_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: Seagrass Meadows and the Ocean",
+      "slug": "lecture-seagrass-meadows-and-the-ocean-1d7ofo",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-seagrass-meadows-and-the-ocean-1d7ofo.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-seagrass-meadows-and-the-ocean-1d7ofo.mp3",
+      "bytes": 3137280,
+      "ttsChars": 2831,
+      "turns": 8,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "summary_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: Bamboo as a Building Material",
+      "slug": "lecture-bamboo-as-a-building-material-1epbxp",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-bamboo-as-a-building-material-1epbxp.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-bamboo-as-a-building-material-1epbxp.mp3",
+      "bytes": 2972544,
+      "ttsChars": 2995,
+      "turns": 8,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "summary_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: Gutenberg and the Printing Revolution",
+      "slug": "lecture-gutenberg-and-the-printing-revolution-1rkbnt",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-gutenberg-and-the-printing-revolution-1rkbnt.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-gutenberg-and-the-printing-revolution-1rkbnt.mp3",
+      "bytes": 3036672,
+      "ttsChars": 2838,
+      "turns": 7,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "summary_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    },
+    {
+      "title": "Lecture: The Garden City Movement",
+      "slug": "lecture-the-garden-city-movement-19zu1i",
+      "partStyle": "Part 4 (university lecture monologue)",
+      "module": "academic",
+      "audioPath": "listening/lecture-the-garden-city-movement-19zu1i.mp3",
+      "publicUrl": "https://nnqbagvknskqyrxkbyct.supabase.co/storage/v1/object/public/listening-audio/listening/lecture-the-garden-city-movement-19zu1i.mp3",
+      "bytes": 3039744,
+      "ttsChars": 2970,
+      "turns": 7,
+      "questionCount": 10,
+      "questionTypes": [
+        "note_completion",
+        "table_completion",
+        "sentence_completion",
+        "short_answer"
+      ]
+    }
+  ]
+}

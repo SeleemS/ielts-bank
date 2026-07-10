@@ -1,0 +1,86 @@
+{
+  "title": "Welcome Talk at Riverside Country Park",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "matching", "multiple choice"],
+  "partStyle": "Part 2 (announcement / tour monologue)",
+  "speakers": [
+    { "name": "Alan", "role": "Park ranger giving a welcome talk", "voice": "fable" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Alan", "voice": "fable", "text": "Good afternoon everyone, and welcome to Riverside Country Park. My name's Alan, and I'm one of the rangers here. Before you head off to explore, let me give you a quick idea of what's on offer and where to find everything." },
+        { "speaker": "Alan", "voice": "fable", "text": "Right behind me is the Visitor Centre — that's the large glass building. As well as the information desk, that's where you'll find our gift shop, so if you'd like a souvenir or a postcard to take home, that's the place to go. The toilets are in there too." },
+        { "speaker": "Alan", "voice": "fable", "text": "If you follow the main path down towards the water, you'll come to the Boathouse on your left. That's where you can hire a rowing boat by the half-hour — a really lovely way to see the park from the middle of the lake. Do bear in mind that the last boats go out at four o'clock sharp, so please don't leave it too late." },
+        { "speaker": "Alan", "voice": "fable", "text": "Just beyond the Boathouse is the Lakeside Café, right on the water's edge. They serve hot meals until three, and sandwiches and cakes all afternoon, so that's your best bet if you're after some lunch." },
+        { "speaker": "Alan", "voice": "fable", "text": "On the far side of the lake you'll spot the Old Watermill. It's over two hundred years old and still working today — well worth a look, although it's about a fifteen-minute walk to get all the way round there." },
+        { "speaker": "Alan", "voice": "fable", "text": "Now, one of our real treasures is the Walled Garden, which you'll find up the hill behind the café. It's home to a collection of rare plants you simply won't see anywhere else in the region, so any keen gardeners among you shouldn't miss it." },
+        { "speaker": "Alan", "voice": "fable", "text": "And for families, the Adventure Playground is over by the main car park — there's plenty there to keep the little ones busy while the grown-ups have a rest." },
+        { "speaker": "Alan", "voice": "fable", "text": "A couple of important things to remember. We're a nature reserve, so please don't feed the ducks and swans — it really isn't good for them, and you'll see signs around the lake explaining why. You're very welcome to bring a picnic, and dogs are fine too, as long as you keep them on a lead." },
+        { "speaker": "Alan", "voice": "fable", "text": "Finally, I'll be leading a free guided walk this afternoon. Now, your leaflet says we meet at the Visitor Centre, but that's been changed — we'll actually be meeting by the Old Watermill at half past two. It lasts about an hour. Do come along if you can. Enjoy your visit, everyone!" }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Where in the park can visitors do each of the following?",
+      "instructions_html": "<p>Choose your answers from the list of locations <strong>A–F</strong> and select the correct letter for each question.</p>",
+      "options": [
+        { "key": "A", "text": "the Old Watermill" },
+        { "key": "B", "text": "the Boathouse" },
+        { "key": "C", "text": "the Walled Garden" },
+        { "key": "D", "text": "the Visitor Centre" },
+        { "key": "E", "text": "the Adventure Playground" },
+        { "key": "F", "text": "the Lakeside Café" }
+      ],
+      "questions": [
+        { "prompt_text": "buy a souvenir", "correct_option_keys": ["D"] },
+        { "prompt_text": "hire a rowing boat", "correct_option_keys": ["B"] },
+        { "prompt_text": "see rare plants", "correct_option_keys": ["C"] },
+        { "prompt_text": "have lunch", "correct_option_keys": ["F"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Answer the questions about the park.</p>",
+      "options": [
+        { "key": "A", "text": "at three o'clock" },
+        { "key": "B", "text": "at four o'clock" },
+        { "key": "C", "text": "at half past four" }
+      ],
+      "questions": [
+        { "prompt_text": "The last rowing boats leave", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What are visitors asked NOT to do?</p>",
+      "options": [
+        { "key": "A", "text": "bring dogs into the park" },
+        { "key": "B", "text": "feed the ducks and swans" },
+        { "key": "C", "text": "have a picnic by the lake" }
+      ],
+      "questions": [
+        { "prompt_text": "Visitors must not", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Where will the free guided walk begin?</p>",
+      "options": [
+        { "key": "A", "text": "at the Visitor Centre" },
+        { "key": "B", "text": "at the Lakeside Café" },
+        { "key": "C", "text": "at the Old Watermill" }
+      ],
+      "questions": [
+        { "prompt_text": "The guided walk will start", "correct_option_keys": ["C"] }
+      ]
+    }
+  ]
+}

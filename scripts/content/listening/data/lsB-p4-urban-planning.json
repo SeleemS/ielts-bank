@@ -1,0 +1,64 @@
+{
+  "title": "Lecture: The Garden City Movement",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "urban planning", "note completion", "table completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "echo" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "echo", "text": "Right, let's begin. This week we're looking at an idea that shaped how cities were built across the twentieth century — the garden city movement. It was the brainchild of an Englishman called Ebenezer Howard, who set out his vision in a book published in eighteen ninety-eight." },
+        { "speaker": "Lecturer", "voice": "echo", "text": "To understand why Howard's idea mattered, you have to picture the industrial city of his day. It was overcrowded, the air was thick with smoke, and housing for ordinary workers was cramped and unhealthy. At the same time, the countryside was emptying, as people left the land in search of work. Howard's genius was to ask a simple question: why must people choose between a dirty city and a declining countryside? Why not combine the best of both?" },
+        { "speaker": "Lecturer", "voice": "echo", "text": "His answer was the garden city — a brand-new, planned town, deliberately kept small, surrounded by a permanent belt of open countryside. Let me stress that word permanent. The green belt was not to be built on, ever. It guaranteed that every resident lived within walking distance of open fields." },
+        { "speaker": "Lecturer", "voice": "echo", "text": "Now let me give you the key features, because these are what examiners of planning history always focus on. First, size. Howard proposed a strict limit of thirty-two thousand people per town. Once that number was reached, a new town would be started nearby, rather than allowing the first to sprawl. Second, land ownership. The land was to be owned by the whole community, not by private landlords, so that any rise in its value benefited everyone. And third, layout: the town was arranged in concentric rings, with a public garden at the very centre and factories placed on the outer edge, away from homes." },
+        { "speaker": "Lecturer", "voice": "echo", "text": "Let me turn now to what actually got built. Howard did not just write; he raised money and built. The first garden city was Letchworth, begun in nineteen oh three. A second, Welwyn Garden City, followed some twenty years later. Both survive today, and both are still pleasant places to live, which is a real testament to the soundness of the plan." },
+        { "speaker": "Lecturer", "voice": "echo", "text": "So what is Howard's legacy? His direct influence can be seen in the new towns built across Britain after the Second World War, which borrowed heavily from his ideas. But his most lasting contribution, I would argue, is the green belt itself. The principle that a ring of countryside around a city should be protected from development is now written into planning law in many countries. Every time a campaigner fights to stop houses being built on green-belt land, they are, whether they know it or not, defending Ebenezer Howard's idea." },
+        { "speaker": "Lecturer", "voice": "echo", "text": "Of course, the movement had its critics, and we should be fair to them. Some argued the towns were simply too small to offer the rich cultural life of a big city — no great theatres, no famous museums. Others complained that in practice the garden cities attracted the comfortable middle classes rather than the poor workers Howard most wanted to help. Both criticisms have some force, and we'll examine them properly next week. Let's leave it there for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "Background to the garden city idea",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The garden city was the idea of Ebenezer ______.", "accepted": ["howard"], "word_limit": 1 },
+        { "prompt_text": "He set out his vision in a book published in ______.", "accepted": ["1898"], "word_limit": 1 },
+        { "prompt_text": "Each town was to be surrounded by a permanent belt of ______.", "accepted": ["countryside"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "table_completion",
+      "prompt": "Key features of Howard's garden city",
+      "instructions_html": "<p>Complete the table below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Population: strictly limited to ______ thousand people per town.", "accepted": ["32", "thirty-two", "thirty two"], "word_limit": 2 },
+        { "prompt_text": "Land: owned by the whole ______, not by private landlords.", "accepted": ["community"], "word_limit": 1 },
+        { "prompt_text": "Layout: arranged in concentric rings with a public ______ at the centre.", "accepted": ["garden"], "word_limit": 1 },
+        { "prompt_text": "Layout: factories placed on the outer ______ of the town.", "accepted": ["edge"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "What was built and its legacy",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The first garden city was ______, begun in 1903.", "accepted": ["letchworth"], "word_limit": 1 },
+        { "prompt_text": "Howard's most lasting contribution is the protected green ______.", "accepted": ["belt"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN THREE WORDS</strong>.</p>",
+      "questions": [
+        { "prompt_text": "According to critics, which social group did the garden cities actually attract?", "accepted": ["the middle classes", "middle classes", "middle class", "the comfortable middle classes"], "word_limit": 3 }
+      ]
+    }
+  ]
+}

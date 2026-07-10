@@ -1,0 +1,71 @@
+{
+  "title": "Lost Property Enquiry at Central Station",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "enquiry", "form completion", "multiple choice"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Grace", "role": "Lost property officer", "voice": "sage" },
+    { "name": "Daniel", "role": "Passenger", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Grace", "voice": "sage", "text": "Hello, Central Station Lost Property, Grace speaking. How can I help?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Oh, hi. I think I left a bag on a train this morning, and I'm hoping it might have been handed in." },
+        { "speaker": "Grace", "voice": "sage", "text": "I can certainly check that for you. Let me open a report. Could I take your name first?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Yes, it's Daniel Okonjo." },
+        { "speaker": "Grace", "voice": "sage", "text": "Could you spell the surname for me, please?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Of course — it's O-K-O-N-J-O. Okonjo." },
+        { "speaker": "Grace", "voice": "sage", "text": "Thank you. And which train were you travelling on?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "It was the ten-thirty from Cardiff, and I got off here at Central." },
+        { "speaker": "Grace", "voice": "sage", "text": "And do you remember roughly where you were sitting?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Yes, I was in the quiet carriage — that was Coach C. The bag was on the luggage rack above my seat." },
+        { "speaker": "Grace", "voice": "sage", "text": "Right. And can you describe the bag for me?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "It's a small rucksack — a backpack. It's dark green, and it's got my laptop inside, which is the main worry." },
+        { "speaker": "Grace", "voice": "sage", "text": "Understood. For the insurance section of the form, roughly what would you say the contents are worth?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Well, the laptop alone is worth about six hundred pounds, so I'd say six hundred to be safe." },
+        { "speaker": "Grace", "voice": "sage", "text": "Thank you. I'll log all of that now. Your reference number is L for London, then four-zero-two-seven. So that's L-4-0-2-7. Please quote that if you call us back." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "L4027 — got it. And when should I check whether it's turned up?" },
+        { "speaker": "Grace", "voice": "sage", "text": "We collect all the items from the trains at the end of the day, so I'd suggest calling back after six o'clock this evening." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Perfect. Thank you so much for your help, Grace." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "LOST PROPERTY REPORT",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Okonjo"], "word_limit": 1 },
+        { "prompt_text": "Train: the ______ from Cardiff", "accepted": ["10:30", "10.30", "ten-thirty", "ten thirty", "1030"], "word_limit": 2 },
+        { "prompt_text": "Coach:", "accepted": ["C", "Coach C"], "word_limit": 2 },
+        { "prompt_text": "Reference number:", "accepted": ["L4027"], "word_limit": 1 },
+        { "prompt_text": "Estimated value of contents: £", "accepted": ["600", "£600", "600 pounds", "six hundred"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What colour is the bag?</p>",
+      "options": [
+        { "key": "A", "text": "black" },
+        { "key": "B", "text": "dark green" },
+        { "key": "C", "text": "navy blue" }
+      ],
+      "questions": [
+        { "prompt_text": "The bag is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong>.</p>",
+      "questions": [
+        { "prompt_text": "Daniel should call back after ______ this evening.", "accepted": ["6 pm", "6pm", "6 p.m.", "six o'clock", "six pm", "6 o'clock"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

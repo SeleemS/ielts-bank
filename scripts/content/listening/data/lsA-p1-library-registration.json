@@ -1,0 +1,88 @@
+{
+  "title": "Kingsbridge Library Membership Registration",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "registration", "form completion", "multiple choice"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Olivia", "role": "Library assistant", "voice": "nova" },
+    { "name": "Marcus", "role": "New member", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Olivia", "voice": "nova", "text": "Good morning, Kingsbridge Public Library, Olivia speaking. How can I help you?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "Hi there. I'd like to join the library, please. I've recently moved to the area and I'd love to start borrowing some books." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Wonderful, I can register you right now over the phone and you can pick up your card later. Let me just take a few details. Could I start with your surname?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "Yes, it's Fielding." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Could you spell that for me, please?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "Of course. It's F-I-E-L-D-I-N-G. Fielding. And my first name is Marcus." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Thank you, Marcus. And what's your address?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "It's forty-two Bristol Road — oh, sorry, no, I always do that. It's Bridge Road. Forty-two Bridge Road." },
+        { "speaker": "Olivia", "voice": "nova", "text": "No problem at all — forty-two Bridge Road. And could I take the postcode too?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "It's K-T-six, four-N-P. So that's KT6 4NP." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Lovely. And what's the best contact number for you?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "My mobile is oh-seven-eight-one-two, three-three-five, nine-four-six." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Let me read that back — oh-seven-eight-one-two, three-three-five, nine-four-six. Is that right?" },
+        { "speaker": "Marcus", "voice": "onyx", "text": "That's correct, yes." },
+        { "speaker": "Olivia", "voice": "nova", "text": "Perfect. Now, there's no charge to join, but I do need you to bring one document as proof of your address. A recent utility bill or a bank statement is fine. A driving licence on its own, I'm afraid, won't be accepted for the address." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "That's fine — I can bring a recent electricity bill." },
+        { "speaker": "Olivia", "voice": "nova", "text": "That's ideal. Now, as a standard member you can borrow up to twelve items at any one time, and the loan period is three weeks. You can renew online twice if you need a little longer." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "And what happens if I bring something back late?" },
+        { "speaker": "Olivia", "voice": "nova", "text": "There's a small fine of twenty pence per item per day, up to a maximum of five pounds. Your membership card will be ready to collect from the front desk, and your membership number will be printed on the back." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "Great. One last thing — what time do you close on Saturdays?" },
+        { "speaker": "Olivia", "voice": "nova", "text": "During the week we're open until seven, but on Saturdays we close a bit earlier, at five o'clock. And we're shut all day on Sundays." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "That's really helpful. And can I reserve books online, or do I have to come in each time?" },
+        { "speaker": "Olivia", "voice": "nova", "text": "Oh, you can do everything online once you're set up — search the catalogue, reserve books from any of our branches, and even borrow e-books and audiobooks through our app. When a reserved book comes in, we'll send you an email to let you know it's ready to collect." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "That's brilliant, exactly what I was hoping for. Is there parking nearby if I drive over?" },
+        { "speaker": "Olivia", "voice": "nova", "text": "There's a small car park round the back, and it's free for the first two hours, which is plenty of time to browse. Just bring your ticket to the desk and we'll stamp it for you." },
+        { "speaker": "Marcus", "voice": "onyx", "text": "Perfect. Thanks so much for your help, Olivia." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "LIBRARY REGISTRATION FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Fielding"], "word_limit": 1 },
+        { "prompt_text": "Road name (address): 42 ______", "accepted": ["Bridge Road", "Bridge"], "word_limit": 2 },
+        { "prompt_text": "Postcode:", "accepted": ["KT6 4NP", "KT64NP"], "word_limit": 2 },
+        { "prompt_text": "Mobile number:", "accepted": ["07812335946", "07812 335 946", "07812 335946"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Borrowing rules",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Maximum items on loan at one time:", "accepted": ["12", "twelve"], "word_limit": 1 },
+        { "prompt_text": "Loan period (weeks):", "accepted": ["3", "three"], "word_limit": 1 },
+        { "prompt_text": "Late fine per item, per day:", "accepted": ["20p", "20 pence", "twenty pence", "£0.20"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Which document must Marcus bring as proof of address?</p>",
+      "options": [
+        { "key": "A", "text": "a driving licence" },
+        { "key": "B", "text": "an electricity bill" },
+        { "key": "C", "text": "a passport" }
+      ],
+      "questions": [
+        { "prompt_text": "As proof of address, Marcus will bring", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentence below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong>.</p>",
+      "questions": [
+        { "prompt_text": "On Saturdays the library closes at ______.", "accepted": ["5 pm", "5pm", "5 p.m.", "five pm", "five o'clock", "17:00", "5 o'clock"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

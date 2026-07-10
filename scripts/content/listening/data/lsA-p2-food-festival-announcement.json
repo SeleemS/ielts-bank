@@ -1,0 +1,71 @@
+{
+  "title": "Announcements at the Summer Food Festival",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "map", "matching", "note completion"],
+  "partStyle": "Part 2 (event announcement monologue)",
+  "speakers": [
+    { "name": "Marcus", "role": "Food festival announcer", "voice": "nova" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Marcus", "voice": "nova", "text": "Good morning, everyone, and welcome to the Greenfield Summer Food Festival! My name's Marcus, and I'm here to tell you what's on and where to find it, so you can make the most of your day." },
+        { "speaker": "Marcus", "voice": "nova", "text": "Let's start with the layout — do glance at the map on your programme. You've come in through the main gate at the bottom of the field. The largest tent, straight ahead as you walk in, is the Food Market, where over forty local producers are selling everything from cheese to chocolate." },
+        { "speaker": "Marcus", "voice": "nova", "text": "To the left of the Food Market, along the hedge, you'll find the Street Food Zone — that's where all the hot food stalls and the seating are, so it's the place to head when you get hungry." },
+        { "speaker": "Marcus", "voice": "nova", "text": "Over on the right-hand side of the field, near the big oak tree, is the Demonstration Kitchen. That's where our guest chefs will be cooking live throughout the day, and yes, there are free samples." },
+        { "speaker": "Marcus", "voice": "nova", "text": "Behind the Demonstration Kitchen, in the far corner, is the Children's Area, with games, a bouncy castle and a little farm. And right in the centre of the field is the Bandstand, where we'll have live music all afternoon." },
+        { "speaker": "Marcus", "voice": "nova", "text": "Now for the day's programme. The festival opened at ten this morning. Our first big event is a bread-making demonstration in the Demonstration Kitchen — that was going to be at eleven, but it's been put back slightly, so it will now start at half past eleven." },
+        { "speaker": "Marcus", "voice": "nova", "text": "At one o'clock, don't miss the cheese-rolling competition down on the main field. It's great fun to watch, and you can sign up to take part at the information point. Then at three o'clock we have the highlight of the day — the cake competition results, announced from the Bandstand." },
+        { "speaker": "Marcus", "voice": "nova", "text": "A few useful things to know. Entry is five pounds for adults, but children under twelve go free. Dogs are welcome, but please keep them on a lead near the food stalls. And most stalls take card, but the car park is cash only, so do keep a few coins handy." },
+        { "speaker": "Marcus", "voice": "nova", "text": "If you lose anyone in your group, or you find something that's been dropped, the information point is just inside the main gate, on your right. First aid is there too. Now, please go and enjoy yourselves — and don't leave without trying the strawberries, they're wonderful this year!" }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Label the festival map. Where is each area located?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each area from the list.</p>",
+      "options": [
+        { "key": "A", "text": "straight ahead from the main gate" },
+        { "key": "B", "text": "to the left of the Food Market, along the hedge" },
+        { "key": "C", "text": "on the right, near the oak tree" },
+        { "key": "D", "text": "in the far corner, behind the Demonstration Kitchen" },
+        { "key": "E", "text": "in the centre of the field" },
+        { "key": "F", "text": "just inside the main gate, on the right" }
+      ],
+      "questions": [
+        { "prompt_text": "the Food Market", "correct_option_keys": ["A"] },
+        { "prompt_text": "the Street Food Zone", "correct_option_keys": ["B"] },
+        { "prompt_text": "the Demonstration Kitchen", "correct_option_keys": ["C"] },
+        { "prompt_text": "the Children's Area", "correct_option_keys": ["D"] },
+        { "prompt_text": "the information point", "correct_option_keys": ["F"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Programme of events",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Bread-making demonstration now starts at:", "accepted": ["11:30", "11.30", "half past eleven", "1130"], "word_limit": 2 },
+        { "prompt_text": "At 1 pm: the ______ competition on the main field.", "accepted": ["cheese-rolling", "cheese rolling"], "word_limit": 2 },
+        { "prompt_text": "Cake competition results announced at:", "accepted": ["3 pm", "3pm", "three pm", "3 o'clock", "15:00", "three o'clock"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What must visitors pay for in cash?</p>",
+      "options": [
+        { "key": "A", "text": "the food stalls" },
+        { "key": "B", "text": "the car park" },
+        { "key": "C", "text": "entry to the festival" }
+      ],
+      "questions": [
+        { "prompt_text": "Cash is required for", "correct_option_keys": ["B"] }
+      ]
+    }
+  ]
+}

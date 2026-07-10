@@ -1,0 +1,64 @@
+{
+  "title": "Lecture: Gutenberg and the Printing Revolution",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "lecture", "history of technology", "summary completion", "short answer"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "ash" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "ash", "text": "Today I'd like to examine a single invention that arguably did more to change the world than any other before the industrial age — the printing press, developed by Johannes Gutenberg in the German city of Mainz around the year fourteen fifty." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Let me start by clearing up a common misunderstanding. Printing itself was not new. In China, people had been printing from carved wooden blocks for centuries. But block printing was painfully slow, because a craftsman had to carve an entire page by hand, and if you wanted to print a different page, you had to carve a whole new block from scratch." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Gutenberg's breakthrough was quite different, and it rested on one brilliant idea: movable type. Instead of carving a whole page, he cast each individual letter separately as a small metal block. These letters could then be arranged into words and sentences, locked into a frame, and used to print hundreds of copies. And here's the clever part — once you had finished, you simply took the letters apart and reused them for the next page. The same set of letters could print an entire book." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Now, movable type was the heart of it, but Gutenberg had to solve several other problems as well. Let me mention two. First, ordinary ink ran off metal type; it wouldn't stick. So he developed a new oil-based ink that clung to the metal properly. Second, he needed a way to press the paper firmly and evenly against the type. For this he adapted a machine already used for crushing grapes — the wine press. So the very first printing press was, in effect, a modified wine press." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "The most famous product of his workshop was, of course, the Gutenberg Bible, printed around fourteen fifty-five. About one hundred and eighty copies were produced, and the quality was so high that many people at the time could not believe they had been made by a machine rather than copied by hand." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "Let me turn now to the consequences, because this is where the story becomes truly world-changing. Before printing, a single book had to be copied out by hand, which could take a scribe months, and so books were extraordinarily expensive — only the very rich and the Church owned them. Within fifty years of Gutenberg's invention, the price of a book had fallen dramatically, and millions of printed books were circulating across Europe." },
+        { "speaker": "Lecturer", "voice": "ash", "text": "The effects were profound. As books became cheap, more ordinary people learned to read, so literacy spread rapidly. Ideas could now travel faster than any government could control them. Historians generally agree that the printing press made possible two of the great upheavals that followed: the religious movement we call the Reformation, and the explosion of enquiry we call the Scientific Revolution. Neither could have spread so far, so fast, without cheap print. We'll take up those consequences in detail next time. That's all for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "Gutenberg and earlier printing",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Gutenberg developed the printing press in the city of ______.", "accepted": ["mainz"], "word_limit": 1 },
+        { "prompt_text": "In China, people had long printed using carved wooden ______.", "accepted": ["blocks", "block"], "word_limit": 1 },
+        { "prompt_text": "Block printing was very slow because each page had to be ______ by hand.", "accepted": ["carved"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "Gutenberg's innovations",
+      "instructions_html": "<p>Complete the summary below. Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "His key breakthrough was ______ type, with each letter cast separately in metal.", "accepted": ["movable", "moveable"], "word_limit": 1, "spelling_variants": true },
+        { "prompt_text": "The letters could be taken apart and ______ for the next page.", "accepted": ["reused"], "word_limit": 1 },
+        { "prompt_text": "Because normal ink would not stick to metal, he made a new ______ ink.", "accepted": ["oil-based", "oil based"], "word_limit": 2 },
+        { "prompt_text": "To press the paper, he adapted a machine used for crushing grapes: the ______ press.", "accepted": ["wine"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "The Gutenberg Bible",
+      "instructions_html": "<p>Complete the sentence below. Write <strong>A NUMBER</strong>.</p>",
+      "questions": [
+        { "prompt_text": "About ______ copies of the Gutenberg Bible were produced.", "accepted": ["180", "one hundred and eighty"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the questions below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN THREE WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "As printed books became cheap, what spread rapidly among ordinary people?", "accepted": ["literacy", "reading"], "word_limit": 3 },
+        { "prompt_text": "Which religious upheaval did the printing press help make possible?", "accepted": ["the reformation", "reformation"], "word_limit": 3 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Lecture: Nudges and Behavioural Economics",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "behavioural economics", "note completion", "table completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "shimmer" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "Good morning. Today we move into one of the liveliest areas of modern economics — the field known as behavioural economics. And I want to organise the lecture around one very practical idea that has come out of it: the idea of the nudge." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "Let me start with the theory behind it. Traditional economics assumes that people are rational — that we weigh up all the options carefully and then choose whatever is in our best interest. Behavioural economists challenge this. Their research shows that in reality people are busy, easily distracted, and heavily influenced by how a choice is presented to them. In other words, the way an option is framed can matter just as much as the option itself." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "This brings us to the nudge. A nudge is a small change to the environment in which we make decisions — what economists call the choice architecture — that gently steers people towards a better choice, without forbidding anything or changing their financial incentives. That last point is crucial. A nudge must leave people completely free to choose otherwise. If you ban something, or tax it, that is not a nudge." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "Let me give you the single most powerful example: the default. A default is simply the option you get if you do nothing at all. Because people are prone to inertia — that is, a tendency to stick with whatever requires no effort — the default option is chosen by the great majority of people. Consider organ donation. In countries where you are a donor unless you opt out, participation is above ninety per cent. In otherwise similar countries where you must actively opt in, it can be as low as fifteen per cent. Same people, same underlying attitudes; the only difference is which choice was set as the default." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "Let me turn now to a few other types of nudge, so you can see the range. The second type is what we might call salience — making the desirable option more visible or eye-catching. A famous case comes from school canteens, where simply placing the fruit at eye level, rather than the chocolate, measurably increases how much fruit children choose. Nothing is banned; the healthy option is just easier to see." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "The third type relies on social information. Human beings are powerfully influenced by what others are doing. When tax authorities added a single sentence to their letters — stating that the great majority of people in your area have already paid their tax — payment rates rose noticeably. We take our cues from the crowd." },
+        { "speaker": "Lecturer", "voice": "shimmer", "text": "Now, I would be failing in my duty if I didn't mention the criticisms, because nudging is genuinely controversial. The central objection is one of ethics. Critics argue that nudges work precisely because they exploit our mental weaknesses, and that steering people without their full awareness is a form of manipulation, even when the goal is a good one. Who, they ask, decides what counts as a better choice? Supporters reply that we are being influenced by choice architecture all the time anyway — a shop deciding what to place at the checkout is nudging us already — so we might as well design that architecture to help people rather than to exploit them. It's a genuine debate, and we'll return to it in the seminar. That's enough for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "The theory behind nudges",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Traditional economics assumes people are ______.", "accepted": ["rational"], "word_limit": 1 },
+        { "prompt_text": "Behavioural economists show that how a choice is ______ can matter as much as the choice itself.", "accepted": ["framed", "presented"], "word_limit": 1 },
+        { "prompt_text": "The environment in which we make decisions is called the choice ______.", "accepted": ["architecture"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "How defaults work",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A default is the option you get if you do ______.", "accepted": ["nothing"], "word_limit": 1 },
+        { "prompt_text": "People tend to keep the default because of ______, a preference for no effort.", "accepted": ["inertia"], "word_limit": 1 },
+        { "prompt_text": "With an opt-out system, organ donation can be above ______ per cent.", "accepted": ["ninety", "90"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "table_completion",
+      "prompt": "Three types of nudge",
+      "instructions_html": "<p>Complete the table below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The default: chosen by most people because of inertia. Example given: ______ donation.", "accepted": ["organ"], "word_limit": 1 },
+        { "prompt_text": "Salience: making the good option more visible. Example: placing ______ at eye level in canteens.", "accepted": ["fruit"], "word_limit": 1 },
+        { "prompt_text": "Social information: telling people what others do. Example: sentences added to ______ letters.", "accepted": ["tax"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong>.</p>",
+      "questions": [
+        { "prompt_text": "What do critics say nudging really amounts to, even for good goals?", "accepted": ["manipulation"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

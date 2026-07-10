@@ -1,0 +1,102 @@
+{
+  "title": "Tutorial: Planning a Student Diet Survey",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "nutrition", "research methods", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Sato", "role": "Tutor", "voice": "coral" },
+    { "name": "Ellie", "role": "Student", "voice": "shimmer" },
+    { "name": "Raj", "role": "Student", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Sato", "voice": "coral", "text": "So, your project is on what students actually eat during exam periods. Interesting topic. How are you planning to collect the data?" },
+        { "speaker": "Ellie", "voice": "shimmer", "text": "Our original plan was a questionnaire asking people to remember everything they'd eaten over the past week. But we've gone off that idea." },
+        { "speaker": "Raj", "voice": "onyx", "text": "Yes, because people are terrible at remembering. They forget snacks, they underestimate portions, and some of them, frankly, lie to look healthier than they are." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "You're quite right — recall over a whole week is unreliable. So what's your alternative?" },
+        { "speaker": "Ellie", "voice": "shimmer", "text": "A food diary. Participants record each meal at the moment they eat it, on their phone. That way there's no relying on memory days later." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "Much better. Real-time recording cuts the recall problem sharply. But it introduces a different risk — can you see what it is?" },
+        { "speaker": "Raj", "voice": "onyx", "text": "I think so. If people know we're watching what they eat, they might start eating more healthily than usual — just because they're being observed." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "Exactly, that's the observer effect. There's no perfect fix, but a longer study helps — after a few days people forget to perform and slip back to normal habits. Now, disagreement time: how long should the diary run?" },
+        { "speaker": "Ellie", "voice": "shimmer", "text": "I'd say two weeks. That's long enough for people to relax, but short enough that they don't give up." },
+        { "speaker": "Raj", "voice": "onyx", "text": "I'd actually argue for just one week. Two weeks is a lot to ask of a busy student in exam season — I think we'd lose too many participants." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "Both of you have a point, but on balance I side with Ellie. The observer effect really does need those extra days to settle. Go with two weeks, but keep the daily entry very quick so people don't drop out." },
+        { "speaker": "Raj", "voice": "onyx", "text": "Fair enough. Two weeks, but make it painless. I can accept that." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "Good. Now let's divide the work. Someone builds the phone form, someone recruits participants, and I'll sort out the nutritional database you'll need to code the meals." },
+        { "speaker": "Raj", "voice": "onyx", "text": "I'll build the phone form. I've done a bit of app design, so that's the natural job for me." },
+        { "speaker": "Ellie", "voice": "shimmer", "text": "And I'll recruit the participants. I know lots of people across different courses, so I can get a varied sample." },
+        { "speaker": "Dr Sato", "voice": "coral", "text": "Perfect. I'll handle the nutritional database. One rule, though — aim for at least fifty participants, or your results won't mean much. Have the recruitment done by the end of week four." },
+        { "speaker": "Ellie", "voice": "shimmer", "text": "Fifty participants by week four. Understood. Thanks — I'm glad we ditched the memory questionnaire, it really would have let us down." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why did the students abandon their original questionnaire?</p>",
+      "options": [
+        { "key": "A", "text": "People remember a whole week's food poorly." },
+        { "key": "B", "text": "Questionnaires take too long to write." },
+        { "key": "C", "text": "Students refused to answer questions." }
+      ],
+      "questions": [
+        { "prompt_text": "The questionnaire was dropped because", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What new risk does the food-diary method introduce?</p>",
+      "options": [
+        { "key": "A", "text": "Participants may eat more healthily because they are observed." },
+        { "key": "B", "text": "Phones may run out of battery." },
+        { "key": "C", "text": "Meals may be recorded twice." }
+      ],
+      "questions": [
+        { "prompt_text": "The food diary risks the", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How is the disagreement about the diary's length resolved?</p>",
+      "options": [
+        { "key": "A", "text": "They compromise on ten days." },
+        { "key": "B", "text": "The tutor supports Ellie's two weeks." },
+        { "key": "C", "text": "They agree on Raj's one week." }
+      ],
+      "questions": [
+        { "prompt_text": "On the length of the study, they decide to", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who is responsible for each task?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each task.</p>",
+      "options": [
+        { "key": "A", "text": "Ellie" },
+        { "key": "B", "text": "Raj" },
+        { "key": "C", "text": "Dr Sato" }
+      ],
+      "questions": [
+        { "prompt_text": "building the phone form", "correct_option_keys": ["B"] },
+        { "prompt_text": "recruiting participants", "correct_option_keys": ["A"] },
+        { "prompt_text": "sorting out the nutritional database", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Instead of a questionnaire, participants will keep a food ______.", "accepted": ["diary"], "word_limit": 1 },
+        { "prompt_text": "The tendency to eat better when watched is called the ______ effect.", "accepted": ["observer"], "word_limit": 1 },
+        { "prompt_text": "They should recruit at least ______ participants.", "accepted": ["50", "fifty"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

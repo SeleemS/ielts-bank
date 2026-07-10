@@ -1,0 +1,102 @@
+{
+  "title": "Project Feedback: A River Restoration Study",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "geography", "environment", "multiple choice", "matching"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Farrell", "role": "Tutor", "voice": "echo" },
+    { "name": "Hannah", "role": "Student", "voice": "fable" },
+    { "name": "Deepak", "role": "Student", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "Let's go through the feedback on your river restoration project. Overall it's strong, but I've got a few things to raise. Hannah, can you summarise what you set out to measure?" },
+        { "speaker": "Hannah", "voice": "fable", "text": "Sure. We wanted to see whether re-planting trees along the riverbank changed the water quality downstream. So we compared a restored stretch with a bare stretch further up." },
+        { "speaker": "Deepak", "voice": "onyx", "text": "And we measured three things at each site — the water temperature, the amount of sediment, and the number of insect species, which is a good indicator of overall health." },
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "Good design. Now, your temperature results were convincing — the shaded, restored stretch was clearly cooler. But I wasn't persuaded by the sediment data. Why not?" },
+        { "speaker": "Deepak", "voice": "onyx", "text": "I think it's because we only sampled once, after heavy rain. The storm probably washed a lot of extra soil in, so that single reading isn't reliable." },
+        { "speaker": "Hannah", "voice": "fable", "text": "I'd actually push back slightly there. I don't think it was only the rain. I suspect our sediment method was too crude — we just eyeballed how cloudy the water looked instead of using proper equipment." },
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "That's a fair challenge, Hannah, and I lean towards your view. A subjective judgement of cloudiness isn't defensible in a report. Next time, borrow the turbidity meter from the lab. It gives you a real number." },
+        { "speaker": "Deepak", "voice": "onyx", "text": "Fair enough. I still think the timing didn't help, but I agree the method was the bigger weakness." },
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "The insect count, on the other hand, was excellent — that's the standout part of the project. What did you find?" },
+        { "speaker": "Hannah", "voice": "fable", "text": "The restored stretch had nearly double the number of species. That was the clearest result of all, and it really supports the idea that the planting is working." },
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "It does. Now, for the write-up, let's split the revisions. Someone needs to redo the sediment section, someone needs to build the final charts, and I'll rewrite the feedback on your statistics." },
+        { "speaker": "Deepak", "voice": "onyx", "text": "I'll take on the sediment section, since I collected most of that data. I'd like the chance to fix it properly." },
+        { "speaker": "Hannah", "voice": "fable", "text": "And I'll produce the charts — I enjoy the visual side, and I've already got the insect data laid out neatly." },
+        { "speaker": "Dr Farrell", "voice": "echo", "text": "Perfect. And I'll handle the statistics commentary so it's consistent. One firm deadline: I want the revised draft submitted by Friday of week ten. Don't leave it to the last minute." },
+        { "speaker": "Hannah", "voice": "fable", "text": "Week ten, understood. Thanks — it's really helpful to know which parts are solid and which need work." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What was the students' project trying to find out?</p>",
+      "options": [
+        { "key": "A", "text": "whether planting trees changed downstream water quality" },
+        { "key": "B", "text": "how quickly trees grow beside a river" },
+        { "key": "C", "text": "which insects live in restored rivers" }
+      ],
+      "questions": [
+        { "prompt_text": "The project investigated", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why does the tutor prefer Hannah's explanation of the weak sediment data?</p>",
+      "options": [
+        { "key": "A", "text": "because the sampling happened after rain" },
+        { "key": "B", "text": "because judging cloudiness by eye is not defensible" },
+        { "key": "C", "text": "because too few sites were sampled" }
+      ],
+      "questions": [
+        { "prompt_text": "Dr Farrell agrees the main weakness was that", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice_multi",
+      "prompt": "Choose TWO letters, A–E.",
+      "instructions_html": "<p>Which TWO parts of the project does the tutor praise?</p>",
+      "options": [
+        { "key": "A", "text": "the temperature results" },
+        { "key": "B", "text": "the sediment method" },
+        { "key": "C", "text": "the insect species count" },
+        { "key": "D", "text": "the choice of a rainy sampling day" },
+        { "key": "E", "text": "the number of sampling visits" }
+      ],
+      "questions": [
+        { "prompt_text": "Two strengths praised by the tutor", "correct_option_keys": ["A", "C"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will take on each revision task?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each task.</p>",
+      "options": [
+        { "key": "A", "text": "Hannah" },
+        { "key": "B", "text": "Deepak" },
+        { "key": "C", "text": "Dr Farrell" }
+      ],
+      "questions": [
+        { "prompt_text": "redoing the sediment section", "correct_option_keys": ["B"] },
+        { "prompt_text": "producing the final charts", "correct_option_keys": ["A"] },
+        { "prompt_text": "rewriting the statistics commentary", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Next time, they should measure sediment using a ______ meter.", "accepted": ["turbidity"], "word_limit": 1 },
+        { "prompt_text": "The restored stretch had nearly ______ the number of insect species.", "accepted": ["double"], "word_limit": 1 },
+        { "prompt_text": "The revised draft must be submitted by Friday of week ______.", "accepted": ["ten", "10"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

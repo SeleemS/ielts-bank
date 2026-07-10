@@ -1,0 +1,64 @@
+{
+  "title": "Lecture: Underwater Archaeology and Shipwrecks",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "lecture", "archaeology", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Good afternoon. Today I want to introduce you to a field that combines the patience of the archaeologist with the skills of the diver — underwater archaeology, the study of human remains, wrecks and settlements that now lie beneath the sea." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Let me begin with why this field matters so much, because at first glance you might think a wreck on the seabed would be worse preserved than a site on dry land. In fact, the opposite is often true. On land, wood and cloth and rope rot away within a few years. But a wreck that is quickly buried in seabed mud is sealed off from oxygen, and it's oxygen that most decay-causing bacteria need. So, starved of oxygen, the timber and even delicate organic materials can survive for centuries. This is why shipwrecks are sometimes described as time capsules — they preserve a single moment, frozen on the day the ship went down." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Let me give you the most celebrated example: the Mary Rose, a warship belonging to the English king Henry the Eighth, which sank in the year fifteen forty-five. She lay on the seabed for over four hundred years. When she was finally raised in nineteen eighty-two, archaeologists recovered not just the hull but thousands of everyday objects — shoes, combs, musical instruments, even the crew's meals. That is knowledge you could never get from a document. It tells you how ordinary sailors actually lived." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Now let me turn to method, because excavating underwater is enormously more difficult than digging on land, and I want you to appreciate why. The first challenge is simply time. A diver can only remain on the seabed for a limited period before having to surface, so the working day is very short. The second challenge is visibility — stir up the fine sediment and the water clouds instantly, leaving the diver working almost blind. To remove that sediment gently, archaeologists use a tool rather like an underwater vacuum cleaner, which is technically known as an airlift." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Before any of that digging begins, though, the whole site must be carefully recorded, exactly as on land, so that the precise position of every object is known. Increasingly this is done with photography — divers take hundreds of overlapping photographs, and a computer stitches them together into an accurate three-dimensional model of the wreck." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Let me say a word now about what happens after recovery, because this is the part people forget. An object that has sat in seawater for centuries cannot simply be lifted out and put on a shelf — it would crack and crumble as it dried. Waterlogged wood, in particular, needs years of specialist treatment, in which the water inside the timber is slowly replaced with a wax that supports the cells. The treatment of the Mary Rose hull alone took decades." },
+        { "speaker": "Lecturer", "voice": "ballad", "text": "Finally, a note on threats, because underwater sites are under real pressure. The most serious is looting — treasure hunters stripping wrecks of valuable objects and selling them, destroying the archaeological context in the process. For this reason many nations now have laws protecting historic wrecks, and international agreements try to ensure they are studied rather than plundered. So the seabed, it turns out, is one of the world's greatest and most fragile museums. Let's leave it there for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "Why underwater sites are well preserved",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A wreck buried in mud is sealed off from ______, which most decay bacteria need.", "accepted": ["oxygen"], "word_limit": 1 },
+        { "prompt_text": "Because they preserve a single moment, wrecks are described as time ______.", "accepted": ["capsules", "capsule"], "word_limit": 1 },
+        { "prompt_text": "The famous warship discussed is the Mary ______.", "accepted": ["rose"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "The challenges of excavating underwater",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A diver's working day is short because ______ on the seabed is limited.", "accepted": ["time"], "word_limit": 1 },
+        { "prompt_text": "Stirred-up sediment reduces ______, leaving the diver almost blind.", "accepted": ["visibility"], "word_limit": 1 },
+        { "prompt_text": "Sediment is removed gently using a tool called an ______.", "accepted": ["airlift"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Recording and preserving finds",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>NO MORE THAN TWO WORDS OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A 3-D model of the wreck is built from overlapping ______.", "accepted": ["photographs", "photos", "photography"], "word_limit": 1 },
+        { "prompt_text": "In treatment, the water in waterlogged wood is slowly replaced with ______.", "accepted": ["wax", "a wax"], "word_limit": 2 },
+        { "prompt_text": "The Mary Rose was raised from the seabed in the year ______.", "accepted": ["1982"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong>.</p>",
+      "questions": [
+        { "prompt_text": "What is named as the most serious threat to underwater sites?", "accepted": ["looting"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "title": "Research Proposal: A Primary-School Reading Scheme",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "education", "research methods", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Naylor", "role": "Tutor", "voice": "fable" },
+    { "name": "Grace", "role": "Student", "voice": "nova" },
+    { "name": "Omar", "role": "Student", "voice": "ash" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "Let's look at your research proposal. You want to test whether a daily twenty-minute reading session improves children's vocabulary. It's a nice, focused idea. Where are you struggling?" },
+        { "speaker": "Grace", "voice": "nova", "text": "Mainly with the design. We were going to give every child in one class the reading sessions and then just test them at the end. But we realised we'd have nothing to compare against." },
+        { "speaker": "Omar", "voice": "ash", "text": "Right — without a comparison group, any improvement could just be the children getting older and picking up words naturally. We'd never know if the scheme itself did anything." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "That's exactly the flaw. You need a control group — a second class that carries on as normal. Then you compare the two. But be careful: the two classes must be genuinely similar to start with." },
+        { "speaker": "Grace", "voice": "nova", "text": "Yes, we talked about that. If one class already had stronger readers, the comparison would be meaningless. So we want to test everyone's vocabulary first, before the scheme begins." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "A baseline test — good. Now, I have a couple of worries about your proposal. Let me flag them and you tell me how you'd respond. First, twenty minutes a day for a whole term is a big commitment for busy teachers." },
+        { "speaker": "Omar", "voice": "ash", "text": "That's true. Our answer is that a teaching assistant, not the class teacher, would run the sessions, so it doesn't add to the teacher's workload." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "Sensible. My second worry is the test itself. A vocabulary test can be stressful for young children, and stress affects performance." },
+        { "speaker": "Grace", "voice": "nova", "text": "We thought about that too. Instead of a formal written test, we'd use a picture-based game, so it feels like play rather than an exam." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "Excellent — that's a thoughtful solution. Now, one thing you haven't mentioned: how will you get permission? These are young children." },
+        { "speaker": "Omar", "voice": "ash", "text": "We'd need written consent from the parents, and we'd also explain it to the children in simple terms and let them opt out if they didn't want to take part." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "Good, that covers the ethics. Now let's divide the preparation. There's the consent paperwork, the picture-game design, and the statistical plan. Who wants what?" },
+        { "speaker": "Grace", "voice": "nova", "text": "I'll design the picture game — I've worked with this age group before, so I know what holds their attention." },
+        { "speaker": "Omar", "voice": "ash", "text": "And I'll prepare the consent paperwork and the letters to parents. Admin doesn't bother me." },
+        { "speaker": "Dr Naylor", "voice": "fable", "text": "Then I'll draft the statistical plan, since that's the part you're least sure about. Have the whole proposal ready for the ethics committee by the end of the month." },
+        { "speaker": "Omar", "voice": "ash", "text": "End of the month, understood. Thank you — the control-group point especially. I don't think our original design would have proved anything at all." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What was the main flaw in the students' original design?</p>",
+      "options": [
+        { "key": "A", "text": "It had no group to compare results against." },
+        { "key": "B", "text": "It tested too many children at once." },
+        { "key": "C", "text": "It lasted only a single week." }
+      ],
+      "questions": [
+        { "prompt_text": "The original design lacked", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why do the students want to test the children before the scheme starts?</p>",
+      "options": [
+        { "key": "A", "text": "to practise using the test equipment" },
+        { "key": "B", "text": "to check the two classes are similar at the start" },
+        { "key": "C", "text": "to decide which children can read" }
+      ],
+      "questions": [
+        { "prompt_text": "The baseline test is needed", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice_multi",
+      "prompt": "Choose TWO letters, A–E.",
+      "instructions_html": "<p>Which TWO concerns does the tutor raise about the proposal?</p>",
+      "options": [
+        { "key": "A", "text": "the time commitment for teachers" },
+        { "key": "B", "text": "the cost of the books" },
+        { "key": "C", "text": "the stress a test may cause children" },
+        { "key": "D", "text": "the size of the school" },
+        { "key": "E", "text": "the length of the school term" }
+      ],
+      "questions": [
+        { "prompt_text": "Two concerns raised by Dr Naylor", "correct_option_keys": ["A", "C"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who will prepare each part of the proposal?",
+      "instructions_html": "<p>Choose your answer from the list of people <strong>A–C</strong> and select the correct letter for each part.</p>",
+      "options": [
+        { "key": "A", "text": "Grace" },
+        { "key": "B", "text": "Omar" },
+        { "key": "C", "text": "Dr Naylor" }
+      ],
+      "questions": [
+        { "prompt_text": "designing the picture game", "correct_option_keys": ["A"] },
+        { "prompt_text": "preparing the consent paperwork", "correct_option_keys": ["B"] },
+        { "prompt_text": "drafting the statistical plan", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The class that carries on as normal is called the ______ group.", "accepted": ["control"], "word_limit": 1 },
+        { "prompt_text": "To reduce stress, vocabulary will be tested with a ______ game.", "accepted": ["picture", "picture-based"], "word_limit": 1 },
+        { "prompt_text": "The sessions will be run by a teaching ______, not the class teacher.", "accepted": ["assistant"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

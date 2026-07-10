@@ -1,0 +1,78 @@
+{
+  "title": "Tour of the New Leisure Centre",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "map", "matching", "matching features"],
+  "partStyle": "Part 2 (facility tour monologue)",
+  "speakers": [
+    { "name": "Steve", "role": "Leisure centre duty manager", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Steve", "voice": "onyx", "text": "Hello and welcome, everyone, to the brand-new Oakvale Leisure Centre. I'm Steve, the duty manager, and I'll show you round so you know where everything is before we open to the public next week." },
+        { "speaker": "Steve", "voice": "onyx", "text": "We're standing now in the reception area. If you look at the floor plan in your welcome pack, reception is here at the front, by the main doors. The changing rooms are directly behind reception, so you go through here and straight to the back to get changed." },
+        { "speaker": "Steve", "voice": "onyx", "text": "The main swimming pool is the big room on the left as you come out of the changing rooms. It's a full twenty-five metres, with six lanes. Next to the main pool, in the smaller room at the far left corner, is the children's pool, which is shallow and heated to a warmer temperature." },
+        { "speaker": "Steve", "voice": "onyx", "text": "Over on the right-hand side of the building is the fitness suite — that's our gym, packed with the latest equipment. And just above it, up the stairs on the first floor, are the two studios where we run the classes: spinning, yoga, dance and so on." },
+        { "speaker": "Steve", "voice": "onyx", "text": "Back on the ground floor, tucked in the corner beyond the gym, you'll find the sauna and steam room. And finally, the café is right by the entrance, opposite reception, so you can grab a coffee whether or not you're working out." },
+        { "speaker": "Steve", "voice": "onyx", "text": "Now let me tell you a little about the different classes, because they suit different people. The spinning class is our most intense — it's a real workout, so it's best for people who are already quite fit. The aqua aerobics, on the other hand, takes place in the pool and is gentle on the joints, which makes it especially popular with our older members." },
+        { "speaker": "Steve", "voice": "onyx", "text": "Then there's the family swim session on Sunday mornings, which is designed for parents with young children — there are floats and toys, and the lifeguards keep a close eye. And our beginners' yoga is perfect if you've never done any before; the instructor takes it nice and slowly." },
+        { "speaker": "Steve", "voice": "onyx", "text": "A word on membership and access. A full monthly membership is thirty-five pounds and covers everything, including the classes. If you'd rather just pay each time, a single swim is four pounds fifty. Do bring a padlock for the lockers, or you can buy one at reception for two pounds." },
+        { "speaker": "Steve", "voice": "onyx", "text": "One safety point I must stress — children under the age of eight must be accompanied by an adult in the water at all times, no exceptions. Right, that's the tour. Please have a wander round, try the equipment, and come and find me at reception if you have any questions." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Label the leisure centre floor plan. Where is each facility?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each facility from the list.</p>",
+      "options": [
+        { "key": "A", "text": "directly behind reception" },
+        { "key": "B", "text": "the big room on the left of the changing rooms" },
+        { "key": "C", "text": "the small room in the far left corner" },
+        { "key": "D", "text": "on the right-hand side of the building" },
+        { "key": "E", "text": "up the stairs, on the first floor" },
+        { "key": "F", "text": "by the entrance, opposite reception" }
+      ],
+      "questions": [
+        { "prompt_text": "the changing rooms", "correct_option_keys": ["A"] },
+        { "prompt_text": "the main swimming pool", "correct_option_keys": ["B"] },
+        { "prompt_text": "the children's pool", "correct_option_keys": ["C"] },
+        { "prompt_text": "the fitness suite (gym)", "correct_option_keys": ["D"] },
+        { "prompt_text": "the café", "correct_option_keys": ["F"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who is each class most suitable for?",
+      "instructions_html": "<p>Choose your answers from the list <strong>A–D</strong> and select the correct letter for each class. You may choose any letter more than once.</p>",
+      "options": [
+        { "key": "A", "text": "people who are already very fit" },
+        { "key": "B", "text": "older members" },
+        { "key": "C", "text": "parents with young children" },
+        { "key": "D", "text": "complete beginners" }
+      ],
+      "questions": [
+        { "prompt_text": "the spinning class", "correct_option_keys": ["A"] },
+        { "prompt_text": "the aqua aerobics", "correct_option_keys": ["B"] },
+        { "prompt_text": "the Sunday family swim", "correct_option_keys": ["C"] },
+        { "prompt_text": "the beginners' yoga", "correct_option_keys": ["D"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What is the safety rule for young children in the pool?</p>",
+      "options": [
+        { "key": "A", "text": "children under 8 must be with an adult in the water" },
+        { "key": "B", "text": "children under 8 are not allowed in the pool" },
+        { "key": "C", "text": "children under 8 must wear armbands" }
+      ],
+      "questions": [
+        { "prompt_text": "The rule for children under eight is that", "correct_option_keys": ["A"] }
+      ]
+    }
+  ]
+}

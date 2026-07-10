@@ -1,0 +1,65 @@
+{
+  "title": "Lecture: Bamboo as a Building Material",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "lecture", "materials science", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Right everyone, settle down. Today we're looking at a material that many of you will think of as rather old-fashioned, even primitive, but which materials scientists are now taking extremely seriously as a building material of the future — bamboo." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Let me begin by correcting a misconception. Despite its woody appearance and the way it's often used like timber, bamboo is not a tree at all. Botanically, it is a grass — the largest member of the grass family. And that fact is the key to everything I'm going to tell you, because it grows the way a grass grows, which is to say astonishingly fast." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "How fast? Some species can grow up to ninety centimetres in a single day, and a bamboo plant can reach its full height in just a few months. Compare that with a hardwood tree such as oak, which may take fifty years or more before it can be harvested. This is bamboo's first great advantage: it is a genuinely renewable resource, replenished in years rather than decades." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Now let me turn to its mechanical properties, which are what really surprise people. Bamboo is remarkably strong for its weight. In fact, measured by its tensile strength — that is, its resistance to being pulled apart — bamboo actually outperforms steel. Yes, you heard that correctly: a bamboo fibre can resist a greater pulling force than a steel wire of the same weight. This is why it has earned the nickname vegetable steel." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "There's a second mechanical property worth noting: bamboo is exceptionally flexible. It bends in the wind without snapping, which is precisely why buildings made of bamboo perform so well in earthquakes. A rigid material cracks; bamboo sways and survives. In earthquake-prone regions this flexibility can quite literally save lives." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "And there's an environmental bonus. Like all fast-growing plants, bamboo absorbs a large amount of carbon dioxide as it grows, and it releases a good deal of oxygen — more, in fact, than an equivalent stand of trees. So a bamboo plantation is an efficient carbon sink as well as a crop." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Now, I don't want to give you the impression that bamboo is a miracle material with no drawbacks, because it has two significant ones. The first is that, in its natural state, it is highly vulnerable to insects. Beetles in particular will bore into untreated bamboo and destroy it. So before it can be used in construction, it has to be treated, usually by soaking it in a preservative solution. The second problem is fire: bamboo burns readily, so it must be coated to make it more resistant." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Let me close by looking ahead. Engineers are now developing what's called engineered bamboo, in which thin strips are glued together under pressure to form beams and panels, much as we already do with wood. This processed form is stronger and more uniform than the natural stem, and it can be manufactured to precise standard sizes. Several tall buildings using engineered bamboo have already been designed, and I expect you'll see many more in your lifetimes. Let's stop there for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "What bamboo is and how it grows",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Bamboo is not a tree but the largest member of the ______ family.", "accepted": ["grass"], "word_limit": 1 },
+        { "prompt_text": "Some species grow up to ______ centimetres in a single day.", "accepted": ["ninety", "90"], "word_limit": 1 },
+        { "prompt_text": "By contrast, an oak tree may take ______ years or more before harvest.", "accepted": ["fifty", "50"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "The mechanical properties of bamboo",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "For its weight, bamboo's tensile strength is greater than that of ______.", "accepted": ["steel"], "word_limit": 1 },
+        { "prompt_text": "This has earned bamboo the nickname 'vegetable ______'.", "accepted": ["steel"], "word_limit": 1 },
+        { "prompt_text": "Because it is very ______, bamboo bends instead of snapping in earthquakes.", "accepted": ["flexible"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Drawbacks of natural bamboo",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Untreated bamboo is easily damaged by ______, especially beetles.", "accepted": ["insects"], "word_limit": 1 },
+        { "prompt_text": "To protect it, bamboo is soaked in a ______ solution.", "accepted": ["preservative"], "word_limit": 1 },
+        { "prompt_text": "Because it burns easily, bamboo must be coated to resist ______.", "accepted": ["fire"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS</strong>.</p>",
+      "questions": [
+        { "prompt_text": "What is the stronger, processed form of the material now being developed called?", "accepted": ["engineered bamboo", "engineered"], "word_limit": 2 }
+      ]
+    }
+  ]
+}
