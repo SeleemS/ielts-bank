@@ -9,7 +9,6 @@
 //     user,                              // Supabase user object or null (user.id, user.email)
 //     loading,                           // true until the initial session resolves
 //     signInWithEmail(email): Promise<{error}>,  // magic link
-//     signInWithGoogle(): Promise<void>,          // OAuth redirect
 //     signOut(): Promise<void>,
 //   }
 //
@@ -90,14 +89,6 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  const signInWithGoogle = React.useCallback(async () => {
-    const supabase = getSupabase();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${getOrigin()}/auth/callback` },
-    });
-  }, []);
-
   const signOut = React.useCallback(async () => {
     const supabase = getSupabase();
     await supabase.auth.signOut();
@@ -105,8 +96,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = React.useMemo(
-    () => ({ user, loading, signInWithEmail, signInWithGoogle, signOut }),
-    [user, loading, signInWithEmail, signInWithGoogle, signOut]
+    () => ({ user, loading, signInWithEmail, signOut }),
+    [user, loading, signInWithEmail, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -121,7 +112,6 @@ export function useAuth() {
       user: null,
       loading: true,
       signInWithEmail: async () => ({ error: new Error('AuthProvider missing') }),
-      signInWithGoogle: async () => {},
       signOut: async () => {},
     };
   }
