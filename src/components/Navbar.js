@@ -7,6 +7,7 @@ import {
   BookOpen,
   PenLine,
   Headphones,
+  Mic,
   Newspaper,
   LayoutDashboard,
   LogOut,
@@ -25,6 +26,7 @@ const NAV_LINKS = [
   { label: 'Reading', href: '/readingquestion', icon: BookOpen },
   { label: 'Writing', href: '/writingquestion', icon: PenLine },
   { label: 'Listening', href: '/listeningquestion', icon: Headphones },
+  { label: 'Speaking', href: '/speakingquestion', icon: Mic },
   { label: 'Blog', href: '/blog', icon: Newspaper },
 ];
 

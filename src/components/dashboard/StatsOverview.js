@@ -31,7 +31,7 @@ export default function StatsOverview({ totalPractised, skills }) {
         icon={Activity}
         label="Passages practised"
         value={totalPractised}
-        sub="Reading, Listening & Writing"
+        sub="Reading, Listening, Writing & Speaking"
       />
       {SKILL_ORDER.map((key) => {
         const meta = SKILL_META[key];

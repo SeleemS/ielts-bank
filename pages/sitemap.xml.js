@@ -12,6 +12,7 @@ const STATIC_ROUTES = [
   '/readingquestion',
   '/writingquestion',
   '/listeningquestion',
+  '/speakingquestion',
 ];
 
 // Build an ISO date (YYYY-MM-DD) or null. Accepts human-readable strings like
@@ -48,6 +49,7 @@ export async function getServerSideProps({ res }) {
     { path: 'readingquestion', skill: SKILLS.reading },
     { path: 'writingquestion', skill: SKILLS.writing },
     { path: 'listeningquestion', skill: SKILLS.listening },
+    { path: 'speakingquestion', skill: SKILLS.speaking },
   ];
 
   await Promise.all(

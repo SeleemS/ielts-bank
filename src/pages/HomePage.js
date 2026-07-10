@@ -76,12 +76,12 @@ function Skills(counts) {
     {
       key: 'speaking',
       title: 'Speaking',
-      href: '/readingquestion',
+      href: '/speakingquestion',
       icon: Mic,
-      count: 0,
+      count: counts.speaking,
       blurb:
-        'Cue cards, Part 1–3 questions and model answers. We are building this experience now — it is coming soon.',
-      available: false,
+        'Part 1–3 questions and cue cards with an examiner voice. Record your answer and get instant AI band feedback.',
+      available: true,
     },
   ];
 }
@@ -99,8 +99,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: 'AI Writing feedback',
-    desc: 'Get instant, criterion-by-criterion band scores and detailed feedback on your Writing essays. Speaking feedback is coming soon.',
+    title: 'AI Writing & Speaking feedback',
+    desc: 'Get instant, criterion-by-criterion band scores and detailed feedback on your Writing essays and recorded Speaking answers.',
   },
   {
     icon: Star,
@@ -113,7 +113,7 @@ const STEPS = [
   {
     icon: ClipboardList,
     title: 'Pick a skill',
-    desc: 'Choose Reading, Writing or Listening and select any question from the bank.',
+    desc: 'Choose Reading, Writing, Listening or Speaking and select any question from the bank.',
   },
   {
     icon: Timer,

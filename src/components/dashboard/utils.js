@@ -2,17 +2,18 @@
 // Pure data-shaping helpers for the progress dashboard. No network / React here
 // so the transforms stay easy to reason about and reuse across dashboard parts.
 
-import { BookOpen, Headphones, PenLine } from 'lucide-react';
+import { BookOpen, Headphones, PenLine, Mic } from 'lucide-react';
 
 // Skill -> display + routing metadata. Reading/Listening come from `attempts`,
-// Writing from `scores`. (Speaking is intentionally omitted for now.)
+// Writing/Speaking from `scores`.
 export const SKILL_META = {
   reading: { key: 'reading', label: 'Reading', href: '/readingquestion', icon: BookOpen },
   listening: { key: 'listening', label: 'Listening', href: '/listeningquestion', icon: Headphones },
   writing: { key: 'writing', label: 'Writing', href: '/writingquestion', icon: PenLine },
+  speaking: { key: 'speaking', label: 'Speaking', href: '/speakingquestion', icon: Mic },
 };
 
-export const SKILL_ORDER = ['reading', 'listening', 'writing'];
+export const SKILL_ORDER = ['reading', 'listening', 'writing', 'speaking'];
 
 // Coerce a Postgres numeric (which may arrive as a string) into a finite
 // number, or null when absent/unparseable.
@@ -61,8 +62,8 @@ function attemptToItem(row) {
   };
 }
 
-// Normalize a writing `scores` row (with nested attempt -> passage) into the
-// same activity item shape.
+// Normalize an AI `scores` row (writing or speaking, with nested attempt ->
+// passage) into the same activity item shape.
 function scoreToItem(row) {
   const attempt = Array.isArray(row.attempts) ? row.attempts[0] : row.attempts;
   const passage = attempt
@@ -70,12 +71,13 @@ function scoreToItem(row) {
       ? attempt.passages[0]
       : attempt.passages
     : null;
+  const skill = row.skill === 'speaking' ? 'speaking' : 'writing';
   return {
     id: `score-${row.id}`,
-    skill: 'writing',
+    skill,
     band: toBand(row.overall_band),
     date: row.created_at,
-    title: passage?.title || 'Writing task',
+    title: passage?.title || (skill === 'speaking' ? 'Speaking task' : 'Writing task'),
     href: passageHref(passage),
     detail: 'AI-scored',
   };

@@ -26,8 +26,8 @@ import { buildDashboardData } from '../src/components/dashboard/utils';
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, band, submitted_at, created_at, passages ( title, slug, skill )';
 
-// AI writing scores, newest first. The prompt title lives on the linked
-// attempt's passage, so embed attempts -> passages (two-level embedding).
+// AI writing/speaking scores, newest first. The prompt title lives on the
+// linked attempt's passage, so embed attempts -> passages (two-level embedding).
 const SCORES_SELECT =
   'id, skill, overall_band, criteria, created_at, attempts ( passage_id, passages ( title, slug, skill ) )';
 
@@ -51,7 +51,7 @@ function useDashboardData(user) {
           supabase
             .from('scores')
             .select(SCORES_SELECT)
-            .eq('skill', 'writing')
+            .in('skill', ['writing', 'speaking'])
             .order('created_at', { ascending: false }),
         ]);
 

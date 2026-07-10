@@ -9,7 +9,12 @@ import { useAuth } from '../../lib/auth';
 
 // Accessible, centered modal in the shadcn visual language (portal + overlay),
 // mirroring the Sheet primitive's implementation to avoid new dependencies.
-export default function SignInDialog({ open, onOpenChange }) {
+export default function SignInDialog({
+  open,
+  onOpenChange,
+  title = 'Sign in to save your progress',
+  description = 'Track your scores across devices. No password required.',
+}) {
   const { signInWithEmail } = useAuth();
   const [mounted, setMounted] = React.useState(false);
   const [email, setEmail] = React.useState('');
@@ -123,11 +128,9 @@ export default function SignInDialog({ open, onOpenChange }) {
                   id="signin-title"
                   className="mt-2 text-xl font-bold tracking-tight text-foreground"
                 >
-                  Sign in to save your progress
+                  {title}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Track your scores across devices. No password required.
-                </p>
+                <p className="text-sm text-muted-foreground">{description}</p>
               </div>
 
               <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">

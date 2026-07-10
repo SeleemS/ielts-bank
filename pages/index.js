@@ -1,5 +1,5 @@
 import HomePage from '../src/pages/HomePage';
-import { SKILLS, listPassages } from '../lib/supabase';
+import { SKILLS, listPassages, listSpeakingItems } from '../lib/supabase';
 
 export default HomePage;
 
@@ -7,18 +7,20 @@ export default HomePage;
 // try/catch so a missing Supabase env / network hiccup at build time falls back
 // to static counts instead of failing the build.
 export async function getStaticProps() {
-  const fallback = { reading: 0, writing: 0, listening: 0, total: 0 };
+  const fallback = { reading: 0, writing: 0, listening: 0, speaking: 0, total: 0 };
   try {
-    const [reading, writing, listening] = await Promise.all([
+    const [reading, writing, listening, speaking] = await Promise.all([
       listPassages(SKILLS.reading),
       listPassages(SKILLS.writing),
       listPassages(SKILLS.listening),
+      listSpeakingItems(),
     ]);
     const counts = {
       reading: reading.length,
       writing: writing.length,
       listening: listening.length,
-      total: reading.length + writing.length + listening.length,
+      speaking: speaking.length,
+      total: reading.length + writing.length + listening.length + speaking.length,
     };
     return { props: { counts }, revalidate: 3600 };
   } catch (err) {
