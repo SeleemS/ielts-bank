@@ -1,8 +1,15 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import { cn } from '../../lib/utils';
 import QuestionGroup from './QuestionGroup';
 import { gradeAll, estimateBand } from './grade';
+import { useAuth } from '../../lib/auth';
+import {
+  resolvePassageId,
+  saveAttemptToSupabase,
+  markAttemptSynced,
+  syncLocalAttempts,
+} from '../../lib/progress';
 
 // The stateful heart of the question-taking experience. It is UI-chrome
 // agnostic: Reading and Listening pages supply their own passage/audio layout
@@ -14,7 +21,7 @@ import { gradeAll, estimateBand } from './grade';
 //   skill      - 'reading' | 'listening' (used in the storage key + band label)
 //   showBand   - optional; show a rough band estimate in the results summary
 
-function persistAttempt(skill, storageKey, answers, result) {
+function persistAttempt(skill, storageKey, answers, result, timestamp) {
   if (typeof window === 'undefined' || !storageKey) return;
   try {
     const perQuestion = {};
@@ -33,11 +40,39 @@ function persistAttempt(skill, storageKey, answers, result) {
       perQuestion,
       score: result.score,
       total: result.total,
-      timestamp: new Date().toISOString(),
+      timestamp: timestamp || new Date().toISOString(),
     };
     window.localStorage.setItem(`ielts-attempt:${skill}:${storageKey}`, JSON.stringify(payload));
   } catch {
     /* localStorage may be unavailable (private mode) — non-fatal */
+  }
+}
+
+// Cross-device persistence: when a signed-in user submits, ALSO mirror the
+// attempt into Supabase (in addition to the localStorage write above). This is
+// fully fail-soft — any resolution/DB error is swallowed so the results UI is
+// never affected. Logged-out/offline users keep only the localStorage copy.
+async function persistAttemptToSupabase(userId, skill, storageKey, answers, result, submittedAt) {
+  if (!userId || !storageKey) return;
+  try {
+    const passageId = await resolvePassageId(storageKey, skill);
+    const band = estimateBand(result.score, result.total);
+    const res = await saveAttemptToSupabase({
+      userId,
+      passageId,
+      skill,
+      responses: answers || {},
+      rawScore: result.score,
+      band: typeof band === 'number' ? band : null,
+      submittedAt,
+    });
+    if (res.ok) {
+      // Record the same timestamp we wrote to the local attempt so the
+      // migration pass (syncLocalAttempts) won't re-insert this submission.
+      markAttemptSynced(`ielts-attempt:${skill}:${storageKey}`, submittedAt);
+    }
+  } catch {
+    /* never break the results UI on a persistence failure */
   }
 }
 
@@ -78,6 +113,14 @@ export default function QuestionEngine({ groups, storageKey, skill = 'reading', 
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
+  const { user } = useAuth();
+
+  // When a user becomes present (login / initial hydration), backfill any
+  // attempts they completed while logged out. Idempotent + fail-soft.
+  useEffect(() => {
+    if (!user?.id) return;
+    syncLocalAttempts(user.id).catch(() => {});
+  }, [user?.id]);
 
   const totalQuestions = useMemo(
     () => (groups || []).reduce((acc, g) => acc + (g.questions?.length || 0), 0),
@@ -101,7 +144,14 @@ export default function QuestionEngine({ groups, storageKey, skill = 'reading', 
     const result = gradeAll(groups, answers);
     setResults(result);
     setSubmitted(true);
-    persistAttempt(skill, storageKey, answers, result);
+    const submittedAt = new Date().toISOString();
+    persistAttempt(skill, storageKey, answers, result, submittedAt);
+    if (user?.id) {
+      // Cross-device mirror for signed-in users (fire-and-forget, fail-soft).
+      persistAttemptToSupabase(user.id, skill, storageKey, answers, result, submittedAt).catch(
+        () => {}
+      );
+    }
     if (typeof window !== 'undefined') {
       if (typeof window.gtag === 'function') {
         window.gtag('event', 'submit_answer', {
@@ -111,7 +161,7 @@ export default function QuestionEngine({ groups, storageKey, skill = 'reading', 
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [groups, answers, skill, storageKey]);
+  }, [groups, answers, skill, storageKey, user?.id]);
 
   const handleReset = useCallback(() => {
     setAnswers({});

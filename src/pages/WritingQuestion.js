@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Progress } from '../../components/ui/progress';
 import { cn } from '../lib/utils';
+import { getSupabase } from '../../lib/supabase';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -251,13 +252,26 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
 
     setIsLoading(true);
     try {
+      // Attach the current session's access token (if signed in) so the scorer
+      // can persist the result server-side. Fail-soft: any error here just means
+      // we POST without auth and score normally.
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const { data } = await getSupabase().auth.getSession();
+        const accessToken = data?.session?.access_token;
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+      } catch {
+        /* not signed in / auth unavailable — score anonymously */
+      }
+
       const response = await fetch(SCORE_API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           prompt: htmlToText(promptHtml),
           essay: userResponse,
           task,
+          passage_id: passage?.id || null,
         }),
       });
 

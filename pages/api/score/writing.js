@@ -72,6 +72,69 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
   return data === true;
 }
 
+// ---------------------------------------------------------------------------
+// Optional auth: if the client sends `Authorization: Bearer <access token>`,
+// verify it and return the user id so we can persist the score. Any failure
+// (no header, invalid/expired token, admin misconfigured) returns null and
+// scoring proceeds unauthenticated — we NEVER block scoring on auth.
+// ---------------------------------------------------------------------------
+async function resolveUserId(req) {
+  try {
+    const authz = req.headers.authorization || req.headers.Authorization || '';
+    const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
+    if (!match) return null;
+    const token = match[1].trim();
+    if (!token) return null;
+    const { data, error } = await getAdmin().auth.getUser(token);
+    if (error || !data || !data.user) return null;
+    return data.user.id;
+  } catch {
+    return null;
+  }
+}
+
+// Persist a completed writing score for a signed-in user. Because scores.attempt_id
+// is NOT NULL (0004) and scores are service-role-write only (0005), we insert an
+// `attempts` row first (skill='writing') then the `scores` row referencing it,
+// both via the service-role client (bypasses RLS). Fully fail-soft: a DB error
+// is logged (message only, never keys) and never affects the scoring response.
+async function saveWritingScore({ userId, passageId, task, essay, model, result }) {
+  try {
+    const admin = getAdmin();
+    const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
+
+    const { data: attempt, error: attemptErr } = await admin
+      .from('attempts')
+      .insert({
+        user_id: userId,
+        passage_id: passageId || null,
+        skill: 'writing',
+        responses: { essay, task },
+        band: overall,
+        submitted_at: new Date().toISOString(),
+      })
+      .select('id')
+      .single();
+
+    if (attemptErr || !attempt) {
+      console.error('writing attempt insert failed:', attemptErr?.message || 'no row');
+      return;
+    }
+
+    const { error: scoreErr } = await admin.from('scores').insert({
+      attempt_id: attempt.id,
+      user_id: userId,
+      skill: 'writing',
+      overall_band: overall,
+      criteria: result.criteria || {},
+      model,
+    });
+    if (scoreErr) console.error('writing score insert failed:', scoreErr.message);
+  } catch (e) {
+    console.error('saveWritingScore error:', e.message);
+  }
+}
+
 function clientIp(req) {
   const xff = req.headers['x-forwarded-for'];
   if (typeof xff === 'string' && xff.length) {
@@ -226,6 +289,7 @@ export default async function handler(req, res) {
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   const task = body.task === 1 || body.task === '1' ? 1 : 2;
+  const passageId = typeof body.passage_id === 'string' && body.passage_id ? body.passage_id : null;
 
   if (!essay) {
     return res.status(400).json({ error: 'No essay was provided.' });
@@ -353,6 +417,12 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       return res.status(502).json({
         error: 'The scoring service returned an invalid result. Please try again.',
       });
+    }
+
+    // Persist for signed-in users (optional; never blocks the response).
+    const userId = await resolveUserId(req);
+    if (userId) {
+      await saveWritingScore({ userId, passageId, task, essay, model: MODEL, result });
     }
 
     return res.status(200).json({ task, wordCount: words, ...result });

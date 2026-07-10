@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import NextLink from 'next/link';
 import Image from 'next/image';
-import { Menu, ArrowRight, BookOpen, PenLine, Headphones, Newspaper } from 'lucide-react';
+import {
+  Menu,
+  ArrowRight,
+  BookOpen,
+  PenLine,
+  Headphones,
+  Newspaper,
+  LayoutDashboard,
+  LogOut,
+} from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
+import { Separator } from '../../components/ui/separator';
 import { cn } from '../lib/utils';
+import { useAuth } from '../lib/auth';
+import SignInDialog from './auth/SignInDialog';
 
 // Pure Tailwind/shadcn Navbar. NO Chakra imports — this renders on every page,
 // including pages still built with Chakra, so it must be self-contained.
@@ -29,8 +41,91 @@ function BrandMark() {
   );
 }
 
+function initialOf(email) {
+  return (email || '?').trim().charAt(0).toUpperCase() || '?';
+}
+
+// Desktop account dropdown (avatar circle -> Dashboard / Sign out). Built with
+// a click-outside handler to avoid adding a dropdown-menu dependency.
+function AccountMenu({ user, onSignOut }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        {initialOf(user?.email)}
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 mt-2 w-56 overflow-hidden rounded-lg border border-border bg-background p-1 shadow-lg"
+        >
+          <div className="px-3 py-2">
+            <p className="text-xs text-muted-foreground">Signed in as</p>
+            <p className="truncate text-sm font-medium text-foreground">{user?.email}</p>
+          </div>
+          <Separator />
+          <NextLink
+            href="/dashboard"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground no-underline transition-colors hover:bg-secondary"
+          >
+            <LayoutDashboard className="h-4 w-4 text-accent" />
+            Dashboard
+          </NextLink>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onSignOut();
+            }}
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            <LogOut className="h-4 w-4 text-muted-foreground" />
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const { user, loading, signOut } = useAuth();
+
+  const openSignIn = () => {
+    setOpen(false);
+    setSignInOpen(true);
+  };
 
   return (
     <header className="tw-root sticky top-0 z-[1000] w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -53,14 +148,22 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:block">
+        {/* Desktop CTA + account */}
+        <div className="hidden items-center gap-2 md:flex">
           <Button asChild variant="accent" className="shadow-sm">
             <NextLink href="/readingquestion" className="no-underline">
               Start practicing
               <ArrowRight className="h-4 w-4" />
             </NextLink>
           </Button>
+
+          {!loading && user ? (
+            <AccountMenu user={user} onSignOut={signOut} />
+          ) : !loading ? (
+            <Button variant="outline" onClick={openSignIn}>
+              Sign in
+            </Button>
+          ) : null}
         </div>
 
         {/* Mobile trigger */}
@@ -104,8 +207,49 @@ export default function Navbar() {
               <ArrowRight className="h-4 w-4" />
             </NextLink>
           </Button>
+
+          {/* Account section (mobile) */}
+          <Separator className="my-2" />
+          {!loading && user ? (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3 px-1 py-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                  {initialOf(user.email)}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Signed in as</p>
+                  <p className="truncate text-sm font-medium text-foreground">{user.email}</p>
+                </div>
+              </div>
+              <NextLink
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-foreground no-underline transition-colors hover:bg-secondary"
+              >
+                <LayoutDashboard className="h-5 w-5 text-accent" />
+                Dashboard
+              </NextLink>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  signOut();
+                }}
+                className="flex items-center gap-3 rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                <LogOut className="h-5 w-5 text-muted-foreground" />
+                Sign out
+              </button>
+            </div>
+          ) : !loading ? (
+            <Button variant="outline" size="lg" className="w-full" onClick={openSignIn}>
+              Sign in
+            </Button>
+          ) : null}
         </SheetContent>
       </Sheet>
+
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
     </header>
   );
 }

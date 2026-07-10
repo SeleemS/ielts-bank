@@ -4,13 +4,15 @@ import { Analytics } from '@vercel/analytics/react';
 // Preflight is re-enabled in tailwind.config.js.
 import '../src/styles/globals.css';
 import { inter } from '../src/lib/fonts';
+import { AuthProvider } from '../src/lib/auth';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
 
 function MyApp({ Component, pageProps }) {
   return (
-    <div className={`${inter.variable} font-sans`}>
+    <AuthProvider>
+      <div className={`${inter.variable} font-sans`}>
       {/* Google AdSense */}
       <Script
         id="adsbygoogle-init"
@@ -35,9 +37,10 @@ function MyApp({ Component, pageProps }) {
         `}
       </Script>
 
-      <Component {...pageProps} />
-      <Analytics />
-    </div>
+        <Component {...pageProps} />
+        <Analytics />
+      </div>
+    </AuthProvider>
   );
 }
 
