@@ -22,18 +22,22 @@ function MyApp({ Component, pageProps }) {
         crossOrigin="anonymous"
       />
 
-      {/* Google Analytics 4 (gtag.js) */}
+      {/* Google Analytics 4 (gtag.js), proxied first-party via /gt rewrites
+          in next.config.js so ad blockers don't drop the script or hits */}
       <Script
         id="gtag-src"
         strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        src={`/gt/js?id=${GA_MEASUREMENT_ID}`}
       />
       <Script id="gtag-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}');
+          gtag('config', '${GA_MEASUREMENT_ID}', {
+            transport_url: window.location.origin + '/gt',
+            first_party_collection: true
+          });
         `}
       </Script>
 
