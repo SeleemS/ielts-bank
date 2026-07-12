@@ -1,0 +1,156 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Coral Reefs Build Themselves",
+    "difficulty": "medium",
+    "topic_tags": ["environment", "marine biology", "ecology"],
+    "body_html": "<p><strong>A</strong> Scattered through the warm, shallow seas of the tropics lie some of the richest and most colourful habitats on the whole of the Earth. Coral reefs cover only a tiny fraction of the ocean floor, yet they shelter a quarter of all the kinds of creature that live in the sea, and for this reason they are often called the rainforests of the ocean. A large reef can stretch for hundreds of kilometres and can be seen from space, and yet, astonishingly, the whole vast structure is the work of animals no bigger than a fingernail. How such tiny builders raise so great a thing is one of the quiet wonders of the natural world.</p><p><strong>B</strong> The builders are small, soft-bodied animals called polyps, each a little like a miniature sea anemone. A single polyp draws minerals from the seawater around it and uses them to build a hard, protective cup of limestone about its own body. When the polyp dies, its stony cup remains, and new polyps grow upon the old ones. Over hundreds and thousands of years, generation building upon generation, these countless small skeletons pile up into the mass of rock that we call a reef. The living coral is only a thin skin of animals spread across the surface of a great heap made by their ancestors.</p><p><strong>C</strong> The polyps do not, however, work alone, for they share their bodies with a partner. Living inside the tissues of each polyp are enormous numbers of microscopic algae, far too small to see. These algae capture sunlight and use it to make food, in the same way that a plant does, and they pass much of that food to the coral that houses them; in return the coral gives the algae a safe place to live and a supply of the raw materials they need. It is this close partnership, in which each side gives something the other cannot make for itself, that allows reefs to grow so quickly and so large. The algae also lend the coral much of its brilliant colour.</p><p><strong>D</strong> Because the algae depend on sunlight, the conditions a reef needs are strict. The water must be warm, clear and shallow enough for light to reach the coral, which is why reefs are found only in the sunlit shallows of tropical seas and never in cold or deep water. Muddy or cloudy water, which blocks the light, will not do, and even a small change in temperature can upset the delicate balance on which the whole community rests. A reef, for all its size and apparent solidity, is in truth a fragile thing that can flourish only within a narrow range of conditions.</p><p><strong>E</strong> This fragility shows itself most clearly in an event known as bleaching. When the surrounding water grows too warm and stays warm for too long, the coral becomes stressed and drives out the algae that live within it. Robbed of its colourful partners, the coral turns a ghostly white, and, worse, it loses the chief source of its food. If cooler conditions return quickly the algae may come back and the coral may recover, but if the heat continues the starving coral will eventually die, leaving behind only bare white skeletons. As the world's seas grow warmer, such bleaching has become more frequent and more severe.</p><p><strong>F</strong> The loss of reefs would matter far beyond the reefs themselves. They are nurseries and feeding grounds for a great host of fish and other animals, many of which people depend upon for food. They act as natural breakwaters, absorbing the force of the waves and so protecting low-lying coasts from storms and erosion. And they draw visitors from around the world, supporting the livelihoods of many coastal communities. A structure built grain by grain by the humblest of animals turns out to be one of the pillars on which both the life of the ocean and the lives of many people quietly rest.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "the name of the tiny animals that build a reef", "correct_option_keys": ["B"], "evidence": "The builders are small, soft-bodied animals called polyps" },
+          { "prompt_text": "a comparison between reefs and a habitat found on land", "correct_option_keys": ["A"], "evidence": "for this reason they are often called the rainforests of the ocean." },
+          { "prompt_text": "the water conditions that a reef requires in order to grow", "correct_option_keys": ["D"], "evidence": "The water must be warm, clear and shallow enough for light to reach the coral" },
+          { "prompt_text": "the ways in which reefs benefit people and coastlines", "correct_option_keys": ["F"], "evidence": "They act as natural breakwaters, absorbing the force of the waves and so protecting low-lying coasts" },
+          { "prompt_text": "what happens to coral when it loses its algae", "correct_option_keys": ["E"], "evidence": "the coral becomes stressed and drives out the algae that live within it. Robbed of its colourful partners, the coral turns a ghostly white" },
+          { "prompt_text": "the exchange of benefits between the coral and the algae", "correct_option_keys": ["C"], "evidence": "they pass much of that food to the coral that houses them; in return the coral gives the algae a safe place to live" }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 7-10. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>Each coral polyp draws minerals from the sea and builds a hard cup of <strong>(7)&nbsp;______</strong> around its body. Inside its tissues live tiny <strong>(8)&nbsp;______</strong> that make food from sunlight and share it with the coral. When the water becomes too <strong>(9)&nbsp;______</strong>, the coral drives out these partners and turns white, an event known as <strong>(10)&nbsp;______</strong>.</p>",
+        "questions": [
+          { "prompt_text": "Gap 7", "accepted": ["limestone"], "word_limit": 2, "spelling_variants": true, "evidence": "uses them to build a hard, protective cup of limestone about its own body." },
+          { "prompt_text": "Gap 8", "accepted": ["algae", "microscopic algae"], "word_limit": 2, "spelling_variants": true, "evidence": "Living inside the tissues of each polyp are enormous numbers of microscopic algae" },
+          { "prompt_text": "Gap 9", "accepted": ["warm", "too warm"], "word_limit": 2, "spelling_variants": true, "evidence": "When the surrounding water grows too warm and stays warm for too long, the coral becomes stressed and drives out the algae" },
+          { "prompt_text": "Gap 10", "accepted": ["bleaching"], "word_limit": 2, "spelling_variants": true, "evidence": "an event known as bleaching." }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "A coral reef is built by many tiny animals rather than by a single large creature.", "answer": "true", "evidence": "the whole vast structure is the work of animals no bigger than a fingernail." },
+          { "prompt_text": "The algae living inside coral provide it with food and much of its colour.", "answer": "true", "evidence": "they pass much of that food to the coral that houses them ... The algae also lend the coral much of its brilliant colour." },
+          { "prompt_text": "Coral reefs can grow in deep water where no sunlight reaches.", "answer": "false", "evidence": "reefs are found only in the sunlit shallows of tropical seas and never in cold or deep water." },
+          { "prompt_text": "Coral reefs attract more tourists than any other natural feature on Earth.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Endless Journey of the Water Cycle",
+    "difficulty": "easy",
+    "topic_tags": ["environment", "weather", "geography"],
+    "body_html": "<p>The water that fills a glass on the table may seem to have a very ordinary history, but it does not. The same water has fallen as rain, flowed in rivers, floated as cloud and lain frozen in ice countless times over, for the Earth makes no new water and loses almost none. Instead the water it already has is used again and again, moving endlessly between the sea, the sky and the land in a great loop that scientists call the water cycle. Understanding this cycle explains where rain comes from, why rivers keep flowing and how the whole living world is kept supplied with the water it needs.</p><p>The engine that drives the entire cycle is the Sun. Its heat warms the surface of the oceans, lakes and rivers, and this warmth causes water at the surface to change from a liquid into an invisible gas called water vapour. This process, in which liquid water becomes a gas and rises into the air, is known as evaporation. Vast amounts of water leave the sea in this way every day, silently and without our noticing, and it is the Sun alone that provides all the energy needed to lift it.</p><p>As the warm, moist air rises, it carries the water vapour higher into the sky, where the air is much colder. When the vapour is cooled enough, it changes back from a gas into tiny droplets of liquid water, a process known as condensation. These droplets are so small and light that they float, and when countless millions of them gather together they form the clouds we see drifting overhead. A cloud, for all its size, is nothing more than a great crowd of these minute water droplets suspended in the air.</p><p>Inside a growing cloud the droplets bump into one another and join together, and as they do so they grow larger and heavier. Eventually they become too heavy for the air to hold up, and they fall back to the ground. This falling water is called precipitation, a single word that covers rain, snow, sleet and hail alike, the form it takes depending chiefly on how cold the air is on the way down. In this way the water that the Sun lifted from the sea is returned once more to the surface of the land and the ocean.</p><p>What happens to the water after it lands completes the loop. Some of it is pulled downhill by gravity, gathering into streams and rivers that flow steadily back towards the sea. Some soaks down into the soil and collects deep underground, where it is stored as what is called groundwater and may slowly feed springs and wells for years to come. Some is taken up by the roots of plants, and some simply evaporates straight back into the air. Sooner or later, however, a large part of it finds its way back to the ocean, ready to begin the journey all over again.</p><p>Because the cycle turns endlessly, the total amount of water on the planet stays very nearly the same from one age to the next; it is neither created nor destroyed, only borrowed and passed on. The very water we drink today has been travelling this circuit for billions of years and has, in its time, been part of ancient oceans, distant storms and long-vanished rivers. Every drop, in a sense, is on loan from a cycle far older than humankind, and it will move on again long after we have finished with it.</p><p>The water cycle is more than an elegant piece of natural machinery, for all life on land depends upon it. Without the constant lifting of water from the sea and its return as rain, the continents would be barren, the rivers would run dry and nothing could grow. The quiet, ceaseless turning of this great wheel is what keeps the land green and the living world supplied, and it goes on above and around us at every moment, whether or not anyone happens to be watching.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-6. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "The Sun provides the energy that drives the water cycle.", "answer": "true", "evidence": "The engine that drives the entire cycle is the Sun." },
+          { "prompt_text": "Water vapour is a gas.", "answer": "true", "evidence": "water at the surface to change from a liquid into an invisible gas called water vapour." },
+          { "prompt_text": "Condensation is the change of water from a liquid into a gas.", "answer": "false", "evidence": "it changes back from a gas into tiny droplets of liquid water, a process known as condensation." },
+          { "prompt_text": "All rain that falls flows immediately back to the sea.", "answer": "false", "evidence": "Some soaks down into the soil and collects deep underground, where it is stored as what is called groundwater" },
+          { "prompt_text": "Rainwater is cleaner than the water found in rivers.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "The total amount of water on Earth stays roughly the same as it is recycled.", "answer": "true", "evidence": "the total amount of water on the planet stays very nearly the same from one age to the next" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 7-12. Answer the questions below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "What is the process by which liquid water becomes a gas and rises into the air?", "accepted": ["evaporation"], "word_limit": 2, "spelling_variants": true, "evidence": "This process, in which liquid water becomes a gas and rises into the air, is known as evaporation." },
+          { "prompt_text": "What is the invisible gas that water becomes when it evaporates called?", "accepted": ["water vapour", "vapour"], "word_limit": 2, "spelling_variants": true, "evidence": "change from a liquid into an invisible gas called water vapour." },
+          { "prompt_text": "What is the process by which vapour cools and turns back into liquid droplets?", "accepted": ["condensation"], "word_limit": 2, "spelling_variants": true, "evidence": "it changes back from a gas into tiny droplets of liquid water, a process known as condensation." },
+          { "prompt_text": "What forms when huge numbers of tiny water droplets gather together in the sky?", "accepted": ["clouds", "a cloud"], "word_limit": 2, "spelling_variants": true, "evidence": "when countless millions of them gather together they form the clouds we see drifting overhead." },
+          { "prompt_text": "What is water that soaks into the soil and collects underground called?", "accepted": ["groundwater"], "word_limit": 2, "spelling_variants": true, "evidence": "collects deep underground, where it is stored as what is called groundwater" },
+          { "prompt_text": "What force pulls fallen water downhill into streams and rivers?", "accepted": ["gravity"], "word_limit": 2, "spelling_variants": true, "evidence": "Some of it is pulled downhill by gravity, gathering into streams and rivers" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Questions 13 and 14. Choose TWO letters, A-F for each question.",
+        "options": [
+          { "key": "A", "text": "evaporation" },
+          { "key": "B", "text": "snow" },
+          { "key": "C", "text": "condensation" },
+          { "key": "D", "text": "hail" },
+          { "key": "E", "text": "burning" },
+          { "key": "F", "text": "electricity" }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO of the following are named as processes in the water cycle? Choose TWO letters.", "correct_option_keys": ["A", "C"], "evidence": "is known as evaporation ... a process known as condensation." },
+          { "prompt_text": "Which TWO of the following are named as forms of precipitation? Choose TWO letters.", "correct_option_keys": ["B", "D"], "evidence": "a single word that covers rain, snow, sleet and hail alike" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Peat Bogs and the Carbon They Keep",
+    "difficulty": "hard",
+    "topic_tags": ["environment", "climate", "ecology"],
+    "body_html": "<p><strong>A</strong> To the casual traveller, a peat bog can seem the least remarkable of places: a flat, soggy expanse of dull brown ground, treeless and often shrouded in mist, with little to catch the eye. For centuries such wetlands were dismissed as wastelands, fit only to be drained and put to some more profitable use. Yet scientists have come to understand that these unglamorous landscapes are among the most valuable on Earth, for locked within their waterlogged ground lies an immense store of carbon, and their fate has a direct bearing on the climate of the whole planet.</p><p><strong>B</strong> A peat bog forms with extraordinary slowness, and only where certain conditions come together. In cold, wet, acidic ground that is starved of oxygen, the plants that die each year, chiefly a spongy plant known as sphagnum moss, do not rot away in the usual manner. The tiny organisms that would normally break down dead vegetation cannot thrive in such sour and airless conditions, and so the plant matter is only half-decayed. Layer upon layer of this partly rotted material builds up, compressing under its own weight into the dark, dense substance we call peat. A bog may deepen by less than a millimetre in a year, so that a metre of peat can represent a thousand years of growth.</p><p><strong>C</strong> The importance of all this lies in what the peat contains. While they grew, the mosses and other bog plants drew the gas carbon dioxide out of the air, as all plants do, and used the carbon to build their tissues. Normally, when a plant dies and decays, that carbon is released back into the atmosphere; but in a bog the half-rotted plants never fully decay, and so their carbon stays locked in the ground instead of returning to the air. Over thousands of years the amount held in this way becomes enormous. Although peatlands cover only a small share of the world's land, they hold more carbon than all its forests combined, which makes them one of the planet's most important carbon stores.</p><p><strong>D</strong> This great reservoir is safe only for as long as the bog stays wet. When people drain a bog to create farmland or to dig out the peat for fuel, air is let into ground that has been sealed off from it for centuries. The buried plant matter, exposed at last to oxygen, begins to rot in earnest, and as it does so the carbon that was locked away for thousands of years is released back into the atmosphere as carbon dioxide. A damaged, drying bog thus turns from a quiet store of carbon into a steady source of it, adding to the very warming that threatens the climate. Burning the drained peat releases its carbon faster still.</p><p><strong>E</strong> A healthy bog is valuable for more than the carbon it keeps. Its wet, acidic ground is home to unusual plants and animals found in few other places, and it acts like a giant sponge, soaking up heavy rain and releasing it slowly, so reducing the risk of floods downstream and helping to keep river water clean. Bogs are also remarkable keepers of the past: because the airless, acid peat halts decay, objects and even human bodies thousands of years old have been recovered from them almost perfectly preserved, offering a rare window onto ancient life.</p><p><strong>F</strong> For all these reasons, the draining and destruction of peatlands, once thought a mark of progress, is now widely regarded as a serious mistake, and efforts are under way to reverse it. The chief method is a process called rewetting, in which the drains cut into a bog are blocked so that the water table rises again and the ground is returned to its natural sodden state. Once rewetted, a bog stops releasing its carbon and, in time, the sphagnum moss returns and it can slowly begin to store carbon once more. Restoring these overlooked wetlands has come to be seen as one of the cheaper and more effective ways of helping to hold back a warming world.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "An overlooked but vital kind of landscape" },
+          { "key": "ii", "text": "How slowly-rotting plants build up into peat" },
+          { "key": "iii", "text": "A greater store of carbon than the forests" },
+          { "key": "iv", "text": "What happens when a bog is drained" },
+          { "key": "v", "text": "More than carbon: wildlife, water and history" },
+          { "key": "vi", "text": "Bringing damaged bogs back to life" },
+          { "key": "vii", "text": "The commercial value of peat as a fuel" },
+          { "key": "viii", "text": "How animals migrate across wetlands" },
+          { "key": "ix", "text": "Draining land to build new cities" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["i"], "evidence": "these unglamorous landscapes are among the most valuable on Earth" },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["ii"], "evidence": "the plant matter is only half-decayed. Layer upon layer of this partly rotted material builds up, compressing under its own weight into the dark, dense substance we call peat." },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["iii"], "evidence": "they hold more carbon than all its forests combined, which makes them one of the planet's most important carbon stores." },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iv"], "evidence": "When people drain a bog ... the carbon that was locked away for thousands of years is released back into the atmosphere" },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"], "evidence": "A healthy bog is valuable for more than the carbon it keeps." },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["vi"], "evidence": "efforts are under way to reverse it. The chief method is a process called rewetting" }
+        ]
+      },
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Questions 7-10. Do the following statements agree with the claims of the writer? Write YES if the statement agrees with the claims of the writer, NO if it contradicts them, or NOT GIVEN if it is impossible to say what the writer thinks.",
+        "questions": [
+          { "prompt_text": "Peat forms quickly once the right conditions are present.", "answer": "no", "evidence": "A peat bog forms with extraordinary slowness ... A bog may deepen by less than a millimetre in a year" },
+          { "prompt_text": "Well-preserved human bodies have been recovered from peat bogs.", "answer": "yes", "evidence": "human bodies thousands of years old have been recovered from them almost perfectly preserved" },
+          { "prompt_text": "Draining a peat bog helps it to store more carbon.", "answer": "no", "evidence": "A damaged, drying bog thus turns from a quiet store of carbon into a steady source of it" },
+          { "prompt_text": "Governments should spend more on restoring bogs than on planting new forests.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-14. Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Which spongy plant is chiefly responsible for forming peat?", "accepted": ["sphagnum moss", "sphagnum", "moss"], "word_limit": 3, "spelling_variants": true, "evidence": "chiefly a spongy plant known as sphagnum moss" },
+          { "prompt_text": "What gas is released when drained peat begins to rot?", "accepted": ["carbon dioxide", "CO2"], "word_limit": 3, "spelling_variants": true, "evidence": "the carbon that was locked away for thousands of years is released back into the atmosphere as carbon dioxide." },
+          { "prompt_text": "By soaking up heavy rain, a healthy bog reduces the risk of what downstream?", "accepted": ["floods", "flooding"], "word_limit": 3, "spelling_variants": true, "evidence": "soaking up heavy rain and releasing it slowly, so reducing the risk of floods downstream" },
+          { "prompt_text": "What is the process of restoring a bog by raising its water table called?", "accepted": ["rewetting", "re-wetting"], "word_limit": 3, "spelling_variants": true, "evidence": "The chief method is a process called rewetting, in which the drains cut into a bog are blocked" }
+        ]
+      }
+    ]
+  }
+]

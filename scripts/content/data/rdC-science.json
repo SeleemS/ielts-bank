@@ -1,0 +1,155 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Satellite Navigation Finds Your Position",
+    "difficulty": "medium",
+    "topic_tags": ["technology", "space", "physics"],
+    "body_html": "<p><strong>A</strong> Not long ago, finding the way across an unfamiliar city meant unfolding a paper map on the passenger seat and hoping for the best. Today a small device in almost every pocket can announce a person's position to within a few metres, anywhere on the surface of the Earth, by day or night and in almost any weather. This everyday marvel depends on a fleet of satellites circling far overhead and on clocks of extraordinary precision. Although we use it without a second thought, the idea behind it is a remarkably elegant piece of applied physics, and understanding it reveals just how much careful engineering lies behind a simple blue dot on a screen.</p><p><strong>B</strong> The heart of the system is a group of satellites, usually numbering around thirty, that orbit the Earth at a height of roughly twenty thousand kilometres. They are arranged in their paths so carefully that, from any point on the ground, several of them are always above the horizon at once. Each satellite does nothing more complicated than broadcast a steady radio signal, and that signal carries three pieces of information: which satellite is sending it, exactly where that satellite is at the moment of sending, and the precise instant at which the signal left. Everything the receiver does is built upon these three simple facts arriving from the sky.</p><p><strong>C</strong> A receiver on the ground works out its position by measuring time. Because radio waves travel at the speed of light, a known and constant speed, the receiver can multiply that speed by the tiny interval the signal took to arrive and so calculate its distance from that particular satellite. One such measurement is not enough, for it shows only that the receiver lies somewhere on an imaginary sphere drawn around the satellite. But by measuring its distance from several satellites at once, and finding the single point where all those spheres cross, the receiver can fix its location. This method of pinning down a position from several known distances is called trilateration, and it is the mathematical core of the whole system.</p><p><strong>D</strong> In principle the distances to three satellites would be enough to place a receiver in three dimensions, yet in practice a fourth is needed. The reason lies in the receiver's own clock. The satellites keep near-perfect time, but the cheap clock inside a phone or a car does not, and even a small error in its timekeeping would ruin the calculation. By taking a fourth measurement, the receiver gains just enough extra information to solve for its own clock error as well as its position, correcting the two together and so escaping the need for an expensive clock of its own.</p><p><strong>E</strong> Everything, then, turns on time, and the demands are severe. Light travels about three hundred thousand kilometres every second, so an error of a single millionth of a second in a satellite's clock would translate into an error of some three hundred metres on the ground. For this reason each satellite carries an atomic clock, a device so stable that it would lose or gain no more than a second over many thousands of years. Stranger still, the engineers must allow for the predictions of Einstein's theories, since a clock in orbit runs at a very slightly different rate from one on the ground, and without this correction the whole system would soon drift into uselessness.</p><p><strong>F</strong> No system is perfect, and several things conspire to blur the result. As the signals pass through the upper atmosphere they are slowed by a small and variable amount, introducing an error that must be estimated and removed. In cities the signals bounce off tall glass buildings and reach the receiver by more than one path, confusing the measurement. To keep the satellites honest, a network of ground stations continually tracks them, checks their clocks and their orbits, and sends up corrections. Newer additions to the system broadcast extra reference signals that allow a well-designed receiver to narrow its error from several metres down to a few centimetres.</p><p><strong>G</strong> From guiding aircraft and ships to stamping an exact time on financial transactions, satellite navigation has quietly woven itself into the fabric of modern life, and much of what we now take for granted would stop working without it. Yet its principle remains as simple as it is powerful: listen to several distant clocks, measure how long their signals took to arrive, and let the unforgiving speed of light do the rest.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-6. The passage has seven paragraphs, A-G. Which paragraph contains the following information? Write the correct letter, A-G. You may use any letter more than once.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" },
+          { "key": "G", "text": "Paragraph G" }
+        ],
+        "questions": [
+          { "prompt_text": "an explanation of why a fourth satellite, rather than three, is required", "correct_option_keys": ["D"], "evidence": "By taking a fourth measurement, the receiver gains just enough extra information to solve for its own clock error as well as its position" },
+          { "prompt_text": "a description of the everyday accuracy of a modern positioning device", "correct_option_keys": ["A"], "evidence": "a small device in almost every pocket can announce a person's position to within a few metres" },
+          { "prompt_text": "an account of how atmospheric conditions reduce accuracy", "correct_option_keys": ["F"], "evidence": "As the signals pass through the upper atmosphere they are slowed by a small and variable amount, introducing an error that must be estimated and removed." },
+          { "prompt_text": "the three items of information contained in a satellite's signal", "correct_option_keys": ["B"], "evidence": "that signal carries three pieces of information: which satellite is sending it, exactly where that satellite is at the moment of sending, and the precise instant at which the signal left." },
+          { "prompt_text": "a reference to the effects predicted by Einstein", "correct_option_keys": ["E"], "evidence": "the engineers must allow for the predictions of Einstein's theories, since a clock in orbit runs at a very slightly different rate from one on the ground" },
+          { "prompt_text": "the name given to fixing a position from several known distances", "correct_option_keys": ["C"], "evidence": "This method of pinning down a position from several known distances is called trilateration" }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 7-10. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>A receiver works out where it is by measuring the tiny interval of <strong>(7)&nbsp;______</strong> that a satellite's signal takes to arrive. Multiplying this by the speed of light gives the <strong>(8)&nbsp;______</strong> from that satellite. A fourth satellite is needed so that the receiver can correct the error in its own <strong>(9)&nbsp;______</strong>. Because timing must be so exact, each satellite carries an <strong>(10)&nbsp;______</strong> clock.</p>",
+        "questions": [
+          { "prompt_text": "Gap 7", "accepted": ["time", "interval"], "word_limit": 2, "spelling_variants": true, "evidence": "the receiver can multiply that speed by the tiny interval the signal took to arrive" },
+          { "prompt_text": "Gap 8", "accepted": ["distance"], "word_limit": 2, "spelling_variants": true, "evidence": "and so calculate its distance from that particular satellite." },
+          { "prompt_text": "Gap 9", "accepted": ["clock", "clock error"], "word_limit": 2, "spelling_variants": true, "evidence": "the receiver gains just enough extra information to solve for its own clock error as well as its position" },
+          { "prompt_text": "Gap 10", "accepted": ["atomic"], "word_limit": 2, "spelling_variants": true, "evidence": "each satellite carries an atomic clock" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 11-14. Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Roughly how high above the Earth do the navigation satellites orbit?", "accepted": ["twenty thousand kilometres", "20000 kilometres", "twenty thousand km"], "word_limit": 3, "spelling_variants": true, "evidence": "that orbit the Earth at a height of roughly twenty thousand kilometres." },
+          { "prompt_text": "What is the method of fixing a location from several known distances called?", "accepted": ["trilateration"], "word_limit": 3, "spelling_variants": true, "evidence": "This method of pinning down a position from several known distances is called trilateration" },
+          { "prompt_text": "What kind of clock does each satellite carry?", "accepted": ["an atomic clock", "atomic clock"], "word_limit": 3, "spelling_variants": true, "evidence": "each satellite carries an atomic clock, a device so stable that it would lose or gain no more than a second over many thousands of years." },
+          { "prompt_text": "In cities, what do the signals bounce off, confusing the measurement?", "accepted": ["tall glass buildings", "glass buildings", "buildings"], "word_limit": 3, "spelling_variants": true, "evidence": "In cities the signals bounce off tall glass buildings and reach the receiver by more than one path" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Long Search for Water on Mars",
+    "difficulty": "hard",
+    "topic_tags": ["space", "planetary science", "geology"],
+    "body_html": "<p><strong>A</strong> Seen through a telescope, Mars is a rusty, reddish disc, and the spacecraft we have sent to it confirm the first impression: a cold, dry and dusty desert, swept by thin winds and bathed in radiation. Its air is so thin that liquid water on the open surface would boil away or freeze almost at once. And yet, for more than a century, no other planet has so gripped the imagination of scientists, precisely because there are strong hints that Mars was once a far warmer and wetter world. The search for water, past and present, has become the guiding thread of almost every mission sent there, shaping the design of the rovers and the choice of the places they are sent to explore.</p><p><strong>B</strong> The most striking evidence is written in the shape of the land itself. Cameras aboard orbiting spacecraft have photographed features that look unmistakably like the work of water: long winding channels that resemble dried riverbeds, networks of branching valleys of the kind that rivers carve, and flat basins ringed by what appear to be ancient shorelines. On Earth such landforms are made by flowing water acting over very long stretches of time, and their presence on Mars strongly suggests that rivers and lakes, and perhaps even shallow seas, once lay upon its surface in the distant past.</p><p><strong>C</strong> Shape alone, however, can mislead, and so scientists have looked for chemical evidence as well. Robotic rovers creeping across the Martian ground have examined the rocks directly and found minerals, among them certain clays and salts, that on Earth form only in the presence of liquid water. These minerals act as a kind of chemical memory, preserving in their very structure the record of the wet conditions under which they were made. Taken together with the shape of the land, they have largely settled the question in the minds of most researchers: liquid water was once present on Mars, and in considerable quantity.</p><p><strong>D</strong> If Mars was once wet, the obvious question is where all the water went. The answer seems to lie in the planet's small size. Mars is far smaller than the Earth, and over the ages it has lost most of the thick atmosphere it is thought once to have possessed. As that blanket of air thinned, the pressure and warmth at the surface fell, until liquid water could no longer survive there; what did not freeze into the ground escaped as vapour into space. The loss of the atmosphere was made worse by the fading of the planet's magnetic field, which had once shielded it from the stream of particles flowing out from the Sun.</p><p><strong>E</strong> Not all of the water, however, has been lost. A great deal of it survives on Mars today, though in frozen form. The planet's poles are capped with ice, and beneath the surface across wide regions there lies a hidden store of frozen water, buried much like the ground-ice of the Earth's coldest lands. There are even signs, still debated among scientists, that on rare occasions small amounts of extremely salty water may briefly trickle across the surface before vanishing again. Mars, in short, is not entirely dry; it is a world whose water has mostly been locked away out of sight.</p><p><strong>F</strong> The reason all this matters so much is that water and life are closely bound together. Every living thing we know of needs liquid water, and so a Mars that once had rivers and lakes is a Mars that might once have supported life, at least of the simplest kind. Much of the present effort is devoted to searching the ancient rocks for chemical traces that living things might have left behind. There is a practical side too: the buried ice could one day supply drinking water, breathable oxygen and even fuel for human explorers, turning a hostile desert into a place where visitors from Earth might one day survive.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A red desert that may once have been wet" },
+          { "key": "ii", "text": "Landforms shaped by ancient water" },
+          { "key": "iii", "text": "Minerals that remember a wetter age" },
+          { "key": "iv", "text": "Where the water went" },
+          { "key": "v", "text": "The ice that remains today" },
+          { "key": "vi", "text": "Why water means the chance of life" },
+          { "key": "vii", "text": "Evidence of active volcanoes" },
+          { "key": "viii", "text": "The first telescopes to observe Mars" },
+          { "key": "ix", "text": "Colours in the Martian sky" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["i"], "evidence": "a cold, dry and dusty desert ... there are strong hints that Mars was once a far warmer and wetter world." },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["ii"], "evidence": "Cameras aboard orbiting spacecraft have photographed features that look unmistakably like the work of water" },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["iii"], "evidence": "found minerals, among them certain clays and salts, that on Earth form only in the presence of liquid water. These minerals act as a kind of chemical memory" },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["iv"], "evidence": "the obvious question is where all the water went. The answer seems to lie in the planet's small size." },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"], "evidence": "A great deal of it survives on Mars today, though in frozen form." },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["vi"], "evidence": "water and life are closely bound together ... a Mars that once had rivers and lakes is a Mars that might once have supported life" }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 7-10. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Orbiting spacecraft have photographed features on Mars that resemble dried riverbeds.", "answer": "true", "evidence": "long winding channels that resemble dried riverbeds" },
+          { "prompt_text": "The clays and salts found by rovers can form without liquid water.", "answer": "false", "evidence": "certain clays and salts, that on Earth form only in the presence of liquid water." },
+          { "prompt_text": "Mars has completely lost all of its water.", "answer": "false", "evidence": "Not all of the water, however, has been lost. A great deal of it survives on Mars today, though in frozen form." },
+          { "prompt_text": "Living organisms have been discovered in the Martian ice.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 11-14. Complete the sentences below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Liquid water cannot survive on the open Martian surface because the planet's ______ is very thin.", "accepted": ["air", "atmosphere"], "word_limit": 2, "spelling_variants": true, "evidence": "Its air is so thin that liquid water on the open surface would boil away or freeze almost at once." },
+          { "prompt_text": "Certain minerals act as a chemical ______ of the wet conditions in which they formed.", "accepted": ["memory"], "word_limit": 2, "spelling_variants": true, "evidence": "These minerals act as a kind of chemical memory, preserving in their very structure the record of the wet conditions" },
+          { "prompt_text": "The escape of the atmosphere was worsened by the fading of the planet's ______.", "accepted": ["magnetic field"], "word_limit": 2, "spelling_variants": true, "evidence": "made worse by the fading of the planet's magnetic field" },
+          { "prompt_text": "As well as drinking water and oxygen, buried ice could one day supply explorers with ______.", "accepted": ["fuel"], "word_limit": 2, "spelling_variants": true, "evidence": "the buried ice could one day supply drinking water, breathable oxygen and even fuel for human explorers" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Radio Waves: The Invisible Messengers",
+    "difficulty": "easy",
+    "topic_tags": ["physics", "technology", "communication"],
+    "body_html": "<p>At this very moment the air around us is filled with invisible signals carrying music, voices and streams of data from one place to another. We cannot see, hear or feel them directly, yet without them there would be no radio, no television as we knew it, no mobile telephones and no wireless internet. These signals are radio waves, and although they seem almost magical in their effects, they obey the same simple laws of physics as the light we see every day. Learning a little about how they behave explains a great deal about the connected world we live in.</p><p>Radio waves belong to the same family as visible light. Both are forms of what scientists call electromagnetic waves, a family that also includes the warmth we feel from a fire and the rays that give us a suntan. What sets radio waves apart is their length. A wave of visible light is extremely short, far smaller than anything the eye could measure, whereas a radio wave may stretch from a few centimetres to many metres from one crest to the next. Despite this difference, radio waves travel at exactly the same speed as light, and, unlike light, they can pass straight through the walls of a building.</p><p>Radio waves are described by their frequency, which is the number of waves that pass a given point each second. Different radio stations and different services are given different frequencies so that their signals do not interfere with one another. The whole range of frequencies available for this purpose is known as the radio spectrum, and it is a limited resource that has to be shared out carefully by international agreement. A frequency handed to one broadcaster or one mobile network cannot be used freely by anyone else in the same area, and so this invisible space is treated as valuable property.</p><p>To send a broadcast, a station must first find a way of carrying sound upon a radio wave. On its own a steady radio wave, called a carrier wave, contains no sound at all. The station therefore alters the carrier in step with the sound it wishes to send, a process known as modulation, so that the pattern of the music or speech is stamped upon the wave. The altered wave is then fed to an antenna, a length of metal that radiates the signal outward into the surrounding air, where it spreads in every direction at the speed of light.</p><p>At the far end, a receiver reverses the process. Its own antenna picks up a great jumble of signals arriving from many different transmitters at once. A part of the receiver called the tuner selects just one frequency out of this crowd, ignoring all the rest, which is what a listener does when moving a dial from one station to another. The receiver then strips the sound information back off the carrier wave and feeds it to a loudspeaker, turning the invisible signal back into the music or the voice that was originally sent.</p><p>There is more than one way to stamp sound onto a carrier. In one older method the height of the wave is varied; in another the frequency itself is nudged up and down. The two methods have different strengths, one tending to travel further and the other to give a clearer, cleaner sound, and both have been used for broadcasting for many years. The choice between them is a trade-off, and engineers pick whichever suits the job in hand.</p><p>Broadcasting, however, is only the beginning. The same invisible waves carry telephone calls to and from the mobile phones in our pockets, link computers to the internet without any wires, and allow aircraft and ships to be tracked by radar. Spacecraft far out in the Solar System send their findings home across hundreds of millions of kilometres using nothing but faint radio signals. From the humble transistor set to the vast dishes that listen to distant probes, all of these depend on the same quiet physics: an invisible wave, shaped to carry a message, racing outward at the speed of light.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-6. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Radio waves belong to the same family as visible light.", "answer": "true", "evidence": "Radio waves belong to the same family as visible light. Both are forms of what scientists call electromagnetic waves" },
+          { "prompt_text": "Radio waves travel more slowly than visible light.", "answer": "false", "evidence": "radio waves travel at exactly the same speed as light" },
+          { "prompt_text": "Radio waves can pass through the walls of a building.", "answer": "true", "evidence": "unlike light, they can pass straight through the walls of a building." },
+          { "prompt_text": "The range of frequencies available for radio use is unlimited.", "answer": "false", "evidence": "it is a limited resource that has to be shared out carefully by international agreement." },
+          { "prompt_text": "Radio was first used to send messages to ships at sea.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Radar is one use of radio waves besides broadcasting.", "answer": "true", "evidence": "allow aircraft and ships to be tracked by radar." }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Question 7. Choose the correct letter, A, B, C or D.",
+        "options": [
+          { "key": "A", "text": "a form of electromagnetic wave with a much longer wavelength than light" },
+          { "key": "B", "text": "a stream of tiny particles thrown out by transmitters" },
+          { "key": "C", "text": "a kind of sound wave that the ear cannot hear" },
+          { "key": "D", "text": "a beam of visible light too faint to see" }
+        ],
+        "questions": [
+          { "prompt_text": "According to the passage, what are radio waves?", "correct_option_keys": ["A"], "evidence": "Both are forms of what scientists call electromagnetic waves ... a radio wave may stretch from a few centimetres to many metres from one crest to the next." }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 8-13. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><p><strong>How a radio broadcast reaches a listener</strong></p><ul><li>Radio waves are part of the family of <strong>(8)&nbsp;______</strong> waves.</li><li>Sound is stamped onto a steady <strong>(9)&nbsp;______</strong> wave.</li><li>The process of altering the wave is called <strong>(10)&nbsp;______</strong>.</li><li>The signal is radiated into the air by an <strong>(11)&nbsp;______</strong>.</li><li>In the receiver, a <strong>(12)&nbsp;______</strong> selects the wanted frequency.</li><li>Aircraft and ships can be tracked using <strong>(13)&nbsp;______</strong>.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 8", "accepted": ["electromagnetic"], "word_limit": 1, "spelling_variants": true, "evidence": "Both are forms of what scientists call electromagnetic waves" },
+          { "prompt_text": "Gap 9", "accepted": ["carrier"], "word_limit": 1, "spelling_variants": true, "evidence": "a steady radio wave, called a carrier wave, contains no sound at all." },
+          { "prompt_text": "Gap 10", "accepted": ["modulation"], "word_limit": 1, "spelling_variants": true, "evidence": "a process known as modulation, so that the pattern of the music or speech is stamped upon the wave." },
+          { "prompt_text": "Gap 11", "accepted": ["antenna", "aerial"], "word_limit": 1, "spelling_variants": true, "evidence": "The altered wave is then fed to an antenna, a length of metal that radiates the signal outward" },
+          { "prompt_text": "Gap 12", "accepted": ["tuner"], "word_limit": 1, "spelling_variants": true, "evidence": "A part of the receiver called the tuner selects just one frequency out of this crowd" },
+          { "prompt_text": "Gap 13", "accepted": ["radar"], "word_limit": 1, "spelling_variants": true, "evidence": "allow aircraft and ships to be tracked by radar." }
+        ]
+      }
+    ]
+  }
+]

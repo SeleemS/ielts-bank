@@ -1,0 +1,66 @@
+{
+  "title": "Lecture: The Psychology of Habit Formation",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "psychology", "behaviour", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "coral" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "coral", "text": "Good morning. Today we're going to examine something you all do hundreds of times a day without noticing — acting out of habit. By the end I hope you'll understand not just what a habit is, but how you might deliberately build a good one, or dismantle a bad one." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "Let's start with a definition. A habit is simply a behaviour that has been repeated so often that it has become automatic — you do it with little or no conscious thought. Think of how you brush your teeth, or check your phone the moment you wake up. You're not deciding to do these things; they just happen. And that automatic quality is the whole point of a habit, because it saves the brain an enormous amount of effort. If we had to consciously think through every small action, we'd be exhausted by breakfast." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "Now, where in the brain does this happen? The conscious, decision-making part of your brain is not really involved once a habit is formed. Instead, habits are controlled by a deeper, older structure called the basal ganglia. As a behaviour becomes a habit, control effectively passes from the thinking part of the brain to this automatic part — which is exactly why habits feel so effortless, and also why they're so hard to break." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "The most useful model for understanding habits is what researchers call the habit loop, and it has three parts. The first is the cue — a trigger that tells your brain to start the behaviour. It might be a time of day, a place, or an emotion. The second part is the routine — the behaviour itself, the thing you actually do. And the third part is the reward — the benefit you get, which tells your brain the loop is worth remembering. Cue, routine, reward. Over time, that loop becomes automatic." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "Now let me correct a very popular myth. You've probably heard that it takes twenty-one days to form a habit. That figure is simply wrong — it comes from a misreading of an old book. The actual research, a well-known study from University College London, found that on average it took about sixty-six days for a behaviour to become automatic. And the range was enormous, from as little as eighteen days to as many as two hundred and fifty-four, depending on the person and the habit. So the honest message is: it takes longer than you think, and don't give up early." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "So how do we use this to build a good habit? Two techniques are strongly supported by evidence. The first is to make the new behaviour as easy as possible — reduce the effort, remove the friction. If you want to start running, sleep in your running clothes. The second technique is called habit stacking: you attach the new habit to an existing one that's already automatic. So, 'after I pour my morning coffee, I will read one page.' The old habit becomes the cue for the new one." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "And breaking a bad habit? Here the research gives us a clever insight. The advice is not to fight the cue or the reward, because those are very stubborn. Instead, you keep the same cue and the same reward, but you deliberately swap the routine in the middle for a better one. So if stress — the cue — makes you reach for a biscuit — the routine — to feel comforted — the reward — you keep the stress and the comfort, but replace the biscuit with, say, a short walk. Same loop, healthier routine." },
+        { "speaker": "Lecturer", "voice": "coral", "text": "One final, encouraging point. Habits are powerful precisely because they compound. A single day of a good habit changes almost nothing — it's invisible. But repeated across a year, the same tiny action produces a result that looks, from the outside, like a dramatic transformation. The person hasn't changed through willpower; they've changed through the quiet accumulation of a repeated behaviour. That, in a sentence, is why understanding habits matters. Let's finish there." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "What a habit is",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A habit is a behaviour repeated so often that it becomes ______.", "accepted": ["automatic"], "word_limit": 1 },
+        { "prompt_text": "The main value of a habit is that it saves the brain a lot of ______.", "accepted": ["effort"], "word_limit": 1 },
+        { "prompt_text": "Once formed, habits are controlled by a brain structure called the basal ______.", "accepted": ["ganglia"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "The habit loop",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Part 1 of the loop is the ______, a trigger that starts the behaviour.", "accepted": ["cue"], "word_limit": 1 },
+        { "prompt_text": "Part 2 is the ______, the behaviour itself.", "accepted": ["routine"], "word_limit": 1 },
+        { "prompt_text": "Part 3 is the ______, the benefit that makes the loop worth repeating.", "accepted": ["reward"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "How long it takes",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The popular claim that a habit forms in ______ days is a myth.", "accepted": ["21", "twenty-one"], "word_limit": 1 },
+        { "prompt_text": "Research found it took on average about ______ days for a behaviour to become automatic.", "accepted": ["66", "sixty-six"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Building and breaking habits",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "One technique is to make the new behaviour as ______ as possible.", "accepted": ["easy"], "word_limit": 1 },
+        { "prompt_text": "Attaching a new habit to an existing one is called habit ______.", "accepted": ["stacking"], "word_limit": 1 },
+        { "prompt_text": "To break a bad habit, keep the cue and reward but change the ______.", "accepted": ["routine"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

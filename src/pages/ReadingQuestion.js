@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import QuestionEngine from '../components/question/QuestionEngine';
+import { sanitizeHtml } from '../../lib/sanitize';
 
 const SITE_URL = 'https://ielts-bank.com';
 const PASSAGE_HTML_CLASS =
@@ -169,7 +170,7 @@ const ReadingQuestion = ({ id, passage, description }) => {
               <div className="max-h-[45vh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
                 <div
                   className={PASSAGE_HTML_CLASS}
-                  dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(bodyHtml) }}
                 />
               </div>
             </div>

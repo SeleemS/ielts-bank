@@ -1,8 +1,10 @@
 import React from 'react';
 import Head from 'next/head';
+import NextLink from 'next/link';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import DataTable from './DataTable';
+import { READING_QUESTION_TYPE_LINKS } from '../../lib/readingQuestionTypes';
 
 // Pure Tailwind/shadcn section landing. NO Chakra imports.
 //
@@ -65,6 +67,30 @@ const SectionLanding = ({
             </header>
 
             <DataTable skill={section} items={items} />
+
+            {/* Reading only: practise by question type. */}
+            {section === 'reading' && (
+              <section className="mt-12 rounded-2xl border border-border bg-secondary/40 p-6 sm:p-8">
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  Practice by question type
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Target a specific IELTS Reading question type with a focused strategy guide and
+                  matching practice passages.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  {READING_QUESTION_TYPE_LINKS.map(({ slug, label }) => (
+                    <NextLink
+                      key={slug}
+                      href={`/reading/${slug}`}
+                      className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground no-underline shadow-sm transition-colors hover:border-accent/40 hover:text-accent"
+                    >
+                      {label}
+                    </NextLink>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </main>
 

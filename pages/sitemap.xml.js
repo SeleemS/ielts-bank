@@ -1,5 +1,6 @@
 import { posts } from '../lib/posts';
 import { SKILLS, listPassages } from '../lib/supabase';
+import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
 
 const SITE_URL = 'https://ielts-bank.com';
 
@@ -9,10 +10,14 @@ const STATIC_ROUTES = [
   '/privacypolicy',
   '/termsofservice',
   '/blog',
+  '/band-calculator',
+  '/ielts-writing-checker',
   '/readingquestion',
   '/writingquestion',
   '/listeningquestion',
   '/speakingquestion',
+  // Reading question-type hub pages (pages/reading/[type].js).
+  ...READING_QUESTION_TYPE_SLUGS.map((slug) => `/reading/${slug}`),
 ];
 
 // Build an ISO date (YYYY-MM-DD) or null. Accepts human-readable strings like

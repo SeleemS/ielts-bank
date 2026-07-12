@@ -1,0 +1,90 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Children Learn to Talk: Two Views of Language",
+    "difficulty": "medium",
+    "topic_tags": ["language", "psychology", "education"],
+    "body_html": "<p>One of the most remarkable achievements of early childhood is also one of the most familiar: learning to talk. In the space of a few short years, and without any formal teaching, almost every child comes to understand and produce a language of astonishing complexity, mastering thousands of words and an intricate system of rules for combining them. Children do this at an age when they cannot yet tie their own shoelaces, and they do it whatever language surrounds them. Children also make the same kinds of mistakes as they go, and pass through broadly the same stages, whether they are raised in a bustling city or a quiet village, and whether the language around them is spoken by millions or by only a few hundred. How this feat is accomplished has been one of the central questions of the study of the mind, and it has produced two very different schools of thought.</p><p>The first of these is associated above all with the linguist Noam Chomsky, whose ideas dominated the field for much of the twentieth century. Chomsky argued that the human capacity for language cannot be explained by general intelligence or ordinary learning alone. Human beings, he proposed, are born with an innate, specialised capacity for language, a kind of mental equipment dedicated to grammar that is unique to our species. Underlying all the thousands of different human languages, on this view, is a single deep structure, a 'universal grammar', which every child already possesses at birth and which allows them to acquire whatever particular language they happen to be exposed to.</p><p>A central pillar of this argument is what Chomsky and his followers call the 'poverty of the stimulus'. The everyday speech that children hear, they point out, is fragmentary, full of slips, false starts and incomplete sentences, and it simply does not contain enough information to explain the rich and consistent grammatical knowledge that children reliably end up with. If the input is so limited and yet the outcome so uniform, they argue, then much of the underlying structure of language must already be present in the child's mind before a single word is heard. Children are not so much taught language, on this account, as programmed to grow it, in the way that they grow teeth.</p><p>A second, more recent school of thought challenges this picture at almost every point. Researchers in what is often called the usage-based tradition, whose leading figures include the psychologist Michael Tomasello, argue that there is no need to assume a special, dedicated language faculty at all. Children, they contend, learn language in much the same way as they learn other complex skills: through social interaction, imitation and the powerful general-purpose learning abilities of the human brain. On this view, language is not a separate mental organ but the product of ordinary cognition applied to an extraordinarily rich social environment.</p><p>Central to the usage-based account is the role of interaction. Children do not encounter language as a stream of disembodied sentences to be analysed; they experience it embedded in shared activities with caring adults, who point, name, repeat and respond. From this rich social exchange, and by tracking the statistical patterns in the speech they hear, children gradually work out how their language behaves. Where the nativists see a limited stimulus, the usage-based researchers see an abundant one, full of the cues a socially attuned learner needs. The regularities of grammar, they argue, can emerge from this process without being built into the mind in advance.</p><p>The debate between these two traditions has been long and often fierce, and it is far from settled. Both sides agree on the basic facts, that children learn language early, quickly and with little explicit instruction, but they disagree profoundly about what those facts imply. Is the human child a specialised language machine, equipped from birth with the essentials of grammar, or a brilliant general learner making sense of a rich social world? The question matters well beyond the study of childhood, for it touches on what is distinctive about the human mind itself, and on how much of what we become is written into us before we begin, and how much we assemble from the world around us.</p>",
+    "groups": [
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 1-5. Look at the following statements and the two views below. Match each statement with the correct view, A or B. You may use either letter more than once.",
+        "options": [
+          { "key": "A", "text": "the nativist view associated with Chomsky" },
+          { "key": "B", "text": "the usage-based view associated with Tomasello" }
+        ],
+        "questions": [
+          { "prompt_text": "Humans are born with a specialised mental capacity dedicated to language.", "correct_option_keys": ["A"] },
+          { "prompt_text": "Language is learned through social interaction and general learning abilities.", "correct_option_keys": ["B"] },
+          { "prompt_text": "The speech children hear is too limited to explain what they come to know.", "correct_option_keys": ["A"] },
+          { "prompt_text": "Children work out grammar by tracking patterns in the speech around them.", "correct_option_keys": ["B"] },
+          { "prompt_text": "A single 'universal grammar' underlies all human languages.", "correct_option_keys": ["A"] }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-10. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p><strong>Two views of how children learn language</strong></p><ul><li>Children learn to talk without any formal <strong>(6)&nbsp;______</strong>.</li><li>Nativists argue that humans are born with an innate <strong>(7)&nbsp;______</strong> grammar.</li><li>They call the everyday speech children hear too limited: the 'poverty of the <strong>(8)&nbsp;______</strong>'.</li><li>Usage-based researchers stress the importance of social <strong>(9)&nbsp;______</strong>.</li><li>They argue that children track statistical <strong>(10)&nbsp;______</strong> in the speech they hear.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["teaching", "instruction"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["universal"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["stimulus"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["interaction"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["patterns"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Children generally learn their first language without being formally taught.", "answer": "yes" },
+          { "prompt_text": "The nativist and usage-based traditions agree about how language is learned.", "answer": "no" },
+          { "prompt_text": "The debate between the two schools of thought has now been settled.", "answer": "no" },
+          { "prompt_text": "Girls learn to talk earlier than boys do.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Bystander Effect: Why Crowds Can Fail to Help",
+    "difficulty": "easy",
+    "topic_tags": ["psychology", "society", "behaviour"],
+    "body_html": "<p>It seems reasonable to suppose that a person in trouble is safest when there are many people around to help. Surely the more witnesses there are to an emergency, the more likely it is that someone will step in. Yet a large body of research in psychology suggests that, very often, exactly the opposite is true. The presence of other people can make each individual less, rather than more, likely to offer help. This surprising pattern is known as the bystander effect, and it has become one of the best-known findings in the study of social behaviour.</p><p>Serious study of the phenomenon began in the 1960s, prompted by a widely reported crime in a large American city. According to the accounts that circulated at the time, a woman was attacked in a public place while many neighbours, it was said, heard or saw something of what was happening, yet no one came to her aid or called for help until it was too late. The story caused a public outcry and puzzled psychologists, who set out to understand how so many people could apparently have done nothing. Their experiments, carried out in the years that followed, transformed a shocking anecdote into a carefully studied effect. Later historians would question whether the original events had been reported quite as accurately as the newspapers of the day suggested, but by then the research the case had inspired had taken on a life of its own, resting on evidence gathered under controlled conditions rather than on the details of any single incident.</p><p>Researchers staged emergencies of various kinds and observed how people reacted, sometimes when alone and sometimes in the company of others. The results were consistent and striking: as the number of witnesses increased, the likelihood that any one of them would help actually went down, and help, when it came at all, tended to arrive more slowly. A person who would readily assist a stranger when the two of them were alone might stand by and do nothing when surrounded by a crowd of other onlookers, each apparently as passive as the rest.</p><p>Two main explanations were put forward for this behaviour. The first is what psychologists call the diffusion of responsibility. When a person is the only witness to an emergency, the responsibility to act rests entirely on their shoulders. But when many others are present, that responsibility is felt to be shared among the whole group, and each individual assumes, often wrongly, that someone else will surely deal with the problem. Since everyone reasons in the same way, it can happen that no one acts at all, each waiting for another to take the lead.</p><p>The second explanation concerns the way people look to others for guidance about how to behave. In an ambiguous situation, where it is not clear whether there is really an emergency, people glance at those around them to judge how serious things are. If everyone else appears calm and unconcerned, each person takes this outward calm as a sign that nothing is truly wrong, and so does nothing in turn. The trouble is that all the witnesses may be doing exactly the same thing, each misled by the apparent composure of the others, so that a whole group can talk itself into inaction. Psychologists call this shared misreading pluralistic ignorance.</p><p>Understanding the bystander effect does more than explain a troubling pattern; it also points to ways of overcoming it. The key, researchers have found, is to break through the diffusion of responsibility by making it personal. A victim who calls out to the crowd in general is easily ignored, but one who singles out a particular individual, pointing directly at one person and asking clearly for a specific kind of help, is far more likely to receive it. Once responsibility is placed squarely on a named individual, the psychological escape route of assuming that someone else will act is closed off, and people generally respond. Far from being a sign that human beings are simply callous, the bystander effect turns out to be a predictable result of ordinary social psychology, and one that a little knowledge can help to defeat. Simply knowing that the effect exists, researchers suggest, makes a person more likely to step forward when others hang back.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-5. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "People are often less likely to help when many other witnesses are present.", "answer": "true" },
+          { "prompt_text": "Serious study of the bystander effect began after a widely reported crime in the 1960s.", "answer": "true" },
+          { "prompt_text": "Being part of a large group always makes people act more bravely.", "answer": "false" },
+          { "prompt_text": "In experiments, help tended to arrive more slowly as the number of witnesses grew.", "answer": "true" },
+          { "prompt_text": "The experiments were carried out mainly on young children.", "answer": "not given" }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 6-9. Complete the sentences below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "When responsibility is felt to be shared among a group, psychologists call this the ______ of responsibility.", "accepted": ["diffusion"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "When everyone stays calm and each takes this as a sign that nothing is wrong, the result is called ______.", "accepted": ["pluralistic ignorance"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "In an ______ situation, people look to others to judge how serious things are.", "accepted": ["ambiguous"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "As the number of witnesses increases, the likelihood that any one will help goes ______.", "accepted": ["down"], "word_limit": 3, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 10-13. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which decade did serious study of the bystander effect begin?", "accepted": ["the 1960s", "1960s"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What did researchers stage in order to observe how people reacted?", "accepted": ["emergencies", "an emergency"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "When alone, on whom does the responsibility to act rest entirely?", "accepted": ["the witness", "one witness", "the only witness"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What single individual should a victim single out in order to get help?", "accepted": ["a particular individual", "a named individual", "one person"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]

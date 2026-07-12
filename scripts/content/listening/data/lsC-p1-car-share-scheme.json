@@ -1,0 +1,85 @@
+{
+  "title": "Joining the CityWheels Car-Share Scheme",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "membership", "form completion", "multiple choice"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Gemma", "role": "Membership adviser", "voice": "coral" },
+    { "name": "Daniel", "role": "New applicant", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Gemma", "voice": "coral", "text": "Hello, CityWheels car-share, Gemma speaking. How can I help?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Hi. A colleague recommended your scheme, and I'd like to sign up so I can borrow a car now and then without owning one." },
+        { "speaker": "Gemma", "voice": "coral", "text": "You've come to the right place. I can take your details and get your application started. Could I have your full name?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "It's Daniel Bradshaw. The surname's B-R-A-D-S-H-A-W." },
+        { "speaker": "Gemma", "voice": "coral", "text": "Thank you. And roughly how did you hear about us — I like to note it. You said a colleague?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Yes, a colleague at work. Though I'd also seen a poster at the station, to be honest." },
+        { "speaker": "Gemma", "voice": "coral", "text": "I'll put colleague, since that came first. Now, membership requires a valid driving licence. Could you read me the licence number? It's the long line on your photocard." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Certainly. It's BRADS, then nine-oh-six-two-five, then D-J-nine-A-A. So BRADS906 25DJ9AA." },
+        { "speaker": "Gemma", "voice": "coral", "text": "Let me read that back — BRADS906 25DJ9AA. And how long have you held your licence?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "About seven years now. No penalty points or anything like that." },
+        { "speaker": "Gemma", "voice": "coral", "text": "That's ideal — we do ask for a minimum of two years, so you're well clear. Now, there are two membership plans. The Occasional plan has no monthly fee, but the hourly rate is a bit higher, at seven pounds an hour. The Frequent plan is five pounds an hour, but with a monthly fee of eight pounds. Which suits you?" },
+        { "speaker": "Daniel", "voice": "ballad", "text": "I think I'll only use it a couple of times a month, so the Occasional plan makes more sense for me — no monthly fee." },
+        { "speaker": "Gemma", "voice": "coral", "text": "Sensible choice. There's also a one-off joining fee of twenty pounds, and a refundable deposit. Now — which is your nearest car park? We keep cars at three locations: the Market Square, the Riverside car park, and the one on Chapel Street." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "The Riverside one would be handiest — oh, hang on, actually Chapel Street is closer to my flat. Let me change that to Chapel Street." },
+        { "speaker": "Gemma", "voice": "coral", "text": "Chapel Street, no problem. Once you're approved, we'll post you a smart membership card. You tap it on the windscreen to unlock the car, and the keys are kept inside the glovebox." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "And how do I actually book a car?" },
+        { "speaker": "Gemma", "voice": "coral", "text": "Everything's done through the app. You can book right up to the last minute, and you can extend your booking too, as long as no one's reserved the car after you. One rule people forget — please return the car with at least a quarter of a tank of fuel. There's a fuel card in the glovebox, so you never pay for petrol yourself." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "Good to know. What if I bring it back late?" },
+        { "speaker": "Gemma", "voice": "coral", "text": "Late returns are charged at double the hourly rate, and it can disrupt the next member, so we're quite strict about that. But give us a call if you're delayed and we'll do our best to help. Your card should arrive within about five working days." },
+        { "speaker": "Daniel", "voice": "ballad", "text": "That's everything I needed. Thanks so much, Gemma." },
+        { "speaker": "Gemma", "voice": "coral", "text": "You're welcome, Daniel. Welcome aboard — you'll have your card by the end of the week." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "CAR-SHARE MEMBERSHIP APPLICATION",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Bradshaw"], "word_limit": 1 },
+        { "prompt_text": "How the applicant heard about the scheme:", "accepted": ["colleague", "a colleague", "colleague at work"], "word_limit": 2 },
+        { "prompt_text": "Driving licence number:", "accepted": ["BRADS906 25DJ9AA", "BRADS90625DJ9AA"], "word_limit": 2 },
+        { "prompt_text": "Years the licence has been held:", "accepted": ["7", "seven"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Which membership plan does Daniel choose?</p>",
+      "options": [
+        { "key": "A", "text": "the Occasional plan, with no monthly fee" },
+        { "key": "B", "text": "the Frequent plan, at £5 an hour" },
+        { "key": "C", "text": "a business plan" }
+      ],
+      "questions": [
+        { "prompt_text": "Daniel signs up for", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Membership details",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "One-off joining fee: £______", "accepted": ["20", "£20", "20 pounds", "twenty"], "word_limit": 2 },
+        { "prompt_text": "Car park the applicant will use:", "accepted": ["Chapel Street", "Chapel St"], "word_limit": 2 },
+        { "prompt_text": "The car is unlocked by tapping the membership card on the ______.", "accepted": ["windscreen"], "word_limit": 1 },
+        { "prompt_text": "The keys are kept in the ______.", "accepted": ["glovebox", "glove box"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Members must return the car with at least a ______ of a tank of fuel.", "accepted": ["quarter"], "word_limit": 1 },
+        { "prompt_text": "The membership card should arrive within about ______ working days.", "accepted": ["5", "five"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

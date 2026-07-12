@@ -1,0 +1,72 @@
+{
+  "title": "The Renovation of the Old Gaumont Theatre",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "community", "matching", "multiple choice"],
+  "partStyle": "Part 2 (community project monologue)",
+  "speakers": [
+    { "name": "Rosa", "role": "Project chair", "voice": "shimmer" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Rosa", "voice": "shimmer", "text": "Good afternoon, and thank you all for coming to hear about the restoration of our much-loved Old Gaumont Theatre. My name's Rosa, and I chair the community trust that now owns the building. I'll tell you what we're planning, what it will cost, and how you can get involved." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "A little history first. The Gaumont opened in nineteen thirty-one as a cinema, became a bingo hall in the seventies, and then sadly stood empty for almost twenty years. Last spring our trust bought it for a symbolic one pound from the council, on the condition that we restore it and reopen it for the community." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "Now, the building is large, and different parts will be used for different things, so let me take you through it room by room. The main auditorium — the big hall with the sloping floor — will be restored as a theatre and cinema, with the original seats repaired rather than replaced, because they're rather beautiful." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "The grand foyer at the front, with its lovely tiled floor, will become a café open to everyone during the day, not just to ticket-holders. Upstairs, what used to be the projection room is too small for performances, so we're turning it into a little local history exhibition, telling the story of the building." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "Behind the stage, the old dressing rooms were in a terrible state, and those we're converting into a rehearsal space that community groups can book cheaply in the evenings. And the basement, which once held the coal boiler, will be a workshop where our volunteers build and paint the scenery." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "Let me turn to money, because a project like this isn't cheap. The full restoration will cost one point two million pounds. The good news is that we've been awarded a grant from the National Lottery Heritage Fund covering seventy per cent of that. But that leaves a substantial gap, and this is where you come in — we need to raise the remaining amount ourselves, from the community." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "There are several ways to help. You can sponsor a seat: for fifty pounds, a small plaque with your name, or a loved one's, goes on the back of one of the restored seats. That's proved hugely popular already. You can also become a Friend of the Gaumont for an annual subscription, which gets you priority booking and a discount at the café." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "But honestly, the thing we need most right now isn't money — it's time. We're desperate for volunteers, especially people with practical skills: carpentry, painting, electrics, that sort of thing. No experience? No problem — there's plenty of tea-making and record-keeping too. And a quick correction to what's on your leaflet: our first volunteer day is Saturday the eighth, not the eighteenth, so do come along." },
+        { "speaker": "Rosa", "voice": "shimmer", "text": "If all goes to plan, we hope to raise the curtain again in the autumn of next year. Wouldn't that be something? Thank you — and now I'd love to answer your questions." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_features",
+      "prompt": "What will each part of the building become?",
+      "instructions_html": "<p>Choose the correct new use <strong>A–F</strong> for each part of the building and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "a restored theatre and cinema" },
+        { "key": "B", "text": "a café open to everyone" },
+        { "key": "C", "text": "a local history exhibition" },
+        { "key": "D", "text": "a rehearsal space for community groups" },
+        { "key": "E", "text": "a workshop for building scenery" },
+        { "key": "F", "text": "office space to rent out" }
+      ],
+      "questions": [
+        { "prompt_text": "the main auditorium", "correct_option_keys": ["A"] },
+        { "prompt_text": "the grand foyer", "correct_option_keys": ["B"] },
+        { "prompt_text": "the old projection room", "correct_option_keys": ["C"] },
+        { "prompt_text": "the old dressing rooms", "correct_option_keys": ["D"] },
+        { "prompt_text": "the basement", "correct_option_keys": ["E"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does Rosa say the project needs most at the moment?</p>",
+      "options": [
+        { "key": "A", "text": "money" },
+        { "key": "B", "text": "volunteers' time and skills" },
+        { "key": "C", "text": "council permission" }
+      ],
+      "questions": [
+        { "prompt_text": "The project's greatest current need is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Facts and figures",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The trust bought the building for £______.", "accepted": ["1", "one", "£1"], "word_limit": 2 },
+        { "prompt_text": "Percentage of the cost covered by the grant: ______%", "accepted": ["70", "seventy"], "word_limit": 1 },
+        { "prompt_text": "Cost to sponsor a seat and have a name plaque: £______", "accepted": ["50", "£50", "50 pounds", "fifty"], "word_limit": 2 },
+        { "prompt_text": "The first volunteer day is Saturday the ______.", "accepted": ["8th", "eighth", "8", "the 8th"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

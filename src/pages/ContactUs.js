@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { CheckCircle2, Mail } from 'lucide-react';
+import { CheckCircle2, Mail, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
@@ -18,11 +18,43 @@ const fieldClasses =
 
 const ContactUs = () => {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [pending, setPending] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    e.target.reset();
-    setSent(true);
+    if (pending) return;
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const payload = {
+      name: (data.get('name') || '').toString(),
+      email: (data.get('email') || '').toString(),
+      message: (data.get('message') || '').toString(),
+    };
+
+    setPending(true);
+    setError('');
+    setSent(false);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(body.error || 'Something went wrong. Please try again.');
+        return;
+      }
+      form.reset();
+      setSent(true);
+    } catch (err) {
+      setError('We could not reach the server. Please check your connection and try again.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -83,6 +115,19 @@ const ContactUs = () => {
                 </div>
               )}
 
+              {error && (
+                <div
+                  role="alert"
+                  className="mb-6 flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground"
+                >
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                  <div>
+                    <p className="font-semibold">Message not sent</p>
+                    <p className="text-muted-foreground">{error}</p>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <label
@@ -134,8 +179,13 @@ const ContactUs = () => {
                   />
                 </div>
 
-                <Button type="submit" variant="accent" className="w-full">
-                  Send Message
+                <Button
+                  type="submit"
+                  variant="accent"
+                  className="w-full"
+                  disabled={pending}
+                >
+                  {pending ? 'Sending…' : 'Send Message'}
                 </Button>
               </form>
             </CardContent>

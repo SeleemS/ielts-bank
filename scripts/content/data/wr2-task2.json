@@ -1,0 +1,86 @@
+[
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should Museums and Art Galleries Be Free to Enter?",
+    "task": 2,
+    "topic_tags": [
+      "culture",
+      "government"
+    ],
+    "essay_type": "opinion",
+    "difficulty": "medium",
+    "prompt_html": "<p>Some people believe that national museums and art galleries should allow everyone to enter without paying, while others think that visitors should be charged an admission fee.</p><p>To what extent do you agree or disagree that museums and art galleries should be free for all?</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Working From Home Versus Working in an Office",
+    "task": 2,
+    "topic_tags": [
+      "work",
+      "technology"
+    ],
+    "essay_type": "discussion",
+    "difficulty": "medium",
+    "prompt_html": "<p>Since it became possible for many employees to do their jobs from home, some people argue that this is better for workers and companies alike, while others insist that working in a shared office is more effective.</p><p>Discuss both views and give your own opinion.</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Studying for a University Degree Abroad",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "globalisation"
+    ],
+    "essay_type": "advantages-disadvantages",
+    "difficulty": "medium",
+    "prompt_html": "<p>A growing number of students choose to leave their home country in order to complete a university degree in another part of the world.</p><p>Do the advantages of studying for a degree abroad outweigh the disadvantages?</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Reducing Traffic Congestion in Growing Cities",
+    "task": 2,
+    "topic_tags": [
+      "urbanisation",
+      "government"
+    ],
+    "essay_type": "problem-solution",
+    "difficulty": "medium",
+    "prompt_html": "<p>As the population of many cities continues to grow, roads have become increasingly crowded and journeys that once took minutes can now take hours.</p><p>What problems does severe traffic congestion cause, and what measures could be taken to reduce it?</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Why People Buy More Second-Hand Goods",
+    "task": 2,
+    "topic_tags": [
+      "society",
+      "environment"
+    ],
+    "essay_type": "two-part",
+    "difficulty": "medium",
+    "prompt_html": "<p>In many countries, buying used clothes, furniture and electronic devices instead of new ones is becoming far more common than it was in the past.</p><p>Why are more people choosing to buy second-hand goods? Is this a positive or a negative trend for society?</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  },
+  {
+    "skill": "writing",
+    "module": "academic",
+    "title": "IELTS Writing Task 2: Should University Education Be Free for Everyone?",
+    "task": 2,
+    "topic_tags": [
+      "education",
+      "government"
+    ],
+    "essay_type": "opinion",
+    "difficulty": "hard",
+    "prompt_html": "<p>In some countries, students must pay high tuition fees to attend university, while others believe that governments should make higher education free for every qualified student.</p><p>To what extent do you agree or disagree that university education should be free for all?</p><p>Write at least 250 words. Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>",
+    "word_limit_min": 250
+  }
+]

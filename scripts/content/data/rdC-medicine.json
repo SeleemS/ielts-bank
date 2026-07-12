@@ -1,0 +1,98 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Vaccines Train the Immune System",
+    "difficulty": "medium",
+    "topic_tags": ["medicine", "biology", "health"],
+    "body_html": "<p><strong>A</strong> The human body is under constant threat from a host of tiny invaders: the bacteria and viruses that cause disease. To defend itself it possesses an elaborate system of protection, known as the immune system, which is able to recognise these invaders, attack them and drive them out. Remarkably, this system does not merely fight off an infection and forget it. Once it has met a particular germ and overcome it, the immune system remembers that enemy, so that if the same germ ever returns it can be dealt with far more swiftly and before it has a chance to make the person ill. This lasting protection is what we call immunity.</p><p><strong>B</strong> This ability to remember is the foundation of one of the greatest achievements in the history of medicine. The idea behind vaccination is beautifully simple: instead of waiting for a dangerous germ to strike, doctors deliberately show the immune system a harmless preview of that germ in advance. The body responds as though it were under real attack, building up its defences and, crucially, forming a lasting memory of the invader, yet without the person ever suffering the disease itself. When the real germ appears later, the body is already prepared and defeats it before it can take hold.</p><p><strong>C</strong> A vaccine can present this harmless preview in several different forms. Some vaccines contain the germ itself, but weakened or killed so that it can no longer cause illness. Others contain only a single part of the germ, such as one of the proteins from its outer coat, which is enough for the immune system to recognise but cannot make anyone sick. More recent vaccines carry only a set of instructions that the body's own cells use to make that harmless fragment for a short time. In every case the aim is the same: to give the immune system enough of a taste of the enemy to learn its shape, while never exposing the body to real danger.</p><p><strong>D</strong> When a vaccine is given, the immune system swings into action much as it would against a genuine infection. It produces defensive proteins called antibodies, which lock onto the invader and mark it for destruction, and it creates long-lived memory cells that can remain in the body for years, sometimes for a lifetime. These memory cells are the key to lasting protection. Should the real germ ever enter the body, they recognise it at once and launch a rapid, powerful response, producing fresh antibodies so quickly that the infection is stopped almost before it begins.</p><p><strong>E</strong> The benefits of vaccination reach beyond the individual who receives it. When most of the people in a community are protected, a germ finds very few people it can infect, and so it struggles to spread from one person to the next. In this way even those who cannot be vaccinated, such as newborn babies or people who are seriously ill, gain a measure of protection, because the disease can no longer move easily through the population around them. It was this power, applied worldwide over many years, that made it possible to wipe out smallpox, once one of the most feared of all diseases, from the face of the Earth entirely.</p><p><strong>F</strong> Vaccination is not without its challenges. New vaccines must be tested with great care to make sure they are both safe and effective, a process that can take years. Some germs change so quickly that a vaccine which works one year may be less effective the next, which is why the vaccine against influenza has to be updated regularly. And a vaccine can only protect a population if enough people actually receive it. Yet despite these difficulties, vaccination remains one of the most powerful and cost-effective tools that medicine has ever devised, having saved many millions of lives and freed whole generations from diseases that once killed or crippled without mercy.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "how vaccination can protect people who have not themselves been vaccinated", "correct_option_keys": ["E"], "evidence": "even those who cannot be vaccinated, such as newborn babies or people who are seriously ill, gain a measure of protection" },
+          { "prompt_text": "the different forms in which a vaccine may present a germ", "correct_option_keys": ["C"], "evidence": "A vaccine can present this harmless preview in several different forms." },
+          { "prompt_text": "the body's ability to remember a germ it has already defeated", "correct_option_keys": ["A"], "evidence": "the immune system remembers that enemy ... This lasting protection is what we call immunity." },
+          { "prompt_text": "the basic idea on which vaccination rests", "correct_option_keys": ["B"], "evidence": "The idea behind vaccination is beautifully simple: instead of waiting for a dangerous germ to strike, doctors deliberately show the immune system a harmless preview of that germ in advance." },
+          { "prompt_text": "the defenders that allow the body to respond quickly to a later infection", "correct_option_keys": ["D"], "evidence": "it creates long-lived memory cells that can remain in the body for years ... These memory cells are the key to lasting protection." }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 6-9. Complete the sentences below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "The lasting protection that follows recovery from a germ is called ______.", "accepted": ["immunity"], "word_limit": 2, "spelling_variants": true, "evidence": "This lasting protection is what we call immunity." },
+          { "prompt_text": "A vaccine gives the immune system a harmless ______ of a germ.", "accepted": ["preview", "harmless preview"], "word_limit": 2, "spelling_variants": true, "evidence": "doctors deliberately show the immune system a harmless preview of that germ in advance." },
+          { "prompt_text": "The defensive proteins that lock onto an invader and mark it for destruction are called ______.", "accepted": ["antibodies"], "word_limit": 2, "spelling_variants": true, "evidence": "It produces defensive proteins called antibodies, which lock onto the invader and mark it for destruction" },
+          { "prompt_text": "The vaccine against ______ must be updated regularly because the germ changes so quickly.", "accepted": ["influenza", "the flu", "flu"], "word_limit": 2, "spelling_variants": true, "evidence": "which is why the vaccine against influenza has to be updated regularly." }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 10-13. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "The immune system can remember a germ that it has previously overcome.", "answer": "true", "evidence": "the immune system remembers that enemy, so that if the same germ ever returns it can be dealt with far more swiftly" },
+          { "prompt_text": "Some vaccines contain a weakened or killed form of the germ.", "answer": "true", "evidence": "Some vaccines contain the germ itself, but weakened or killed so that it can no longer cause illness." },
+          { "prompt_text": "Memory cells disappear from the body within a few days of vaccination.", "answer": "false", "evidence": "it creates long-lived memory cells that can remain in the body for years, sometimes for a lifetime." },
+          { "prompt_text": "The smallpox vaccine is still given to all children today.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Discovery of Antibiotics",
+    "difficulty": "easy",
+    "topic_tags": ["medicine", "history", "health"],
+    "body_html": "<p>For most of human history, a simple cut or a common infection could be a death sentence. Wounds turned poisonous, ordinary illnesses spread through the body unchecked, and doctors, however skilled, had almost no way to stop the tiny living things that caused such sickness. All of this changed in the twentieth century with the arrival of a new kind of medicine, the antibiotic, which for the first time gave people a reliable weapon against bacterial disease. Few discoveries have done more to lengthen human life or to ease human suffering.</p><p>Antibiotics are medicines that fight bacteria, the microscopic single-celled organisms that cause a great many infections. An antibiotic works either by killing the bacteria outright or by preventing them from growing and multiplying, giving the body's own defences the chance to finish the job. It is important to understand what antibiotics can and cannot do. They act only against bacteria, and they have no effect at all on viruses, which are quite different and far smaller. This is why an antibiotic will do nothing for an ordinary cold or for influenza, both of which are caused by viruses rather than by bacteria.</p><p>The discovery of the first antibiotic was, famously, something of an accident. In 1928 a Scottish scientist named Alexander Fleming returned from holiday to find that one of his laboratory dishes, in which he had been growing bacteria, had become contaminated by a stray mould. To his surprise, he noticed that the bacteria had been killed in a clear ring all around the patch of mould. The mould, it turned out, was producing a substance that destroyed the bacteria, and that substance was given the name penicillin. It was the first of the antibiotics, and its discovery opened an entirely new chapter in medicine.</p><p>Turning Fleming's observation into a usable drug proved far from easy, and it was more than a decade before other scientists found ways to produce penicillin in the large quantities that treatment required. When at last it became widely available, its effects seemed almost miraculous. Infections that had once killed swiftly could now be cured in days, and operations that had been deadly dangerous became far safer. Over the following years many other antibiotics were discovered, each effective against different kinds of bacteria, and together they transformed the practice of medicine.</p><p>In recent decades, however, a serious problem has emerged. Bacteria are living things, and they can change over time. When antibiotics are used too often, or are not used properly, most of the bacteria are killed but a few, which happen to be able to withstand the drug, survive. These survivors then multiply, passing their resistance on to the next generation, until a strain of bacteria arises against which the antibiotic no longer works. This growing danger is known as antibiotic resistance, and it threatens to return us to a time when common infections could once again prove deadly.</p><p>Because of this threat, doctors and health authorities now urge that antibiotics be used far more carefully than they once were. Patients are asked not to demand antibiotics for illnesses, such as colds, that the drugs cannot cure, and, when antibiotics are prescribed, to finish the full course even after they begin to feel better, so that no hardy bacteria are left alive to multiply. Meanwhile scientists work to develop new antibiotics to replace those that are losing their power. The story of these medicines is thus a reminder that even the greatest of discoveries must be used with wisdom if its benefits are to last.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-6. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "Antibiotics are medicines that fight bacteria.", "answer": "true", "evidence": "Antibiotics are medicines that fight bacteria, the microscopic single-celled organisms that cause a great many infections." },
+          { "prompt_text": "Antibiotics are effective against viruses such as those that cause the common cold.", "answer": "false", "evidence": "they have no effect at all on viruses ... an antibiotic will do nothing for an ordinary cold" },
+          { "prompt_text": "Penicillin was first obtained from a type of mould.", "answer": "true", "evidence": "The mould, it turned out, was producing a substance that destroyed the bacteria, and that substance was given the name penicillin." },
+          { "prompt_text": "Antibiotics were the first medicines ever invented by human beings.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" },
+          { "prompt_text": "Using antibiotics too often can make bacteria resistant to them.", "answer": "true", "evidence": "When antibiotics are used too often, or are not used properly, most of the bacteria are killed but a few, which happen to be able to withstand the drug, survive." },
+          { "prompt_text": "Bacteria that survive treatment can pass their resistance to later generations.", "answer": "true", "evidence": "These survivors then multiply, passing their resistance on to the next generation" }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 7-12. Answer the questions below. Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "What kind of microscopic organism causes the infections that antibiotics can treat?", "accepted": ["bacteria"], "word_limit": 3, "spelling_variants": true, "evidence": "Antibiotics are medicines that fight bacteria, the microscopic single-celled organisms" },
+          { "prompt_text": "In what year did Alexander Fleming make his discovery?", "accepted": ["1928"], "word_limit": 3, "spelling_variants": true, "evidence": "In 1928 a Scottish scientist named Alexander Fleming returned from holiday" },
+          { "prompt_text": "What had contaminated the laboratory dish in which Fleming was growing bacteria?", "accepted": ["a mould", "mould", "a stray mould"], "word_limit": 3, "spelling_variants": true, "evidence": "had become contaminated by a stray mould." },
+          { "prompt_text": "What was the name given to the first antibiotic?", "accepted": ["penicillin"], "word_limit": 3, "spelling_variants": true, "evidence": "that substance was given the name penicillin. It was the first of the antibiotics" },
+          { "prompt_text": "What growing danger now threatens to make common infections deadly again?", "accepted": ["antibiotic resistance", "resistance"], "word_limit": 3, "spelling_variants": true, "evidence": "This growing danger is known as antibiotic resistance" },
+          { "prompt_text": "What are patients advised to finish even after they begin to feel better?", "accepted": ["the full course", "full course", "the course"], "word_limit": 3, "spelling_variants": true, "evidence": "to finish the full course even after they begin to feel better" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Question 13. Choose the correct letter, A, B, C or D.",
+        "options": [
+          { "key": "A", "text": "because colds are too mild to treat" },
+          { "key": "B", "text": "because a cold is caused by a virus, not by bacteria" },
+          { "key": "C", "text": "because antibiotics are too expensive" },
+          { "key": "D", "text": "because colds are caused by very large bacteria" }
+        ],
+        "questions": [
+          { "prompt_text": "Why will an antibiotic do nothing for an ordinary cold?", "correct_option_keys": ["B"], "evidence": "an antibiotic will do nothing for an ordinary cold or for influenza, both of which are caused by viruses rather than by bacteria." }
+        ]
+      }
+    ]
+  }
+]

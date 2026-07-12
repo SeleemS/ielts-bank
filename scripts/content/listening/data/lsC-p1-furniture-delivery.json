@@ -1,0 +1,84 @@
+{
+  "title": "Arranging a Furniture Delivery",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "delivery", "form completion", "multiple choice"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Priya", "role": "Delivery coordinator", "voice": "shimmer" },
+    { "name": "Tom", "role": "Customer", "voice": "echo" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Priya", "voice": "shimmer", "text": "Good morning, Willowgate Furniture deliveries, Priya speaking. How can I help you today?" },
+        { "speaker": "Tom", "voice": "echo", "text": "Hi, I bought a sofa and a bookcase in your store last week, and I'd like to arrange the delivery, please." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "I can certainly do that. Could I take your order number first? It's on the top of your receipt." },
+        { "speaker": "Tom", "voice": "echo", "text": "Yes, it's W-as-in-Willow, then four-nine-two-seven. So W4927." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Lovely, I've found the order. And could I confirm the name on the account?" },
+        { "speaker": "Tom", "voice": "echo", "text": "It's Whitcombe. W-H-I-T-C-O-M-B-E." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Thank you, Mr Whitcombe. Now, the delivery address — is it the same as the billing address, or somewhere different?" },
+        { "speaker": "Tom", "voice": "echo", "text": "Different, actually. Please deliver it to eight Rosewood Lane — no, sorry, it's Rosewood Close. Eight Rosewood Close." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Eight Rosewood Close, got it. And the postcode there?" },
+        { "speaker": "Tom", "voice": "echo", "text": "It's D-E-two-two, six-A-L. DE22 6AL." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Perfect. Now, both of your items are in stock, so we can deliver quite soon. Would you prefer a weekday or the weekend? Weekend slots do carry a small surcharge of nine pounds fifty." },
+        { "speaker": "Tom", "voice": "echo", "text": "I work from home on Wednesdays, so a Wednesday would be ideal — no surcharge, and I'll definitely be in." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "Let me see. I could offer you Wednesday the twelfth — hmm, actually the van's fully booked that day. Let me correct that. The next available Wednesday is the nineteenth." },
+        { "speaker": "Tom", "voice": "echo", "text": "The nineteenth is fine. What sort of time?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "We can't give an exact time, but we'll text you a two-hour window the evening before. Deliveries run between eight in the morning and six in the evening. Now, one important question — is there step-free access, or are there stairs? Our team needs to know for the sofa." },
+        { "speaker": "Tom", "voice": "echo", "text": "There's a lift in the building, so no stairs to worry about. The flat's on the third floor but the lift goes right up." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "That makes life easy. Our crew will carry it to the room of your choice and take away all the packaging for recycling, at no extra cost. If you'd like the old sofa removed as well, that's an additional fifteen pounds." },
+        { "speaker": "Tom", "voice": "echo", "text": "Yes, please, do take the old one — that's worth fifteen pounds to me. And how do I pay the delivery charge?" },
+        { "speaker": "Priya", "voice": "shimmer", "text": "The standard weekday delivery itself is free. So you'll just pay the fifteen pounds for removal, and the driver will take that by card on the day. You'll also get a phone call about half an hour before they arrive." },
+        { "speaker": "Tom", "voice": "echo", "text": "Brilliant. That all sounds very straightforward. Thanks for your help, Priya." },
+        { "speaker": "Priya", "voice": "shimmer", "text": "My pleasure. You're all booked for Wednesday the nineteenth. Have a lovely day." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "DELIVERY BOOKING FORM",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Order number:", "accepted": ["W4927"], "word_limit": 1 },
+        { "prompt_text": "Name on account:", "accepted": ["Whitcombe"], "word_limit": 1 },
+        { "prompt_text": "Delivery address: 8 ______", "accepted": ["Rosewood Close"], "word_limit": 2 },
+        { "prompt_text": "Postcode:", "accepted": ["DE22 6AL", "DE226AL"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Delivery arrangements",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Delivery day chosen: Wednesday the ______", "accepted": ["19th", "nineteenth", "19", "the 19th"], "word_limit": 2 },
+        { "prompt_text": "Access to the flat is by ______ (no stairs).", "accepted": ["lift", "a lift"], "word_limit": 2 },
+        { "prompt_text": "Charge to remove the old sofa: £______", "accepted": ["15", "£15", "15 pounds", "fifteen"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How much does Tom pay for the weekday delivery itself?</p>",
+      "options": [
+        { "key": "A", "text": "nothing — it is free" },
+        { "key": "B", "text": "£9.50" },
+        { "key": "C", "text": "£15" }
+      ],
+      "questions": [
+        { "prompt_text": "The weekday delivery charge is", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The delivery team will remove all the ______ for recycling free of charge.", "accepted": ["packaging"], "word_limit": 1 },
+        { "prompt_text": "The driver will phone about ______ minutes before arriving.", "accepted": ["30", "thirty", "half an hour"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Engineering of the Suspension Bridge",
+    "difficulty": "hard",
+    "topic_tags": ["engineering", "materials", "design"],
+    "body_html": "<p>Of all the structures built by engineers, few are as graceful, or as daring, as the great suspension bridge. Where an ordinary bridge rests its roadway on a row of solid columns, a suspension bridge does something that at first seems almost impossible: it hangs its roadway in the air from slender cables, allowing it to leap across distances that no other kind of bridge can match. The world's longest bridges are almost all of this type, striding in a single bound across wide rivers and deep straits where piers could never be built. Behind their apparent lightness lies a careful balance of forces that every part of the structure is designed to carry.</p><p>The roadway on which the traffic runs is called the deck. In most bridges the deck is supported from below, but in a suspension bridge it is supported from above, hanging from the cables that soar overhead. The deck itself does not touch the water or the valley beneath; it is held up entirely by its connection to the structure above it, and its whole task is to carry the weight of the vehicles that cross and to pass that weight upward to the cables that bear it. To keep it from swaying too much in the wind, the deck is usually made stiff and, in modern bridges, shaped so that the air flows smoothly over it.</p><p>High above the deck run the two main cables, which are the true muscles of the bridge. Each is not a single rope but a bundle of many thousands of thin steel wires, spun together into a cable that may be as thick as a tree trunk. These main cables are draped in a long, sweeping curve between the tops of the towers, dipping low over the centre of the span and rising to the towers at each side. Because the whole weight of the deck hangs from them, the main cables are stretched with tremendous force; they are held constantly under tension, which is the pulling force that a rope feels when a load hangs from it.</p><p>The weight does not pass directly from the deck to the main cables. Instead the deck is joined to the cables above it by a great many vertical steel ropes called hangers, which drop down from the sweeping main cables at regular intervals and hold the deck up like the strings of a puppet. The load of the traffic travels first into the deck, then up through the hangers, and finally into the main cables, gathering as it goes until the whole of it is carried by those two great curves of steel overhead.</p><p>From the main cables the weight is passed on to the towers. These rise high above the deck, and the cables pass over the very top of them before sweeping down again on the far side. The towers carry an enormous load pressing straight down upon them, for the entire weight of the bridge and its traffic is funnelled onto their tops and must be carried down to the solid ground or riverbed on which they stand. A tower is therefore held under compression, the squeezing force that a pillar feels when a heavy weight presses down upon it, and it must be built strong enough not to be crushed.</p><p>At each end of the bridge the main cables are fastened into the ground in huge blocks of concrete or solid rock known as anchorages. These are among the most important parts of the whole structure, for the cables, pulled tight by the hanging deck, are constantly trying to drag their ends inward towards the centre of the span. The anchorages hold the ends of the cables fast and resist this steady, powerful pull; without them the cables would simply be dragged loose and the bridge would collapse. Everything, in the end, depends on their firm grip on the earth.</p><p>The suspension design allows engineers to build across a very long span, but it brings its own dangers, the chief of which is the wind. Because the deck is light and hangs freely, a strong or gusting wind can set it swaying, and in a famous early disaster a bridge was shaken to pieces by the wind alone. Ever since, engineers have studied with great care how air moves around a bridge, shaping the deck and stiffening the structure so that the wind cannot build up a dangerous rhythm. The modern suspension bridge is thus a triumph not only of strength but of the delicate understanding of the forces that act upon it.</p>",
+    "groups": [
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 1-5. Look at the following statements and the list of bridge parts below. Match each statement with the correct part, A-D. You may use any letter more than once.",
+        "options": [
+          { "key": "A", "text": "the towers" },
+          { "key": "B", "text": "the main cables" },
+          { "key": "C", "text": "the deck" },
+          { "key": "D", "text": "the anchorages" }
+        ],
+        "questions": [
+          { "prompt_text": "It carries the traffic and is held up from above.", "correct_option_keys": ["C"], "evidence": "The roadway on which the traffic runs is called the deck ... in a suspension bridge it is supported from above" },
+          { "prompt_text": "It is squeezed by the weight pressing down and carries it to the ground.", "correct_option_keys": ["A"], "evidence": "A tower is therefore held under compression, the squeezing force ... must be carried down to the solid ground or riverbed on which they stand." },
+          { "prompt_text": "It is draped in a sweeping curve between the tops of the towers.", "correct_option_keys": ["B"], "evidence": "These main cables are draped in a long, sweeping curve between the tops of the towers" },
+          { "prompt_text": "It holds the ends of the cables and stops them being dragged inward.", "correct_option_keys": ["D"], "evidence": "The anchorages hold the ends of the cables fast and resist this steady, powerful pull" },
+          { "prompt_text": "The vertical hangers drop down from it to hold up the deck.", "correct_option_keys": ["B"], "evidence": "vertical steel ropes called hangers, which drop down from the sweeping main cables at regular intervals and hold the deck up" }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 6-9. Do the following statements agree with the information given in the passage? Write TRUE if the statement agrees, FALSE if it contradicts, or NOT GIVEN if there is no information.",
+        "questions": [
+          { "prompt_text": "In a suspension bridge the deck hangs from cables rather than resting on columns.", "answer": "true", "evidence": "in a suspension bridge it is supported from above, hanging from the cables that soar overhead." },
+          { "prompt_text": "The main cables of a suspension bridge are held under tension.", "answer": "true", "evidence": "the main cables are stretched with tremendous force; they are held constantly under tension" },
+          { "prompt_text": "Suspension bridges can cross greater distances than most other kinds of bridge.", "answer": "true", "evidence": "The world's longest bridges are almost all of this type, striding in a single bound across wide rivers and deep straits where piers could never be built." },
+          { "prompt_text": "Suspension bridges are cheaper to build than any other type of bridge.", "answer": "not given", "evidence": "ABSENT: not stated or contradicted" }
+        ]
+      },
+      {
+        "question_type": "table_completion",
+        "prompt": "Questions 10-14. Complete the table below.",
+        "instructions_html": "<p>Complete the table using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><table><thead><tr><th>Part of the bridge</th><th>What it does</th></tr></thead><tbody><tr><td>Main cables</td><td>Draped over the towers and held under <strong>(10)&nbsp;______</strong>.</td></tr><tr><td>Towers</td><td>Pressed down by the weight and kept under <strong>(11)&nbsp;______</strong>.</td></tr><tr><td>Anchorages</td><td>Huge blocks that hold the <strong>(12)&nbsp;______</strong> of the cables.</td></tr><tr><td>Deck</td><td>The roadway, joined to the cables by vertical <strong>(13)&nbsp;______</strong>.</td></tr><tr><td>Advantage</td><td>The design allows a very long <strong>(14)&nbsp;______</strong>.</td></tr></tbody></table>",
+        "questions": [
+          { "prompt_text": "Gap 10", "accepted": ["tension"], "word_limit": 1, "spelling_variants": true, "evidence": "they are held constantly under tension, which is the pulling force" },
+          { "prompt_text": "Gap 11", "accepted": ["compression"], "word_limit": 1, "spelling_variants": true, "evidence": "A tower is therefore held under compression, the squeezing force" },
+          { "prompt_text": "Gap 12", "accepted": ["ends"], "word_limit": 1, "spelling_variants": true, "evidence": "The anchorages hold the ends of the cables fast" },
+          { "prompt_text": "Gap 13", "accepted": ["hangers"], "word_limit": 1, "spelling_variants": true, "evidence": "the deck is joined to the cables above it by a great many vertical steel ropes called hangers" },
+          { "prompt_text": "Gap 14", "accepted": ["span"], "word_limit": 1, "spelling_variants": true, "evidence": "The suspension design allows engineers to build across a very long span" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Quiet Revolution of the Lithium-Ion Battery",
+    "difficulty": "medium",
+    "topic_tags": ["engineering", "materials", "technology"],
+    "body_html": "<p>The mobile telephone in a pocket, the laptop on a desk and the electric car on the road all share a hidden ingredient that makes them possible: a small, rechargeable store of electricity known as the lithium-ion battery. Quietly, over the past few decades, this device has transformed daily life, freeing our machines from the wall socket and allowing them to be carried anywhere. Its rise has been so gradual and so complete that most people give it no thought at all, yet without it the portable, wireless world we now take for granted could not exist.</p><p>A battery is, in essence, a device for storing energy in chemical form and releasing it as electricity when it is needed. Inside a lithium-ion battery there are two electrodes, a positive one and a negative one, separated by a liquid called the electrolyte through which tiny charged particles, known as ions, are able to move. When the battery is charged, the lithium ions are driven across to one electrode and held there; when it is used, they move back again to the other electrode, and it is this steady movement of ions inside the battery that pushes a matching stream of electrons out through the wires of the circuit to do useful work.</p><p>The heart of the design is the element lithium, and it was chosen for good reasons. Lithium is the lightest of all the metals, so a battery made with it can store a great deal of energy without being heavy, an advantage that matters enormously in a device meant to be carried about. Just as importantly, the battery is rechargeable: unlike the old batteries that had to be thrown away once they were flat, a lithium-ion cell can be recharged and used again hundreds of times, its ions shuttling back and forth with each cycle of charging and use.</p><p>These qualities explain why the lithium-ion battery has spread into almost every corner of modern life. It powers the mobile phones and laptops that have become part of daily existence, and, on a much larger scale, it drives the growing fleet of electric cars that are beginning to replace those burning petrol. Because it can store plentiful energy in a light and reliable package, it has become the natural choice wherever electricity must be carried rather than drawn from a wire, from the smallest earphone to the largest vehicle.</p><p>For all its success, the lithium-ion battery is far from perfect, and its drawbacks are the subject of much research. One difficulty is that it does not last for ever: with every charge and discharge the battery ages a little, and after a few years it loses some of its capacity and can hold less energy than when it was new, as anyone whose old phone runs flat too quickly will know. There are safety concerns too, for if such a battery is damaged, overcharged or badly made it can overheat and, in rare cases, catch fire, which is why they must be built and handled with care.</p><p>Further problems arise at the two ends of the battery's life. Making these batteries requires the mining of certain materials, including lithium itself and several other metals, and obtaining them can be costly and can harm the environment where they are dug from the ground. At the other end, a worn-out battery is difficult to deal with, for its tightly packed chemical parts are not easily taken apart, and improving how batteries are recycled so that their valuable materials can be recovered and used again has become an urgent goal. Solving these problems is now one of the great tasks of engineering, for the batteries on which so much of modern life depends must be made not only powerful but also safe, affordable and clean.</p>",
+    "groups": [
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 1-6. Complete each sentence with the correct ending, A-J, from the box below.",
+        "options": [
+          { "key": "A", "text": "its two electrodes." },
+          { "key": "B", "text": "through the outside circuit to power a device." },
+          { "key": "C", "text": "it is very light and can store plenty of energy." },
+          { "key": "D", "text": "be recharged hundreds of times." },
+          { "key": "E", "text": "loses some of its capacity." },
+          { "key": "F", "text": "it can overheat if it is damaged." },
+          { "key": "G", "text": "because it is the heaviest of the metals." },
+          { "key": "H", "text": "so that it never needs charging." },
+          { "key": "I", "text": "only in very cold conditions." },
+          { "key": "J", "text": "and can never be reused." }
+        ],
+        "questions": [
+          { "prompt_text": "A lithium-ion battery stores and releases energy by moving ions between", "correct_option_keys": ["A"], "evidence": "there are two electrodes ... the lithium ions are driven across to one electrode ... they move back again to the other electrode" },
+          { "prompt_text": "When the battery is used, a stream of electrons is pushed out", "correct_option_keys": ["B"], "evidence": "pushes a matching stream of electrons out through the wires of the circuit to do useful work." },
+          { "prompt_text": "Lithium is chosen for batteries because", "correct_option_keys": ["C"], "evidence": "Lithium is the lightest of all the metals, so a battery made with it can store a great deal of energy without being heavy" },
+          { "prompt_text": "Unlike older, disposable batteries, a lithium-ion cell can", "correct_option_keys": ["D"], "evidence": "a lithium-ion cell can be recharged and used again hundreds of times" },
+          { "prompt_text": "After several years of use the battery gradually", "correct_option_keys": ["E"], "evidence": "after a few years it loses some of its capacity and can hold less energy than when it was new" },
+          { "prompt_text": "One safety concern with these batteries is that", "correct_option_keys": ["F"], "evidence": "if such a battery is damaged, overcharged or badly made it can overheat and, in rare cases, catch fire" }
+        ]
+      },
+      {
+        "question_type": "multiple_choice_multi",
+        "prompt": "Questions 7 and 8. Choose TWO letters, A-G for each question.",
+        "options": [
+          { "key": "A", "text": "mobile phones" },
+          { "key": "B", "text": "electric cars" },
+          { "key": "C", "text": "steam engines" },
+          { "key": "D", "text": "windmills" },
+          { "key": "E", "text": "losing capacity over time" },
+          { "key": "F", "text": "being difficult to recycle" },
+          { "key": "G", "text": "never catching fire" }
+        ],
+        "questions": [
+          { "prompt_text": "Which TWO of the following are given in the passage as uses of lithium-ion batteries? Choose TWO letters.", "correct_option_keys": ["A", "B"], "evidence": "It powers the mobile phones and laptops ... it drives the growing fleet of electric cars" },
+          { "prompt_text": "Which TWO of the following are given in the passage as drawbacks of lithium-ion batteries? Choose TWO letters.", "correct_option_keys": ["E", "F"], "evidence": "after a few years it loses some of its capacity ... a worn-out battery is difficult to deal with, for its tightly packed chemical parts are not easily taken apart" }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 9-14. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>ONE WORD ONLY</strong> from the passage for each answer.</p><p><strong>Inside a lithium-ion battery</strong></p><ul><li>The moving charged particles inside the battery are called <strong>(9)&nbsp;______</strong>.</li><li>The liquid that lets these particles move is the <strong>(10)&nbsp;______</strong>.</li><li>Lithium is valued because it is the <strong>(11)&nbsp;______</strong> of all the metals.</li><li>The battery can be <strong>(12)&nbsp;______</strong> hundreds of times.</li><li>Producing the batteries requires the mining of certain <strong>(13)&nbsp;______</strong>.</li><li>An urgent goal is to improve how old batteries are <strong>(14)&nbsp;______</strong>.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 9", "accepted": ["ions"], "word_limit": 1, "spelling_variants": true, "evidence": "tiny charged particles, known as ions, are able to move." },
+          { "prompt_text": "Gap 10", "accepted": ["electrolyte"], "word_limit": 1, "spelling_variants": true, "evidence": "separated by a liquid called the electrolyte through which tiny charged particles ... are able to move." },
+          { "prompt_text": "Gap 11", "accepted": ["lightest"], "word_limit": 1, "spelling_variants": true, "evidence": "Lithium is the lightest of all the metals, so a battery made with it can store a great deal of energy without being heavy" },
+          { "prompt_text": "Gap 12", "accepted": ["recharged", "charged"], "word_limit": 1, "spelling_variants": true, "evidence": "a lithium-ion cell can be recharged and used again hundreds of times" },
+          { "prompt_text": "Gap 13", "accepted": ["materials", "metals"], "word_limit": 1, "spelling_variants": true, "evidence": "Making these batteries requires the mining of certain materials, including lithium itself and several other metals" },
+          { "prompt_text": "Gap 14", "accepted": ["recycled"], "word_limit": 1, "spelling_variants": true, "evidence": "improving how batteries are recycled so that their valuable materials can be recovered" }
+        ]
+      }
+    ]
+  }
+]

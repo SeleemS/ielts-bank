@@ -3,7 +3,9 @@ import NextLink from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "../../src/components/Navbar";
 import Footer from "../../src/components/Footer";
+import NewsletterSignup from "../../src/components/NewsletterSignup";
 import { posts } from "../../lib/posts";
+import { sanitizeHtml } from "../../lib/sanitize";
 
 const SITE_URL = "https://ielts-bank.com";
 
@@ -106,9 +108,13 @@ export default function BlogPost({ post }) {
 
               <div
                 className={PROSE}
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
               />
             </article>
+
+            <div className="mt-10">
+              <NewsletterSignup source={`blog:${post.slug}`} variant="full" />
+            </div>
 
             <div className="mt-8 text-center">
               <NextLink

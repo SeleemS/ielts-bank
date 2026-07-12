@@ -1,0 +1,87 @@
+{
+  "title": "Registering at Fernbank Dental Practice",
+  "module": "general",
+  "difficulty": "easy",
+  "topicTags": ["everyday", "registration", "form completion", "multiple choice"],
+  "partStyle": "Part 1 (everyday 2-speaker dialogue)",
+  "speakers": [
+    { "name": "Hannah", "role": "Dental receptionist", "voice": "nova" },
+    { "name": "David", "role": "New patient", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 1",
+      "turns": [
+        { "speaker": "Hannah", "voice": "nova", "text": "Good afternoon, Fernbank Dental Practice, Hannah speaking. How can I help?" },
+        { "speaker": "David", "voice": "onyx", "text": "Hello. I've just moved into the area and I'd like to register as a new patient, and book a check-up if that's possible." },
+        { "speaker": "Hannah", "voice": "nova", "text": "Of course, I can set that up for you now. Let me take a few details first. Could I have your surname, please?" },
+        { "speaker": "David", "voice": "onyx", "text": "Yes, it's Kearney." },
+        { "speaker": "Hannah", "voice": "nova", "text": "Could you spell that for me?" },
+        { "speaker": "David", "voice": "onyx", "text": "Certainly. It's K-E-A-R-N-E-Y. Kearney. And my first name is David." },
+        { "speaker": "Hannah", "voice": "nova", "text": "Thank you, David. And your home address?" },
+        { "speaker": "David", "voice": "onyx", "text": "It's seventeen Maple Avenue — sorry, no, let me correct that, it's Maple Crescent. Seventeen Maple Crescent." },
+        { "speaker": "Hannah", "voice": "nova", "text": "No problem — seventeen Maple Crescent. And a contact number?" },
+        { "speaker": "David", "voice": "onyx", "text": "My mobile is oh-seven-seven-double-oh, nine-double-oh, eight-one-two. So oh-seven-seven-oh-oh, nine-oh-oh, eight-one-two." },
+        { "speaker": "Hannah", "voice": "nova", "text": "Let me read that back — oh-seven-seven-oh-oh, nine-oh-oh, eight-one-two. Perfect. Now, are you registering for NHS or private treatment?" },
+        { "speaker": "David", "voice": "onyx", "text": "I'd assumed private, but actually, if there's an NHS place available, I'd prefer that." },
+        { "speaker": "Hannah", "voice": "nova", "text": "You're in luck — we do have NHS spaces at the moment, so I'll put you down for that. Now, for your first appointment we book what we call a new-patient examination. It's a bit longer than a routine check-up because the dentist does a full assessment. That's forty-five minutes, and the fee is twenty-five pounds thirty." },
+        { "speaker": "David", "voice": "onyx", "text": "That's fine. When's the earliest you could fit me in?" },
+        { "speaker": "Hannah", "voice": "nova", "text": "Let me look. We could do next Tuesday the fourteenth in the morning — oh, wait, no, the dentist is on a training course that day. Let me correct that. The first free slot is Thursday the sixteenth." },
+        { "speaker": "David", "voice": "onyx", "text": "Thursday the sixteenth suits me. What time?" },
+        { "speaker": "Hannah", "voice": "nova", "text": "I can offer you nine fifteen or half past ten. Which would you prefer?" },
+        { "speaker": "David", "voice": "onyx", "text": "Half past ten, please. Nine fifteen's a little early for me." },
+        { "speaker": "Hannah", "voice": "nova", "text": "Half past ten it is. One thing to remember — please bring a list of any medication you're currently taking, as the dentist will need it for your records. You don't need to bring anything else for the first visit." },
+        { "speaker": "David", "voice": "onyx", "text": "Will do. And is there anything I should know about payment?" },
+        { "speaker": "Hannah", "voice": "nova", "text": "You can pay by card on the day. And do try to arrive about ten minutes early to fill in a medical history form. If you ever need to cancel, we ask for at least twenty-four hours' notice, otherwise there's a small charge." },
+        { "speaker": "David", "voice": "onyx", "text": "Understood. Thanks very much for your help, Hannah." },
+        { "speaker": "Hannah", "voice": "nova", "text": "You're very welcome. We'll see you on the sixteenth. Take care." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "form_completion",
+      "prompt": "NEW PATIENT REGISTRATION",
+      "instructions_html": "<p>Complete the form below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Surname:", "accepted": ["Kearney"], "word_limit": 1 },
+        { "prompt_text": "Address: 17 ______", "accepted": ["Maple Crescent", "Maple Cres"], "word_limit": 2 },
+        { "prompt_text": "Mobile number:", "accepted": ["07700900812", "07700 900 812", "07700 900812"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Which type of treatment does David register for?</p>",
+      "options": [
+        { "key": "A", "text": "private treatment" },
+        { "key": "B", "text": "NHS treatment" },
+        { "key": "C", "text": "emergency treatment only" }
+      ],
+      "questions": [
+        { "prompt_text": "David is registered for", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "First appointment details",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Appointment type:", "accepted": ["new-patient examination", "new patient examination", "examination"], "word_limit": 2 },
+        { "prompt_text": "Day of appointment:", "accepted": ["Thursday"], "word_limit": 1 },
+        { "prompt_text": "Date of appointment:", "accepted": ["16th", "the 16th", "16", "sixteenth"], "word_limit": 2 },
+        { "prompt_text": "Time of appointment:", "accepted": ["10:30", "10.30", "half past ten", "10:30 am", "10.30am"], "word_limit": 2 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The fee for the first examination is £______.", "accepted": ["25.30", "25.30 pounds", "£25.30"], "word_limit": 2 },
+        { "prompt_text": "To the appointment, David must bring a list of his ______.", "accepted": ["medication", "medications"], "word_limit": 1 },
+        { "prompt_text": "Cancellations require at least ______ hours' notice.", "accepted": ["24", "twenty-four", "twenty four"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

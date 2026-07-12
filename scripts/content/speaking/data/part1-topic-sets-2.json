@@ -1,0 +1,114 @@
+[
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Public Transport Questions",
+    "difficulty": "easy",
+    "topicTags": ["public-transport", "travel", "part1"],
+    "topic": "Public transport",
+    "questions": [
+      "How do you usually get around in your city?",
+      "Do you often use public transport?",
+      "What kinds of public transport are available where you live?",
+      "Do you prefer travelling by bus or by train?",
+      "How do you think public transport could be improved in your area?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Sleep Questions",
+    "difficulty": "easy",
+    "topicTags": ["sleep", "health", "part1"],
+    "topic": "Sleep",
+    "questions": [
+      "How many hours do you usually sleep each night?",
+      "Do you ever take naps during the day?",
+      "Do you think you get enough sleep?",
+      "What do you usually do before you go to bed?",
+      "Has the amount you sleep changed since you were younger?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Photography Questions",
+    "difficulty": "easy",
+    "topicTags": ["photography", "hobbies", "part1"],
+    "topic": "Photography",
+    "questions": [
+      "Do you like taking photographs?",
+      "What kind of things do you like to take pictures of?",
+      "Do you prefer taking photos with a camera or a phone?",
+      "Do you often look back at old photographs?",
+      "Do you think you are good at taking photos?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Neighbours Questions",
+    "difficulty": "easy",
+    "topicTags": ["neighbours", "community", "part1"],
+    "topic": "Neighbours",
+    "questions": [
+      "Do you know your neighbours well?",
+      "What kind of people are your neighbours?",
+      "How often do you talk to the people who live near you?",
+      "Do you think it is important to have good neighbours?",
+      "Have your neighbours ever helped you with anything?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Clothes and Fashion Questions",
+    "difficulty": "easy",
+    "topicTags": ["clothes", "fashion", "part1"],
+    "topic": "Clothes and fashion",
+    "questions": [
+      "What kind of clothes do you usually wear?",
+      "Do you prefer comfortable clothes or fashionable clothes?",
+      "Do you enjoy shopping for clothes?",
+      "How important is fashion to you?",
+      "Have the clothes you like changed over the years?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Parks and Green Spaces Questions",
+    "difficulty": "easy",
+    "topicTags": ["parks", "green-spaces", "part1"],
+    "topic": "Parks and green spaces",
+    "questions": [
+      "Are there many parks or green spaces where you live?",
+      "How often do you visit parks?",
+      "What do you like to do when you go to a park?",
+      "Did you go to parks often when you were a child?",
+      "Do you think cities should have more green spaces?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Learning Languages Questions",
+    "difficulty": "medium",
+    "topicTags": ["languages", "learning", "part1"],
+    "topic": "Learning languages",
+    "questions": [
+      "How many languages can you speak?",
+      "Do you enjoy learning foreign languages?",
+      "What do you think is the best way to learn a new language?",
+      "Do you think it is difficult to learn a language as an adult?",
+      "Would you like to learn another language in the future?"
+    ]
+  },
+  {
+    "part": 1,
+    "title": "IELTS Speaking Part 1: Colours Questions",
+    "difficulty": "easy",
+    "topicTags": ["colours", "preferences", "part1"],
+    "topic": "Colours",
+    "questions": [
+      "What is your favourite colour?",
+      "Do colours affect the way you feel?",
+      "Do you like to wear brightly coloured clothes?",
+      "Did you have a favourite colour when you were a child?",
+      "Do you pay attention to colours when you buy things?"
+    ]
+  }
+]

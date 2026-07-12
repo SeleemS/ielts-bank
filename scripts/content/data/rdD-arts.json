@@ -1,0 +1,111 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The True Colours of the Ancient World",
+    "difficulty": "medium",
+    "topic_tags": ["arts", "history", "archaeology"],
+    "body_html": "<p><strong>A</strong> When we picture the statues of ancient Greece and Rome, we almost invariably imagine them as we see them in museums today: gleaming figures of pure white marble, their smooth surfaces bare of any colour. This image is so familiar that it has come to seem natural, even inevitable, as though the ancients had deliberately chosen the cool, pale austerity of unpainted stone. For centuries, white marble has been regarded as the very essence of classical beauty, and generations of visitors have admired the dignified pallor of the ancient gods and heroes ranged along the galleries. The idea of white marble has shaped not only how we look at the past but also how later artists and architects have worked, inspiring countless pale monuments and public buildings intended to echo the supposed purity of the classical world.</p><p><strong>B</strong> The reality, however, was strikingly different. Far from being left plain, the statues and temples of the ancient world were originally painted in vivid, even gaudy colours. Skin was tinted, hair was gilded or coloured, and garments were picked out in bright reds, blues, greens and yellows, often with elaborate patterns. Eyes were painted so that the figures seemed to gaze back at the viewer, and weapons and jewellery were highlighted in contrasting shades. A Greek temple, far from being a study in serene white, would have blazed with colour under the Mediterranean sun. The bare marble we admire today is not the original appearance of these works at all, but the accidental result of the passage of time.</p><p><strong>C</strong> The colours vanished for a number of reasons. Exposed to wind, rain and sun over many centuries, the paint gradually weathered and flaked away. Statues that had been buried in the ground lost their pigment to the damp soil, and those that survived above ground were often scrubbed clean by later owners who valued the marble for its own sake. In some cases the very act of digging up and cleaning an ancient statue removed the last faint traces of the colour that had clung to it, so that the object emerged from the earth looking far whiter than it had ever been in antiquity.</p><p><strong>D</strong> If the ancient world was so colourful, why has the myth of white marble proved so durable? Part of the answer lies in the way classical art was rediscovered and admired in later ages. When scholars and artists of the Renaissance and after came to study ancient sculpture, most of the surviving pieces had already lost their paint, and the bare white stone was all that could be seen. Influential writers praised this whiteness as the height of good taste, holding it up as a model of restraint and nobility, and their admiration hardened into a firm conviction that the ancients themselves had preferred pure, uncoloured marble. The prestige of white marble became so great that it shaped the taste of whole centuries.</p><p><strong>E</strong> Modern science has been able to prove beyond doubt that the statues were painted, even when almost nothing remains visible to the naked eye. Under ultraviolet light, faint traces of pigment that survive in the tiny pits and crevices of the stone become detectable, and specialists can map where colours once lay. Shining light across a surface at a low, raking angle can reveal shadows left by patterns that have otherwise disappeared, while chemical analysis of the smallest specks of surviving pigment can identify the exact substances the ancient painters used. Piece by piece, researchers have been able to reconstruct how many famous statues would originally have looked.</p><p><strong>F</strong> The results have not always been comfortable viewing. When scholars produce full-colour reconstructions of ancient statues, painted as the evidence suggests they once were, many people find them garish and even disturbing, so deeply ingrained is the expectation that classical art should be white. Some critics complain that the reconstructions look crude, though this may say more about modern taste than about ancient reality, and there is genuine debate about how accurate any particular reconstruction can be. What is no longer in doubt is the central fact: the serene white marbles that have shaped our idea of classical beauty are, in a sense, a historical accident, and the ancient world was a far more colourful place than we have long imagined.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "the scientific techniques used to detect surviving traces of paint", "correct_option_keys": ["E"] },
+          { "prompt_text": "the various reasons the original colours were lost", "correct_option_keys": ["C"] },
+          { "prompt_text": "the familiar belief that ancient statues were pure white", "correct_option_keys": ["A"] },
+          { "prompt_text": "how admiration for white marble became fixed in later ages", "correct_option_keys": ["D"] },
+          { "prompt_text": "the mixed public reaction to colourful reconstructions", "correct_option_keys": ["F"] }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 6-10. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>For centuries, people have believed that ancient statues were made of pure white <strong>(6)&nbsp;______</strong>. In fact they were once painted in bright <strong>(7)&nbsp;______</strong>, which were gradually lost through weathering, burial and <strong>(8)&nbsp;______</strong> by later owners. During the <strong>(9)&nbsp;______</strong>, admirers of classical art saw only the bare stone and praised its whiteness. Today, scientists use ultraviolet light and chemical analysis of surviving <strong>(10)&nbsp;______</strong> to work out the original colours.</p>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["marble"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["colours", "colors"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["cleaning", "scrubbing"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["Renaissance", "the Renaissance"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["pigment", "pigments"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Ancient statues were originally intended to be left as plain white marble.", "answer": "false" },
+          { "prompt_text": "The paint on ancient statues disappeared for more than one reason.", "answer": "true" },
+          { "prompt_text": "Some people today find the colourful reconstructions unattractive.", "answer": "true" },
+          { "prompt_text": "Coloured statues were more expensive to produce than plain ones.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "How Painters Learned to Show Depth: The Invention of Perspective",
+    "difficulty": "hard",
+    "topic_tags": ["arts", "history", "culture"],
+    "body_html": "<p><strong>A</strong> Looking at a painting made in medieval Europe, a modern viewer is often struck by a curious flatness. Figures seem to float against gold or plain backgrounds, buildings are shown from impossible angles, and there is little sense of a believable space receding into the distance. This was not because medieval artists lacked skill. Rather, they were not attempting to reproduce the way the eye actually sees the world. The size of a figure in such a painting frequently indicated not how near it stood but how important it was: a saint or a king might tower over lesser mortals, regardless of where each was supposed to be standing. Space, in this tradition, was arranged according to meaning rather than optics, and a painter's task was to make the sacred order of the world visible, not to trick the eye into seeing a room or a landscape that was not really there.</p><p><strong>B</strong> The change that transformed European painting began in the Italian city of Florence in the early fifteenth century. Its central figure was an architect and goldsmith named Filippo Brunelleschi, who is credited with the first convincing demonstration of what we now call linear perspective. According to the traditional account, Brunelleschi painted a small panel showing a well-known Florentine building and devised an ingenious optical experiment, using a mirror, by which a viewer could compare his painted image directly with the real building behind it. The painted scene matched the real one so closely that the effect was startling, and it showed that the appearance of depth could be captured on a flat surface by strict geometrical means.</p><p><strong>C</strong> The principle Brunelleschi demonstrated is simple to state, though its consequences were enormous. In linear perspective, lines that are in reality parallel, such as the two edges of a straight road or the sides of a building, appear to draw closer together as they recede, until they seem to meet at a single point on the horizon. This point is known as the vanishing point. By constructing a picture so that all such lines converge correctly upon it, an artist could create a powerful illusion of three-dimensional space on a two-dimensional wall or panel, so that the viewer seemed to be looking through the surface into a real world beyond.</p><p><strong>D</strong> A demonstration, however impressive, is not the same as a method that others can learn, and the wider triumph of perspective owed much to those who turned Brunelleschi's insight into teachable rules. The most important of these was the scholar and architect Leon Battista Alberti, who set out the principles of perspective in a written treatise on painting. Alberti explained, in orderly steps, how a painter should construct a perspective scheme, providing the geometry and the reasoning behind it. His treatise transformed perspective from a closely guarded trick into a body of knowledge that any educated artist could study and apply, and it did much to spread the new technique beyond Florence.</p><p><strong>E</strong> Perspective quickly moved from theory into practice. The painter Masaccio, working in Florence at the same period, applied the new geometry to a religious fresco on a church wall, creating so convincing an illusion of depth that visitors felt they were looking into a chapel that did not really exist, its architecture apparently extending back into the solid wall. Such works demonstrated the sheer power of the technique and its capacity to astonish, and within a few generations the mastery of perspective had become a basic part of the training of painters across Italy and, before long, the whole of Europe.</p><p><strong>F</strong> For all its influence, perspective is not, as is sometimes assumed, simply the 'correct' way to depict the world, against which all other approaches must be judged as mistakes. It is one method among several, a set of conventions developed in a particular place and time to achieve a particular effect. The art of many other cultures represents space in quite different ways, deliberately and with great sophistication, and even in Europe artists would later break the rules of perspective for expressive purposes. Understood in this light, the invention of perspective is not the moment when painters finally learned to see correctly, but the moment when one powerful way of organising a picture was worked out, written down and passed on.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A method written down so others could learn it" },
+          { "key": "ii", "text": "Pictures without convincing depth" },
+          { "key": "iii", "text": "The first striking demonstration" },
+          { "key": "iv", "text": "Lines that appear to meet at one point" },
+          { "key": "v", "text": "Applying the new technique to a wall" },
+          { "key": "vi", "text": "One way of seeing among many" },
+          { "key": "vii", "text": "The rediscovery of ancient pigments" },
+          { "key": "viii", "text": "Training the hand rather than the eye" },
+          { "key": "ix", "text": "The rising cost of paint and panels" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["iii"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["vi"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 7-12. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In medieval painting, the size of a figure often showed its ______ rather than its distance.", "accepted": ["importance"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The first convincing demonstration of linear perspective is credited to ______.", "accepted": ["Brunelleschi", "Filippo Brunelleschi"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Brunelleschi's experiment made use of a ______ to compare the painting with the real building.", "accepted": ["mirror"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "In perspective, parallel lines appear to converge on a single ______.", "accepted": ["vanishing point", "point"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The rules of perspective were set out in a ______ written by Alberti.", "accepted": ["treatise"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The painter ______ applied the new geometry to a religious fresco on a church wall.", "accepted": ["Masaccio"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "multiple_choice",
+        "prompt": "Question 13. Choose the correct letter, A, B, C or D.",
+        "options": [
+          { "key": "A", "text": "It is the only correct way to represent space, and other methods are mistakes." },
+          { "key": "B", "text": "It is one set of conventions among several ways of depicting space." },
+          { "key": "C", "text": "It was quickly abandoned by later European painters." },
+          { "key": "D", "text": "It was invented independently in many different cultures." }
+        ],
+        "questions": [
+          { "prompt_text": "What is the main point the writer makes about perspective in the final paragraph?", "correct_option_keys": ["B"] }
+        ]
+      }
+    ]
+  }
+]

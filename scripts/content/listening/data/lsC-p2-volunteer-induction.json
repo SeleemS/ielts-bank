@@ -1,0 +1,83 @@
+{
+  "title": "Induction Talk for New Food Bank Volunteers",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "volunteering", "matching", "multiple choice"],
+  "partStyle": "Part 2 (community induction monologue)",
+  "speakers": [
+    { "name": "Sandra", "role": "Volunteer coordinator", "voice": "fable" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Sandra", "voice": "fable", "text": "Hello everyone, and thank you so much for coming along to volunteer at the Meadowfield Community Food Bank. My name's Sandra, I'm the volunteer coordinator, and I'll spend the next few minutes explaining how we work and what your week might look like." },
+        { "speaker": "Sandra", "voice": "fable", "text": "First, a little background. We started eight years ago in the back room of a church, and we now support around three hundred families every week. We're entirely run by volunteers — there's just one paid member of staff, and that's our warehouse manager. Everyone else, including me, gives their time for free." },
+        { "speaker": "Sandra", "voice": "fable", "text": "Let me walk you through our weekly routine, because different tasks happen on different days. Deliveries from the supermarkets arrive first thing on Monday, so Monday is our busiest day for unloading and stacking. If you enjoy being active and don't mind lifting, Monday's the day for you." },
+        { "speaker": "Sandra", "voice": "fable", "text": "Sorting the food — that's checking dates, dividing items into categories and sending anything out of date for recycling — we do that on Tuesday. It's quieter and a good job if you'd rather sit at a table and chat while you work." },
+        { "speaker": "Sandra", "voice": "fable", "text": "Packing the parcels themselves happens on Thursday. We make up boxes tailored to each family — some need baby food, some need pet food, and so on. And then the parcels are handed out to families on Friday, which is when we open our doors to the public, so Friday is the day we most need friendly, welcoming people on the front desk." },
+        { "speaker": "Sandra", "voice": "fable", "text": "Now, a really important point about what we can and can't accept. We're always short of tinned vegetables, pasta and rice, and long-life milk — those are gold dust to us. What we cannot take, and this surprises people, is anything homemade or home-cooked, for food-safety reasons. Fresh fruit and vegetables we can take, but only in very small amounts, as they don't keep. So the single most useful thing you can donate is tinned and dried food with a long shelf life." },
+        { "speaker": "Sandra", "voice": "fable", "text": "A few practical matters. There's tea and coffee in the kitchen, free of course, and we ask everyone to sign the register when they arrive and when they leave — that's a health-and-safety requirement, not us checking up on you. Please wear closed-toe shoes, as there's a lot of lifting, and we'll provide an apron and gloves." },
+        { "speaker": "Sandra", "voice": "fable", "text": "If you can't make your shift, all we ask is that you let us know the day before if you possibly can, so we can find cover. You don't need to explain why. And if you'd like to take on more responsibility later, do speak to me — we're always looking for people to train as shift leaders, and there's a short course for that." },
+        { "speaker": "Sandra", "voice": "fable", "text": "Finally, the thing I most want you to remember: treat everyone who comes through our doors with warmth and dignity. Many of the families are here for the first time and feel embarrassed. A kind word matters just as much as the food. Right — let me show you around the warehouse." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_features",
+      "prompt": "On which day does each activity take place?",
+      "instructions_html": "<p>Choose the correct day <strong>A–E</strong> for each activity and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "Monday" },
+        { "key": "B", "text": "Tuesday" },
+        { "key": "C", "text": "Wednesday" },
+        { "key": "D", "text": "Thursday" },
+        { "key": "E", "text": "Friday" }
+      ],
+      "questions": [
+        { "prompt_text": "unloading deliveries from supermarkets", "correct_option_keys": ["A"] },
+        { "prompt_text": "sorting food and checking dates", "correct_option_keys": ["B"] },
+        { "prompt_text": "packing the family parcels", "correct_option_keys": ["D"] },
+        { "prompt_text": "handing parcels out to the public", "correct_option_keys": ["E"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Which type of donation is the food bank most in need of?</p>",
+      "options": [
+        { "key": "A", "text": "home-cooked meals" },
+        { "key": "B", "text": "tinned and dried food with a long shelf life" },
+        { "key": "C", "text": "large amounts of fresh fruit and vegetables" }
+      ],
+      "questions": [
+        { "prompt_text": "The most useful donation is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How many paid staff does the food bank have?</p>",
+      "options": [
+        { "key": "A", "text": "none" },
+        { "key": "B", "text": "one" },
+        { "key": "C", "text": "three" }
+      ],
+      "questions": [
+        { "prompt_text": "The number of paid staff is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Practical information for volunteers",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Everyone must sign the ______ on arrival and departure.", "accepted": ["register"], "word_limit": 1 },
+        { "prompt_text": "Volunteers should wear ______ shoes because of the lifting.", "accepted": ["closed-toe", "closed toe"], "word_limit": 2 },
+        { "prompt_text": "If unable to attend, tell the coordinator the ______ before.", "accepted": ["day"], "word_limit": 1 },
+        { "prompt_text": "Volunteers wanting more responsibility can train as ______.", "accepted": ["shift leaders", "shift leader", "a shift leader"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

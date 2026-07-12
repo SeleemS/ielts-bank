@@ -1,0 +1,75 @@
+{
+  "title": "Lecture: A History of Timekeeping",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "history", "science", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Good morning. Today I want to trace one of humanity's oldest projects — the measurement of time. It's a story of people trying, over thousands of years, to divide the endless flow of time into equal, reliable pieces, and it turns out to be surprisingly difficult." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "The earliest method was, of course, the sun. The very first timekeeping device we know of is the sundial, which the ancient Egyptians were using more than three thousand years ago. A sundial works by casting a shadow, and as the sun moves across the sky, the shadow moves across a marked surface. Simple and elegant — but it has two obvious flaws. It's useless at night, and it's useless when the sky is cloudy." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "So people needed a clock that didn't depend on the sun. The answer was the water clock. In a water clock, water drips at a steady rate from one container into another, and you read the time from the rising water level. The great advantage was that, unlike the sundial, it worked in the dark. Its weakness, though, was temperature: in cold weather the water could thicken, or even freeze, and the flow would slow down, so the clock ran slow." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "Now we jump forward to medieval Europe, and one of the great turning points: the first mechanical clocks, which appeared in the thirteenth century, driven not by water but by falling weights. These were enormous machines, built into the towers of cathedrals. Interestingly, many of the earliest ones had no face and no hands at all — their only job was to ring a bell to call people to prayer. In fact, our word 'clock' comes from the Latin word for bell." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "These early mechanical clocks were impressive, but wildly inaccurate — they could gain or lose as much as fifteen minutes a day. The breakthrough came in sixteen fifty-seven, when the Dutch scientist Christiaan Huygens built the first pendulum clock. A swinging pendulum keeps very regular time, and this single invention improved accuracy dramatically — suddenly a clock might be wrong by only a few seconds a day rather than many minutes." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "The pendulum, however, had one great enemy: motion. A pendulum clock is hopeless on a rolling ship, and this mattered enormously, because sailors needed an accurate clock to work out their longitude — their east-west position at sea. Without one, ships were getting lost and wrecked. The problem was finally solved in the eighteenth century by an English carpenter named John Harrison, who spent decades building a clock, called a marine chronometer, that kept perfect time even on a heaving deck. He used a spring rather than a pendulum." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "For the next two centuries, springs and pendulums ruled. Then, in the twentieth century, came the quartz clock. When a small crystal of quartz has electricity passed through it, it vibrates at an extremely precise frequency, and that steady vibration can be counted to keep time. Quartz clocks were far more accurate than anything mechanical, and, crucially, they were cheap to mass-produce — which is why, by the nineteen seventies, almost every household could afford an accurate watch." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "And finally we reach the most accurate clocks ever built: atomic clocks. These measure time by counting the incredibly regular vibrations of atoms — usually the element caesium. An atomic clock is so precise that it would take millions of years for it to drift by a single second. This is not a laboratory curiosity, by the way. Every time you use satellite navigation to find your way, you are relying on atomic clocks in orbit, because working out your position depends on measuring time to billionths of a second." },
+        { "speaker": "Lecturer", "voice": "onyx", "text": "So there we have it — from a shadow on the ground to the vibration of an atom. And notice the pattern: at every stage, the search was for something that repeats more and more regularly. That, in the end, is all a clock really is — a device that counts a steady, repeating beat. Let's leave it there for today." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "Early timekeeping devices",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The earliest known timekeeping device is the ______.", "accepted": ["sundial"], "word_limit": 1 },
+        { "prompt_text": "A sundial works by casting a ______ onto a marked surface.", "accepted": ["shadow"], "word_limit": 1 },
+        { "prompt_text": "A water clock could be affected by cold ______, which slowed the flow.", "accepted": ["weather", "temperature", "temperatures"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Mechanical clocks",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The first mechanical clocks appeared in the ______ century.", "accepted": ["thirteenth", "13th"], "word_limit": 1 },
+        { "prompt_text": "They were driven by falling ______.", "accepted": ["weights", "weight"], "word_limit": 1 },
+        { "prompt_text": "Many early tower clocks had no face and simply rang a ______.", "accepted": ["bell"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "Greater accuracy",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "In 1657 Huygens built the first ______ clock, which was far more accurate.", "accepted": ["pendulum"], "word_limit": 1 },
+        { "prompt_text": "Sailors needed an accurate clock to calculate their ______ at sea.", "accepted": ["longitude"], "word_limit": 1 },
+        { "prompt_text": "Harrison's marine chronometer used a ______ instead of a pendulum.", "accepted": ["spring"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Modern clocks",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A quartz clock keeps time using the steady ______ of a crystal.", "accepted": ["vibration", "vibrations"], "word_limit": 1 },
+        { "prompt_text": "The most accurate clocks are ______ clocks, which count the vibrations of atoms.", "accepted": ["atomic"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN THREE WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Which everyday technology relies on atomic clocks in orbit?", "accepted": ["satellite navigation", "sat nav", "satnav", "GPS"], "word_limit": 3 }
+      ]
+    }
+  ]
+}

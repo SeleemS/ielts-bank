@@ -1,15 +1,12 @@
 import React from 'react';
 import QuestionItem from './QuestionItem';
 import { typeConfig } from './grade';
+import { sanitizeHtml, sanitizeSvg } from '../../../lib/sanitize';
 
 // Renders one question_group: heading + instructions (+ an options legend for
-// matching types) followed by its questions.
-// Strip any <script> tags before injecting a group's SVG illustration. The SVG
-// is display-only (maps/plans for map-labelling questions); this keeps the
-// dangerouslySetInnerHTML payload inert.
-function sanitizeSvg(svg) {
-  return String(svg).replace(/<script[\s\S]*?<\/script\s*>/gi, '');
-}
+// matching types) followed by its questions. DB-sourced instructionsHtml and
+// the display-only image SVG (maps/plans) are sanitized via lib/sanitize
+// (DOMPurify) before being injected with dangerouslySetInnerHTML.
 
 export default function QuestionGroup({ group, answers, onChange, submitted, results }) {
   const cfg = typeConfig(group.questionType);
@@ -33,7 +30,7 @@ export default function QuestionGroup({ group, answers, onChange, submitted, res
       {group.instructionsHtml ? (
         <div
           className="mb-4 rounded-md border border-border bg-secondary/50 p-3 text-sm leading-relaxed text-foreground [&_p]:mb-2 [&_strong]:font-semibold [&_table]:w-full [&_td]:border [&_td]:border-border [&_td]:p-2 [&_th]:border [&_th]:border-border [&_th]:p-2"
-          dangerouslySetInnerHTML={{ __html: group.instructionsHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(group.instructionsHtml) }}
         />
       ) : null}
 

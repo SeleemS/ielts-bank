@@ -1,0 +1,30 @@
+[
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter to a Newspaper Opposing a New Building",
+    "task": 1,
+    "topic_tags": [
+      "society",
+      "complaint"
+    ],
+    "essay_type": "letter",
+    "difficulty": "medium",
+    "prompt_html": "<p>A large office building is going to be constructed on an area of open land close to where you live, and you feel strongly that it is the wrong decision.</p><p>Write a letter to the editor of your local newspaper. In your letter:</p><ul><li>explain how the piece of open land is currently used by the community</li><li>describe the problems you think the new building would create</li><li>suggest what should be done with the land instead</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Sir or Madam,</em></p>",
+    "word_limit_min": 150
+  },
+  {
+    "skill": "writing",
+    "module": "general",
+    "title": "IELTS General Task 1: Letter to Your Landlord About Repairs Needed",
+    "task": 1,
+    "topic_tags": [
+      "housing",
+      "request"
+    ],
+    "essay_type": "letter",
+    "difficulty": "easy",
+    "prompt_html": "<p>You have been renting a flat for several months, and a number of things in it now need to be repaired. Your landlord, whom you know personally, has asked tenants to report any problems in writing.</p><p>Write a letter to your landlord. In your letter:</p><ul><li>thank the landlord for asking tenants to report problems</li><li>describe the repairs that need to be carried out</li><li>suggest a convenient time for the work to be done</li></ul><p>Write at least 150 words. You do NOT need to write any addresses. Begin your letter as follows: <em>Dear Mr Bradley,</em></p>",
+    "word_limit_min": 150
+  }
+]

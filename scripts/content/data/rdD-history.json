@@ -1,0 +1,157 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Antikythera Mechanism: A Computer from the Ancient World",
+    "difficulty": "medium",
+    "topic_tags": ["history", "archaeology", "science"],
+    "body_html": "<p><strong>A</strong> In the spring of 1901, a group of sponge divers sheltering from a fierce storm dropped anchor near the small Greek island of Antikythera, which lies between Crete and the mainland. Descending to the sea floor to pass the time, one of the divers surfaced in alarm, describing a heap of rotting corpses on the seabed below. What he had in fact stumbled upon was the wreck of an ancient ship, littered with corroded bronze and marble statues that had lain undisturbed for some two thousand years. Over the following months the divers recovered a remarkable haul of antiquities, and among the coins, jewellery and fine sculptures brought up from the deep was an unremarkable-looking lump of bronze, cracked and heavily encrusted, that at first attracted almost no attention at all.</p><p><strong>B</strong> It was only later, in a museum in Athens, that the true importance of this shapeless object began to emerge. As the encrustation slowly dried and split apart, it revealed traces of finely cut gearwheels, their delicate teeth still visible in the green corroded metal. This was astonishing, for nothing of the kind was supposed to exist in the ancient world. Geared mechanisms of comparable precision were not thought to have been made until many centuries afterwards, and yet here was one apparently constructed by Greek craftsmen before the birth of Christ. The device, which came to be known as the Antikythera mechanism, was plainly no ordinary object, and it posed a question that would puzzle scholars for the best part of a century.</p><p><strong>C</strong> For many decades the fragments resisted all attempts at understanding, since no one could open the fragile mass without destroying the very evidence they hoped to read. The breakthrough came at last from imaging techniques that could see inside the corroded metal without cutting it apart. Using powerful X-rays and, later, high-resolution three-dimensional scanning, researchers were able to count the teeth of gears buried deep within the object and to read faint inscriptions on its surfaces that the naked eye could never have detected. These hidden texts, a kind of instruction manual engraved on the device itself, turned out to be essential to working out exactly what the machine had been designed to do.</p><p><strong>D</strong> The picture that gradually emerged was extraordinary. The mechanism was a hand-driven model of the heavens, a calculating machine that reproduced the movements of the sun and the moon as they appear from the Earth. By turning a small handle, a user could wind the device forwards or backwards in time and read off the position of the sun and moon against the constellations, together with the changing phase of the moon. It could indicate when eclipses were likely to occur, and it tracked several overlapping calendars, among them the cycle that governed the timing of the athletic games held across the Greek world. In effect, it packed a working knowledge of Greek astronomy into a wooden box small enough to be carried under one arm.</p><p><strong>E</strong> What has most impressed modern scholars is the sheer sophistication of the design. The mechanism used dozens of interlocking bronze gears, including at least one ingenious arrangement that reproduced the irregular, speeding-and-slowing motion of the moon across the sky. Nothing of comparable complexity is known to survive from anywhere in the ancient world, and it would be well over a thousand years before clocks and astronomical instruments of similar intricacy appeared in medieval Europe. For a long time historians had assumed that the Greeks, for all their brilliance in geometry and philosophy, had never troubled to translate their theories into precision machinery. The Antikythera mechanism proved that comfortable assumption to be quite wrong.</p><p><strong>F</strong> Many questions about the device remain unanswered even now. No one knows for certain who designed it, in which city it was made, or precisely why it was being carried aboard the ship when it sank. Some scholars have suggested that it was a teaching instrument, used to demonstrate the workings of the cosmos to students; others believe it was a treasured possession, displayed by a wealthy owner to advertise his learning. Nor is it clear whether the mechanism was a unique masterpiece or merely one of many such instruments, the rest of which have simply not survived the passage of time. What is certain is that it stands as a humbling reminder of how much ancient knowledge has been lost, and of how easily the finest achievements of the past can vanish almost without trace.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "a list of the astronomical events and cycles the device could display", "correct_option_keys": ["D"] },
+          { "prompt_text": "the discovery of the wreck by divers sheltering from bad weather", "correct_option_keys": ["A"] },
+          { "prompt_text": "the long gap before instruments of similar complexity reappeared", "correct_option_keys": ["E"] },
+          { "prompt_text": "the methods used to read writing hidden inside the object", "correct_option_keys": ["C"] },
+          { "prompt_text": "doubts about whether the device was the only one of its kind", "correct_option_keys": ["F"] }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 6-10. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>The wreck off Antikythera was found in 1901 by <strong>(6)&nbsp;______</strong> who had stopped to shelter from a storm. Among the objects raised from the seabed was a corroded lump of <strong>(7)&nbsp;______</strong> that seemed unimportant at first. Later, traces of hidden <strong>(8)&nbsp;______</strong> were noticed inside it, which greatly surprised scholars. Modern <strong>(9)&nbsp;______</strong> techniques finally allowed researchers to count the gear teeth and read the inscriptions without damaging the fragile fragments. The device worked as a model of the heavens, showing the positions of the sun and the <strong>(10)&nbsp;______</strong>.</p>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["sponge divers", "divers"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["bronze"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["gearwheels", "gears", "gear wheels"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["imaging", "scanning"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["moon", "the moon"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "The diver who first reached the wreck initially believed he had found dead bodies.", "answer": "true" },
+          { "prompt_text": "Geared devices as delicate as the mechanism were common elsewhere in the ancient world.", "answer": "false" },
+          { "prompt_text": "The writing found on the device included a kind of instruction manual.", "answer": "true" },
+          { "prompt_text": "The ship was sailing towards Rome when it sank.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "Reclaiming the Zuiderzee: How the Dutch Turned Sea into Land",
+    "difficulty": "hard",
+    "topic_tags": ["history", "engineering", "geography"],
+    "body_html": "<p><strong>A</strong> For centuries the Zuiderzee, a broad and shallow arm of the North Sea reaching deep into the heart of the Netherlands, was both a blessing and a curse to the people who lived around it. Its waters carried trade and teemed with fish, yet they were also a standing menace. Whenever a north-westerly gale drove the sea inland, the level of the Zuiderzee could rise with terrifying speed, and the low-lying farms and villages along its shores were repeatedly flooded. Dykes were built and rebuilt, but the threat never went away, and generations of Dutch families lived with the knowledge that the water they depended upon might at any moment turn against them and sweep their land away.</p><p><strong>B</strong> The idea of taming the Zuiderzee once and for all, by sealing it off from the sea entirely, had been discussed for generations, but for a long time it seemed little more than a dream. Its most determined champion was an engineer named Cornelis Lely, who worked out a detailed scheme for enclosing the inland sea with a great barrier and turning much of it into farmland. For many years, however, the plan was dismissed as impossibly expensive and technically reckless, and successive governments were unwilling to commit the enormous sums it would demand. Lely pressed his case for decades, refining his calculations and waiting patiently for the political mood to change.</p><p><strong>C</strong> Two events finally tipped the balance. In 1916 a violent storm broke through the coastal defences and flooded a wide stretch of land around the Zuiderzee, drowning livestock and destroying homes and reminding the nation, in the most brutal way, of its vulnerability. At almost the same time the First World War, though the Netherlands remained neutral, cut off many food imports and made the country anxious about feeding itself. Suddenly the prospect of creating a vast area of new agricultural land looked less like an extravagance and more like a necessity, and within a few years the government committed itself to the great project.</p><p><strong>D</strong> The heart of the scheme was a mighty barrier dam thrown across the mouth of the Zuiderzee, sealing it off from the open sea. Building it was a colossal undertaking. Working from both ends towards the middle, engineers gradually narrowed the gap through which the tides rushed twice a day, until only a fierce, fast-flowing channel remained. The dam was built up mainly from boulder clay, a stiff glacial material dredged from the seabed, which packed together to form a watertight core resistant to the pounding of the waves. When the final gap was at last closed, the tides were shut out and a long chapter of the region's history came to an end.</p><p><strong>E</strong> Cut off from the salt tides, the enclosed water slowly turned fresh as the rivers that fed it flushed out the sea salt, becoming a great inland lake. Behind the dam, engineers then set about the second and even more ambitious half of the plan: draining large sections of the lake bed to create new land. Ringed by dykes and emptied by powerful pumps, these reclaimed areas, known as polders, emerged from beneath the water as level expanses of rich, dark soil. In time they were drained, drained again, planted and settled, and eventually an entirely new province, complete with farms, roads and towns, was laid out on ground that had recently lain beneath the waves.</p><p><strong>F</strong> The transformation was not welcomed by everyone, and it carried real costs alongside its triumphs. The old Zuiderzee had supported a thriving fishing industry, and the fishing communities that ringed its shores saw their livelihoods vanish almost overnight when the salt water and the fish that lived in it were shut out for good. Ancient ports found themselves stranded miles from any open sea, their harbours useless. Yet the wider benefits were undeniable: the land behind the dam was now safe from the sea, a huge area of fertile farmland had been won, and the freshwater lake became a valuable reserve of drinking water. The draining of the Zuiderzee remains one of the boldest feats of engineering ever attempted, a reshaping of the map so complete that the sea itself was made to retreat.</p>",
+    "groups": [
+      {
+        "question_type": "matching_headings",
+        "prompt": "Questions 1-6. The passage has six paragraphs, A-F. Choose the correct heading for each paragraph from the list of headings below.",
+        "options": [
+          { "key": "i", "text": "A plan that waited decades for acceptance" },
+          { "key": "ii", "text": "Turning the lake bed into farmland" },
+          { "key": "iii", "text": "The winners and losers of the project" },
+          { "key": "iv", "text": "A constant threat from the water" },
+          { "key": "v", "text": "The events that forced a decision" },
+          { "key": "vi", "text": "Closing the gap with a mighty dam" },
+          { "key": "vii", "text": "How fish were farmed in the new lake" },
+          { "key": "viii", "text": "The cost of importing building materials" },
+          { "key": "ix", "text": "A new tourist destination is born" }
+        ],
+        "questions": [
+          { "prompt_text": "Paragraph A", "correct_option_keys": ["iv"] },
+          { "prompt_text": "Paragraph B", "correct_option_keys": ["i"] },
+          { "prompt_text": "Paragraph C", "correct_option_keys": ["v"] },
+          { "prompt_text": "Paragraph D", "correct_option_keys": ["vi"] },
+          { "prompt_text": "Paragraph E", "correct_option_keys": ["ii"] },
+          { "prompt_text": "Paragraph F", "correct_option_keys": ["iii"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 7-10. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "The scheme to enclose the Zuiderzee was championed by an engineer named ______.", "accepted": ["Lely", "Cornelis Lely"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Public support for the project grew after a severe ______ struck the coast in 1916.", "accepted": ["storm", "flood"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The core of the barrier dam was built mainly from ______ dredged from the seabed.", "accepted": ["boulder clay", "clay"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "The areas of drained land created behind the dam are known as ______.", "accepted": ["polders", "polder"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "matching_sentence_endings",
+        "prompt": "Questions 11-14. Complete each sentence with the correct ending, A-G, from the box below.",
+        "options": [
+          { "key": "A", "text": "slowly turned fresh and became an inland lake." },
+          { "key": "B", "text": "lost their livelihoods when the salt water was shut out." },
+          { "key": "C", "text": "was repeatedly flooded whenever storms drove the sea inland." },
+          { "key": "D", "text": "it was regarded as far too costly and technically reckless." },
+          { "key": "E", "text": "was used mainly to generate electric power." },
+          { "key": "F", "text": "attracted large numbers of tourists from abroad." },
+          { "key": "G", "text": "produced far more fish than it had before." }
+        ],
+        "questions": [
+          { "prompt_text": "Before the project, the low-lying land around the Zuiderzee", "correct_option_keys": ["C"] },
+          { "prompt_text": "For many years Lely's plan was rejected because", "correct_option_keys": ["D"] },
+          { "prompt_text": "Once the barrier dam had been closed, the enclosed water", "correct_option_keys": ["A"] },
+          { "prompt_text": "The fishing communities around the old sea", "correct_option_keys": ["B"] }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Great Library of Alexandria and the Loss of Ancient Knowledge",
+    "difficulty": "easy",
+    "topic_tags": ["history", "world cultures"],
+    "body_html": "<p>Few institutions of the ancient world are as famous, or as shrouded in legend, as the Great Library of Alexandria. Founded in the Egyptian city of Alexandria more than two thousand years ago, under the rule of the Greek kings known as the Ptolemies, it was conceived on a scale that had never been attempted before. Its purpose was breathtakingly ambitious: to gather together, under a single roof, all the knowledge of the entire world. For several centuries it stood as the greatest centre of learning of its age, drawing scholars from across the Mediterranean and beyond.</p><p>The library did not stand alone. It formed part of a larger research institution called the Mouseion, a word from which our modern 'museum' is descended, where scholars were housed, fed and paid to devote themselves to study. Here mathematicians, astronomers, geographers and poets worked side by side, and many of the most celebrated thinkers of the ancient world spent time in Alexandria. Scholars travelled from distant lands to consult its shelves and to work alongside the finest minds of the age, and the fame of the institution spread far beyond the borders of Egypt. The rulers of the city funded this community generously, understanding that a reputation for learning brought prestige as well as practical advantage, and that the presence of so many learned people reflected well upon the throne.</p><p>Assembling so vast a collection required determined effort, and the methods used were sometimes ruthless. The books of the ancient world took the form of scrolls, made from papyrus, and the library is said to have contained hundreds of thousands of them. To build up this hoard, the Ptolemies are reported to have ordered that every ship entering the busy harbour be searched for books. Any scrolls found on board were taken away to be copied; but according to the stories, the officials kept the valuable originals for the library and returned only the copies to their owners, a practice that reveals just how single-minded the pursuit of knowledge had become. Nor were the scholars content merely to pile up scrolls; they also laboured to establish accurate texts, comparing different copies of the same work and correcting the errors that inevitably crept in whenever a book was copied out by hand.</p><p>The eventual fate of the library is one of the great puzzles of history, and it is here that legend has done the most damage to the truth. Popular imagination pictures the library perishing in a single, dramatic fire, its priceless scrolls consumed in one catastrophic night. The reality was almost certainly far less dramatic and far more gradual. Alexandria suffered several periods of war, unrest and political decline over many centuries, during which the library was damaged, neglected and slowly diminished. Funding dried up, scholars drifted away, and fragile papyrus scrolls decayed or were lost through simple carelessness. The collection did not so much explode as fade.</p><p>This gradual decline is, in some ways, a more troubling story than a single blaze would be. A fire is a sudden catastrophe, an accident or an act of violence for which someone might be blamed. The slow death of the library, by contrast, was the result of shifting priorities, lost interest and the quiet erosion of the institutions that had once supported it. It stands as a warning that knowledge is not lost only through disaster; it can also slip away when a society ceases to value it enough to protect it.</p><p>What survives of the Great Library today is not its scrolls, almost none of which remain, but its idea. The dream of a single place that might hold all the learning of humanity has echoed down the centuries and inspired the great libraries, universities and archives of later ages. In this sense the library of Alexandria was never entirely destroyed. Its collection was scattered and lost, but the ambition behind it, the belief that knowledge is worth gathering, preserving and sharing, has proved far more durable than any building of stone or scroll of papyrus. Every great collection assembled since, in every country and every century, owes something, however distantly, to the daring example set in that Egyptian city more than two thousand years ago.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-5. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "The library was established under the rule of the Ptolemies.", "answer": "true" },
+          { "prompt_text": "Ships entering the harbour were searched for books to be copied.", "answer": "true" },
+          { "prompt_text": "The library was destroyed in a single catastrophic fire.", "answer": "false" },
+          { "prompt_text": "The library employed more scholars than any other institution of its time.", "answer": "not given" },
+          { "prompt_text": "Officials kept the original scrolls and gave copies back to their owners.", "answer": "true" }
+        ]
+      },
+      {
+        "question_type": "summary_completion",
+        "prompt": "Questions 6-9. Complete the summary below.",
+        "instructions_html": "<p>Complete the summary using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p>The library's aim was to gather all the <strong>(6)&nbsp;______</strong> of the world in a single place. To enlarge its collection, every ship entering the <strong>(7)&nbsp;______</strong> was searched for books, and the originals were often kept while <strong>(8)&nbsp;______</strong> were handed back to their owners. The library was not lost in one dramatic <strong>(9)&nbsp;______</strong>, but declined slowly over many centuries.</p>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["knowledge"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["harbour", "harbor"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["copies"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["fire"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 10-13. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which Egyptian city was the Great Library located?", "accepted": ["Alexandria"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "Which family of Greek kings founded and funded the library?", "accepted": ["the Ptolemies", "Ptolemies"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What material were the ancient books, or scrolls, made from?", "accepted": ["papyrus"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "What was the name of the larger research institution of which the library formed part?", "accepted": ["the Mouseion", "Mouseion"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]

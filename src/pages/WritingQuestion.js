@@ -7,6 +7,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Progress } from '../../components/ui/progress';
 import { cn } from '../lib/utils';
 import { getSupabase } from '../../lib/supabase';
+import { sanitizeHtml } from '../../lib/sanitize';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -363,7 +364,7 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
               <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-foreground">
                 Writing Prompt
               </h2>
-              <div className={PROMPT_HTML_CLASS} dangerouslySetInnerHTML={{ __html: promptHtml }} />
+              <div className={PROMPT_HTML_CLASS} dangerouslySetInnerHTML={{ __html: sanitizeHtml(promptHtml) }} />
             </div>
 
             {/* Answer */}

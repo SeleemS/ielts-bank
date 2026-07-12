@@ -1,0 +1,101 @@
+{
+  "title": "Seminar: A Business Case Study on Brightleaf Tea",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "discussion", "business", "strategy", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Fairhurst", "role": "Tutor", "voice": "sage" },
+    { "name": "Meera", "role": "Student", "voice": "shimmer" },
+    { "name": "Josh", "role": "Student", "voice": "ballad" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "So, this week's case is Brightleaf Tea — a small company whose sales have fallen for three years running. You've both read the file. Meera, what strikes you as the core problem?" },
+        { "speaker": "Meera", "voice": "shimmer", "text": "For me it's the product range. They sell over ninety different teas, which sounds impressive, but most of them barely sell at all. It confuses customers and it ties up money in stock." },
+        { "speaker": "Josh", "voice": "ballad", "text": "I'd argue the bigger issue is that nobody's heard of them. Their marketing budget is tiny — they've relied on word of mouth, which just isn't enough anymore." },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "Both are real weaknesses. But let's be disciplined — the case asks for the single most urgent problem. What does the financial data actually show?" },
+        { "speaker": "Meera", "voice": "shimmer", "text": "Well, looking at the numbers, their cash flow is the frightening bit. They're profitable on paper, but they're running out of cash because so much is locked up in unsold stock. If that continues, they could go under even while showing a profit." },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "Exactly — and that's the classic trap. Profit is an opinion; cash is a fact. So the most urgent problem isn't marketing, tempting as that is to say — it's cash flow, and it's driven by that bloated product range. Now, recommendations. Each of you propose one, and let's see if they fit together." },
+        { "speaker": "Josh", "voice": "ballad", "text": "My recommendation is to cut the range hard — drop it from ninety teas to maybe the twenty best-sellers. That frees up cash immediately and simplifies everything." },
+        { "speaker": "Meera", "voice": "shimmer", "text": "And I'd suggest they move some sales online. At the moment they only sell through a handful of shops. A simple website could reach the whole country without the cost of more premises." },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "Two sensible ideas that actually reinforce each other — a leaner range is far easier to sell online. Now, one caution, Josh. Cutting the range that aggressively carries a risk. Can you see it?" },
+        { "speaker": "Josh", "voice": "ballad", "text": "I suppose you might drop a tea that only a few people buy, but those few are extremely loyal — and you could lose them altogether." },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "Precisely. A niche product can have loyal, high-spending fans. So cut, but check the data on customer loyalty first, not just the sales volume. Now, the case also mentions their supplier. What did you make of that relationship?" },
+        { "speaker": "Meera", "voice": "shimmer", "text": "They buy from a single supplier in one country, which felt risky to me. If that supplier fails, or there's a bad harvest, Brightleaf has nothing to sell." },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "A key insight — that's supply-chain risk, and over-reliance on one supplier is a genuine vulnerability. I'd want a second supplier lined up as a backstop. Right, for your written analysis, I want a clear structure. Start with the problem, then the evidence, then your recommendations, and end with the risks of each. And keep it to two thousand words — discipline, again." },
+        { "speaker": "Josh", "voice": "ballad", "text": "Two thousand words. And when's it due?" },
+        { "speaker": "Dr Fairhurst", "voice": "sage", "text": "The Friday of week nine. Upload it to the portal by five o'clock. And do use the financial figures in the appendix — I want to see analysis, not just opinion." },
+        { "speaker": "Meera", "voice": "shimmer", "text": "Understood. Thank you — that's really helped me see which problem matters most." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does the tutor identify as Brightleaf's most urgent problem?</p>",
+      "options": [
+        { "key": "A", "text": "weak marketing" },
+        { "key": "B", "text": "poor cash flow caused by too much stock" },
+        { "key": "C", "text": "an unreliable website" }
+      ],
+      "questions": [
+        { "prompt_text": "The most urgent problem is", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Who makes each recommendation?",
+      "instructions_html": "<p>Choose the correct person <strong>A–C</strong> for each recommendation and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "Meera" },
+        { "key": "B", "text": "Josh" },
+        { "key": "C", "text": "Dr Fairhurst" }
+      ],
+      "questions": [
+        { "prompt_text": "cutting the product range to about twenty teas", "correct_option_keys": ["B"] },
+        { "prompt_text": "starting to sell online", "correct_option_keys": ["A"] },
+        { "prompt_text": "finding a second supplier as a backup", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What risk does the tutor warn about when cutting the product range?</p>",
+      "options": [
+        { "key": "A", "text": "losing loyal customers of niche teas" },
+        { "key": "B", "text": "upsetting the shop staff" },
+        { "key": "C", "text": "running out of shelf space" }
+      ],
+      "questions": [
+        { "prompt_text": "Cutting the range too hard risks", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why does relying on a single supplier concern the group?</p>",
+      "options": [
+        { "key": "A", "text": "the supplier is too expensive" },
+        { "key": "B", "text": "a supplier failure or bad harvest would leave nothing to sell" },
+        { "key": "C", "text": "the supplier is in the wrong time zone" }
+      ],
+      "questions": [
+        { "prompt_text": "The single supplier is a concern because", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The written analysis must be no more than ______ words.", "accepted": ["2000", "two thousand", "2,000"], "word_limit": 2 },
+        { "prompt_text": "The analysis is due on the Friday of week ______.", "accepted": ["9", "nine"], "word_limit": 1 },
+        { "prompt_text": "It must be uploaded to the portal by ______.", "accepted": ["5 o'clock", "5pm", "5 pm", "five o'clock", "17:00", "5 p.m."], "word_limit": 2 }
+      ]
+    }
+  ]
+}

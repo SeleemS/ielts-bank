@@ -1,0 +1,85 @@
+{
+  "title": "Launch of the Harborough Cycle-Hire Scheme",
+  "module": "general",
+  "difficulty": "medium",
+  "topicTags": ["everyday", "monologue", "transport", "matching", "multiple choice"],
+  "partStyle": "Part 2 (public information monologue)",
+  "speakers": [
+    { "name": "Nathan", "role": "Scheme manager", "voice": "sage" }
+  ],
+  "sections": [
+    {
+      "part": "Part 2",
+      "turns": [
+        { "speaker": "Nathan", "voice": "sage", "text": "Good evening everyone, and welcome to this information session about Harborough's brand-new cycle-hire scheme, which launches next month. My name's Nathan, and I manage the scheme. I'll explain where you can pick up the bikes, how much it costs, and a few things you'll need to know before you ride." },
+        { "speaker": "Nathan", "voice": "sage", "text": "Let me start with the docking stations, because knowing where they are is half the battle. We're opening with five stations across the town, and I'll describe where each one is so you can picture it. The first, and our biggest, is right outside the railway station — you literally step off the train and there it is. Very handy for commuters." },
+        { "speaker": "Nathan", "voice": "sage", "text": "The second station is in the Market Square, in the far corner beside the old fountain. The third is a little harder to spot — it's tucked behind the library, in the small courtyard you reach through the archway. Do look out for it, because it's often the emptiest, which means there's usually a bike free." },
+        { "speaker": "Nathan", "voice": "sage", "text": "The fourth station is by the entrance to Riverside Park, right next to the café there — a lovely spot to start a leisurely ride. And the fifth is up at the hospital, by the main reception, which we added specially for staff working shifts at odd hours." },
+        { "speaker": "Nathan", "voice": "sage", "text": "Now, the cost. There are two ways to pay. You can buy a day pass, which is three pounds and lets you take as many short trips as you like in twenty-four hours, as long as each trip is under thirty minutes. Or you can become an annual member for ninety pounds a year, which works out cheaper if you ride regularly. Whichever you choose, remember this: the first thirty minutes of every single trip are free. It's only if you keep a bike out longer than thirty minutes that extra charges start, at a pound for each additional half hour." },
+        { "speaker": "Nathan", "voice": "sage", "text": "So the golden rule is simple — dock your bike within half an hour, then take another one if you need to carry on. That keeps your riding essentially free, and it keeps bikes circulating for everyone else." },
+        { "speaker": "Nathan", "voice": "sage", "text": "A word on the bikes themselves. They're sturdy, with three gears, a basket at the front, and lights that come on automatically when it gets dark, so you never have to remember them. Every bike also has a bell, which the law requires. What we don't provide, I'm afraid, is a helmet — you'll need to bring your own. We strongly recommend wearing one, but it isn't compulsory for adults." },
+        { "speaker": "Nathan", "voice": "sage", "text": "To unlock a bike, you use our app, which shows you in real time how many bikes are free at each station — so you'll never trudge across town to find an empty rack. If a bike has a fault, don't just leave it; press the red button on the handlebar, which flags it as out of service so nobody else takes it." },
+        { "speaker": "Nathan", "voice": "sage", "text": "Finally, safety. Please stick to the roads and cycle lanes and, whatever you do, don't ride on the pavement — it's both dangerous and against the rules, and you can be fined. Right, that's the essentials. Now, are there any questions?" }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "matching_information",
+      "prompt": "Where is each docking station located?",
+      "instructions_html": "<p>Choose the correct location <strong>A–F</strong> for each docking station and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "outside the railway station" },
+        { "key": "B", "text": "in the corner of the Market Square, by the fountain" },
+        { "key": "C", "text": "in the courtyard behind the library" },
+        { "key": "D", "text": "by the entrance to Riverside Park, next to the café" },
+        { "key": "E", "text": "at the hospital main reception" },
+        { "key": "F", "text": "outside the town hall" }
+      ],
+      "questions": [
+        { "prompt_text": "Station 1 (the biggest)", "correct_option_keys": ["A"] },
+        { "prompt_text": "Station 2", "correct_option_keys": ["B"] },
+        { "prompt_text": "Station 3 (often the emptiest)", "correct_option_keys": ["C"] },
+        { "prompt_text": "Station 4", "correct_option_keys": ["D"] },
+        { "prompt_text": "Station 5 (added for shift workers)", "correct_option_keys": ["E"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How long is every trip free, regardless of which pass you buy?</p>",
+      "options": [
+        { "key": "A", "text": "the first 30 minutes" },
+        { "key": "B", "text": "the first 24 hours" },
+        { "key": "C", "text": "the first hour" }
+      ],
+      "questions": [
+        { "prompt_text": "Each trip is free for", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Which item do riders have to provide themselves?</p>",
+      "options": [
+        { "key": "A", "text": "lights" },
+        { "key": "B", "text": "a bell" },
+        { "key": "C", "text": "a helmet" }
+      ],
+      "questions": [
+        { "prompt_text": "Riders must bring their own", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Costs and rules",
+      "instructions_html": "<p>Complete the notes below. Write <strong>NO MORE THAN TWO WORDS AND/OR A NUMBER</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Price of a day pass: £______", "accepted": ["3", "£3", "3 pounds", "three"], "word_limit": 2 },
+        { "prompt_text": "Annual membership costs £______ a year.", "accepted": ["90", "£90", "90 pounds", "ninety"], "word_limit": 2 },
+        { "prompt_text": "To report a faulty bike, press the red ______ on the handlebar.", "accepted": ["button"], "word_limit": 1 },
+        { "prompt_text": "Riders must not cycle on the ______.", "accepted": ["pavement"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

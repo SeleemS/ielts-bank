@@ -1,0 +1,102 @@
+{
+  "title": "Tutorial: Planning a Geography Field Trip",
+  "module": "academic",
+  "difficulty": "medium",
+  "topicTags": ["academic", "discussion", "geography", "fieldwork", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 3 speakers)",
+  "speakers": [
+    { "name": "Dr Okonkwo", "role": "Tutor", "voice": "coral" },
+    { "name": "Beth", "role": "Student", "voice": "nova" },
+    { "name": "Callum", "role": "Student", "voice": "onyx" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "Right, so this is our planning meeting for the river fieldwork at Ashcombe. You're investigating how the river changes from source to mouth. Beth, where were you thinking of taking measurements?" },
+        { "speaker": "Beth", "voice": "nova", "text": "We'd picked three sites. The upper site up on the moor, a middle site by the village bridge, and a lower site down near the estuary." },
+        { "speaker": "Callum", "voice": "onyx", "text": "Although we did wonder whether three was enough. I thought maybe five sites would give a smoother picture." },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "In principle more is better, Callum, but be realistic — you have one day, and each site takes over an hour to survey properly. Rushing five sites would give you sloppy data. I'd stick with three done well." },
+        { "speaker": "Callum", "voice": "onyx", "text": "Fair point. Three it is, then, but measured carefully." },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "Good. Now, the key thing in fieldwork is safety, and rivers are genuinely dangerous. What's your plan for the estuary site in particular?" },
+        { "speaker": "Beth", "voice": "nova", "text": "That's the one that worries me, because of the tide. My idea was to check the tide times in advance and only work there at low tide." },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "Absolutely essential. The tide there comes in remarkably fast. Check the tide tables the night before, and never let anyone wade in above the knee. Wellingtons, not waders. Now let's talk about what you'll actually measure and who does what. There are three main variables: the width of the channel, the depth, and the speed of the flow." },
+        { "speaker": "Callum", "voice": "onyx", "text": "I'm happy to handle the flow speed. I've used the flow meters before in the lab, so I know how they work." },
+        { "speaker": "Beth", "voice": "nova", "text": "Then I'll do the depth readings — I don't mind getting my boots wet, and I'm careful about taking readings at regular intervals across the channel." },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "And that leaves the channel width. Who's your third member — Priya, isn't it? She's not here today. Put her on width; it's the most straightforward, using the tape measure, so she can pick it up quickly when she joins you. I'll oversee the whole thing and keep an eye on safety." },
+        { "speaker": "Beth", "voice": "nova", "text": "Perfect. What about recording the results — on paper, or digitally?" },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "Good question. I know the temptation is to type straight into a phone, but out in the field, in the rain, phones fail. Use waterproof paper and a pencil — pencil still writes when it's wet, ink doesn't. You can type it all up back at base that evening." },
+        { "speaker": "Callum", "voice": "onyx", "text": "That makes sense. And how should we present the final findings? A written report?" },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "For this module, not a report — I'd like a poster. It forces you to be selective and to make your graphs do the talking. Keep the text short and let the data speak. Aim to show clearly how each variable changes downstream." },
+        { "speaker": "Beth", "voice": "nova", "text": "A poster — got it. One last thing: the weather forecast for Thursday looks poor. Should we move the trip?" },
+        { "speaker": "Dr Okonkwo", "voice": "coral", "text": "Let's not cancel for a bit of drizzle — fieldwork happens in real weather. But if there's heavy rain, the river rises fast and becomes unsafe, so I'll make the final call on Wednesday evening and email you both. Bring waterproofs regardless." },
+        { "speaker": "Callum", "voice": "onyx", "text": "Understood. Thanks — I feel much clearer about it all now." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How many sites do the students finally decide to survey?</p>",
+      "options": [
+        { "key": "A", "text": "three" },
+        { "key": "B", "text": "five" },
+        { "key": "C", "text": "one" }
+      ],
+      "questions": [
+        { "prompt_text": "The number of survey sites will be", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What safety measure does the tutor stress for the estuary site?</p>",
+      "options": [
+        { "key": "A", "text": "working there only at low tide" },
+        { "key": "B", "text": "wearing waders to go in deep" },
+        { "key": "C", "text": "avoiding the estuary altogether" }
+      ],
+      "questions": [
+        { "prompt_text": "At the estuary the students must", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "Which measurement is each person responsible for?",
+      "instructions_html": "<p>Choose the correct person <strong>A–C</strong> for each measurement and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "Beth" },
+        { "key": "B", "text": "Callum" },
+        { "key": "C", "text": "Priya" }
+      ],
+      "questions": [
+        { "prompt_text": "speed of the flow", "correct_option_keys": ["B"] },
+        { "prompt_text": "depth of the channel", "correct_option_keys": ["A"] },
+        { "prompt_text": "width of the channel", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>How does the tutor want the results recorded in the field?</p>",
+      "options": [
+        { "key": "A", "text": "typed straight into a phone" },
+        { "key": "B", "text": "on waterproof paper in pencil" },
+        { "key": "C", "text": "spoken into a voice recorder" }
+      ],
+      "questions": [
+        { "prompt_text": "Field results should be recorded", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The students will present their findings as a ______ rather than a written report.", "accepted": ["poster"], "word_limit": 1 },
+        { "prompt_text": "The tutor will decide whether to postpone the trip on ______ evening.", "accepted": ["Wednesday"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

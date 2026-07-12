@@ -95,7 +95,7 @@ async function main() {
     log(`       e.g. ${audioResults[0]?.status} ${audioResults[0]?.ct} ${audioResults[0]?.size}b  ${env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${audioResults[0]?.p}`);
   }
 
-  log(allOk && rows.length === 50 ? 'VERIFY: ALL PASS' : 'VERIFY: see above');
+  log(allOk && rows.length === 80 ? 'VERIFY: ALL PASS' : 'VERIFY: see above');
   process.exit(allOk ? 0 : 1);
 }
 

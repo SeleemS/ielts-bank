@@ -1,0 +1,74 @@
+{
+  "title": "Lecture: Wildlife Corridors in Cities",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "lecture", "ecology", "urban planning", "note completion", "summary completion"],
+  "partStyle": "Part 4 (university lecture monologue)",
+  "speakers": [
+    { "name": "Lecturer", "role": "University lecturer", "voice": "sage" }
+  ],
+  "sections": [
+    {
+      "part": "Part 4",
+      "turns": [
+        { "speaker": "Lecturer", "voice": "sage", "text": "Good afternoon. In today's lecture I want to look at a practical idea in urban ecology that is quietly transforming how we design our cities — the wildlife corridor. Let me begin by explaining the problem it's meant to solve." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "When we build a city, we don't usually destroy all the green space at once. Instead, we leave scattered patches — a park here, a garden there, a cemetery, a school field. The trouble is that these patches are isolated from one another by roads, buildings and car parks. Ecologists call this problem habitat fragmentation, and it's one of the biggest threats to urban wildlife." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Why does fragmentation matter so much? The key issue is that small, isolated populations are fragile. If a group of animals is cut off in a single park, and can't reach any other group, then over time they breed only among themselves. This leads to a loss of genetic diversity, which leaves the population less able to cope with disease or change. Cut off completely, a small population can simply die out." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "A wildlife corridor is the solution: a strip of habitat that physically connects two or more of these isolated patches, allowing animals to move safely between them. Reconnect the patches, and the separate populations effectively become one large population again — much healthier, and much less likely to disappear." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Corridors come in several forms. The simplest and cheapest is the humble hedgerow, a line of shrubs that hedgehogs, insects and small birds can follow from one garden to the next. On a larger scale, rivers and canals make superb natural corridors, because the vegetation along their banks provides a continuous green route right through the heart of a city." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Then there are the more dramatic engineered structures. Where a major road slices through habitat, planners can build what's called a green bridge — a bridge covered in soil and planting that lets animals cross above the traffic in complete safety. The most famous examples are in the Netherlands, where green bridges allow deer and even badgers to cross motorways that would otherwise kill them." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Now, designing a good corridor is not as simple as leaving a thin strip of grass. Research points to two crucial qualities. The first is width. A corridor that is too narrow doesn't work, because predators can easily reach animals in the middle of it, and there's no shelter. Wider is almost always better. The second quality is that a corridor must be continuous — an unbroken link. A corridor with a gap in the middle, where it's severed by a busy road, is often no use at all, because the animals won't cross the gap." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "Let me give you a concrete example of corridors working. In the city of Edmonton, in Canada, planners deliberately linked a series of parks along a river valley. Within a few years, biologists recorded coyotes, deer and porcupines using the route to move right across the city. The corridor was doing exactly its job — carrying wildlife safely through a dense urban area." },
+        { "speaker": "Lecturer", "voice": "sage", "text": "And I want to stress that the benefits are not only for the animals. Corridors are typically green and leafy, so they cool the surrounding streets in hot weather, they soak up rainwater and reduce flooding, and they give city residents pleasant, connected green spaces to walk and cycle through. In other words, what's good for the hedgehog turns out to be good for us too. So the next time you see an overgrown railway embankment or a scruffy strip of woodland beside a road, don't dismiss it as waste ground — it may be a vital highway for the wildlife of the city. Let's stop there." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "note_completion",
+      "prompt": "The problem",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Green spaces in cities are split up by roads and buildings — a problem called habitat ______.", "accepted": ["fragmentation"], "word_limit": 1 },
+        { "prompt_text": "Isolated populations breed only among themselves, causing a loss of genetic ______.", "accepted": ["diversity"], "word_limit": 1 },
+        { "prompt_text": "A completely cut-off small population may eventually ______ out.", "accepted": ["die"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "note_completion",
+      "prompt": "Types of corridor",
+      "instructions_html": "<p>Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The simplest and cheapest corridor is a ______.", "accepted": ["hedgerow", "hedge"], "word_limit": 1 },
+        { "prompt_text": "Rivers and ______ make excellent natural corridors through a city.", "accepted": ["canals", "canal"], "word_limit": 1 },
+        { "prompt_text": "A ______ bridge lets animals cross safely above a major road.", "accepted": ["green"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "summary_completion",
+      "prompt": "Designing a good corridor",
+      "instructions_html": "<p>Complete the summary below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "A corridor that is too narrow fails because ______ can reach animals in the middle.", "accepted": ["predators", "predator"], "word_limit": 1 },
+        { "prompt_text": "A good corridor must be ______, forming an unbroken link.", "accepted": ["continuous"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "A case study and the benefits",
+      "instructions_html": "<p>Complete the sentences below. Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "In Edmonton, planners linked parks along a ______ valley.", "accepted": ["river"], "word_limit": 1 },
+        { "prompt_text": "As well as helping wildlife, corridors cool streets and reduce ______.", "accepted": ["flooding"], "word_limit": 1 }
+      ]
+    },
+    {
+      "question_type": "short_answer",
+      "prompt": "Answer the question below.",
+      "instructions_html": "<p>Write <strong>NO MORE THAN TWO WORDS</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "Which country is famous for green bridges over its motorways?", "accepted": ["the Netherlands", "Netherlands", "Holland"], "word_limit": 2 }
+      ]
+    }
+  ]
+}

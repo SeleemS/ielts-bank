@@ -2,6 +2,7 @@ import React from 'react';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import { Separator } from '../../components/ui/separator';
+import NewsletterSignup from './NewsletterSignup';
 
 // Pure Tailwind/shadcn Footer. NO Chakra imports — renders on every page,
 // including still-Chakra ones, so it must be self-contained.
@@ -11,6 +12,11 @@ const PRACTICE_LINKS = [
   { label: 'Writing', href: '/writingquestion' },
   { label: 'Listening', href: '/listeningquestion' },
   { label: 'Speaking (soon)', href: '/readingquestion' },
+];
+
+const TOOLS_LINKS = [
+  { label: 'Writing Checker', href: '/ielts-writing-checker' },
+  { label: 'Band Calculator', href: '/band-calculator' },
 ];
 
 const RESOURCE_LINKS = [
@@ -47,7 +53,7 @@ export default function Footer() {
   return (
     <footer className="tw-root mt-auto bg-slate-950 text-slate-300">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
           {/* Brand blurb */}
           <div className="col-span-2 md:col-span-2">
             <NextLink href="/" className="flex items-center gap-2.5 no-underline">
@@ -63,9 +69,19 @@ export default function Footer() {
               questions, instant auto-scoring and model answers — everything you need to
               raise your band score.
             </p>
+            <div className="mt-6 max-w-sm">
+              <h3 className="text-sm font-semibold text-white">
+                Get new practice tests in your inbox
+              </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                One useful email a week. No spam, unsubscribe anytime.
+              </p>
+              <NewsletterSignup source="footer" variant="compact" className="mt-3" />
+            </div>
           </div>
 
           <FooterColumn title="Practice" links={PRACTICE_LINKS} />
+          <FooterColumn title="Free tools" links={TOOLS_LINKS} />
           <FooterColumn title="Resources" links={RESOURCE_LINKS} />
           <FooterColumn title="Legal" links={LEGAL_LINKS} />
         </div>

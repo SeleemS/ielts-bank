@@ -1,0 +1,103 @@
+{
+  "title": "Tutorial: Reviewing an Enzyme Experiment's Results",
+  "module": "academic",
+  "difficulty": "hard",
+  "topicTags": ["academic", "discussion", "biology", "lab methods", "matching", "multiple choice"],
+  "partStyle": "Part 3 (academic discussion, 2 speakers)",
+  "speakers": [
+    { "name": "Dr Halvorsen", "role": "Tutor", "voice": "echo" },
+    { "name": "Amira", "role": "Student", "voice": "coral" }
+  ],
+  "sections": [
+    {
+      "part": "Part 3",
+      "turns": [
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "Come in, Amira. So, you wanted to go through the results of your catalase experiment before you write it up. You were measuring how temperature affects the rate of the reaction, is that right?" },
+        { "speaker": "Amira", "voice": "coral", "text": "Yes. I measured how quickly oxygen was produced at five different temperatures, from ten degrees up to fifty. But some of my results look strange, and I'm not sure why." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "Let's look at them together. Overall the shape is what we'd expect — the rate rose as it got warmer, peaked, and then dropped. At what temperature was the reaction fastest?" },
+        { "speaker": "Amira", "voice": "coral", "text": "At forty degrees. After that, at fifty, it fell sharply, which I think is the enzyme being denatured — the heat changing its shape so it stops working." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "That's exactly right, and it's the key finding — an optimum at forty, then denaturing above it. Good. Now, the strange points. Let's take them one at a time. Your ten-degree reading — you have it much higher than the twenty-degree one, which makes no sense. Any idea why?" },
+        { "speaker": "Amira", "voice": "coral", "text": "I think that was the very first trial I did, before I'd got the technique right. I was probably slow starting the timer, so it looked faster than it really was." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "Yes — that's simple human reaction-time error at the start. The fix is to repeat that trial now you're practised. Next, your thirty-degree result is all over the place — the three repeats don't agree at all. What happened there?" },
+        { "speaker": "Amira", "voice": "coral", "text": "Ah — that's the batch of liver I used for those. It had been sitting out and I think it had partly dried out, so the amount of enzyme wasn't consistent between the repeats." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "A contamination-slash-consistency problem with the material itself — well spotted. Always use fresh material from the same source. And the fifty-degree point — you've only got one reading there, not three." },
+        { "speaker": "Amira", "voice": "coral", "text": "That one I'll admit — I simply ran out of time and couldn't do the repeats. So it's just missing data, nothing clever." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "Honest, and that's fine — note it as a limitation. Now, an important methodological point. To compare temperatures fairly, what had to stay the same across all your trials?" },
+        { "speaker": "Amira", "voice": "coral", "text": "The things I kept constant were the concentration of the hydrogen peroxide, the volume of it, and the mass of the liver. Only the temperature changed." },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "Good — those are your control variables, and controlling them is what makes it a fair test. So, for the write-up, how should you handle that odd ten-degree point?" },
+        { "speaker": "Amira", "voice": "coral", "text": "Should I just delete it?" },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "No — never quietly delete data. Keep it, mark it clearly as an anomaly, and explain why you think it's unreliable. Then draw your line of best fit through the trustworthy points. Deleting data without saying so is, frankly, close to dishonesty." },
+        { "speaker": "Amira", "voice": "coral", "text": "Understood — flag it, don't hide it. And for the conclusion?" },
+        { "speaker": "Dr Halvorsen", "voice": "echo", "text": "State the optimum temperature clearly, explain the denaturing, and be honest about the limitations — the missing repeats and the dried-out sample. A good scientist reports the mess, not just the tidy bits. Come back if you get stuck on the graph." },
+        { "speaker": "Amira", "voice": "coral", "text": "I will. Thank you so much — I feel far more confident about writing it up now." }
+      ]
+    }
+  ],
+  "questionGroups": [
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>At which temperature was the reaction fastest?</p>",
+      "options": [
+        { "key": "A", "text": "30 degrees" },
+        { "key": "B", "text": "40 degrees" },
+        { "key": "C", "text": "50 degrees" }
+      ],
+      "questions": [
+        { "prompt_text": "The reaction rate peaked at", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>Why did the rate fall sharply at 50 degrees?</p>",
+      "options": [
+        { "key": "A", "text": "the enzyme was denatured by the heat" },
+        { "key": "B", "text": "there was not enough hydrogen peroxide" },
+        { "key": "C", "text": "the timer was started late" }
+      ],
+      "questions": [
+        { "prompt_text": "At 50 degrees the rate dropped because", "correct_option_keys": ["A"] }
+      ]
+    },
+    {
+      "question_type": "matching_features",
+      "prompt": "What was the likely cause of the problem at each temperature?",
+      "instructions_html": "<p>Choose the correct cause <strong>A–E</strong> for each result and select the correct letter.</p>",
+      "options": [
+        { "key": "A", "text": "slow reaction time starting the timer" },
+        { "key": "B", "text": "the liver had dried out and was inconsistent" },
+        { "key": "C", "text": "the repeats were not done (missing data)" },
+        { "key": "D", "text": "the peroxide was too concentrated" },
+        { "key": "E", "text": "the thermometer was broken" }
+      ],
+      "questions": [
+        { "prompt_text": "the 10-degree reading (too high)", "correct_option_keys": ["A"] },
+        { "prompt_text": "the 30-degree repeats (inconsistent)", "correct_option_keys": ["B"] },
+        { "prompt_text": "the 50-degree reading (only one value)", "correct_option_keys": ["C"] }
+      ]
+    },
+    {
+      "question_type": "multiple_choice",
+      "prompt": "Choose the correct letter, A, B or C.",
+      "instructions_html": "<p>What does the tutor say Amira should do with the anomalous 10-degree point?</p>",
+      "options": [
+        { "key": "A", "text": "delete it quietly" },
+        { "key": "B", "text": "keep it but mark it as an anomaly and explain it" },
+        { "key": "C", "text": "use it as the main result" }
+      ],
+      "questions": [
+        { "prompt_text": "The anomalous point should be", "correct_option_keys": ["B"] }
+      ]
+    },
+    {
+      "question_type": "sentence_completion",
+      "prompt": "Complete the sentences below.",
+      "instructions_html": "<p>Write <strong>ONE WORD ONLY</strong> for each answer.</p>",
+      "questions": [
+        { "prompt_text": "The variables kept the same in every trial are called the ______ variables.", "accepted": ["control", "controlled"], "word_limit": 1 },
+        { "prompt_text": "The heat stops the enzyme working by causing it to become ______.", "accepted": ["denatured"], "word_limit": 1 }
+      ]
+    }
+  ]
+}

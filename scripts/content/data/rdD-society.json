@@ -1,0 +1,141 @@
+[
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Origins of Paper Money",
+    "difficulty": "medium",
+    "topic_tags": ["economics", "history", "society"],
+    "body_html": "<p><strong>A</strong> For most of human history, money meant metal. Coins of gold, silver, bronze and copper were carried, weighed and counted in every marketplace from China to the Mediterranean, and their value lay in the precious material from which they were struck. Metal coins had obvious advantages: they were durable, hard to fake and accepted almost everywhere. Yet they also had a serious drawback that grew more troublesome as trade expanded. A large sum of money in coin was extremely heavy, and a merchant wishing to buy goods in a distant city faced the daunting prospect of transporting a great weight of metal over long and often dangerous roads. As commerce reached across ever greater distances, the sheer bulk of coinage became a genuine obstacle to doing business. A trader who wished to settle a large account might need a cart and a guard simply to move the necessary metal, and the cost and risk of transporting so much wealth ate into the profits of long-distance trade.</p><p><strong>B</strong> The first solution to this problem appeared in China, many centuries before anything similar was seen elsewhere. Merchants who did not wish to carry heavy strings of coins began to deposit them with trusted deposit shops, receiving in return a written note that recorded the amount left behind. The note could later be presented, at the same shop or an associated one, and exchanged once more for coin. These paper receipts were far lighter and safer to carry than the coins themselves, and before long the notes began to circulate from hand to hand as if they were money, since everyone understood that they could be redeemed for metal whenever required.</p><p><strong>C</strong> What had begun as a private convenience among merchants eventually attracted the attention of the state. Recognising both the usefulness of paper notes and the profit to be made from issuing them, the government took over their production, printing official notes backed by its own authority. This was a momentous step, for it meant that pieces of paper, worth nothing in themselves, could serve as money simply because the authorities declared that they did and the public agreed to accept them. For the first time in history, the value of money rested not on the metal it contained but on trust and official promise.</p><p><strong>D</strong> The strangeness of this arrangement was captured vividly by a foreign visitor. The Italian traveller Marco Polo, who journeyed through China in the thirteenth century, devoted a famous passage of his account to the paper money he saw in use there. He marvelled that the ruler could take the bark of trees, turn it into paper, stamp it with an official seal, and thereby create something that all his subjects would accept in payment as readily as if it were gold. To European readers of the time, accustomed only to coins of precious metal, the idea seemed scarcely believable, and some doubted whether his report could possibly be true.</p><p><strong>E</strong> Yet the history of paper money also revealed its dangers. Because notes were so cheap and easy to produce, there was a constant temptation for governments in financial difficulty to print more of them than the economy could support. When too many notes were issued, each one bought less than before, and prices rose steadily in what we would now call inflation. On several occasions the value of the paper collapsed, public confidence evaporated, and people refused to accept the notes at all, forcing a return to coin. The very feature that made paper money so convenient, the ease with which it could be created, was also the source of its greatest weakness.</p><p><strong>F</strong> Paper money took a remarkably long time to establish itself in the West. It was not until the seventeenth century that European banknotes appeared in a recognisable form, issued first by private goldsmiths who held their customers' gold for safekeeping and gave out receipts that could be passed from person to person. From these modest beginnings grew the banknotes and the banking systems that would eventually spread across the world. The long delay is striking, for the essential idea had been worked out in China hundreds of years earlier, a reminder that useful inventions do not always travel quickly, and that the same discovery may be made, and made to matter, at very different times in different places.</p>",
+    "groups": [
+      {
+        "question_type": "matching_information",
+        "prompt": "Questions 1-5. The passage has six paragraphs, A-F. Which paragraph contains the following information? Write the correct letter, A-F.",
+        "options": [
+          { "key": "A", "text": "Paragraph A" },
+          { "key": "B", "text": "Paragraph B" },
+          { "key": "C", "text": "Paragraph C" },
+          { "key": "D", "text": "Paragraph D" },
+          { "key": "E", "text": "Paragraph E" },
+          { "key": "F", "text": "Paragraph F" }
+        ],
+        "questions": [
+          { "prompt_text": "a description of how the weight of coins hindered long-distance trade", "correct_option_keys": ["A"] },
+          { "prompt_text": "an account of a traveller who was amazed by the use of paper money", "correct_option_keys": ["D"] },
+          { "prompt_text": "the point at which the state took over the issuing of notes", "correct_option_keys": ["C"] },
+          { "prompt_text": "an explanation of what happened when too many notes were printed", "correct_option_keys": ["E"] },
+          { "prompt_text": "the much later appearance of banknotes in Europe", "correct_option_keys": ["F"] }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-10. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p><strong>The early history of paper money</strong></p><ul><li>Metal <strong>(6)&nbsp;______</strong> were durable but very heavy to carry in large amounts.</li><li>In China, merchants left their money at deposit shops and received a paper <strong>(7)&nbsp;______</strong> in return.</li><li>Later, the <strong>(8)&nbsp;______</strong> began to print official notes backed by its own authority.</li><li>Printing too many notes caused prices to rise, a process now called <strong>(9)&nbsp;______</strong>.</li><li>In Europe, the first banknotes were issued by <strong>(10)&nbsp;______</strong> who held people's gold for safekeeping.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["coins"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["note", "receipt"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["government", "state", "the government"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["inflation"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 10", "accepted": ["goldsmiths", "private goldsmiths"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "yes_no_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the claims of the writer in the passage? Write YES, NO or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Paper notes were easier and safer to carry than heavy coins.", "answer": "yes" },
+          { "prompt_text": "Governments always managed to control carefully the number of notes they issued.", "answer": "no" },
+          { "prompt_text": "Marco Polo found the Chinese use of paper money surprising.", "answer": "yes" },
+          { "prompt_text": "Paper money was more widely used in southern China than in the north.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Commons and How to Manage Them",
+    "difficulty": "hard",
+    "topic_tags": ["economics", "environment", "society"],
+    "body_html": "<p>Few ideas in modern social science have been as influential as the argument known as 'the tragedy of the commons'. It was made famous in 1968 by the American ecologist Garrett Hardin, in a short and forceful essay that has been reprinted and argued over ever since. Hardin set out to explain why resources that belong to everyone, and therefore to no one in particular, tend to be overused and destroyed. His conclusion was bleak, and it seemed at the time almost impossible to escape. The phrase he coined proved memorable, and it was soon being applied to problems of every kind, from overfished seas and polluted rivers to overcrowded roads, wherever a resource open to all appeared to be heading for exhaustion.</p><p>Hardin illustrated his argument with a simple picture. Imagine a pasture open to all, on which a number of herders graze their animals. Each herder, acting purely in self-interest, has an incentive to add one more animal to the common land, because he personally gains the full benefit of the extra beast while the cost of the additional grazing, the gradual damage to the pasture, is shared among everyone who uses it. Since every herder reasons in exactly the same way, more and more animals are added, until the pasture is stripped bare and ruined for all. The tragedy, in Hardin's telling, is that individually rational decisions lead collectively to disaster, and that no single herder can prevent it by acting alone.</p><p>From this grim analysis Hardin drew a clear practical lesson. If shared ownership inevitably led to ruin, then the only escape lay in abolishing the commons altogether. Either the resource had to be divided up and handed over to private owners, who would have every reason to look after their own portion, or it had to be placed under the strict control of the state, which could impose limits and punish those who broke them. Private property or government regulation: for Hardin these were essentially the only two ways of avoiding catastrophe, and much of the policy thinking that followed took his conclusion for granted.</p><p>For several decades this pessimistic view held sway, but it did not go unchallenged. Its most formidable critic was the American political economist Elinor Ostrom, who spent much of her career studying how real communities actually manage shared resources. What she found flatly contradicted Hardin's gloomy prediction. Across the world, from mountain pastures and forests to fishing grounds and irrigation systems, Ostrom and her colleagues documented communities that had shared a common resource successfully, often for hundreds of years, without either dividing it into private plots or handing it over to a distant government.</p><p>The secret, Ostrom argued, lay in the ability of ordinary people to organise themselves. Communities that managed their commons well had developed their own rules, worked out over generations, about who could use the resource, how much they could take and what would happen to those who broke the agreement. Crucially, the users themselves helped to design and enforce these rules, which made them far more likely to be respected than restrictions imposed from outside. People will obey limits they have helped to set, Ostrom suggested, far more readily than limits handed down by a remote authority who may not understand local conditions. Hardin's mistake, in her view, had been to imagine the commons as a free-for-all with no rules at all, when in reality successful communities were governed by dense webs of custom and mutual obligation.</p><p>Ostrom's work, for which she became the first woman to be awarded the Nobel Prize in economics, did not prove that shared resources are always safe; commons can and do collapse when the conditions for cooperation are absent. But it demolished the idea that ruin is inevitable, and it shifted the debate. Where Hardin had seen only two remedies, private ownership or state control, Ostrom revealed a rich third possibility: that communities can, under the right conditions, govern themselves. The lesson for anyone concerned with shared resources, from village woodlands to the global atmosphere, is that neither the market nor the state exhausts the options, and that the capacity of people to cooperate should never be underestimated. The most important lesson of all may be that there is rarely a single, universal solution, and that arrangements which work well in one community may fail in another with different customs and needs.</p>",
+    "groups": [
+      {
+        "question_type": "matching_features",
+        "prompt": "Questions 1-5. Look at the following statements and the two thinkers below. Match each statement with the correct thinker, A or B. You may use either letter more than once.",
+        "options": [
+          { "key": "A", "text": "Garrett Hardin" },
+          { "key": "B", "text": "Elinor Ostrom" }
+        ],
+        "questions": [
+          { "prompt_text": "Individuals acting in self-interest will inevitably exhaust a shared resource.", "correct_option_keys": ["A"] },
+          { "prompt_text": "Communities can devise their own rules to manage shared resources sustainably.", "correct_option_keys": ["B"] },
+          { "prompt_text": "The only real remedies are private ownership or government control.", "correct_option_keys": ["A"] },
+          { "prompt_text": "Field studies show many commons have been shared successfully for centuries.", "correct_option_keys": ["B"] },
+          { "prompt_text": "People obey rules more readily when they have helped to make them.", "correct_option_keys": ["B"] }
+        ]
+      },
+      {
+        "question_type": "sentence_completion",
+        "prompt": "Questions 6-10. Complete the sentences below using NO MORE THAN TWO WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "Hardin made his argument famous in a short ______ published in 1968.", "accepted": ["essay"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "In Hardin's example, herders add animals to a shared ______ until it is ruined.", "accepted": ["pasture"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Hardin argued that the alternatives were state regulation or private ______.", "accepted": ["property", "ownership"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Ostrom studied real communities that shared resources such as forests, fishing grounds and ______.", "accepted": ["irrigation systems", "pastures"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Ostrom was the first woman to receive the ______ Prize in economics.", "accepted": ["Nobel"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 11-14. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "In Hardin's account, an individual herder gains the full benefit of adding an extra animal.", "answer": "true" },
+          { "prompt_text": "Ostrom's research supported Hardin's view that ruin was unavoidable.", "answer": "false" },
+          { "prompt_text": "Ostrom found that successful communities relied on rules the users had helped to create.", "answer": "true" },
+          { "prompt_text": "Ostrom's ideas have now been adopted by every national government.", "answer": "not given" }
+        ]
+      }
+    ]
+  },
+  {
+    "skill": "reading",
+    "module": "academic",
+    "title": "The Coffee House and the Birth of Public Debate",
+    "difficulty": "easy",
+    "topic_tags": ["society", "history", "commerce"],
+    "body_html": "<p>In the great cities of seventeenth-century Europe, a new kind of meeting place appeared that would change the way people did business, exchanged news and argued about ideas. This was the coffee house, and for the better part of a century it stood at the very centre of public life. The drink it served was a novelty from far away, for coffee did not originate in Europe at all. It had long been enjoyed across the Middle East, in the lands of the Ottoman Empire and the Arab world, and it was from there that the fashion for it, and for the establishments that served it, gradually made its way westward. Travellers returning from those regions brought back tales of the busy coffee houses they had seen, and merchants soon spotted an opportunity in the strange dark drink and the sociable rooms in which it was consumed.</p><p>England's first coffee house is generally said to have opened in the university city of Oxford in the 1650s, and others soon followed in London and beyond. They spread with remarkable speed. Within a few decades the coffee house had become a familiar feature of urban life, and a respectable man might visit one several times a day to read the newspapers, meet his acquaintances and catch up on the latest news. Unlike the tavern, where the strong drink on offer tended to loosen tongues and cloud judgement, the coffee house served a beverage that kept its customers alert, and it acquired a reputation as a place of sober and serious conversation.</p><p>One of the most appealing features of the coffee house was how little it cost to take part. For the price of a single cup, usually just a penny, a customer could sit for hours, listen to the discussions going on around him and join in as he pleased. For this reason coffee houses became known, half in jest, as 'penny universities', since a man might pick up a great deal of learning and news there for the price of a penny, without ever paying a university fee. People of different ranks and trades rubbed shoulders in a way that was unusual for the time, and the free flow of talk gave the coffee house much of its lively character.</p><p>The coffee house was not merely a place for idle chatter. It quickly became an essential centre of commerce, where merchants, traders and men of business gathered to strike deals, share commercial intelligence and hear the latest news of ships and cargoes. Particular coffee houses came to specialise in particular trades, so that anyone seeking a certain kind of business knew exactly where to go. Out of these informal gatherings grew some of the most important institutions of the modern economy. A famous market for marine insurance, for instance, began in a London coffee house frequented by those with an interest in shipping, and an early stock exchange grew from another where dealers in shares chose to meet.</p><p>Not everyone welcomed the new institution. Because the coffee house was a place where men of all sorts gathered freely to discuss the events of the day, including the conduct of those in power, it made some rulers deeply uneasy. A gathering where news spread quickly and opinions were exchanged without restraint could easily be imagined as a breeding ground for discontent or even conspiracy. On more than one occasion the authorities attempted to suppress the coffee houses or to place them under closer supervision, fearing them as centres of dangerous talk, though such efforts generally met with strong protest and little lasting success.</p><p>In time the golden age of the coffee house passed, as other institutions took over many of its functions and social habits changed. Yet its influence proved remarkably lasting. The newspapers that were read aloud in its rooms, the insurance markets and stock exchanges that grew from its tables, and above all the idea that ordinary people might gather in public to discuss the affairs of their society, all outlived the coffee house itself. In its crowded, smoky rooms something recognisably modern was taking shape: a public willing and able to talk things over for itself. The habit of gathering to read, argue and decide, once formed in the coffee house, would not easily be given up.</p>",
+    "groups": [
+      {
+        "question_type": "true_false_notgiven",
+        "prompt": "Questions 1-5. Do the following statements agree with the information given in the passage? Write TRUE, FALSE or NOT GIVEN.",
+        "questions": [
+          { "prompt_text": "Coffee was first drunk in Europe before it was known anywhere else.", "answer": "false" },
+          { "prompt_text": "England's first coffee house is said to have opened in Oxford.", "answer": "true" },
+          { "prompt_text": "A market for marine insurance grew out of a London coffee house.", "answer": "true" },
+          { "prompt_text": "Coffee was more expensive than beer during this period.", "answer": "not given" },
+          { "prompt_text": "Some rulers tried to suppress the coffee houses.", "answer": "true" }
+        ]
+      },
+      {
+        "question_type": "note_completion",
+        "prompt": "Questions 6-9. Complete the notes below.",
+        "instructions_html": "<p>Complete the notes using <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p><p><strong>The European coffee house</strong></p><ul><li>Coffee reached Europe from the Middle East and the <strong>(6)&nbsp;______</strong> Empire.</li><li>For the price of a <strong>(7)&nbsp;______</strong>, a customer could sit and join the conversation for hours.</li><li>Coffee houses were nicknamed 'penny <strong>(8)&nbsp;______</strong>' because of the learning to be had there.</li><li>Rulers feared the coffee houses as places of dangerous <strong>(9)&nbsp;______</strong>.</li></ul>",
+        "questions": [
+          { "prompt_text": "Gap 6", "accepted": ["Ottoman"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 7", "accepted": ["penny"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 8", "accepted": ["universities", "university"], "word_limit": 2, "spelling_variants": true },
+          { "prompt_text": "Gap 9", "accepted": ["talk"], "word_limit": 2, "spelling_variants": true }
+        ]
+      },
+      {
+        "question_type": "short_answer",
+        "prompt": "Questions 10-13. Answer the questions below using NO MORE THAN THREE WORDS from the passage for each answer.",
+        "questions": [
+          { "prompt_text": "In which university city did England's first coffee house open?", "accepted": ["Oxford"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "In which century did coffee houses appear across Europe?", "accepted": ["the seventeenth century", "seventeenth century", "seventeenth"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "Besides insurance, what kind of exchange grew from a coffee house where dealers met?", "accepted": ["a stock exchange", "stock exchange", "stock"], "word_limit": 3, "spelling_variants": true },
+          { "prompt_text": "Compared with the tavern, what did the coffee house help its customers to stay?", "accepted": ["alert"], "word_limit": 3, "spelling_variants": true }
+        ]
+      }
+    ]
+  }
+]
