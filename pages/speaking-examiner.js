@@ -55,6 +55,17 @@ export default function SpeakingExaminerPage() {
   const audioRef = React.useRef(null);
   const endedRef = React.useRef(false);
   const captionsBoxRef = React.useRef(null);
+  // Greeting kick-off must fire exactly once per session — a re-opened data
+  // channel or duplicate open event must never trigger a second greeting.
+  const greetedRef = React.useRef(false);
+  // Waveform visualizer: one shared AudioContext with an analyser per party.
+  const audioCtxRef = React.useRef(null);
+  const analyserExamRef = React.useRef(null);
+  const analyserMicRef = React.useRef(null);
+  const rafRef = React.useRef(0);
+  const canvasRef = React.useRef(null);
+  const speakingStateRef = React.useRef(null);
+  const [speaking, setSpeaking] = React.useState(null); // 'examiner' | 'candidate' | null
 
   React.useEffect(() => {
     if (captionsBoxRef.current) {
@@ -67,20 +78,102 @@ export default function SpeakingExaminerPage() {
   function teardown() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
     try {
       micRef.current?.getTracks().forEach((t) => t.stop());
     } catch {}
     try {
       pcRef.current?.close();
     } catch {}
+    try {
+      audioCtxRef.current?.close();
+    } catch {}
     micRef.current = null;
     pcRef.current = null;
+    audioCtxRef.current = null;
+    analyserExamRef.current = null;
+    analyserMicRef.current = null;
+    speakingStateRef.current = null;
+  }
+
+  // ---- waveform visualizer -------------------------------------------------
+  function attachAnalyser(stream) {
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        audioCtxRef.current = new Ctx();
+      }
+      const analyser = audioCtxRef.current.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.75;
+      audioCtxRef.current.createMediaStreamSource(stream).connect(analyser);
+      return analyser;
+    } catch {
+      return null; // visualizer is progressive enhancement — never block audio
+    }
+  }
+
+  function startVisualizer() {
+    const BARS = 56;
+    const read = (analyser, out) => {
+      if (!analyser) return 0;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+      const step = Math.max(1, Math.floor((data.length * 0.7) / BARS));
+      let sum = 0;
+      for (let i = 0; i < BARS; i += 1) {
+        const v = data[i * step] / 255;
+        out[i] = v;
+        sum += v * v;
+      }
+      return Math.sqrt(sum / BARS);
+    };
+    const ex = new Array(BARS).fill(0);
+    const me = new Array(BARS).fill(0);
+    const loop = () => {
+      rafRef.current = requestAnimationFrame(loop);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (canvas.width !== Math.round(w * dpr)) canvas.width = Math.round(w * dpr);
+      if (canvas.height !== Math.round(h * dpr)) canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      const exLevel = read(analyserExamRef.current, ex);
+      const meLevel = read(analyserMicRef.current, me);
+      const active =
+        exLevel > 0.08 || meLevel > 0.08 ? (exLevel >= meLevel ? 'examiner' : 'candidate') : null;
+      if (active !== speakingStateRef.current) {
+        speakingStateRef.current = active;
+        setSpeaking(active);
+      }
+
+      // Mirrored bars around the midline: examiner (navy) up, you (emerald) down.
+      const mid = h / 2;
+      const gap = 2;
+      const bw = Math.max(2, (w - gap * (BARS - 1)) / BARS);
+      for (let i = 0; i < BARS; i += 1) {
+        const x = i * (bw + gap);
+        const up = Math.max(1.5, ex[i] * (mid - 3));
+        const dn = Math.max(1.5, me[i] * (mid - 3));
+        ctx.fillStyle = 'hsla(215, 60%, 25%, 0.9)';
+        ctx.fillRect(x, mid - up, bw, up);
+        ctx.fillStyle = 'hsla(160, 84%, 39%, 0.9)';
+        ctx.fillRect(x, mid + 1, bw, dn);
+      }
+    };
+    if (!rafRef.current) rafRef.current = requestAnimationFrame(loop);
   }
 
   function pushTranscript(role, text) {
     if (!text || !text.trim()) return;
     transcriptRef.current = [...transcriptRef.current, { role, text: text.trim() }];
-    setCaptions(transcriptRef.current.slice(-8));
+    setCaptions(transcriptRef.current);
   }
 
   async function authHeader() {
@@ -114,6 +207,8 @@ export default function SpeakingExaminerPage() {
       // 1. Mic first — no point burning minutes if permission is denied.
       const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
       micRef.current = mic;
+      greetedRef.current = false;
+      analyserMicRef.current = attachAnalyser(mic);
 
       // 2. Mint the metered session token.
       const mintRes = await fetch('/api/realtime/session', {
@@ -135,24 +230,32 @@ export default function SpeakingExaminerPage() {
       pcRef.current = pc;
       pc.ontrack = (e) => {
         if (audioRef.current) audioRef.current.srcObject = e.streams[0];
+        analyserExamRef.current = attachAnalyser(e.streams[0]);
       };
       pc.addTrack(mic.getTracks()[0], mic);
 
       const dc = pc.createDataChannel('oai-events');
       dc.onopen = () => {
-        // Kick off the examiner's greeting.
+        // Kick off the examiner's greeting EXACTLY once per session.
+        if (greetedRef.current) return;
+        greetedRef.current = true;
         dc.send(JSON.stringify({ type: 'response.create' }));
       };
       dc.onmessage = (e) => {
         try {
           const ev = JSON.parse(e.data);
-          if (ev.type === 'conversation.item.input_audio_transcription.completed') {
+          if (
+            ev.type === 'conversation.item.input_audio_transcription.completed' ||
+            ev.type === 'conversation.item.audio_transcription.completed'
+          ) {
             pushTranscript('candidate', ev.transcript);
           } else if (
             ev.type === 'response.output_audio_transcript.done' ||
             ev.type === 'response.audio_transcript.done'
           ) {
             pushTranscript('examiner', ev.transcript);
+          } else if (ev.type === 'error') {
+            console.error('realtime event error:', ev.error?.message || ev);
           }
         } catch {}
       };
@@ -186,6 +289,7 @@ export default function SpeakingExaminerPage() {
       }, 1000);
 
       setPhase('live');
+      startVisualizer();
       minutes.refresh();
     } catch (e) {
       teardown();
@@ -341,8 +445,9 @@ export default function SpeakingExaminerPage() {
 
         {/* ---------- live interview ---------- */}
         {phase === 'live' ? (
-          <div className="mt-8">
-            <div className="flex items-center justify-between rounded-t-xl border border-b-0 bg-card px-4 py-3">
+          <div className="mt-8 overflow-hidden rounded-2xl border bg-card shadow-sm">
+            {/* header */}
+            <div className="flex items-center justify-between border-b px-5 py-3">
               <span className="inline-flex items-center gap-2 text-sm font-medium">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
@@ -350,36 +455,78 @@ export default function SpeakingExaminerPage() {
                 </span>
                 Interview in progress
               </span>
-              <span className="font-mono text-sm tabular-nums">{fmtTime(secondsLeft)}</span>
+              <span className="font-mono text-lg font-semibold tabular-nums">{fmtTime(secondsLeft)}</span>
             </div>
+
+            {/* waveform */}
+            <div className="border-b bg-muted/20 px-5 pb-2 pt-4">
+              <canvas ref={canvasRef} className="h-20 w-full" aria-hidden="true" />
+              <div className="mt-2 flex items-center justify-between text-xs font-medium">
+                <span
+                  className={
+                    speaking === 'examiner'
+                      ? 'inline-flex items-center gap-1.5 text-primary'
+                      : 'inline-flex items-center gap-1.5 text-muted-foreground/50'
+                  }
+                >
+                  <span className="h-2 w-2 rounded-full bg-primary" /> Examiner
+                  {speaking === 'examiner' ? ' — speaking…' : ''}
+                </span>
+                <span
+                  className={
+                    speaking === 'candidate'
+                      ? 'inline-flex items-center gap-1.5 text-accent'
+                      : 'inline-flex items-center gap-1.5 text-muted-foreground/50'
+                  }
+                >
+                  <span className="h-2 w-2 rounded-full bg-accent" /> You
+                  {speaking === 'candidate' ? ' — speaking…' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* transcript */}
             <div
               ref={captionsBoxRef}
-              className="h-72 overflow-y-auto border bg-muted/30 px-4 py-3 text-sm"
+              className="h-64 space-y-2.5 overflow-y-auto bg-muted/10 px-5 py-4 text-sm"
               aria-live="polite"
             >
               {captions.length === 0 ? (
                 <p className="text-muted-foreground">
                   The examiner will greet you in a moment — say hello back and follow their lead.
+                  Your words appear here as you speak.
                 </p>
               ) : (
-                captions.map((c, i) => (
-                  <p key={i} className="mb-2">
-                    <span className="font-semibold">
-                      {c.role === 'examiner' ? 'Examiner: ' : 'You: '}
-                    </span>
-                    {c.text}
-                  </p>
-                ))
+                captions.map((c, i) =>
+                  c.role === 'examiner' ? (
+                    <div key={i} className="flex justify-start">
+                      <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-card px-3.5 py-2 leading-relaxed shadow-sm">
+                        {c.text}
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={i} className="flex justify-end">
+                      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-accent/10 px-3.5 py-2 leading-relaxed text-foreground">
+                        {c.text}
+                      </div>
+                    </div>
+                  )
+                )
               )}
             </div>
-            <div className="flex justify-center rounded-b-xl border border-t-0 bg-card px-4 py-3">
+
+            {/* footer */}
+            <div className="flex flex-col items-center gap-2 border-t px-5 py-4">
               <button
                 type="button"
                 onClick={endInterview}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
               >
                 <PhoneOff className="h-4 w-4" /> End interview &amp; get my score
               </button>
+              <p className="text-xs text-muted-foreground">
+                Take your time — the examiner waits while you think.
+              </p>
             </div>
           </div>
         ) : null}
