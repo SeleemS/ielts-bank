@@ -6,6 +6,7 @@ import Footer from "../../src/components/Footer";
 import NewsletterSignup from "../../src/components/NewsletterSignup";
 import { posts } from "../../lib/posts";
 import { sanitizeHtml } from "../../lib/sanitize";
+import AdUnit from "../../src/components/AdUnit";
 
 const SITE_URL = "https://ielts-bank.com";
 
@@ -79,11 +80,11 @@ export default function BlogPost({ post }) {
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
+      <div className="flex min-h-screen flex-col bg-secondary/40">
         <Navbar />
 
         <main className="flex-1">
@@ -111,6 +112,7 @@ export default function BlogPost({ post }) {
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
               />
             </article>
+            <AdUnit />
 
             <div className="mt-10">
               <NewsletterSignup source={`blog:${post.slug}`} variant="full" />

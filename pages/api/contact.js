@@ -15,6 +15,7 @@
 export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
+import { clientIp, originAllowed } from '../../lib/apiSecurity';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -29,14 +30,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const CONTACT_WINDOW_SECONDS = 86400; // 1 day
 const CONTACT_MAX = 5; // 5 submissions / day / IP
-
-// Allowed browser origins (same list as the scoring routes).
-const ALLOWED_ORIGINS = [
-  'https://ielts-bank.com',
-  'https://www.ielts-bank.com',
-  'http://localhost:3000',
-  'http://localhost:3025',
-];
 
 // ---------------------------------------------------------------------------
 // Supabase service-role client (server-only; bypasses RLS for contact_messages)
@@ -65,24 +58,6 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
   });
   if (error) throw new Error(error.message);
   return data === true;
-}
-
-function clientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (typeof xff === 'string' && xff.length) {
-    return xff.split(',')[0].trim();
-  }
-  return req.socket?.remoteAddress || 'unknown';
-}
-
-function originAllowed(req) {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  if (!origin && !referer) {
-    return process.env.NODE_ENV !== 'production';
-  }
-  const candidate = origin || referer;
-  return ALLOWED_ORIGINS.some((allowed) => candidate.startsWith(allowed));
 }
 
 // ---------------------------------------------------------------------------

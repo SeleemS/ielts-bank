@@ -3,13 +3,21 @@ import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import { Badge } from '../../components/ui/badge';
 import QuestionEngine from '../components/question/QuestionEngine';
+import RelatedPractice from '../components/RelatedPractice';
+import { sanitizeHtml } from '../../lib/sanitize';
+import { track } from '../lib/analytics';
+import { useAuth } from '../lib/auth';
 
 const SITE_URL = 'https://ielts-bank.com';
 
-const ListeningQuestion = ({ id, passage, description }) => {
+const ListeningQuestion = ({ id, passage, description, related = [] }) => {
+  const [audioDuration, setAudioDuration] = React.useState(null);
+  const [audioReady, setAudioReady] = React.useState(false);
+  const { user } = useAuth();
+
   if (!passage) {
     return (
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
           <h1 className="text-lg font-semibold text-muted-foreground">Loading question…</h1>
@@ -18,7 +26,7 @@ const ListeningQuestion = ({ id, passage, description }) => {
     );
   }
 
-  const { title, audioUrl, groups, difficulty, slug, legacyId } = passage;
+  const { title, audioUrl, transcriptHtml, groups, difficulty, slug, legacyId } = passage;
   const pageTitle = title
     ? `${title} | IELTS Listening Practice | IELTS-Bank`
     : 'IELTS Listening Practice | IELTS-Bank';
@@ -91,11 +99,11 @@ const ListeningQuestion = ({ id, passage, description }) => {
         <meta name="twitter:image" content={ogImage} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -119,12 +127,30 @@ const ListeningQuestion = ({ id, passage, description }) => {
                   Audio
                 </h2>
                 {audioUrl ? (
-                  <audio src={audioUrl} controls className="w-full">
+                  <audio
+                    src={audioUrl}
+                    controls
+                    preload="metadata"
+                    className="w-full"
+                    onLoadStart={() => setAudioReady(false)}
+                    onPlay={() => track('audio_play', { skill: 'listening', slug: slug || id, signed_in: Boolean(user?.id) })}
+                    onEnded={() => track('audio_complete', { skill: 'listening', slug: slug || id, signed_in: Boolean(user?.id) })}
+                    onCanPlay={() => setAudioReady(true)}
+                    onLoadedMetadata={(event) => {
+                      const seconds = Number(event.currentTarget.duration);
+                      if (Number.isFinite(seconds) && seconds > 0) setAudioDuration(seconds);
+                    }}
+                  >
                     Your browser does not support the audio element.
                   </audio>
                 ) : (
                   <p className="text-sm text-muted-foreground">Audio unavailable for this item.</p>
                 )}
+                {audioUrl && !audioReady ? (
+                  <p className="mt-2 text-xs text-muted-foreground" role="status">
+                    Loading audio…
+                  </p>
+                ) : null}
                 <p className="mt-3 text-xs text-muted-foreground">
                   You can replay the recording as many times as you like while practising.
                 </p>
@@ -139,10 +165,29 @@ const ListeningQuestion = ({ id, passage, description }) => {
                 </h2>
               </div>
               <div className="px-5 py-4">
-                <QuestionEngine groups={groups} storageKey={slug || id} skill="listening" />
+                <QuestionEngine
+                  groups={groups}
+                  storageKey={slug || id}
+                  skill="listening"
+                  durationSeconds={audioDuration ? Math.ceil(audioDuration) + 10 * 60 : null}
+                  postSubmitContent={
+                    transcriptHtml ? (
+                      <details className="mb-6 rounded-lg border border-border bg-card">
+                        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          Show transcript
+                        </summary>
+                        <div
+                          className="border-t border-border px-4 py-4 text-sm leading-7 text-foreground [&_p]:mb-3"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(transcriptHtml) }}
+                        />
+                      </details>
+                    ) : null
+                  }
+                />
               </div>
             </div>
           </div>
+          <RelatedPractice skill="listening" items={related} className="mt-10" />
         </main>
       </div>
     </>

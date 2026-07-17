@@ -18,6 +18,7 @@
 
 import * as React from 'react';
 import { getSupabase } from '../../lib/supabase';
+import { setAnalyticsUser, track } from './analytics';
 
 const AuthContext = React.createContext(null);
 
@@ -58,6 +59,7 @@ export function AuthProvider({ children }) {
       .then(({ data }) => {
         if (!active) return;
         setUser(data?.session?.user ?? null);
+        setAnalyticsUser(data?.session?.user?.id || null, data?.session?.access_token || null);
         setLoading(false);
       })
       .catch(() => {
@@ -67,9 +69,13 @@ export function AuthProvider({ children }) {
       });
 
     // Keep the context live across sign-in / sign-out / token refresh.
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
       setUser(session?.user ?? null);
+      setAnalyticsUser(session?.user?.id || null, session?.access_token || null);
+      if (event === 'SIGNED_IN') {
+        track('login', { method: 'email', signed_in: true }, { accessToken: session?.access_token });
+      }
       setLoading(false);
     });
     subscription = data?.subscription;

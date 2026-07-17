@@ -82,6 +82,7 @@ function transformReading(item) {
         spelling_variants: false,
         word_limit: null,
         normalize: 'lower_trim',
+        explanation: q.evidence || null,
       };
       if (g.question_type === 'multiple_choice') {
         answer_key.correct_option_keys = [optionKeyFor(q.answer_index)];

@@ -13,6 +13,7 @@
 export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
+import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 
 // Per-IP allowance: 10 subscribe attempts per rolling day.
 const PER_IP_WINDOW_SECONDS = 86400;
@@ -22,13 +23,6 @@ const MAX_EMAIL_LENGTH = 320;
 // Pragmatic email shape check (not a full RFC 5322 validator — the DB unique
 // constraint + downstream double opt-in are the real guards).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const ALLOWED_ORIGINS = [
-  'https://ielts-bank.com',
-  'https://www.ielts-bank.com',
-  'http://localhost:3000',
-  'http://localhost:3025',
-];
 
 let _admin = null;
 function getAdmin() {
@@ -57,24 +51,6 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
     return true;
   }
   return data === true;
-}
-
-function clientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (typeof xff === 'string' && xff.length) {
-    return xff.split(',')[0].trim();
-  }
-  return req.socket?.remoteAddress || 'unknown';
-}
-
-function originAllowed(req) {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  if (!origin && !referer) {
-    return process.env.NODE_ENV !== 'production';
-  }
-  const candidate = origin || referer;
-  return ALLOWED_ORIGINS.some((allowed) => candidate.startsWith(allowed));
 }
 
 export default async function handler(req, res) {

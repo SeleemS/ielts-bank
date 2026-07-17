@@ -90,6 +90,7 @@ function buildAnswerKey(qtype, q) {
     spelling_variants: false,
     word_limit: null,
     normalize: 'lower_trim',
+    explanation: q.evidence || null,
   };
   if (BOOL_TYPES.has(qtype)) {
     ak.accepted = [String(q.answer).trim().toLowerCase()];

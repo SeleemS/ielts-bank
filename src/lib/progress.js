@@ -80,7 +80,7 @@ export async function resolvePassageId(slugOrLegacyId, skill) {
 
 // Insert one attempt row for a signed-in user. Columns match 0004's `attempts`:
 //   user_id, passage_id (nullable), skill, responses (jsonb), raw_score, band,
-//   submitted_at. There is no `total` column, so total is not persisted.
+//   submitted_at, total and per_question.
 // Returns { ok: true } or { ok: false, error }. Never throws.
 export async function saveAttemptToSupabase({
   userId,
@@ -88,7 +88,10 @@ export async function saveAttemptToSupabase({
   skill,
   responses,
   rawScore,
+  total,
+  perQuestion,
   band,
+  startedAt,
   submittedAt,
 }) {
   if (!userId || !skill) return { ok: false, error: 'missing-user-or-skill' };
@@ -100,7 +103,10 @@ export async function saveAttemptToSupabase({
       skill,
       responses: responses ?? {},
       raw_score: typeof rawScore === 'number' ? rawScore : null,
+      total: typeof total === 'number' ? total : null,
+      per_question: perQuestion && typeof perQuestion === 'object' ? perQuestion : null,
       band: typeof band === 'number' ? band : null,
+      started_at: startedAt || null,
       submitted_at: submittedAt || new Date().toISOString(),
     };
     const { error } = await supabase.from('attempts').insert(row);
@@ -177,7 +183,10 @@ export async function syncLocalAttempts(userId) {
       skill,
       responses: payload.answers || {},
       rawScore: typeof payload.score === 'number' ? payload.score : null,
+      total: typeof payload.total === 'number' ? payload.total : null,
+      perQuestion: payload.perQuestion || null,
       band,
+      startedAt: payload.startedAt || null,
       submittedAt: timestamp || undefined,
     });
 

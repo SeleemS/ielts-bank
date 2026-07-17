@@ -33,7 +33,7 @@ function Sheet({ open, onOpenChange, children }) {
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="tw-root fixed inset-0 z-[2000]">{children}</div>,
+    <div className="fixed inset-0 z-[2000]">{children}</div>,
     document.body
   );
 }

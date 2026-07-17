@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
-import confetti from 'canvas-confetti';
 import {
   Mic,
   Square,
@@ -14,6 +13,8 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import RelatedPractice from '../components/RelatedPractice';
+import Modal from '../components/AccessibleModal';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
@@ -21,6 +22,8 @@ import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth';
 import SignInDialog from '../components/auth/SignInDialog';
 import { getSupabase } from '../../lib/supabase';
+import { track } from '../lib/analytics';
+import AiQuotaPanel from '../components/AiQuotaPanel';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/speaking';
@@ -241,6 +244,7 @@ function useRecorder(maxSeconds) {
 function useExaminerAudio() {
   const audioRef = useRef(null);
   const [playingId, setPlayingId] = useState(null);
+  const [loadingId, setLoadingId] = useState(null);
 
   const stop = useCallback(() => {
     if (audioRef.current) {
@@ -248,6 +252,7 @@ function useExaminerAudio() {
       audioRef.current = null;
     }
     setPlayingId(null);
+    setLoadingId(null);
   }, []);
 
   const toggle = useCallback(
@@ -260,10 +265,12 @@ function useExaminerAudio() {
       if (audioRef.current) audioRef.current.pause();
       const a = new Audio(url);
       audioRef.current = a;
-      setPlayingId(id);
-      a.onended = () => setPlayingId(null);
-      a.onerror = () => setPlayingId(null);
-      a.play().catch(() => setPlayingId(null));
+      setLoadingId(id);
+      setPlayingId(null);
+      a.onplaying = () => { setLoadingId(null); setPlayingId(id); };
+      a.onended = () => { setPlayingId(null); setLoadingId(null); };
+      a.onerror = () => { setPlayingId(null); setLoadingId(null); };
+      a.play().catch(() => { setPlayingId(null); setLoadingId(null); });
     },
     [playingId, stop]
   );
@@ -275,15 +282,16 @@ function useExaminerAudio() {
     []
   );
 
-  return { toggle, stop, playingId };
+  return { toggle, stop, playingId, loadingId };
 }
 
 // ---------------------------------------------------------------------------
 // Examiner "play question" button.
 // ---------------------------------------------------------------------------
-function ExaminerButton({ url, id, playingId, onToggle, label = 'Play examiner question' }) {
+function ExaminerButton({ url, id, playingId, loadingId, onToggle, label = 'Play examiner question' }) {
   const disabled = !url;
   const isPlaying = playingId === id;
+  const isLoading = loadingId === id;
   return (
     <Button
       type="button"
@@ -294,8 +302,8 @@ function ExaminerButton({ url, id, playingId, onToggle, label = 'Play examiner q
       className="shrink-0"
       aria-label={disabled ? 'Examiner audio unavailable' : label}
     >
-      {isPlaying ? <Pause className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-      {isPlaying ? 'Pause' : 'Play'}
+      {isLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : isPlaying ? <Pause className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      {isLoading ? 'Loading…' : isPlaying ? 'Pause' : 'Play'}
     </Button>
   );
 }
@@ -489,55 +497,6 @@ function PrepTimer({ prepSeconds, notes, onNotesChange }) {
 }
 
 // ---------------------------------------------------------------------------
-// Modal (shared with the writing scorer's visual language).
-// ---------------------------------------------------------------------------
-function Modal({ open, onClose, title, children, dismissible = true }) {
-  useEffect(() => {
-    if (!open) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape' && dismissible) onClose?.();
-    };
-    document.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open, dismissible, onClose]);
-
-  if (!open) return null;
-  return (
-    <div className="tw-root fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-        onClick={dismissible ? onClose : undefined}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl"
-      >
-        <div className="mb-3 flex items-start justify-between gap-4">
-          <h2 className="text-lg font-bold text-foreground">{title}</h2>
-          {dismissible && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Score report (plain React — NO dangerouslySetInnerHTML of model output).
 // ---------------------------------------------------------------------------
 function ScoreReport({ result }) {
@@ -676,6 +635,7 @@ function QuestionList({ heading, questions, examiner }) {
                 url={q.audioUrl}
                 id={id}
                 playingId={examiner.playingId}
+                loadingId={examiner.loadingId}
                 onToggle={examiner.toggle}
               />
             </li>
@@ -700,6 +660,7 @@ function CueCard({ cueCard, examiner }) {
           url={cueCard.audioUrl}
           id="cue"
           playingId={examiner.playingId}
+          loadingId={examiner.loadingId}
           onToggle={examiner.toggle}
           label="Play examiner reading the cue card"
         />
@@ -734,6 +695,7 @@ function CueCard({ cueCard, examiner }) {
                     url={q.audioUrl}
                     id={id}
                     playingId={examiner.playingId}
+                    loadingId={examiner.loadingId}
                     onToggle={examiner.toggle}
                   />
                 </li>
@@ -749,7 +711,7 @@ function CueCard({ cueCard, examiner }) {
 // ---------------------------------------------------------------------------
 // Main practice page.
 // ---------------------------------------------------------------------------
-const SpeakingQuestion = ({ id: routeId, item, description }) => {
+const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
   const { user } = useAuth();
   const examiner = useExaminerAudio();
 
@@ -766,6 +728,19 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
   const [result, setResult] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [quotaOpen, setQuotaOpen] = useState(false);
+
+  useEffect(() => {
+    if (!recorder.blob) return;
+    track('speaking_record_complete', {
+      skill: 'speaking',
+      slug: item?.slug || routeId,
+      part,
+      duration_seconds: recorder.seconds,
+      size_bytes: recorder.blob.size,
+      signed_in: Boolean(user),
+    });
+  }, [recorder.blob, recorder.seconds, item?.slug, part, routeId, user]);
 
   const partLabel = part ? `Part ${part}` : 'Speaking';
   const topic = item?.topic || item?.title || '';
@@ -796,12 +771,7 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
       return;
     }
 
-    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-      window.gtag('event', 'submit_speaking', {
-        category: 'User Engagement',
-        label: `Speaking Part ${part} Submission`,
-      });
-    }
+    track('speaking_submit', { skill: 'speaking', slug: item.slug, part, duration_seconds: recorder.seconds, signed_in: true });
 
     setIsLoading(true);
     try {
@@ -851,12 +821,16 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
 
       if (response.ok && data) {
         setResult(data);
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'ok', band: data.overallBand, part, signed_in: true });
         setFeedbackOpen(true);
-        confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 });
+        import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
       } else {
+        if (response.status === 402 || response.status === 429) setQuotaOpen(true);
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: response.status === 402 || response.status === 429 ? 'rate_limited' : 'error', http_status: response.status, part, signed_in: true });
         setErrorMsg(errorForStatus(response.status, data));
       }
     } catch {
+      track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'network', part, signed_in: true });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -877,7 +851,7 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
 
   if (!item) {
     return (
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
           <h1 className="text-lg font-semibold text-muted-foreground">Loading question…</h1>
@@ -907,7 +881,7 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
         <meta name="twitter:image" content={ogImage} />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
 
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-16 sm:px-6 lg:px-8">
@@ -979,9 +953,11 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
                     You’ll be asked to sign in (free) to get AI feedback on your speaking.
                   </p>
                 )}
+                <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} />
               </div>
             </div>
           </div>
+          <RelatedPractice skill="speaking" items={related} className="mt-10" />
         </main>
 
         <Footer />
@@ -993,6 +969,7 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
         onOpenChange={setSignInOpen}
         title="Sign in to get AI feedback on your speaking"
         description="Create a free account to score your recording and track your speaking bands. No password required."
+        trigger="speaking_score"
       />
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}
@@ -1002,6 +979,7 @@ const SpeakingQuestion = ({ id: routeId, item, description }) => {
         title="Your AI Feedback & Score"
       >
         {result && <ScoreReport result={result} />}
+        {result ? <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4"><p className="text-sm font-semibold text-foreground">Try another answer while the feedback is fresh{result.quotaRemaining != null ? ` — ${result.quotaRemaining} free score${result.quotaRemaining === 1 ? '' : 's'} left.` : '.'}</p><Button className="mt-3" variant="outline" onClick={() => { setFeedbackOpen(false); setResult(null); recorder.reset(); }}>Record another answer</Button></div> : null}
         <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>

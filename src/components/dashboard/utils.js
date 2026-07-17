@@ -59,6 +59,8 @@ function attemptToItem(row) {
     href: passageHref(passage),
     // Reading/Listening are auto-scored: surface the correct-answer count.
     detail: raw === null ? null : `${raw} correct`,
+    perQuestion: row.per_question || {},
+    total: row.total == null ? null : Number(row.total),
   };
 }
 
@@ -80,6 +82,7 @@ function scoreToItem(row) {
     title: passage?.title || (skill === 'speaking' ? 'Speaking task' : 'Writing task'),
     href: passageHref(passage),
     detail: 'AI-scored',
+    criteria: row.criteria || {},
   };
 }
 
@@ -115,10 +118,71 @@ export function buildDashboardData(attempts = [], scores = []) {
     };
   }
 
+  const questionTypes = {};
+  const mistakes = [];
+  for (const attempt of attempts) {
+    const passage = Array.isArray(attempt.passages) ? attempt.passages[0] : attempt.passages;
+    let wrong = 0;
+    for (const item of Object.values(attempt.per_question || {})) {
+      const type = item?.questionType || 'other';
+      questionTypes[type] ||= { correct: 0, total: 0 };
+      questionTypes[type].total += 1;
+      if (item?.correct) questionTypes[type].correct += 1;
+      else wrong += 1;
+    }
+    if (wrong > 0) {
+      mistakes.push({
+        id: attempt.id,
+        skill: attempt.skill,
+        title: passage?.title || 'Practice passage',
+        href: passageHref(passage),
+        wrong,
+        date: attempt.submitted_at || attempt.created_at,
+      });
+    }
+  }
+  mistakes.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const typeAccuracy = Object.entries(questionTypes)
+    .map(([type, value]) => ({
+      type,
+      ...value,
+      percentage: value.total ? Math.round((value.correct / value.total) * 100) : 0,
+    }))
+    .sort((a, b) => a.percentage - b.percentage);
+
+  const dateKey = (value) => {
+    const date = value instanceof Date ? value : new Date(value);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+  const practiceDays = new Set(items.map((item) => dateKey(item.date)));
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!practiceDays.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (practiceDays.has(dateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  const criteria = {};
+  for (const score of scores.slice().reverse()) {
+    for (const [key, value] of Object.entries(score.criteria || {})) {
+      const band = toBand(value?.band ?? value);
+      if (band == null) continue;
+      criteria[key] ||= [];
+      criteria[key].push(band);
+    }
+  }
+
   return {
     items,
     totalPractised: items.length,
     hasData: items.length > 0,
     skills,
+    mistakes: mistakes.slice(0, 8),
+    typeAccuracy,
+    streak,
+    criteria,
   };
 }

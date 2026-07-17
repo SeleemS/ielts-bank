@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card';
+import { track } from '../lib/analytics';
 
 const fieldClasses =
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -50,6 +51,7 @@ const ContactUs = () => {
       }
       form.reset();
       setSent(true);
+      track('contact_submit', { outcome: 'success', signed_in: false });
     } catch (err) {
       setError('We could not reach the server. Please check your connection and try again.');
     } finally {
@@ -58,7 +60,7 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
+    <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>Contact Us | IELTS-Bank</title>
         <meta

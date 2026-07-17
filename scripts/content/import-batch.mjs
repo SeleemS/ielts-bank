@@ -2,8 +2,9 @@
 /**
  * import-batch.mjs
  * ----------------
- * Idempotent importer for AI-authored IELTS practice content. Reads every
- * scripts/content/data/*.json file and upserts each item into Supabase by a
+ * Idempotent importer for the shared `reading-*` and `writing*.json` lanes.
+ * Specialized rdA-rdD, rich, wr and wr2 files are owned by their dedicated
+ * importers and are deliberately excluded here. Each item is upserted by a
  * stable slug (children are delete+reinserted per passage, exactly like the
  * Firestore migration). Safe to re-run: same slug -> same passage, refreshed
  * children.
@@ -87,6 +88,7 @@ function transformReading(item) {
         spelling_variants: false,
         word_limit: null,
         normalize: 'lower_trim',
+        explanation: q.evidence || null,
       };
       let optionKeys = null;
       if (g.question_type === 'multiple_choice') {
@@ -130,7 +132,7 @@ function transformWriting(item) {
       module,
       title: item.title,
       body_html: null,
-      difficulty: null,
+      difficulty: item.difficulty || 'medium',
       topic_tags: item.topic_tags || [],
       status: 'published',
       source: 'ai-authored',
@@ -250,7 +252,11 @@ async function main() {
     });
   }
 
-  const files = readdirSync(DATA).filter((f) => f.endsWith('.json'));
+  const files = readdirSync(DATA).filter(
+    (f) =>
+      f.endsWith('.json') &&
+      (f.startsWith('reading-') || f === 'writing.json' || f.startsWith('writing-batch'))
+  );
   const summary = { reading: 0, readingQuestions: 0, writing: 0, writingTask1: 0, writingTask2: 0, failed: 0 };
   const slugs = { reading: [], writing: [] };
   const seenSlugs = new Set();

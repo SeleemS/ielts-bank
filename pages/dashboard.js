@@ -19,12 +19,13 @@ import BandTrend from '../src/components/dashboard/BandTrend';
 import RecentActivity from '../src/components/dashboard/RecentActivity';
 import { LoadingState, SignedOutState, EmptyState, ErrorState } from '../src/components/dashboard/States';
 import { buildDashboardData } from '../src/components/dashboard/utils';
+import LearningInsights from '../src/components/dashboard/LearningInsights';
 
 // Reading/Listening auto-scored attempts, newest first, with the passage title
 // + slug embedded (PostgREST embedding on the passage_id FK; passages have a
 // public read policy). Writing is handled by the scores query below.
 const ATTEMPTS_SELECT =
-  'id, skill, raw_score, band, submitted_at, created_at, passages ( title, slug, skill )';
+  'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill )';
 
 // AI writing/speaking scores, newest first. The prompt title lives on the
 // linked attempt's passage, so embed attempts -> passages (two-level embedding).
@@ -42,7 +43,7 @@ function useDashboardData(user) {
     (async () => {
       try {
         const supabase = getSupabase();
-        const [attemptsRes, scoresRes] = await Promise.all([
+        const [attemptsRes, scoresRes, profileRes] = await Promise.all([
           supabase
             .from('attempts')
             .select(ATTEMPTS_SELECT)
@@ -53,15 +54,20 @@ function useDashboardData(user) {
             .select(SCORES_SELECT)
             .in('skill', ['writing', 'speaking'])
             .order('created_at', { ascending: false }),
+          supabase.from('users').select('target_band').eq('id', user.id).maybeSingle(),
         ]);
 
         if (attemptsRes.error) throw attemptsRes.error;
         if (scoresRes.error) throw scoresRes.error;
+        if (profileRes.error) throw profileRes.error;
         if (!active) return;
 
         setState({
           status: 'ready',
-          data: buildDashboardData(attemptsRes.data || [], scoresRes.data || []),
+          data: {
+            ...buildDashboardData(attemptsRes.data || [], scoresRes.data || []),
+            targetBand: profileRes.data?.target_band == null ? null : Number(profileRes.data.target_band),
+          },
           error: null,
         });
       } catch (err) {
@@ -90,6 +96,7 @@ function DashboardBody({ user }) {
     <div className="space-y-8">
       <StatsOverview totalPractised={data.totalPractised} skills={data.skills} />
       <BandTrend skills={data.skills} />
+      <LearningInsights data={data} userId={user.id} />
       <RecentActivity items={data.items} />
     </div>
   );
@@ -124,7 +131,7 @@ export default function DashboardPage() {
         <title>Your Dashboard | IELTS-Bank</title>
         <meta name="robots" content="noindex" />
       </Head>
-      <div className="tw-root flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           {content}

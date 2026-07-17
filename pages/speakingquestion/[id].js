@@ -4,6 +4,7 @@ import {
   getLegacyIdSlugMap,
   getPassageSlugs,
   getSpeakingItem,
+  getRelatedPractice,
 } from '../../lib/supabase';
 
 export default SpeakingQuestion;
@@ -30,12 +31,14 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const item = await getSpeakingItem(params.id);
   if (!item) return { notFound: true };
+  const related = await getRelatedPractice(SKILLS.speaking, item.slug, item.part);
 
   return {
     props: {
       id: params.id,
       item,
       description: describe(item),
+      related,
     },
     revalidate: 3600,
   };

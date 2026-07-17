@@ -6,6 +6,7 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../lib/auth';
+import { track } from '../../lib/analytics';
 
 // Accessible, centered modal in the shadcn visual language (portal + overlay),
 // mirroring the Sheet primitive's implementation to avoid new dependencies.
@@ -14,6 +15,7 @@ export default function SignInDialog({
   onOpenChange,
   title = 'Sign in to save your progress',
   description = 'Track your scores across devices. No password required.',
+  trigger = 'site',
 }) {
   const { signInWithEmail } = useAuth();
   const [mounted, setMounted] = React.useState(false);
@@ -44,14 +46,16 @@ export default function SignInDialog({
     if (open) {
       setStatus('idle');
       setErrorMsg('');
+      track('signin_gate_shown', { trigger, signed_in: false });
     }
-  }, [open]);
+  }, [open, trigger]);
 
   if (!mounted || !open) return null;
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) return;
+    track('login_start', { method: 'email', trigger, signed_in: false });
     setStatus('sending');
     setErrorMsg('');
     try {
@@ -69,7 +73,7 @@ export default function SignInDialog({
   };
 
   return createPortal(
-    <div className="tw-root fixed inset-0 z-[2000]">
+    <div className="fixed inset-0 z-[2000]">
       {/* Overlay */}
       <div
         onClick={() => onOpenChange?.(false)}

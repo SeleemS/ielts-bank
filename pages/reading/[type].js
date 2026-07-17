@@ -65,11 +65,11 @@ export default function ReadingTypeHub({ typeKey, items }) {
         <meta name="twitter:card" content="summary_large_image" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">
+      <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
         <Navbar />
 
         <main className="flex-1">

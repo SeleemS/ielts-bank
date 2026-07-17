@@ -8,7 +8,7 @@ import { Card, CardContent } from '../../components/ui/card';
 
 const PrivacyPolicy = () => {
   return (
-    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
+    <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>Privacy Policy | IELTS-Bank</title>
         <meta
@@ -35,34 +35,41 @@ const PrivacyPolicy = () => {
           <Card className="mt-6">
             <CardContent className="space-y-5 pt-6 text-[15px] leading-8 text-slate-700">
               <p>
-                Welcome to IELTSBank. This privacy policy outlines our policies regarding the collection, use, and disclosure of information we receive from users of our site.
+                This policy explains what IELTS-Bank collects, why we use it, and the choices available when you use the service.
               </p>
 
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">Information Collection and Use</h2>
                 <p>
-                  IELTSBank does not collect any personally identifiable information from its users. Users are free to visit the site anonymously and no personal data is required for access to most services.
+                  Most practice content can be used without an account. If you sign in, we process your email address, account identifier, practice attempts, scores, learning preferences and quota usage so we can provide progress tracking and AI feedback. If you subscribe to updates, we store your email address and signup source. Contact-form messages are used only to respond to your request.
                 </p>
               </div>
 
               <div>
-                <h2 className="mb-1 text-base font-semibold text-foreground">Log Data</h2>
+                <h2 className="mb-1 text-base font-semibold text-foreground">Practice and AI Scoring Data</h2>
                 <p>
-                  We do not collect browser log data such as IP addresses, browser types, or visited pages.
+                  Submitted Writing responses and scoring results may be stored with a signed-in learner&apos;s attempt history. Speaking recordings are uploaded only for scoring and are deleted after the scoring request completes; a scheduled cleanup also removes any recording older than 30 days. Writing text and speaking audio are sent to our AI provider to generate the feedback you request. Do not submit sensitive personal information in practice answers.
                 </p>
               </div>
 
               <div>
-                <h2 className="mb-1 text-base font-semibold text-foreground">Cookies and Tracking</h2>
+                <h2 className="mb-1 text-base font-semibold text-foreground">Analytics, Local Storage and Logs</h2>
                 <p>
-                  IELTSBank does not use cookies or tracking technologies. Your privacy is fully respected.
+                  We use Google Analytics, Vercel Analytics and limited first-party event telemetry to understand page visits and feature usage. Anonymous telemetry uses a random identifier stored in your browser and does not include essays, transcripts, audio or email addresses. Local storage also keeps in-progress answers, timer state and preferences so practice can survive a refresh. IP addresses may be processed temporarily for abuse prevention and rate limiting; old rate-limit rows are removed automatically.
                 </p>
               </div>
 
               <div>
-                <h2 className="mb-1 text-base font-semibold text-foreground">Data Security</h2>
+                <h2 className="mb-1 text-base font-semibold text-foreground">Service Providers and Security</h2>
                 <p>
-                  Since no personal data is collected, there is no risk of such data being exposed or misused.
+                  We use service providers for hosting, authentication, database storage, analytics, transactional email and AI scoring. They process data only to provide those services under their own privacy and security terms. We use access controls, encrypted connections, row-level database policies, rate limits and restricted server credentials, but no online service can guarantee absolute security.
+                </p>
+              </div>
+
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">Your Choices</h2>
+                <p>
+                  You can practise without creating an account, decline newsletter signup, unsubscribe from any newsletter email and clear local practice data through your browser settings. You may contact us to request access to, correction of, or deletion of account and subscription data, subject to legal and security requirements.
                 </p>
               </div>
 
@@ -74,7 +81,7 @@ const PrivacyPolicy = () => {
               </div>
 
               <p>
-                <strong className="font-semibold text-foreground">Last Updated:</strong> December 11, 2024
+                <strong className="font-semibold text-foreground">Last Updated:</strong> July 16, 2026
               </p>
 
               <p>

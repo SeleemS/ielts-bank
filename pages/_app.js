@@ -1,26 +1,53 @@
 import Script from 'next/script';
+import * as React from 'react';
+import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/react';
 // Tailwind + shadcn design tokens. Chakra has been fully removed; Tailwind
 // Preflight is re-enabled in tailwind.config.js.
 import '../src/styles/globals.css';
 import { inter } from '../src/lib/fonts';
-import { AuthProvider } from '../src/lib/auth';
+import { AuthProvider, useAuth } from '../src/lib/auth';
+import { trackPageView } from '../src/lib/analytics';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
 
+function AppTelemetry({ router }) {
+  const { user, loading } = useAuth();
+  const initialPageTracked = React.useRef(false);
+  React.useEffect(() => {
+    const onRoute = (url) => trackPageView(url, Boolean(user?.id));
+    router.events.on('routeChangeComplete', onRoute);
+    return () => router.events.off('routeChangeComplete', onRoute);
+  }, [router.events, user?.id]);
+  React.useEffect(() => {
+    if (!router.isReady || loading || initialPageTracked.current) return;
+    initialPageTracked.current = true;
+    const timer = window.setTimeout(() => trackPageView(router.asPath, Boolean(user?.id)), 500);
+    return () => window.clearTimeout(timer);
+  }, [loading, router.asPath, router.isReady, user?.id]);
+  return null;
+}
+
 function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const [adsOnPublicHost, setAdsOnPublicHost] = React.useState(false);
+  const adsAllowed = !/^\/(?:dashboard|auth|ielts-writing-checker|mock(?:\/|$)|(?:reading|writing|listening|speaking)question\/)/.test(router.asPath);
+  React.useEffect(() => {
+    setAdsOnPublicHost(/(^|\.)ielts-bank\.com$/i.test(window.location.hostname));
+  }, []);
   return (
     <AuthProvider>
+      <AppTelemetry router={router} />
       <div className={`${inter.variable} font-sans`}>
       {/* Google AdSense */}
-      <Script
-        id="adsbygoogle-init"
-        strategy="afterInteractive"
-        async
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-        crossOrigin="anonymous"
-      />
+      {adsAllowed && adsOnPublicHost ? <Script
+          id="adsbygoogle-init"
+          strategy="afterInteractive"
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+        /> : null}
 
       {/* Google Analytics 4 (gtag.js), proxied first-party via /gt rewrites
           in next.config.js so ad blockers don't drop the script or hits */}
@@ -36,7 +63,8 @@ function MyApp({ Component, pageProps }) {
           gtag('js', new Date());
           gtag('config', '${GA_MEASUREMENT_ID}', {
             transport_url: window.location.origin + '/gt',
-            first_party_collection: true
+            first_party_collection: true,
+            send_page_view: false
           });
         `}
       </Script>

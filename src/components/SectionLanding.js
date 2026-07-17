@@ -52,7 +52,7 @@ const SectionLanding = ({
         <meta name="twitter:image" content={ogImage} />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">
+      <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
         <Navbar />
 
         <main className="flex-1">

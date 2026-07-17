@@ -4,6 +4,7 @@ import {
   getLegacyIdSlugMap,
   getPassageSlugs,
   getStructuredPassage,
+  getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
 
@@ -27,12 +28,18 @@ export async function getStaticProps({ params }) {
   // getStructuredPassage accepts either a slug or a legacy Firestore id.
   const passage = await getStructuredPassage(SKILLS.reading, params.id);
   if (!passage) return { notFound: true };
+  const related = await getRelatedPractice(
+    SKILLS.reading,
+    passage.slug,
+    passage.groups?.[0]?.questionType
+  );
 
   return {
     props: {
       id: params.id,
       passage,
       description: toMetaDescription(passage.bodyHtml),
+      related,
     },
     revalidate: 3600,
   };

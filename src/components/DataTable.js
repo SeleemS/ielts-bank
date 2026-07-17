@@ -4,6 +4,7 @@ import { Search, ArrowRight, Inbox, ChevronLeft, ChevronRight } from 'lucide-rea
 import { listPassages } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
 import { cn } from '../lib/utils';
+import AdUnit from './AdUnit';
 
 // Pure Tailwind/shadcn question browser. NO Chakra imports.
 //
@@ -60,6 +61,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
   // Route prefix / fetch key. Accept either an explicit skill or the legacy
   // capitalized selectedOption prop.
   const skillLower = String(skill || selectedOption || 'reading').toLowerCase();
+  const itemNoun = skillLower === 'reading' ? 'passage' : skillLower === 'writing' ? 'task' : 'test';
 
   const [data, setData] = useState(items || []);
   const [loading, setLoading] = useState(!items);
@@ -123,7 +125,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
   }, [page, totalPages]);
 
   return (
-    <div className="tw-root w-full font-sans">
+    <div className="w-full font-sans">
       {/* Toolbar: search + result count */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
@@ -133,7 +135,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by title..."
-            aria-label="Search questions by title"
+            aria-label={`Search ${itemNoun}s by title`}
             className={cn(
               'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground',
               'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
@@ -143,7 +145,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
         </div>
         {!loading && (
           <p className="text-sm text-muted-foreground">
-            {filtered.length} {filtered.length === 1 ? 'question' : 'questions'}
+            {filtered.length} {filtered.length === 1 ? itemNoun : `${itemNoun}s`}
             {query.trim() ? ' found' : ''}
           </p>
         )}
@@ -262,6 +264,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
           </Button>
         </div>
       )}
+      <AdUnit className="mt-10" />
     </div>
   );
 };

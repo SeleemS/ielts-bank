@@ -11,6 +11,7 @@ import {
   Newspaper,
   LayoutDashboard,
   LogOut,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
@@ -27,6 +28,7 @@ const NAV_LINKS = [
   { label: 'Writing', href: '/writingquestion', icon: PenLine },
   { label: 'Listening', href: '/listeningquestion', icon: Headphones },
   { label: 'Speaking', href: '/speakingquestion', icon: Mic },
+  { label: 'Mock tests', href: '/mock-test', icon: ClipboardCheck },
   { label: 'Blog', href: '/blog', icon: Newspaper },
 ];
 
@@ -130,7 +132,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="tw-root sticky top-0 z-[1000] w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-[1000] w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <BrandMark />
 

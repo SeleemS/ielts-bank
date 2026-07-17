@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { Calculator, Info, ArrowRight, BookOpen, PenLine, Headphones, Mic } from 'lucide-react';
@@ -17,6 +17,9 @@ import {
   clampRaw,
   formatBand,
 } from '../lib/bandTables';
+import { track } from '../src/lib/analytics';
+import NewsletterSignup from '../src/components/NewsletterSignup';
+import { useAuth } from '../src/lib/auth';
 
 const SITE_URL = 'https://ielts-bank.com';
 const PAGE_TITLE = 'IELTS Band Score Calculator – Listening, Reading & Overall Band';
@@ -113,6 +116,7 @@ function BandTile({ label, band }) {
 }
 
 export default function BandCalculator() {
+  const { user } = useAuth();
   const [listeningRaw, setListeningRaw] = useState('30');
   const [readingRaw, setReadingRaw] = useState('30');
   const [readingModule, setReadingModule] = useState('academic');
@@ -135,6 +139,22 @@ export default function BandCalculator() {
     [lBand, rBand, wBand, sBand]
   );
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      track('band_calculator_use', {
+        calculator: 'band',
+        listening_raw: listeningRaw === '' ? null : Number(listeningRaw),
+        reading_raw: readingRaw === '' ? null : Number(readingRaw),
+        reading_module: readingModule,
+        writing_band: wBand,
+        speaking_band: sBand,
+        overall_band: overall,
+        signed_in: Boolean(user?.id),
+      });
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [listeningRaw, readingRaw, readingModule, wBand, sBand, overall, user?.id]);
+
   const rawInputClass =
     'h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background';
 
@@ -153,11 +173,11 @@ export default function BandCalculator() {
         <meta name="twitter:card" content="summary_large_image" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">
+      <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
         <Navbar />
 
         <main className="flex-1">
@@ -332,6 +352,7 @@ export default function BandCalculator() {
             </section>
 
             {/* ===================== INTERNAL LINKS ===================== */}
+            <NewsletterSignup source="band-calculator" className="mb-12" />
             <section className="rounded-2xl border border-border bg-secondary/40 p-6 sm:p-8">
               <h2 className="text-xl font-bold tracking-tight text-foreground">
                 Practise for a higher band

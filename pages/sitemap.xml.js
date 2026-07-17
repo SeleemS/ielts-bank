@@ -1,5 +1,5 @@
 import { posts } from '../lib/posts';
-import { SKILLS, listPassages } from '../lib/supabase';
+import { SKILLS, listMockTests, listPassages } from '../lib/supabase';
 import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
 
 const SITE_URL = 'https://ielts-bank.com';
@@ -16,6 +16,7 @@ const STATIC_ROUTES = [
   '/writingquestion',
   '/listeningquestion',
   '/speakingquestion',
+  '/mock-test',
   // Reading question-type hub pages (pages/reading/[type].js).
   ...READING_QUESTION_TYPE_SLUGS.map((slug) => `/reading/${slug}`),
 ];
@@ -80,6 +81,13 @@ export async function getServerSideProps({ res }) {
       }
     })
   );
+
+  try {
+    const mocks = await listMockTests();
+    mocks.forEach((mock) => entries.push({ loc: `${SITE_URL}/mock/${mock.slug}`, lastmod: today }));
+  } catch (err) {
+    console.error('Sitemap: failed to enumerate mock tests', err);
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

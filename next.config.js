@@ -99,6 +99,8 @@ const cspDirectives = {
   'form-action': ["'self'"],
   'frame-ancestors': ["'self'"],
   'upgrade-insecure-requests': [],
+  'report-uri': ['/api/csp-report'],
+  'report-to': ['csp-endpoint'],
 };
 
 function buildCsp(directives) {
@@ -111,8 +113,8 @@ function buildCsp(directives) {
 
 const CSP = buildCsp(cspDirectives);
 
-// Enforced headers applied to every route. CSP is shipped SEPARATELY below in
-// Report-Only mode (see note in headers()).
+// Enforced headers applied to every route. Violations are reported to the
+// same-origin endpoint so policy regressions are observable in server logs.
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
@@ -123,19 +125,12 @@ const securityHeaders = [
     // allowed. Camera and geolocation are fully disabled.
     value: 'camera=(), geolocation=(), microphone=(self)',
   },
-  // Content-Security-Policy is shipped as REPORT-ONLY. Given AdSense's large and
-  // frequently-changing origin set, an enforced policy risks silently breaking
-  // ad serving / revenue. Report-Only lets the policy be validated against real
-  // traffic (violations surface in the browser console / report endpoint)
-  // before flipping to the enforced `Content-Security-Policy` header.
-  { key: 'Content-Security-Policy-Report-Only', value: CSP },
+  { key: 'Reporting-Endpoints', value: 'csp-endpoint="/api/csp-report"' },
+  { key: 'Content-Security-Policy', value: CSP },
 ];
 
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async headers() {
     return [
       {

@@ -14,12 +14,14 @@
 export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
+import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const MODEL = process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
+const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-4.1-mini';
+const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
 
 const MIN_WORDS = 50; // below this it is not scorable
 const MAX_WORDS = 4000;
@@ -31,14 +33,6 @@ const GLOBAL_WINDOW_SECONDS = 86400; // 1 day
 const GLOBAL_MAX = 500; // hard daily ceiling across all users (cost circuit breaker)
 
 const OPENAI_TIMEOUT_MS = 45000;
-
-// Allowed browser origins. Missing Origin/Referer is tolerated in dev only.
-const ALLOWED_ORIGINS = [
-  'https://ielts-bank.com',
-  'https://www.ielts-bank.com',
-  'http://localhost:3000',
-  'http://localhost:3025',
-];
 
 // ---------------------------------------------------------------------------
 // Supabase service-role client (server-only; bypasses RLS for rate_limits)
@@ -55,10 +49,9 @@ function getAdmin() {
   return _admin;
 }
 
-// Returns true if still within allowance, false if over the limit. On DB error
-// we FAIL OPEN for availability but log it (the daily global cap is the real
-// backstop; a transient RPC error should not take the feature down).
-async function withinLimit(bucket, identifier, windowSeconds, max) {
+// Per-IP checks fail open for availability. The global cost circuit breaker
+// fails closed so an RPC outage cannot create unbounded OpenAI spend.
+async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = false) {
   const { data, error } = await getAdmin().rpc('check_rate_limit', {
     p_bucket: bucket,
     p_identifier: identifier,
@@ -67,16 +60,19 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
   });
   if (error) {
     console.error('check_rate_limit error:', error.message);
-    return true;
+    return !failClosed;
   }
   return data === true;
 }
 
+async function consumeQuota(userId) {
+  const { data, error } = await getAdmin().rpc('consume_ai_score', { p_uid: userId });
+  if (error) throw error;
+  return data;
+}
+
 // ---------------------------------------------------------------------------
-// Optional auth: if the client sends `Authorization: Bearer <access token>`,
-// verify it and return the user id so we can persist the score. Any failure
-// (no header, invalid/expired token, admin misconfigured) returns null and
-// scoring proceeds unauthenticated — we NEVER block scoring on auth.
+// Required auth: writing scoring is signed-in-only in both the UI and API.
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
   try {
@@ -98,7 +94,9 @@ async function resolveUserId(req) {
 // `attempts` row first (skill='writing') then the `scores` row referencing it,
 // both via the service-role client (bypasses RLS). Fully fail-soft: a DB error
 // is logged (message only, never keys) and never affects the scoring response.
-async function saveWritingScore({ userId, passageId, task, essay, model, result }) {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+async function saveWritingScore({ userId, passageId, task, essay, model, result, startedAt, anonId, wordCount }) {
   try {
     const admin = getAdmin();
     const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
@@ -111,6 +109,7 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result 
         skill: 'writing',
         responses: { essay, task },
         band: overall,
+        started_at: startedAt || null,
         submitted_at: new Date().toISOString(),
       })
       .select('id')
@@ -130,29 +129,20 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result 
       model,
     });
     if (scoreErr) console.error('writing score insert failed:', scoreErr.message);
+
+    if (UUID_RE.test(anonId || '')) {
+      await admin.from('activity_events').insert({
+        anon_id: anonId,
+        user_id: userId,
+        event: 'writing_score_server',
+        skill: 'writing',
+        props: { task, word_count: wordCount, band: overall, model },
+      });
+    }
   } catch (e) {
     console.error('saveWritingScore error:', e.message);
   }
-}
 
-function clientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (typeof xff === 'string' && xff.length) {
-    return xff.split(',')[0].trim();
-  }
-  return req.socket?.remoteAddress || 'unknown';
-}
-
-function originAllowed(req) {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  // No origin/referer at all: only tolerated outside production (curl in dev,
-  // server-to-server). In production a browser always sends one.
-  if (!origin && !referer) {
-    return process.env.NODE_ENV !== 'production';
-  }
-  const candidate = origin || referer;
-  return ALLOWED_ORIGINS.some((allowed) => candidate.startsWith(allowed));
 }
 
 function countWords(str) {
@@ -284,6 +274,11 @@ export default async function handler(req, res) {
       .json({ error: 'Requests from this origin are not allowed.' });
   }
 
+  const userId = await resolveUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
+  }
+
   // --- Validate body -------------------------------------------------------
   const body = req.body || {};
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
@@ -320,7 +315,8 @@ export default async function handler(req, res) {
       'writing-score-global',
       dayKey,
       GLOBAL_WINDOW_SECONDS,
-      GLOBAL_MAX
+      GLOBAL_MAX,
+      true
     );
     if (!globalOk) {
       return res.status(429).json({
@@ -347,6 +343,22 @@ export default async function handler(req, res) {
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
+
+  let quota;
+  try {
+    quota = await consumeQuota(userId);
+  } catch (error) {
+    console.error('quota check failed:', error.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!quota?.allowed) {
+    return res.status(402).json({
+      error: 'You have used all 3 free AI scores for this 30-day period.',
+      remaining: 0,
+      resetsAt: quota?.resetsAt || null,
+    });
+  }
+  const scoringModel = quota.plan === 'free' ? FREE_MODEL : PAID_MODEL;
 
   // --- Call OpenAI ---------------------------------------------------------
   if (!process.env.OPENAI_API_KEY) {
@@ -380,7 +392,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: scoringModel,
         messages: [
           { role: 'system', content: buildSystemPrompt(task) },
           { role: 'user', content: userContent },
@@ -419,13 +431,19 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       });
     }
 
-    // Persist for signed-in users (optional; never blocks the response).
-    const userId = await resolveUserId(req);
-    if (userId) {
-      await saveWritingScore({ userId, passageId, task, essay, model: MODEL, result });
-    }
+    await saveWritingScore({
+      userId,
+      passageId,
+      task,
+      essay,
+      model: scoringModel,
+      result,
+      startedAt: typeof req.body?.started_at === 'string' ? req.body.started_at : null,
+      anonId: typeof req.body?.anon_id === 'string' ? req.body.anon_id : null,
+      wordCount: words,
+    });
 
-    return res.status(200).json({ task, wordCount: words, ...result });
+    return res.status(200).json({ task, wordCount: words, quotaRemaining: quota.remaining, ...result });
   } catch (e) {
     if (e.name === 'AbortError') {
       console.error('OpenAI request timed out');

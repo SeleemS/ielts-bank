@@ -24,13 +24,15 @@
 export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
+import { originAllowed } from '../../../lib/apiSecurity';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_TRANSCRIBE_URL = 'https://api.openai.com/v1/audio/transcriptions';
-const MODEL = process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
+const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-4.1-mini';
+const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_SPEAKING_MODEL || 'gpt-5.1';
 const WHISPER_MODEL = 'whisper-1';
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024; // 10 MB hard cap
@@ -48,14 +50,6 @@ const OPENAI_TIMEOUT_MS = 45000;
 const PRONUNCIATION_NOTE =
   "Pronunciation (phonemes, stress, intonation) can't be assessed from a transcript. " +
   'Focus here on fluency, vocabulary and grammar; consider a human/tutor check for pronunciation.';
-
-// Allowed browser origins. Missing Origin/Referer is tolerated in dev only.
-const ALLOWED_ORIGINS = [
-  'https://ielts-bank.com',
-  'https://www.ielts-bank.com',
-  'http://localhost:3000',
-  'http://localhost:3025',
-];
 
 // ---------------------------------------------------------------------------
 // Supabase service-role client (server-only; bypasses RLS for rate_limits,
@@ -77,10 +71,7 @@ function supabaseUrl() {
   return process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 }
 
-// Returns true if still within allowance, false if over the limit. On DB error
-// we FAIL OPEN for availability but log it (the daily global cap is the real
-// backstop; a transient RPC error should not take the feature down).
-async function withinLimit(bucket, identifier, windowSeconds, max) {
+async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = false) {
   const { data, error } = await getAdmin().rpc('check_rate_limit', {
     p_bucket: bucket,
     p_identifier: identifier,
@@ -89,9 +80,15 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
   });
   if (error) {
     console.error('check_rate_limit error:', error.message);
-    return true;
+    return !failClosed;
   }
   return data === true;
+}
+
+async function consumeQuota(userId) {
+  const { data, error } = await getAdmin().rpc('consume_ai_score', { p_uid: userId });
+  if (error) throw error;
+  return data;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,6 +137,7 @@ async function fetchPassageContext(passageSlug, part) {
     console.error('fetchPassageContext error:', e.message);
     return null;
   }
+
 }
 
 // Turn the part-specific JSONB into a compact plain-text brief for the examiner
@@ -190,6 +188,7 @@ async function saveSpeakingScore({
   overallBand,
   criteria,
   model,
+  startedAt,
 }) {
   try {
     const admin = getAdmin();
@@ -202,6 +201,7 @@ async function saveSpeakingScore({
         skill: 'speaking',
         responses: { part, audioPath, transcript },
         band: overallBand,
+        started_at: startedAt || null,
         submitted_at: new Date().toISOString(),
       })
       .select('id')
@@ -224,16 +224,6 @@ async function saveSpeakingScore({
   } catch (e) {
     console.error('saveSpeakingScore error:', e.message);
   }
-}
-
-function originAllowed(req) {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  if (!origin && !referer) {
-    return process.env.NODE_ENV !== 'production';
-  }
-  const candidate = origin || referer;
-  return ALLOWED_ORIGINS.some((allowed) => candidate.startsWith(allowed));
 }
 
 function countWords(str) {
@@ -401,7 +391,8 @@ export default async function handler(req, res) {
       'speaking-score-global',
       dayKey,
       GLOBAL_WINDOW_SECONDS,
-      GLOBAL_MAX
+      GLOBAL_MAX,
+      true
     );
     if (!globalOk) {
       return res.status(429).json({
@@ -427,6 +418,22 @@ export default async function handler(req, res) {
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
+
+  let quota;
+  try {
+    quota = await consumeQuota(userId);
+  } catch (error) {
+    console.error('quota check failed:', error.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!quota?.allowed) {
+    return res.status(402).json({
+      error: 'You have used all 3 free AI scores for this 30-day period.',
+      remaining: 0,
+      resetsAt: quota?.resetsAt || null,
+    });
+  }
+  const scoringModel = quota.plan === 'free' ? FREE_MODEL : PAID_MODEL;
 
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');
@@ -568,7 +575,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: scoringModel,
         messages: [
           { role: 'system', content: buildSystemPrompt() },
           { role: 'user', content: userContent },
@@ -637,7 +644,8 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       transcript,
       overallBand,
       criteria,
-      model: MODEL,
+      model: scoringModel,
+      startedAt: typeof body.started_at === 'string' ? body.started_at : null,
     });
 
     // --- 8. Respond with the exact contract shape --------------------------
@@ -648,6 +656,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       summary: typeof result.summary === 'string' ? result.summary : '',
       improvements: Array.isArray(result.improvements) ? result.improvements : [],
       transcript,
+      quotaRemaining: quota.remaining,
     });
   } catch (e) {
     if (e.name === 'AbortError') {
@@ -660,5 +669,12 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     });
   } finally {
     clearTimeout(timeout);
+    // The recording is needed only for this scoring request. Remove it after
+    // success or failure so private voice data does not accumulate indefinitely.
+    try {
+      await getAdmin().storage.from('speaking-uploads').remove([audioPath]);
+    } catch (error) {
+      console.error('speaking upload cleanup failed:', error.message);
+    }
   }
 }

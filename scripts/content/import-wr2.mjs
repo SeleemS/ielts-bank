@@ -56,7 +56,7 @@ function transformWriting(item) {
       module,
       title: item.title,
       body_html: null,
-      difficulty: null,
+      difficulty: item.difficulty || 'medium',
       topic_tags: item.topic_tags || [],
       status: 'published',
       source: 'ai-authored',

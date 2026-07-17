@@ -3,6 +3,8 @@ import { Mail, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { cn } from '../lib/utils';
+import { track } from '../lib/analytics';
+import { useAuth } from '../lib/auth';
 
 // Email-capture widget. POSTs to /api/newsletter/subscribe, which always
 // returns {ok:true} for a validly-formatted address (no enumeration), so on a
@@ -21,6 +23,7 @@ export default function NewsletterSignup({
   className,
 }) {
   const compact = variant === 'compact';
+  const { user } = useAuth();
   const [email, setEmail] = React.useState('');
   const [status, setStatus] = React.useState('idle'); // idle | sending | sent | error
   const [errorMsg, setErrorMsg] = React.useState('');
@@ -45,6 +48,7 @@ export default function NewsletterSignup({
       }
       if (res.ok && data && data.ok) {
         setStatus('sent');
+        track('newsletter_subscribe', { source, signed_in: Boolean(user?.id) });
       } else {
         setStatus('error');
         setErrorMsg(
@@ -107,7 +111,7 @@ export default function NewsletterSignup({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={status === 'sending'}
-            className="h-10 border-white/15 bg-white/5 text-white placeholder:text-slate-400 focus-visible:ring-white/30"
+            className="h-10 border-input bg-background text-foreground placeholder:text-muted-foreground"
           />
           <Button
             type="submit"

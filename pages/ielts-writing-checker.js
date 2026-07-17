@@ -23,6 +23,8 @@ import { Select } from '../components/ui/select';
 import { Label } from '../components/ui/label';
 import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
+import { getAnonId, track } from '../src/lib/analytics';
+import AiQuotaPanel from '../src/components/AiQuotaPanel';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -236,6 +238,7 @@ export default function WritingCheckerPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [signInOpen, setSignInOpen] = useState(false);
+  const [quotaOpen, setQuotaOpen] = useState(false);
   // True once the user has pressed submit while signed-out — after they sign in
   // we auto-restore the draft and let them submit again.
   const pendingSubmitRef = useRef(false);
@@ -292,6 +295,7 @@ export default function WritingCheckerPage() {
     }
 
     setIsLoading(true);
+    track('writing_submit', { skill: 'writing', slug: 'writing-checker', task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
     try {
       const headers = { 'Content-Type': 'application/json' };
       try {
@@ -314,6 +318,7 @@ export default function WritingCheckerPage() {
           essay,
           task: apiTask,
           passage_id: null,
+          anon_id: getAnonId(),
         }),
       });
 
@@ -326,20 +331,25 @@ export default function WritingCheckerPage() {
 
       if (response.ok && data) {
         setResult(data);
-      } else if (response.status === 429) {
+        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
+      } else if (response.status === 402 || response.status === 429) {
+        setQuotaOpen(true);
+        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'rate_limited', task: apiTask, signed_in: Boolean(user) });
         setErrorMsg(
           (data && data.error) ||
             'You have reached the daily scoring limit. Please try again later.'
         );
       } else {
+        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'error', http_status: response.status, task: apiTask, signed_in: Boolean(user) });
         setErrorMsg((data && data.error) || 'Failed to score your essay. Please try again.');
       }
     } catch {
+      track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'error', error_type: 'network', task: apiTask, signed_in: Boolean(user) });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [active.label, apiTask, essay, isSufficient, minWords, prompt, wordCount]);
+  }, [active.label, apiTask, essay, isSufficient, minWords, prompt, user, wordCount]);
 
   // After a signed-out user signs in via the dialog, useAuth().user becomes
   // non-null; if they had pressed submit, run the score automatically.
@@ -402,11 +412,11 @@ export default function WritingCheckerPage() {
         <meta name="twitter:card" content="summary_large_image" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
 
         <main className="flex-1">
@@ -512,6 +522,7 @@ export default function WritingCheckerPage() {
                     ? 'Sign in & check my writing'
                     : 'Check my writing'}
                 </Button>
+                <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} />
                 {!loading && !user && (
                   <p className="text-center text-xs text-muted-foreground">
                     We&apos;ll email you a one-tap magic link to save your score. Your draft
@@ -538,6 +549,13 @@ export default function WritingCheckerPage() {
                   Your estimated score &amp; feedback
                 </h2>
                 <ScoreReport apiTask={apiTask} result={result} />
+                <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4">
+                  <p className="text-sm font-semibold text-foreground">Put the feedback into practice</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <Button variant="accent" onClick={() => { setResult(null); window.scrollTo({ top: 360, behavior: 'smooth' }); }}>Score another draft{result.quotaRemaining != null ? ` (${result.quotaRemaining} left)` : ''}</Button>
+                    <Button asChild variant="outline"><NextLink href="/writingquestion">Choose a Writing task</NextLink></Button>
+                  </div>
+                </div>
                 <p className="mt-4 rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
                   This is an AI estimate for study purposes, not an official IELTS result.
                 </p>
@@ -691,6 +709,7 @@ export default function WritingCheckerPage() {
         }}
         title="Sign in to check your writing"
         description="We'll email you a one-tap magic link and save your score. Your draft is kept safe."
+        trigger="writing_checker_score"
       />
     </>
   );

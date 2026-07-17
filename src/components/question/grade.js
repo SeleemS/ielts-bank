@@ -8,6 +8,7 @@
 // storage, display and grading — see `question.number` populated by
 // getStructuredPassage in lib/supabase.js. This is the invariant that a prior
 // numbering bug violated, so it is preserved end-to-end here.
+import { listeningBand, readingBand } from '../../../lib/bandTables';
 
 // ---------------------------------------------------------------------------
 // Question-type classification. Every enum value in public.question_type maps
@@ -257,19 +258,10 @@ export function gradeAll(groups, answers) {
 // Optional band estimate (Academic Reading / Listening raw->band, scaled to
 // the number of questions present). Clearly an ESTIMATE for short practice sets.
 // ---------------------------------------------------------------------------
-export function estimateBand(score, total) {
+export function estimateBand(score, total, skill = 'reading', module = 'academic') {
   if (!total) return null;
-  const p = score / total;
-  if (p >= 0.975) return 9;
-  if (p >= 0.9) return 8.5;
-  if (p >= 0.85) return 8;
-  if (p >= 0.75) return 7.5;
-  if (p >= 0.65) return 7;
-  if (p >= 0.575) return 6.5;
-  if (p >= 0.5) return 6;
-  if (p >= 0.4) return 5.5;
-  if (p >= 0.375) return 5;
-  if (p >= 0.3) return 4.5;
-  if (p >= 0.25) return 4;
-  return 3.5;
+  const scaledRaw = Math.round((Number(score) / Number(total)) * 40);
+  return skill === 'listening'
+    ? listeningBand(scaledRaw)
+    : readingBand(scaledRaw, module);
 }

@@ -61,11 +61,11 @@ export default function BlogIndex({ posts }) {
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
 
         <main className="flex-1 bg-secondary/40">

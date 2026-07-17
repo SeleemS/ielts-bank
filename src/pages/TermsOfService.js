@@ -8,7 +8,7 @@ import { Card, CardContent } from '../../components/ui/card';
 
 const TermsOfService = () => {
   return (
-    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
+    <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>Terms of Service | IELTS-Bank</title>
         <meta
@@ -36,7 +36,7 @@ const TermsOfService = () => {
             <CardContent className="space-y-5 pt-6 text-[15px] leading-8 text-slate-700">
               <p>
                 Welcome to IELTSBank. Below are our Terms of Service, which outline
-                the rules and regulations for the use of IELTSBank's Website.
+                the rules and regulations for the use of IELTSBank&apos;s Website.
               </p>
 
               <div>
@@ -49,14 +49,14 @@ const TermsOfService = () => {
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">2. Use License</h2>
                 <p>
-                  Permission is granted to temporarily download one copy of the materials on IELTSBank's website for personal, non-commercial use only.
+                  Permission is granted to temporarily download one copy of the materials on IELTSBank&apos;s website for personal, non-commercial use only.
                 </p>
               </div>
 
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">3. Disclaimer</h2>
                 <p>
-                  The materials on IELTSBank’s website are provided "as is." IELTSBank disclaims all warranties, expressed or implied.
+                  The materials on IELTSBank’s website are provided &quot;as is.&quot; IELTSBank disclaims all warranties, expressed or implied.
                 </p>
               </div>
 

@@ -8,7 +8,15 @@ import { sanitizeHtml, sanitizeSvg } from '../../../lib/sanitize';
 // the display-only image SVG (maps/plans) are sanitized via lib/sanitize
 // (DOMPurify) before being injected with dangerouslySetInnerHTML.
 
-export default function QuestionGroup({ group, answers, onChange, submitted, results }) {
+export default function QuestionGroup({
+  group,
+  answers,
+  onChange,
+  submitted,
+  results,
+  flagged = [],
+  onToggleFlag,
+}) {
   const cfg = typeConfig(group.questionType);
   const showLegend = cfg.input === 'select' && (group.options || []).length > 0;
   const imageLabel = /\bplan\b/i.test(group.prompt || '') ? 'Plan' : 'Map';
@@ -71,6 +79,8 @@ export default function QuestionGroup({ group, answers, onChange, submitted, res
             onChange={onChange}
             submitted={submitted}
             result={results ? results.byNumber[question.number] : null}
+            flagged={flagged.includes(question.number)}
+            onToggleFlag={onToggleFlag}
           />
         ))}
       </div>

@@ -4,6 +4,7 @@ import {
   getLegacyIdSlugMap,
   getPassageSlugs,
   getStructuredPassage,
+  getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
 
@@ -25,6 +26,11 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const passage = await getStructuredPassage(SKILLS.listening, params.id);
   if (!passage) return { notFound: true };
+  const related = await getRelatedPractice(
+    SKILLS.listening,
+    passage.slug,
+    passage.groups?.[0]?.questionType
+  );
 
   const description =
     toMetaDescription(passage.bodyHtml) ||
@@ -35,6 +41,7 @@ export async function getStaticProps({ params }) {
       id: params.id,
       passage,
       description,
+      related,
     },
     revalidate: 3600,
   };

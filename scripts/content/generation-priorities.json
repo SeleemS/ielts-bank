@@ -1,0 +1,16 @@
+{
+  "reading": {
+    "priorityQuestionTypes": ["sentence_completion", "summary_completion", "note_completion", "table_completion", "matching_sentence_endings", "multiple_choice_multi"],
+    "moduleTarget": { "academic": 1, "general": 1 },
+    "note": "Alternate Academic and General Training; reject batches that deepen already dominant types while a priority type is absent."
+  },
+  "writing": {
+    "moduleTarget": { "academic": 1, "general": 1 },
+    "priority": ["general_task_1", "general_task_2"],
+    "note": "Every new task must include difficulty and, for Academic Task 1, a complete inline SVG visual."
+  },
+  "speaking": {
+    "premiumCandidate": "Model-answer audio using the existing dated TTS pipeline",
+    "status": "direction only; do not gate existing examiner prompt audio"
+  }
+}

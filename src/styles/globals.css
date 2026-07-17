@@ -6,10 +6,8 @@
  * IELTS-Bank design tokens — "Trust / Academic" direction.
  * Primary: deep navy. Accent: emerald. Neutrals: slate.
  *
- * NOTE: Tailwind Preflight is disabled in tailwind.config.js so this file's
- * base layer does NOT reset Chakra-powered pages. The @layer base below only
- * assigns CSS variables + a couple of opt-in helpers; it intentionally avoids
- * a global element reset. Re-enable preflight once Chakra is fully removed.
+ * Tailwind Preflight is enabled. Chakra has been fully removed, so the base
+ * layer below is the single source of global design tokens and element styles.
  */
 
 @layer base {
@@ -82,18 +80,18 @@
 /*
  * Scoped opt-in helpers for Tailwind-migrated surfaces. We deliberately do NOT
  * apply border-color / bg globally (that would fight Chakra). Components that
- * want the design system opt in with the `.tw-root` wrapper or Tailwind utils.
+ * want the design system opt in with the `.` wrapper or Tailwind utils.
  */
 @layer base {
-  .tw-root {
+  .{
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  .tw-root *,
-  .tw-root *::before,
-  .tw-root *::after {
+  .*,
+  .*::before,
+  .*::after {
     border-color: hsl(var(--border));
   }
 }

@@ -47,7 +47,7 @@ export default function AuthCallback() {
   }, [router]);
 
   return (
-    <main className="tw-root flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
       <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
       <p className="text-sm font-medium text-muted-foreground">
         {error ? 'Could not sign you in. Redirecting…' : 'Signing you in…'}

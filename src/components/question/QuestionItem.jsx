@@ -5,6 +5,7 @@ import { Select } from '../../../components/ui/select';
 import { Checkbox } from '../../../components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../../../components/ui/radio-group';
 import { typeConfig, booleanChoices } from './grade';
+import { sanitizeHtml } from '../../../lib/sanitize';
 
 // Renders ONE question of any type, in both the active (answering) and review
 // (post-submit) states. The `number` is the continuous global number used as
@@ -40,7 +41,16 @@ function OptionRow({ children, tone }) {
   );
 }
 
-export default function QuestionItem({ group, question, value, onChange, submitted, result }) {
+export default function QuestionItem({
+  group,
+  question,
+  value,
+  onChange,
+  submitted,
+  result,
+  flagged = false,
+  onToggleFlag,
+}) {
   const cfg = typeConfig(group.questionType);
   const n = question.number;
   const disabled = submitted;
@@ -177,6 +187,7 @@ export default function QuestionItem({ group, question, value, onChange, submitt
               type="button"
               disabled={disabled}
               onClick={() => onChange(n, c.value)}
+              aria-pressed={isChosen}
               className={cn(
                 'rounded-md border px-4 py-2 text-sm font-medium transition-colors',
                 tone === 'sel' && 'border-accent bg-accent/10 text-foreground',
@@ -198,6 +209,7 @@ export default function QuestionItem({ group, question, value, onChange, submitt
     // matching_* : one select per question drawing from the shared option list
     return (
       <Select
+        aria-label={question.promptText || `Question ${n}`}
         value={value || ''}
         disabled={disabled}
         onChange={(e) => onChange(n, e.target.value)}
@@ -221,6 +233,7 @@ export default function QuestionItem({ group, question, value, onChange, submitt
   function renderText() {
     return (
       <Input
+        aria-label={question.promptText || `Question ${n}`}
         value={value || ''}
         disabled={disabled}
         onChange={(e) => onChange(n, e.target.value)}
@@ -254,7 +267,7 @@ export default function QuestionItem({ group, question, value, onChange, submitt
   const wordLimit = question.answerKey?.wordLimit;
 
   return (
-    <div className={cn('rounded-lg border p-4', containerTone)}>
+    <div id={`question-${n}`} className={cn('scroll-mt-40 rounded-lg border p-4', containerTone)}>
       <div className="mb-3 flex items-start gap-2.5">
         <NumberBadge n={n} state={state} />
         <div className="flex-1 text-sm font-medium leading-relaxed text-foreground">
@@ -269,6 +282,21 @@ export default function QuestionItem({ group, question, value, onChange, submitt
             </span>
           ) : null}
         </div>
+        {!submitted && (
+          <button
+            type="button"
+            aria-pressed={flagged}
+            onClick={() => onToggleFlag?.(n)}
+            className={cn(
+              'shrink-0 rounded-md border px-2 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              flagged
+                ? 'border-amber-500 bg-amber-100 text-amber-900'
+                : 'border-border bg-background text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {flagged ? 'Flagged' : 'Flag'}
+          </button>
+        )}
       </div>
 
       {showStem && renderInput()}
@@ -288,6 +316,18 @@ export default function QuestionItem({ group, question, value, onChange, submitt
           {!result?.answered && (
             <div className="mt-0.5 text-muted-foreground">You left this blank.</div>
           )}
+        </div>
+      )}
+
+      {submitted && question.answerKey?.explanation && (
+        <div className="mt-3 rounded-md border border-accent/25 bg-accent/5 px-3 py-2 text-sm">
+          <span className="font-semibold text-accent">Why: </span>
+          <span
+            className="text-foreground"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(question.answerKey.explanation),
+            }}
+          />
         </div>
       )}
     </div>

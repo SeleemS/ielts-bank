@@ -34,8 +34,9 @@
  *   --only=reading|writing|listening   Migrate a single collection.
  *   --limit=N                          Process at most N docs per collection.
  *
- * NOTE: Requires `npm install` to have pulled @supabase/supabase-js and firebase
- * (firebase is already a dependency; supabase-js is added to package.json).
+ * ARCHIVED TOOLING NOTE: the production app no longer depends on Firebase.
+ * To rerun this completed one-shot migration, temporarily install the matching
+ * Firebase client in an isolated checkout; do not restore it as an app dependency.
  * DO NOT run against a live project until the owner has provisioned Supabase.
  */
 
@@ -47,7 +48,7 @@ import {
 } from 'firebase/firestore';
 
 // --- Firebase public config (mirror of src/firebase.js) --------------------
-// Public web config; safe to read from. Source of truth stays src/firebase.js.
+// Archived public web config retained only so this one-shot script is reproducible.
 const firebaseConfig = {
   apiKey: 'AIzaSyCxAGciWo48j3A2P1okoK-3midsNm14cDk',
   authDomain: 'ieltsbank-a2bc1.firebaseapp.com',

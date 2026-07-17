@@ -1,26 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import QuestionEngine from '../components/question/QuestionEngine';
+import RelatedPractice from '../components/RelatedPractice';
 import { sanitizeHtml } from '../../lib/sanitize';
 
 const SITE_URL = 'https://ielts-bank.com';
 const PASSAGE_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
-
-function useCountdown(startSeconds) {
-  const [remaining, setRemaining] = useState(startSeconds);
-  useEffect(() => {
-    if (remaining <= 0) return undefined;
-    const id = setTimeout(() => setRemaining((r) => r - 1), 1000);
-    return () => clearTimeout(id);
-  }, [remaining]);
-  const m = Math.floor(remaining / 60);
-  const s = remaining % 60;
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-}
 
 function ShareButton({ title, text }) {
   const onShare = async () => {
@@ -46,12 +35,10 @@ function ShareButton({ title, text }) {
   );
 }
 
-const ReadingQuestion = ({ id, passage, description }) => {
-  const timer = useCountdown(20 * 60);
-
+const ReadingQuestion = ({ id, passage, description, related = [] }) => {
   if (!passage) {
     return (
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
           <h1 className="text-lg font-semibold text-muted-foreground">Loading question…</h1>
@@ -133,11 +120,11 @@ const ReadingQuestion = ({ id, passage, description }) => {
         <meta name="twitter:image" content={ogImage} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -154,9 +141,6 @@ const ReadingQuestion = ({ id, passage, description }) => {
                 )}
               </p>
             </div>
-            <Badge variant="secondary" className="px-3 py-1.5 text-base font-bold tabular-nums">
-              {timer}
-            </Badge>
           </div>
 
           {/* Two-column: passage left, questions right */}
@@ -182,10 +166,18 @@ const ReadingQuestion = ({ id, passage, description }) => {
                 </h2>
               </div>
               <div className="max-h-[70vh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
-                <QuestionEngine groups={groups} storageKey={slug || id} skill="reading" />
+                <QuestionEngine
+                  groups={groups}
+                  storageKey={slug || id}
+                  skill="reading"
+                  durationSeconds={20 * 60}
+                  module={passage.module || 'academic'}
+                />
               </div>
             </div>
           </div>
+
+          <RelatedPractice skill="reading" items={related} className="mt-10" />
 
           <div className="mt-8 flex justify-center">
             <ShareButton title={title} text={`Check out this IELTS Reading test: ${title}`} />

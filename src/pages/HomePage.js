@@ -22,15 +22,16 @@ import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import NewsletterSignup from '../components/NewsletterSignup';
 
 const SITE_URL = 'https://ielts-bank.com';
 const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
   'Master IELTS with real, auto-scored practice'
 )}&type=home`;
 const PAGE_TITLE =
-  'IELTS-Bank — Free IELTS Practice Questions: Reading, Writing, Listening';
+  'IELTS-Bank — Free IELTS Practice: Reading, Writing, Listening & Speaking';
 const PAGE_DESCRIPTION =
-  'IELTS-Bank provides the largest free database of IELTS past papers with AI-powered grading. Practise Reading, Writing and Listening on real test questions and improve your score.';
+  'Practise IELTS Reading, Writing, Listening and Speaking with authentic-style questions, instant scoring and AI-powered band feedback.';
 
 const websiteJsonLd = {
   '@context': 'https://schema.org',
@@ -60,7 +61,7 @@ function Skills(counts) {
       icon: PenLine,
       count: counts.writing,
       blurb:
-        'Task 1 and Task 2 prompts with band-scored model answers so you know exactly what a strong response looks like.',
+        'Task 1 and Task 2 prompts with Band 8–9 model answers, examiner-style rationales and instant AI feedback across the official criteria.',
       available: true,
     },
     {
@@ -94,8 +95,8 @@ const FEATURES = [
   },
   {
     icon: FileCheck2,
-    title: 'Band-scored model answers',
-    desc: 'Every Writing task ships with a high-band sample answer so you can study structure, vocabulary and cohesion.',
+    title: 'Evidence-based review',
+    desc: 'Review correct answers and use detailed AI feedback to improve structure, vocabulary and accuracy.',
   },
   {
     icon: Sparkles,
@@ -104,8 +105,8 @@ const FEATURES = [
   },
   {
     icon: Star,
-    title: 'Completely free',
-    desc: 'No paywalls and no sign-up required. Open a question and start practising in seconds.',
+    title: 'Free core practice',
+    desc: 'Open any question and start practising without an account. Signed-in learners also receive three free AI Writing or Speaking scores per 30-day period.',
   },
 ];
 
@@ -123,7 +124,7 @@ const STEPS = [
   {
     icon: BarChart3,
     title: 'Get scored instantly',
-    desc: 'See your score, review correct answers and study the model responses.',
+    desc: 'See your score, review correct answers and get actionable feedback on what to improve next.',
   },
 ];
 
@@ -153,7 +154,7 @@ const HomePage = ({ counts = {} }) => {
         <meta property="og:image:type" content="image/png" />
         <meta
           property="og:image:alt"
-          content="IELTS-Bank — free, auto-scored IELTS Reading, Writing and Listening practice"
+          content="IELTS-Bank — free IELTS Reading, Writing, Listening and Speaking practice"
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={PAGE_TITLE} />
@@ -161,11 +162,11 @@ const HomePage = ({ counts = {} }) => {
         <meta name="twitter:image" content={OG_IMAGE} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c') }}
         />
       </Head>
 
-      <div className="tw-root flex min-h-screen flex-col bg-background font-sans text-foreground">
+      <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
         <Navbar />
 
         <main className="flex-1">
@@ -192,9 +193,9 @@ const HomePage = ({ counts = {} }) => {
                   <span className="text-emerald-400"> auto-scored practice</span>
                 </h1>
                 <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-200">
-                  Practise authentic-style Reading, Writing and Listening questions,
-                  get instant auto-scoring plus AI band feedback on your essays, and
-                  study band-scored model answers — all completely free, no sign-up required.
+                  Practise authentic-style Reading, Writing, Listening and Speaking,
+                  get instant auto-scoring, and receive AI band feedback on your essays
+                  and recordings.
                 </p>
                 <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Button asChild variant="accent" size="lg" className="w-full sm:w-auto">
@@ -217,12 +218,14 @@ const HomePage = ({ counts = {} }) => {
               </div>
 
               {/* Credibility strip */}
-              <div className="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-4">
+              <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-6">
                 {[
-                  { label: 'Practice questions', value: fmt(total) },
+                  { label: 'Questions', value: fmt(counts.questions) },
+                  { label: 'Practice items', value: fmt(total) },
                   { label: 'Reading passages', value: fmt(counts.reading) },
                   { label: 'Writing tasks', value: fmt(counts.writing) },
                   { label: 'Listening tests', value: fmt(counts.listening) },
+                  { label: 'Speaking topics', value: fmt(counts.speaking) },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-primary px-6 py-6 text-center">
                     <div className="text-3xl font-extrabold text-white">{stat.value}</div>
@@ -367,6 +370,9 @@ const HomePage = ({ counts = {} }) => {
           </section>
 
           {/* ========================= FINAL CTA ========================= */}
+          <section className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 lg:px-8">
+            <NewsletterSignup source="homepage" />
+          </section>
           <section className="px-4 pb-20 sm:px-6 lg:px-8">
             <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-primary px-6 py-16 text-center text-primary-foreground sm:px-12">
               <div
@@ -386,7 +392,7 @@ const HomePage = ({ counts = {} }) => {
                   need an account.
                 </p>
                 <ul className="mx-auto mt-8 flex max-w-xl flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:justify-center sm:gap-8">
-                  {['No sign-up', 'Instant scoring', 'Model answers'].map((item) => (
+                  {['Practice freely', 'Instant scoring', 'AI band feedback'].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm font-medium text-slate-100">
                       <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                       {item}

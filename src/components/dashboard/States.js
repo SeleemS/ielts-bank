@@ -5,9 +5,10 @@
 
 import * as React from 'react';
 import NextLink from 'next/link';
-import { Loader2, LineChart, BookOpen, PenLine, Headphones } from 'lucide-react';
+import { Loader2, LineChart, BookOpen, PenLine, Headphones, Mic } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import SignInDialog from '../auth/SignInDialog';
 
 // Centered spinner while auth (and then data) resolves.
 export function LoadingState() {
@@ -19,13 +20,12 @@ export function LoadingState() {
   );
 }
 
-// Shown when there is no signed-in user. We deliberately do NOT import the
-// sign-in dialog (avoids a potential import cycle); the navbar "Sign in" is the
-// canonical entry point.
 export function SignedOutState() {
+  const [signInOpen, setSignInOpen] = React.useState(false);
   return (
-    <div className="flex min-h-[50vh] items-center justify-center px-4">
-      <Card className="w-full max-w-md text-center">
+    <>
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md text-center">
         <CardHeader>
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
             <LineChart className="h-6 w-6" />
@@ -34,19 +34,20 @@ export function SignedOutState() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Track your band scores across Reading, Listening and Writing, review recent
+            Track your band scores across Reading, Writing, Listening and Speaking, review recent
             attempts, and watch your trend improve over time.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Use the <span className="font-medium text-foreground">Sign in</span> button in the
-            top navigation to continue.
-          </p>
+          <Button type="button" variant="accent" className="w-full" onClick={() => setSignInOpen(true)}>
+            Sign in
+          </Button>
           <Button asChild variant="outline" className="w-full">
             <NextLink href="/" className="no-underline">Back to home</NextLink>
           </Button>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+    </>
   );
 }
 
@@ -54,6 +55,7 @@ const START_LINKS = [
   { label: 'Start a Reading test', href: '/readingquestion', icon: BookOpen },
   { label: 'Start a Writing test', href: '/writingquestion', icon: PenLine },
   { label: 'Start a Listening test', href: '/listeningquestion', icon: Headphones },
+  { label: 'Start Speaking practice', href: '/speakingquestion', icon: Mic },
 ];
 
 // Signed in, but no attempts/scores yet.

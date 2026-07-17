@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
-import confetti from 'canvas-confetti';
 import Navbar from '../components/Navbar';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
@@ -8,6 +7,12 @@ import { Progress } from '../../components/ui/progress';
 import { cn } from '../lib/utils';
 import { getSupabase } from '../../lib/supabase';
 import { sanitizeHtml } from '../../lib/sanitize';
+import RelatedPractice from '../components/RelatedPractice';
+import Modal from '../components/AccessibleModal';
+import { getAnonId, track } from '../lib/analytics';
+import { useAuth } from '../lib/auth';
+import AiQuotaPanel from '../components/AiQuotaPanel';
+import SignInDialog from '../components/auth/SignInDialog';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -45,34 +50,6 @@ const TASK1_CRITERIA = [
   ['lexicalResource', 'Lexical Resource'],
   ['grammaticalRange', 'Grammatical Range & Accuracy'],
 ];
-
-function Modal({ open, onClose, title, children, dismissible = true }) {
-  if (!open) return null;
-  return (
-    <div className="tw-root fixed inset-0 z-[2000] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-        onClick={dismissible ? onClose : undefined}
-      />
-      <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl">
-        <div className="mb-3 flex items-start justify-between gap-4">
-          <h2 className="text-lg font-bold text-foreground">{title}</h2>
-          {dismissible && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 function formatBand(band) {
   return typeof band === 'number' ? band.toFixed(1) : '—';
@@ -190,11 +167,14 @@ function ScoreReport({ task, result }) {
   );
 }
 
-const WritingQuestion = ({ id: docId, passage, description }) => {
+const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
+  const { user } = useAuth();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
   const title = passage?.title || '';
   const task = passage?.writing?.task === 1 ? 1 : 2;
   const minWords = passage?.writing?.wordLimitMin || (task === 1 ? 150 : 250);
+  const modelAnswerHtml = passage?.writing?.modelAnswerHtml || '';
+  const modelAnswerRationaleHtml = passage?.writing?.modelAnswerRationaleHtml || '';
   const storageKey = passage?.slug || docId;
 
   const [userResponse, setUserResponse] = useState('');
@@ -202,6 +182,8 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [quotaOpen, setQuotaOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
 
   // Restore any local draft for this prompt (foundation for the accounts wave).
   useEffect(() => {
@@ -237,19 +219,19 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-      window.gtag('event', 'submit_writing', {
-        category: 'User Engagement',
-        label: 'Writing Test Submission',
-      });
-    }
-
     if (!isSufficient) {
       setErrorMsg(
         `Your answer must be at least ${minWords} words. Current word count: ${wordCount}.`
       );
       return;
     }
+
+    if (!user) {
+      setSignInOpen(true);
+      return;
+    }
+
+    track('writing_submit', { skill: 'writing', slug: storageKey, task, word_count: wordCount, signed_in: true });
 
     setIsLoading(true);
     try {
@@ -273,6 +255,7 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
           essay: userResponse,
           task,
           passage_id: passage?.id || null,
+          anon_id: getAnonId(),
         }),
       });
 
@@ -285,19 +268,27 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
 
       if (response.ok && data) {
         setResult(data);
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: true });
         setFeedbackOpen(true);
-        confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 });
-      } else if (response.status === 429) {
+        import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
+      } else if (response.status === 401) {
+        setSignInOpen(true);
+        setErrorMsg('Your session expired. Sign in again to score this response.');
+      } else if (response.status === 402 || response.status === 429) {
+        setQuotaOpen(true);
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'rate_limited', task, signed_in: true });
         setErrorMsg(
           (data && data.error) ||
             'You have reached the scoring limit. Please try again later.'
         );
       } else {
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', http_status: response.status, task, signed_in: true });
         setErrorMsg(
           (data && data.error) || 'Failed to score your answer. Please try again.'
         );
       }
     } catch {
+      track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', error_type: 'network', task, signed_in: true });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -317,7 +308,7 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
 
   if (!passage) {
     return (
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
           <h1 className="text-lg font-semibold text-muted-foreground">Loading question…</h1>
@@ -347,7 +338,7 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
         <meta name="twitter:image" content={ogImage} />
       </Head>
 
-      <div className="tw-root min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 pb-16 sm:px-6 lg:px-8">
@@ -365,6 +356,22 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
                 Writing Prompt
               </h2>
               <div className={PROMPT_HTML_CLASS} dangerouslySetInnerHTML={{ __html: sanitizeHtml(promptHtml) }} />
+              {modelAnswerHtml ? (
+                <details className="mt-6 rounded-lg border border-accent/30 bg-accent/5">
+                  <summary className="cursor-pointer px-4 py-3 text-sm font-bold text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    Show Band 8–9 model answer
+                  </summary>
+                  <div className="border-t border-accent/20 px-4 py-4">
+                    <div className="space-y-3 text-sm leading-7 text-foreground" dangerouslySetInnerHTML={{ __html: sanitizeHtml(modelAnswerHtml) }} />
+                    {modelAnswerRationaleHtml ? (
+                      <div className="mt-5 rounded-md border border-border bg-background p-4">
+                        <h3 className="mb-2 text-sm font-bold text-foreground">Why this response works</h3>
+                        <div className="text-sm leading-6 text-muted-foreground" dangerouslySetInnerHTML={{ __html: sanitizeHtml(modelAnswerRationaleHtml) }} />
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              ) : null}
             </div>
 
             {/* Answer */}
@@ -389,6 +396,7 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
                 </div>
               </div>
               <Textarea
+                aria-label="Your writing response"
                 value={userResponse}
                 onChange={handleResponseChange}
                 placeholder="Write your full response here…"
@@ -407,16 +415,20 @@ const WritingQuestion = ({ id: docId, passage, description }) => {
               {isLoading ? 'Analyzing…' : 'Get AI Feedback'}
             </Button>
           </div>
+          <div className="mt-2"><AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} /></div>
+          <RelatedPractice skill="writing" items={related} className="mt-10" />
         </main>
       </div>
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} title="Sign in to get AI feedback" description="We’ll email you a one-tap magic link. Your draft stays saved on this device." trigger="writing_task_score" />
       <Modal
         open={feedbackOpen && !!result}
         onClose={() => setFeedbackOpen(false)}
         title="Your AI Feedback & Score"
       >
         {result && <ScoreReport task={task} result={result} />}
+        {result ? <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">You have {result.quotaRemaining ?? 'a limited number of'} free AI scores remaining. Revise this draft using the feedback, then score it again.</p> : null}
         <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>

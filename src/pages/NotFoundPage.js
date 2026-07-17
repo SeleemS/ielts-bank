@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button';
 
 const NotFoundPage = () => {
   return (
-    <div className="tw-root flex min-h-screen flex-col bg-secondary/40">
+    <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
         <title>404 — Page Not Found | IELTS-Bank</title>
         <meta name="robots" content="noindex, follow" />

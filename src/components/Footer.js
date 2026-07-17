@@ -11,7 +11,8 @@ const PRACTICE_LINKS = [
   { label: 'Reading', href: '/readingquestion' },
   { label: 'Writing', href: '/writingquestion' },
   { label: 'Listening', href: '/listeningquestion' },
-  { label: 'Speaking (soon)', href: '/readingquestion' },
+  { label: 'Speaking', href: '/speakingquestion' },
+  { label: 'Mock tests', href: '/mock-test' },
 ];
 
 const TOOLS_LINKS = [
@@ -51,7 +52,7 @@ function FooterColumn({ title, links }) {
 
 export default function Footer() {
   return (
-    <footer className="tw-root mt-auto bg-slate-950 text-slate-300">
+    <footer className="mt-auto bg-slate-950 text-slate-300">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
           {/* Brand blurb */}
@@ -65,9 +66,8 @@ export default function Footer() {
               </span>
             </NextLink>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
-              Free IELTS practice with authentic-style Reading, Writing and Listening
-              questions, instant auto-scoring and model answers — everything you need to
-              raise your band score.
+              Free IELTS practice across Reading, Writing, Listening and Speaking,
+              with instant scoring, AI band feedback and high-band Writing model answers.
             </p>
             <div className="mt-6 max-w-sm">
               <h3 className="text-sm font-semibold text-white">
