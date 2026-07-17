@@ -73,6 +73,7 @@ const cspDirectives = {
   'connect-src': [
     "'self'",
     SUPABASE_ORIGIN,
+    'https://api.openai.com', // Realtime examiner: SDP exchange + ephemeral session (speaking-examiner)
     'https://vitals.vercel-insights.com',
     'https://www.google-analytics.com',
     'https://*.google-analytics.com',

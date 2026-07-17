@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { Mic, ArrowRight, MessageSquare, ListChecks, ClipboardList } from 'lucide-react';
+import { Mic, ArrowRight, MessageSquare, ListChecks, ClipboardList, Sparkles } from 'lucide-react';
 import Navbar from '../../src/components/Navbar';
 import Footer from '../../src/components/Footer';
 import { Badge } from '../../components/ui/badge';
@@ -183,6 +183,25 @@ export default function SpeakingIndex({ items = [] }) {
                 to begin.
               </p>
             </header>
+
+            <NextLink
+              href="/speaking-examiner"
+              className="mb-10 flex flex-col justify-between gap-3 rounded-xl border-2 border-primary/60 bg-card p-5 no-underline shadow-sm transition hover:shadow-md sm:flex-row sm:items-center"
+            >
+              <div>
+                <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  New: live AI examiner mock interviews
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Have a real-time voice conversation with an AI examiner — full 3-part mock or
+                  single-part drills — and get your band score at the end. Premium.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-lg bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
+                Try the examiner
+              </span>
+            </NextLink>
 
             {hasAny ? (
               <>

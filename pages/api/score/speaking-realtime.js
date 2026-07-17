@@ -1,0 +1,248 @@
+// pages/api/score/speaking-realtime.js
+// Scores the transcript of a live AI-examiner speaking session (the Realtime
+// feature, docs/MONETIZATION.md §9). Premium-only. Does NOT consume the
+// ai-score meter — the session minutes were already paid at mint time.
+// Mirrors pages/api/score/speaking.js: same 3 transcript-assessable criteria,
+// same structured-output schema, same attempts/scores persistence.
+export const config = { runtime: 'nodejs' };
+
+import { createClient } from '@supabase/supabase-js';
+import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+
+const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
+const SCORING_MODEL =
+  process.env.SCORING_MODEL_PAID || process.env.OPENAI_SPEAKING_MODEL || 'gpt-5.1';
+const OPENAI_TIMEOUT_MS = 60000;
+const MIN_CANDIDATE_WORDS = 40;
+const MAX_TRANSCRIPT_CHARS = 60000;
+const PER_IP_WINDOW_SECONDS = 3600;
+const PER_IP_MAX = 8;
+
+let _admin = null;
+function getAdmin() {
+  if (_admin) return _admin;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('supabase-admin-not-configured');
+  _admin = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return _admin;
+}
+
+async function resolveUserId(req) {
+  const authz = req.headers.authorization || '';
+  const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
+  if (!match) return null;
+  const { data, error } = await getAdmin().auth.getUser(match[1].trim());
+  if (error || !data?.user) return null;
+  return data.user.id;
+}
+
+async function isPremium(userId) {
+  const { data } = await getAdmin()
+    .from('users')
+    .select('plan, plan_status, plan_renews_at')
+    .eq('id', userId)
+    .single();
+  if (!data || data.plan !== 'premium') return false;
+  if (['active', 'trialing', 'past_due'].includes(data.plan_status)) return true;
+  return (
+    data.plan_status === 'canceled' &&
+    data.plan_renews_at &&
+    new Date(data.plan_renews_at).getTime() > Date.now()
+  );
+}
+
+function countWords(s) {
+  return String(s || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function buildSystemPrompt() {
+  return `You are a certified, experienced IELTS Speaking examiner. You mark strictly and consistently against the official IELTS Speaking public band descriptors. Marking is fair and evidence-based: for every judgement you cite concrete evidence quoted or paraphrased from the candidate's transcribed answers.
+
+You are given the FULL TRANSCRIPT of a live practice speaking interview between an AI examiner and a candidate. The EXAMINER turns are context only — assess ONLY the CANDIDATE's language. Assess ONLY the THREE criteria a transcript can support, each on the 0-9 band scale (halves allowed):
+
+1. Fluency and Coherence — ability to talk at length coherently across the interview: connected ideas, logical sequencing and topic development, cohesive devices and discourse markers, self-correction/hesitation markers where visible, and responsiveness to the examiner's questions. Do NOT penalise natural spoken features.
+2. Lexical Resource — range and precision of vocabulary across topics, paraphrase, less common and idiomatic items, collocation, appropriacy.
+3. Grammatical Range and Accuracy — range of structures, proportion of error-free clauses, communicative effect of errors.
+
+You do NOT assess Pronunciation — it cannot be judged from a transcript. Do not mention a pronunciation band.
+
+EVIDENCE: base every band on what is actually present across ALL candidate turns. Very short answers throughout cannot score highly — say so. Treat ASR artefacts charitably (do not penalise a plausible mishearing unless the transcript clearly shows a candidate error).
+
+OVERALL BAND RULE: overallBand = the average of the THREE criterion bands, rounded to the NEAREST 0.5. Compute it exactly; do not eyeball it.
+
+FEEDBACK STYLE: specific and constructive; quote or paraphrase actual candidate phrases as evidence. improvements must be concrete, actionable practice steps.
+
+Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
+}
+
+function buildJsonSchema() {
+  const criterion = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      band: { type: 'number', description: 'Band 0-9, halves allowed' },
+      feedback: { type: 'string', description: 'Evidence-based feedback citing the transcript' },
+    },
+    required: ['band', 'feedback'],
+  };
+  return {
+    name: 'ielts_speaking_assessment',
+    strict: true,
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        overallBand: { type: 'number', description: 'Average of the three criteria, rounded to nearest 0.5' },
+        criteria: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            fluencyCoherence: criterion,
+            lexicalResource: criterion,
+            grammaticalRange: criterion,
+          },
+          required: ['fluencyCoherence', 'lexicalResource', 'grammaticalRange'],
+        },
+        summary: { type: 'string' },
+        improvements: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['overallBand', 'criteria', 'summary', 'improvements'],
+    },
+  };
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ error: 'Method not allowed.' });
+  }
+  if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
+
+  const userId = await resolveUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Please sign in.' });
+
+  if (!(await isPremium(userId))) {
+    return res.status(402).json({
+      error: 'The live AI examiner is a Premium feature.',
+      reason: 'not_premium',
+    });
+  }
+
+  const { data: withinLimit, error: rlError } = await getAdmin().rpc('check_rate_limit', {
+    p_bucket: 'realtime-score-ip',
+    p_identifier: clientIp(req),
+    p_window_seconds: PER_IP_WINDOW_SECONDS,
+    p_max: PER_IP_MAX,
+  });
+  if (rlError) console.error('check_rate_limit error:', rlError.message);
+  if (withinLimit === false) {
+    return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
+  }
+
+  // --- Validate transcript -------------------------------------------------
+  const body = req.body || {};
+  const mode = typeof body.mode === 'string' ? body.mode : 'mock';
+  const transcript = Array.isArray(body.transcript) ? body.transcript : [];
+  const turns = transcript
+    .filter(
+      (t) =>
+        t &&
+        (t.role === 'examiner' || t.role === 'candidate') &&
+        typeof t.text === 'string' &&
+        t.text.trim()
+    )
+    .map((t) => ({ role: t.role, text: t.text.trim() }));
+
+  const candidateWords = turns
+    .filter((t) => t.role === 'candidate')
+    .reduce((n, t) => n + countWords(t.text), 0);
+  if (candidateWords < MIN_CANDIDATE_WORDS) {
+    return res.status(422).json({
+      error:
+        'There is not enough of your speech in this session to score fairly. Try a longer conversation with the examiner.',
+    });
+  }
+
+  const rendered = turns
+    .map((t) => `${t.role === 'examiner' ? 'EXAMINER' : 'CANDIDATE'}: ${t.text}`)
+    .join('\n')
+    .slice(0, MAX_TRANSCRIPT_CHARS);
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY is not set');
+    return res.status(502).json({ error: 'Scoring is temporarily unavailable.' });
+  }
+
+  // --- Score ---------------------------------------------------------------
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+  let result;
+  try {
+    const r = await fetch(OPENAI_CHAT_URL, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: SCORING_MODEL,
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          {
+            role: 'user',
+            content: `Session type: ${mode}. Full interview transcript:\n\n${rendered}`,
+          },
+        ],
+        response_format: { type: 'json_schema', json_schema: buildJsonSchema() },
+      }),
+    });
+    const payload = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      console.error('scoring call failed:', r.status, payload?.error?.message);
+      return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+    }
+    result = JSON.parse(payload.choices?.[0]?.message?.content || '{}');
+  } catch (e) {
+    console.error('scoring error:', e.message);
+    return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  // --- Persist (fail-soft) -------------------------------------------------
+  try {
+    const admin = getAdmin();
+    const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
+    const { data: attempt, error: attemptErr } = await admin
+      .from('attempts')
+      .insert({
+        user_id: userId,
+        skill: 'speaking',
+        responses: { realtime: true, mode, transcript: turns },
+        band: overall,
+        submitted_at: new Date().toISOString(),
+      })
+      .select('id')
+      .single();
+    if (!attemptErr && attempt) {
+      await admin.from('scores').insert({
+        attempt_id: attempt.id,
+        user_id: userId,
+        skill: 'speaking',
+        overall_band: overall,
+        criteria: result.criteria || {},
+        model: SCORING_MODEL,
+      });
+    } else if (attemptErr) {
+      console.error('realtime attempt insert failed:', attemptErr.message);
+    }
+  } catch (e) {
+    console.error('realtime score persist failed:', e.message);
+  }
+
+  return res.status(200).json({ mode, candidateWords, ...result });
+}
