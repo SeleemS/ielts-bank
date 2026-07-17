@@ -1,7 +1,9 @@
 import * as React from 'react';
+import NextLink from 'next/link';
+import { Sparkles } from 'lucide-react';
 import Modal from './AccessibleModal';
-import NewsletterSignup from './NewsletterSignup';
 import { getSupabase } from '../../lib/supabase';
+import { track } from '../lib/analytics';
 
 export default function AiQuotaPanel({ userId, remaining, open = false, onClose = () => {} }) {
   const [dbRemaining, setDbRemaining] = React.useState(null);
@@ -33,11 +35,21 @@ export default function AiQuotaPanel({ userId, remaining, open = false, onClose 
             You have reached the current free scoring limit{resetsAt ? `, which resets on ${new Date(resetsAt).toLocaleDateString()}` : ''}.
           </p>
           <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
-            <li>More Writing and Speaking scoring each month</li>
+            <li>Unlimited Writing and Speaking AI scores (fair use)</li>
             <li>Criterion-by-criterion feedback and progress tracking</li>
-            <li>Priority access when the premium plan opens</li>
+            <li>Ad-free, with the strongest scoring model</li>
           </ul>
-          <NewsletterSignup source="premium-waitlist" />
+          <NextLink
+            href="/pricing"
+            onClick={() => track('paywall_upgrade_click', { source: 'quota_modal' })}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
+          >
+            <Sparkles className="h-4 w-4" />
+            Upgrade to Premium
+          </NextLink>
+          <p className="text-center text-xs text-muted-foreground">
+            From $3.75/mo — cancel anytime.
+          </p>
         </div>
       </Modal>
     </>

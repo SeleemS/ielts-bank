@@ -66,7 +66,10 @@ async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = 
 }
 
 async function consumeQuota(userId) {
-  const { data, error } = await getAdmin().rpc('consume_ai_score', { p_uid: userId });
+  const { data, error } = await getAdmin().rpc('consume_ai_score', {
+    p_uid: userId,
+    p_skill: 'writing',
+  });
   if (error) throw error;
   return data;
 }
@@ -353,8 +356,12 @@ export default async function handler(req, res) {
   }
   if (!quota?.allowed) {
     return res.status(402).json({
-      error: 'You have used all 3 free AI scores for this 30-day period.',
+      error:
+        quota?.reason === 'daily_cap'
+          ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
+          : 'You have used all 3 free AI scores for this 30-day period.',
       remaining: 0,
+      reason: quota?.reason || 'quota_exceeded',
       resetsAt: quota?.resetsAt || null,
     });
   }

@@ -1,22 +1,25 @@
 # ielts-bank.com — Monetization Plan
 
-**Status:** Implementation-ready blueprint
-**Last updated:** 2026-07-09
+**Status:** Implementation-ready blueprint — **payments live on Stripe**
+**Last updated:** 2026-07-17
 **Owner:** Founder / eng
 **Scope:** How ielts-bank.com goes from free + AdSense to a paid, AI-scoring subscription business without breaking its SEO engine.
 
-> This document is the source of truth for pricing, gating, payments, and rollout. It maps every gate to the **real** Supabase schema already provisioned (`users`, `user_quotas`, `attempts`, `scores`, plus `passages/question_groups/questions/answer_keys`). It does not re-litigate the strategy established in the prior research pass (Paddle as merchant-of-record; keep content free as the SEO moat; differentiator = trustworthy rubric-anchored scoring). It builds on it with concrete numbers.
+> This document is the source of truth for pricing, gating, payments, and rollout. It maps every gate to the **real** Supabase schema already provisioned (`users`, `user_quotas`, `attempts`, `scores`, plus `passages/question_groups/questions/answer_keys`). Strategy unchanged: keep content free as the SEO moat; differentiator = trustworthy rubric-anchored scoring.
+>
+> **2026-07-17 decision — Stripe replaces Paddle.** Founder created a Stripe account and chose to launch on it. Consequence: **we are now merchant of record** — global VAT/GST registration thresholds and chargeback liability sit with us, not the processor (the §4.1 Paddle rationale still describes the trade-off accurately; it is now an accepted risk, mitigated by enabling **Stripe Tax** and monitoring registration thresholds). Revisit Paddle/MoR if international tax exposure grows.
 
 ---
 
 ## 0. TL;DR
 
 - **Free forever:** all practice content (Reading/Listening passages, questions, auto-scoring, band conversion). This is the SEO engine and must never be paywalled.
-- **Gated (the product we sell):** AI scoring of Writing & Speaking (rubric-anchored, per-criterion feedback), unlimited scores, progress analytics, an ad-free experience, and mock-test / export features.
+- **Gated (the product we sell):** AI scoring of Writing & Speaking (rubric-anchored, per-criterion feedback), "unlimited" scores under fair-use daily caps (§5.3), the Realtime AI speaking examiner (metered in minutes, §9), progress analytics, an ad-free experience, and mock-test / export features.
 - **Free metering:** anonymous = **1** free AI score (lifetime, to sample), signed-in free = **3** AI scores per rolling 30 days — enforced server-side by a transactional decrement of `user_quotas.ai_scores_remaining`, never trusted from the client.
+- **Premium limits (§5.3):** Writing 2 AI scores/day, async Speaking 1/day (marketed as unlimited; these are abuse caps), Realtime examiner **60 min/month** (30 on PPP plans). Worst-case COGS hard-capped ≈ $4.50/user/mo; typical ≈ $0.90 → ~80% blended gross margin at $4.20 ARPU.
 - **Prices (USD, global list):** **$9.99/mo**, **hero SKU $29.99 / 6 months (~$5/mo)**, **$44.99/year (~$3.75/mo)**. PPP tiers ~55% off for India/MENA/SEA (e.g. $3.99/mo, $14.99/6-mo).
-- **Payments:** **Paddle** (merchant-of-record). It remits VAT/GST/sales tax in 200+ countries, owns chargeback liability, and supports UPI/PayPal/Apple-Google Pay and localized/PPP pricing — the three things a solo, globally-distributed exam-prep site cannot build itself.
-- **MVP paid launch:** Supabase Auth (anon → Google/email) → server-side metering → Writing scoring API → Paddle checkout + webhook → `users.plan` gate. Everything else (analytics dashboards, speaking, exports) ships after money is flowing.
+- **Payments:** **Stripe** (see decision note above) — Checkout + Billing subscriptions, webhook → `users.plan`; PPP implemented as separate Stripe Prices selected server-side by request geo (`x-vercel-ip-country`). Stripe Tax enabled for calculation/collection; tax registrations are our responsibility as MoR.
+- **MVP paid launch:** Supabase Auth (anon → Google/email) → server-side metering → Writing scoring API → Stripe Checkout + webhook → `users.plan` gate. Everything else (analytics dashboards, speaking, exports) ships after money is flowing.
 
 ---
 
@@ -96,16 +99,16 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 
 ### Stage 3 — Paywall + Subscriptions (money on)
 
-- **Trigger to advance:** Paddle account approved; webhook endpoint deployed; `users.plan` column live.
+- **Trigger to advance:** Stripe account live; webhook endpoint deployed; `users.plan` column live.
 - **Free:** content + auto-scoring + the metered free AI scores + basic own-history view + ads.
 - **Gated (Premium):** unlimited AI scores; progress analytics; ad-free; export; full mock mode; stronger scoring model.
 - **Schema mapping (exact):**
   - `users.plan` in (`free`,`premium`) — the gate the scoring route checks.
   - `users.plan_status` (`active`,`past_due`,`canceled`,`refunded`).
   - `users.plan_renews_at` (timestamptz).
-  - `users.paddle_customer_id`, `users.paddle_subscription_id` — reconcile webhooks → user.
+  - `users.stripe_customer_id`, `users.stripe_subscription_id` — reconcile webhooks → user.
   - Scoring route logic: if `plan='premium'` and `plan_status='active'` → skip the `user_quotas` decrement (unlimited); else run the metered path.
-- **Prereqs:** Stage 2; Paddle products/prices created; webhook handler (§4); billing UI.
+- **Prereqs:** Stage 2; Stripe products/prices created; webhook handler (§4); billing UI.
 - **Revenue math:**
 
   | | Conservative (50k sess) | Moderate (200k sess) |
@@ -146,7 +149,7 @@ Rationale for the 6-month hero: IELTS prep is a **fixed-duration project**, not 
 
 ### 3.2 PPP-discounted tiers (India / MENA / SEA)
 
-The majority of IELTS demand — and of this site's traffic — is India, Pakistan, Bangladesh, Nigeria, Egypt, Gulf, Philippines, Vietnam. Paddle supports per-country localized pricing in 30+ currencies; use it to set **~55% off** in these markets:
+The majority of IELTS demand — and of this site's traffic — is India, Pakistan, Bangladesh, Nigeria, Egypt, Gulf, Philippines, Vietnam. PPP is implemented as separate Stripe Prices selected **server-side** from request geo (`x-vercel-ip-country`), set at **~55% off** in these markets:
 
 | SKU | Global | PPP (India/MENA/SEA) |
 |---|---|---|
@@ -154,7 +157,7 @@ The majority of IELTS demand — and of this site's traffic — is India, Pakist
 | 6-month (hero) | $29.99 | **$14.99** |
 | Annual | $44.99 | **$19.99** |
 
-PPP is not optional here: a $9.99 global price is a hard wall in ₹/₨ markets, and unauthorized-region full-price sales drive chargebacks. Setting PPP prices in Paddle both lifts conversion and cuts fraud/refund rates. (Paddle also enables local rails like **UPI** at checkout, which is the single biggest conversion lever for Indian traffic.)
+PPP is not optional here: a $9.99 global price is a hard wall in ₹/₨ markets, and unauthorized-region full-price sales drive chargebacks. Server-side PPP price selection both lifts conversion and cuts fraud/refund rates. (Note: Stripe's UPI support is limited vs Paddle's — a known conversion loss for Indian traffic; monitor and revisit.)
 
 ### 3.3 Justification vs named competitors (current 2026 prices)
 
@@ -173,32 +176,39 @@ PPP is not optional here: a $9.99 global price is a hard wall in ₹/₨ markets
 
 ---
 
-## 4. Payments implementation (Paddle on Next.js + Supabase)
+## 4. Payments implementation (Stripe on Next.js + Supabase)
 
-### 4.1 Why Paddle (rationale)
+### 4.1 The Paddle rationale (historical) and what switching to Stripe accepts
 
-- **Merchant of Record:** Paddle is the legal seller; it registers/remits **VAT, Indian GST, and sales tax in 200+ countries**. A solo operator cannot legally handle India GST + EU VAT + Gulf VAT alone — this is the deciding factor.
-- **Chargeback liability sits with Paddle**, not us (critical for exam-prep, which sees high dispute rates — §7).
-- **Localized + PPP pricing** in 30+ currencies and **local payment methods** (UPI, PayPal, Apple/Google Pay) out of the box.
-- **Cost:** headline **5% + $0.50** per transaction (effective ~6–7% with FX). On a $29.99 hero sale that's ~$2.00; entirely acceptable given it removes all tax/compliance/dispute overhead. Stripe would be ~2.9% but leaves us as merchant-of-record for global tax — a non-starter here.
+The original plan chose Paddle as merchant-of-record because it remits VAT/GST in 200+ countries, owns chargeback liability, and ships localized/PPP pricing + local rails (UPI etc.) out of the box, at ~5% + $0.50/txn. **On 2026-07-17 the founder chose Stripe instead** (~2.9% + 30¢). What we accept by doing so:
+
+- **We are merchant of record.** Tax calculation/collection is handled by enabling **Stripe Tax**, but *registration and remittance* in each jurisdiction (EU VAT OSS, India GST, UK VAT, etc.) is our obligation once thresholds are crossed. Action: monitor Stripe Tax's registration-threshold dashboard monthly.
+- **Chargeback liability is ours** (exam-prep is dispute-heavy — §7). Mitigations: favor the prepaid 6-month hero SKU, instant first-value delivery, clear refund policy, Stripe Radar on.
+- **PPP is DIY:** implemented as separate Stripe Prices chosen server-side from request geo (never client-chosen — a client-picked PPP price is a coupon anyone can abuse).
+- Upside: lower fees, first-party Checkout/Portal/Radar, and no Paddle approval gate.
 
 ### 4.2 Schema additions (columns to add to existing tables)
 
 ```
 -- public.users  (add):
-  plan                  text    not null default 'free',   -- 'free' | 'premium'
-  plan_status           text    not null default 'inactive',-- 'active'|'past_due'|'canceled'|'refunded'|'inactive'
-  plan_renews_at        timestamptz,
-  plan_started_at       timestamptz,
-  paddle_customer_id    text,     -- unique, indexed
-  paddle_subscription_id text,    -- unique, indexed
+  plan                   text    not null default 'free',    -- 'free' | 'premium'
+  plan_status            text    not null default 'inactive',-- 'active'|'trialing'|'past_due'|'canceled'|'refunded'|'inactive'
+  plan_renews_at         timestamptz,
+  plan_started_at        timestamptz,
+  stripe_customer_id     text,     -- unique, indexed
+  stripe_subscription_id text,     -- unique, indexed
 
--- public.user_quotas  (already sufficient; used only for FREE tier metering):
-  ai_scores_remaining   int         -- exists
-  period_resets_at      timestamptz -- exists
+-- public.user_quotas  (free meter — exists; premium fair-use + realtime meters — added 2026-07-17):
+  ai_scores_remaining        int          -- free 30-day meter (exists)
+  period_resets_at           timestamptz  -- (exists)
+  writing_scores_today       int          -- premium daily counter
+  speaking_scores_today      int          -- premium daily counter
+  daily_counters_date        date         -- rollover marker
+  realtime_seconds_remaining int          -- Realtime examiner meter (§9)
+  realtime_period_resets_at  timestamptz
 ```
 
-Add a unique index on `users.paddle_subscription_id` for idempotent webhook upserts. Keep all plan writes **service-role only** (RLS: client may read own `users` row but not update `plan*` — extend the `0005` policy so `plan*` columns are not client-updatable; simplest is to gate updates through a `SECURITY DEFINER` function or restrict the update policy to non-plan columns).
+Unique indexes on `users.stripe_customer_id` and `users.stripe_subscription_id` for idempotent webhook upserts. All plan writes are **service-role only**: a `BEFORE UPDATE` trigger rejects changes to `plan*`/`stripe_*` columns unless the role is `service_role` (client keeps its `0005` update policy for profile fields only).
 
 ### 4.3 Environment variables (exact names)
 
@@ -208,43 +218,39 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...        # server only — webhook + scoring route
 
-# Paddle
-NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=...  # Paddle.js checkout (public, safe)
-NEXT_PUBLIC_PADDLE_ENV=production    # 'sandbox' | 'production'
-PADDLE_API_KEY=...                   # server only — verify/read subscriptions
-PADDLE_WEBHOOK_SECRET=...            # server only — verify webhook signatures
-PADDLE_PRICE_ID_MONTHLY=pri_...
-PADDLE_PRICE_ID_6MONTH=pri_...
-PADDLE_PRICE_ID_ANNUAL=pri_...
+# Stripe
+STRIPE_SECRET_KEY=sk_live_...        # server only
+STRIPE_WEBHOOK_SECRET=whsec_...      # server only — verify webhook signatures
+# Price IDs are resolved at runtime by lookup_key (premium_monthly, premium_6month,
+# premium_annual, premium_monthly_ppp, premium_6month_ppp, premium_annual_ppp),
+# so no per-price env vars are needed.
 
 # Scoring
 SCORING_MODEL_FREE=...               # cheaper model id for the free meter
 SCORING_MODEL_PAID=...               # stronger model id for subscribers
-LLM_API_KEY=...
+OPENAI_API_KEY=...
 ```
 
 ### 4.4 Integration outline (this stack)
 
-**Checkout (client):** load Paddle.js with `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`, open an overlay checkout for the chosen `PADDLE_PRICE_ID_*`, passing the Supabase `users.id` as `customData.user_id` so the webhook can map back. Paddle auto-applies the localized/PPP price for the buyer's country.
+**Checkout (server-created):** `POST /api/billing/checkout` — requires a signed-in, **non-anonymous** Supabase session. Creates/reuses the Stripe Customer (stored on `users.stripe_customer_id`), resolves the price by `lookup_key` (PPP variant if `x-vercel-ip-country` ∈ PPP list), and creates a subscription-mode Checkout Session with `client_reference_id = users.id` and `subscription_data.metadata.user_id`, `allow_promotion_codes: true`, `payment_method_collection: 'if_required'`, `automatic_tax: enabled`. Client redirects to the returned URL.
 
-**Webhook (server — `pages/api/webhooks/paddle.js`):**
-1. Read raw body, verify the `Paddle-Signature` header against `PADDLE_WEBHOOK_SECRET`. Reject on mismatch.
+**Webhook (server — `pages/api/webhooks/stripe.js`, bodyParser off for raw body):**
+1. Verify the `stripe-signature` header via `stripe.webhooks.constructEvent` with `STRIPE_WEBHOOK_SECRET`. Reject on mismatch.
 2. Use the Supabase **service role** client (never the anon key) to write.
-3. Handle events idempotently, keyed on `paddle_subscription_id`:
-   - `subscription.created` / `subscription.activated` → set `users.plan='premium'`, `plan_status='active'`, `plan_started_at=now()`, `plan_renews_at`, `paddle_customer_id`, `paddle_subscription_id` for the `user_id` in `customData`.
-   - `subscription.updated` → refresh `plan_renews_at` / status.
-   - `subscription.past_due` → `plan_status='past_due'` (keep access through a grace window, then downgrade).
-   - `subscription.canceled` → `plan_status='canceled'`; **retain premium until `plan_renews_at`** (cancel = don't renew, not instant revoke).
-   - `transaction.completed` (one-time, if any) → same activation path.
-   - `adjustment.created` (refund/chargeback) → `plan_status='refunded'`, `plan='free'` immediately.
-4. Return 200 fast; do the DB write before responding but keep it lean (webhook has a timeout).
+3. Handle events idempotently, keyed on `stripe_subscription_id` (state upserts, not increments):
+   - `checkout.session.completed` → map `client_reference_id`/metadata → user; set `plan='premium'`, `plan_status='active'`, `plan_started_at`, `stripe_customer_id`, `stripe_subscription_id`, seed realtime minutes (§9).
+   - `customer.subscription.created`/`updated` → sync `plan_status` from Stripe status (`active`/`trialing` → premium-active; `past_due` → grace; `canceled`/`unpaid`/`incomplete_expired` → downgrade at period end), refresh `plan_renews_at` from `current_period_end`; `cancel_at_period_end=true` → `plan_status='canceled'` but **retain premium until `plan_renews_at`**.
+   - `customer.subscription.deleted` → `plan='free'`, `plan_status='canceled'`.
+   - `invoice.payment_failed` → `plan_status='past_due'` (grace window; Stripe Smart Retries handle dunning).
+   - `charge.refunded` / `charge.dispute.created` → `plan='free'`, `plan_status='refunded'` immediately.
+4. Return 200 fast; unrecognized events are acknowledged and ignored.
 
-**Gating check (server — inside the scoring API route):** before calling the LLM, load the user's `users.plan`/`plan_status`. If `premium` + `active`/`canceled-not-yet-expired` → allow, no decrement. Else run the free-meter transaction (§5). Never trust a client-sent "isPremium" flag.
+**Gating check (server — inside the scoring API route):** unchanged in spirit: the `consume_ai_score` RPC reads `users.plan`/`plan_status`; premium-active (incl. canceled-not-yet-expired) bypasses the free meter but hits the fair-use daily caps (§5.3). Never trust a client-sent "isPremium" flag.
 
 **Upgrades / cancellations / refunds:**
-- Upgrade/downgrade between SKUs → Paddle proration; we just consume the resulting `subscription.updated` webhook.
-- Cancellation → user cancels via Paddle customer portal (link them there); we react to `subscription.canceled`, access persists to period end.
-- Refund/chargeback → `adjustment.created` webhook flips them to free instantly; Paddle absorbs the chargeback fee/liability.
+- SKU changes + cancellation → **Stripe Customer Portal** (`/api/billing/portal` creates a portal session); we consume the resulting `customer.subscription.updated`/`deleted` webhooks. Access persists to period end on cancel.
+- Refund/chargeback → `charge.refunded`/`charge.dispute.created` flips them to free instantly; disputes are our liability (Radar + prepaid-SKU mix keeps the rate down).
 
 ---
 
@@ -281,6 +287,19 @@ Key rules:
 - If the LLM call **fails after** decrement, refund the quota in a `catch` (compensating `+1`), or (cleaner) decrement only on successful score insert within the same transaction boundary.
 - Return **HTTP 402** on `quota_exceeded` so the front-end shows the paywall modal deterministically.
 
+### 5.3 Premium fair-use limits (decided 2026-07-17)
+
+Premium is marketed as "unlimited AI scoring" but carries **abuse caps** sized so no single account can run away with LLM spend (human essay-writing speed bounds organic use; these caps bound scripted use):
+
+| Feature | Premium limit | Worst-case COGS/mo | Typical COGS/mo |
+|---|---|---|---|
+| Writing AI scores (`gpt-5.1` pass, ~2¢ each) | **2/day** (~60/mo) | ~$1.20 | ~$0.25 |
+| Async Speaking scores (Whisper + `gpt-5.1`, ~3¢ each) | **1/day** (~30/mo) | ~$0.90 | ~$0.15 |
+| Realtime AI examiner (§9, mini, ~3–5¢/min) | **60 min/mo** global / **30 min/mo** PPP | ~$2.40 | ~$0.50 |
+| **Total** | | **~$4.50 hard ceiling** | **~$0.90** |
+
+At $4.20 blended ARPU this holds **~80% blended gross margin**; the worst case is profitable on global monthly, ~breakeven on hero/PPP-monthly, and a bounded, rare loss (~-$3/mo) on PPP annual. Enforcement: same transactional RPC pattern as the free meter — `consume_ai_score(p_uid, p_skill)` rolls daily counters in `user_quotas`; Realtime minutes decrement via `consume_realtime_seconds` before a session token is minted. Free tier is unchanged (3 scores / 30 days, no Realtime).
+
 ---
 
 ## 6. AdSense coexistence
@@ -311,7 +330,7 @@ AdSense/Search can flag large sets of thin, templated pages (55→300 near-ident
 | Risk | Reality | Mitigation |
 |---|---|---|
 | **"IELTS" trademark** | IELTS is a registered trademark (British Council / IDP / Cambridge). Using it in the brand/domain (`ielts-bank.com`) and marketing carries real risk. | Add a clear **"not affiliated with or endorsed by the IELTS partners"** disclaimer in footer + about + checkout. Use "IELTS" descriptively ("practice for the IELTS exam"), never implying official status. Avoid official logos. Have a fallback brand name ready; keep the trademark-safe descriptive positioning. Consider IP counsel before scaling paid ads on the brand term. |
-| **Refunds / chargebacks** (exam-prep is high-dispute: buyers dispute after their test date or after "not enough time") | Chargebacks can carry fees and threaten processor standing. | **Paddle (MoR) absorbs chargeback liability.** Favor the 6-month **prepaid** hero SKU over rolling monthly (fewer renewal disputes). Clear refund policy (e.g. pro-rated / 7-day). PPP pricing reduces the fraud-heavy "full price in a low-income region" cohort. Deliver value fast (instant first score) so disputes are rarer. |
+| **Refunds / chargebacks** (exam-prep is high-dispute: buyers dispute after their test date or after "not enough time") | Chargebacks can carry fees and threaten processor standing. | **Chargeback liability is now ours (Stripe, we are MoR)** — Stripe Radar on, prepaid hero SKU favored. Favor the 6-month **prepaid** hero SKU over rolling monthly (fewer renewal disputes). Clear refund policy (e.g. pro-rated / 7-day). PPP pricing reduces the fraud-heavy "full price in a low-income region" cohort. Deliver value fast (instant first score) so disputes are rarer. |
 | **Seasonality** | IELTS demand spikes around intake/admissions cycles; summer/holiday lulls. | The 6-month/annual SKUs smooth cash across troughs. AdSense floor persists year-round. Plan content pushes ahead of known intake peaks. |
 | **AdSense policy** (low-value templated pages; invalid traffic) | Account suspension would zero the current revenue line. | §6.3 mitigations; editorial review queue gating; diversify to subscription revenue so AdSense isn't load-bearing. |
 | **LLM cost blow-out from abuse** | A scripted attacker could burn LLM spend via the scoring route. | Server-side metering (§5) caps free usage; auth required for scoring; rate-limit per IP/user; premium is bounded by human essay-writing speed. COGS at 0.3–1.3¢/score stays negligible. |
@@ -333,15 +352,15 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 5. **Paywall modal** triggered on HTTP 402.
 
 ### Phase C — Minimum Viable Paid Launch  ← **first money**
-6. **Add billing columns** to `users` (§4.2) + service-role-only write policy.
-7. **Paddle setup**: create the 3 SKUs + PPP price overrides for India/MENA/SEA; sandbox test.
-8. **Checkout**: Paddle.js overlay with `user_id` in `customData`.
-9. **Webhook route** (`pages/api/webhooks/paddle.js`): signature verify + idempotent upsert of `plan`/`plan_status`/`plan_renews_at`/`paddle_*` (§4.4).
-10. **Gate in the scoring route**: premium bypasses the meter; free uses it.
+6. **Add billing columns** to `users` (§4.2) + service-role-only write trigger; premium daily counters + realtime meter on `user_quotas`.
+7. **Stripe setup**: one Premium product, 6 prices by `lookup_key` (3 global + 3 PPP); promo-code support for launch discounts and E2E verification.
+8. **Checkout**: `POST /api/billing/checkout` → server-resolved price (geo → PPP) → Stripe Checkout redirect.
+9. **Webhook route** (`pages/api/webhooks/stripe.js`): signature verify + idempotent upsert of `plan`/`plan_status`/`plan_renews_at`/`stripe_*` (§4.4).
+10. **Gate in the scoring route**: premium bypasses the free meter into fair-use daily caps (§5.3); free uses the 3/30-day meter.
 11. **AdSense gate**: hide ads when `plan='premium'`.
-12. **Basic billing/account page** + link to Paddle customer portal for cancel/update.
+12. **/pricing page** + **Basic billing/account section** + link to Stripe Customer Portal for cancel/update.
 
-> **MVP-paid-launch = steps 1–12.** That is: auth, one scored skill (Writing), server-side free meter, Paddle checkout + webhook, `users.plan` gate, ad-free perk. Nothing else is required to take the first dollar. Target this before any dashboard work.
+> **MVP-paid-launch = steps 1–12.** That is: auth, one scored skill (Writing), server-side free meter, Stripe Checkout + webhook, `users.plan` gate, ad-free perk. Nothing else is required to take the first dollar. Target this before any dashboard work.
 
 ### Phase D — Retention & expansion (after money flows)
 13. **Progress analytics** dashboard from `attempts` + `scores` time series (premium perk).
@@ -352,11 +371,46 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 
 ---
 
+## 9. Realtime AI Speaking Examiner (premium flagship feature)
+
+**Decision (2026-07-17):** build Speaking's premium tier on the OpenAI Realtime voice API — a live AI examiner that conducts the full 3-part IELTS interview (adaptive Part 1 questions, timed Part 2 cue card with 1-min prep, probing Part 3 follow-ups), instead of only the current record → Whisper → transcript-score pipeline.
+
+### 9.1 Why
+
+1. **Real exam simulation** — the actual test is an 11–14 min live interview; a static cue card can't simulate adaptive follow-ups, interruptions, or timing. This is the largest gap between our product and the exam.
+2. **Unlocks the 4th criterion** — the model hears audio natively, enabling pronunciation/intonation *feedback* (qualitative only; do not issue a pronunciation *band* until calibrated — AI pronunciation banding reliability is unproven).
+3. **Competitive parity** with the voice-first cohort (Sprechify $11–23/mo, SmallTalk2Me, Langogh, ielts.international) while keeping our price undercut.
+
+### 9.2 Architecture (hybrid)
+
+- **Conduct** the interview on **`gpt-realtime-2.1-mini`** ($10/$20 per 1M audio tokens; ~$0.02–0.05/min with prompt caching — caching is mandatory: the API re-bills full conversation history each turn, ~98.75% discount cached). Client connects to OpenAI directly via WebRTC; our API route only mints short-lived ephemeral session tokens **after** the minutes-quota check, with hard session-duration caps.
+- **Score** afterwards with the existing `gpt-5.1` rubric-anchored pass over the captured transcript/audio (scoring trust stays in the strong text model — the voice model is the examiner, not the grader).
+- Flagship `gpt-realtime-2.1` ($32/$64) only if mini's examiner persona proves inadequate in testing — it consumes an entire PPP month's revenue in 3–4 mocks, so it is not the default.
+
+### 9.3 Cost & metering
+
+| | Per full 14-min mock | Per 5-min drill |
+|---|---|---|
+| Realtime mini (cached) | ~$0.30–0.70 | ~$0.10–0.25 |
+| Realtime flagship | ~$1.00–1.60 | ~$0.35–0.55 |
+| (Current async pipeline) | ~$0.02–0.03/score | — |
+
+- **Metered in minutes, not scores**: premium includes **60 min/mo** (global) / **30 min/mo** (PPP) — ≈4 full mocks. Schema: `user_quotas.realtime_seconds_remaining` + `realtime_period_resets_at`, seeded on subscription activation and refilled on renewal (webhook).
+- **Free tier:** no Realtime access; optional one-time **3-min taster** (~10–15¢ COGS) as a paywall demo.
+- **Never unlimited** — unbounded Realtime would require ~$15–20/mo pricing and surrenders our price positioning.
+- **Abuse surface:** a live session burns money per-minute; quota check happens **before** token mint, sessions carry server-set max duration, and per-IP rate limits apply to the mint route.
+
+### 9.4 Expected P&L impact
+
+At the moderate scenario (600 subs, ~40% speaking adoption, ~4 mocks/mo avg on mini): **~$300–650/mo COGS vs ~$2,500 MRR** — material but fine, and it should lift conversion/retention in the voice-first competitor cohort we currently concede.
+
+---
+
 ## Appendix — Unit economics & sources
 
 **Per-score COGS (2026 model prices):** a Writing Task 2 evaluation is ~1.5–3k input tokens (essay + rubric + instructions) and ~0.8–1.5k output tokens. At GPT-4o mini ($0.15/$0.60 per 1M in/out) or Gemini 2.0/3.x Flash ($0.10/$0.40) that is **~0.1–0.3¢** single-pass; a two-pass or stronger-model paid score, or Speaking with transcription, pushes it to **~0.4–1.3¢**. Even a power subscriber scoring 100 items/month costs **<$1.30** in LLM spend against ~$4–10 revenue.
 
-**Infra fixed cost (2026):** Supabase Pro **$25/mo**, Vercel Pro **$20/mo** (+usage, realistically ~$40–70 at moderate traffic). Total platform floor **~$50–100/mo** — covered by the AdSense floor alone; every subscriber is near-pure margin after Paddle's ~6–7%.
+**Infra fixed cost (2026):** Supabase Pro **$25/mo**, Vercel Pro **$20/mo** (+usage, realistically ~$40–70 at moderate traffic). Total platform floor **~$50–100/mo** — covered by the AdSense floor alone; every subscriber is near-pure margin after Stripe's ~3–4% (fees + Stripe Tax/Billing overhead).
 
 **Sources (2026):**
 - Paddle fees & MoR: [paddle.com/pricing](https://www.paddle.com/pricing), [Paddle VAT/GST handling](https://www.paddle.com/help/sell/tax/how-paddle-handles-vat-on-your-behalf), [Paddle taxable countries](https://www.paddle.com/help/sell/tax/which-countries-does-paddle-charge-sales-tax-or-vat-for)

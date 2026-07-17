@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   ClipboardCheck,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
@@ -30,6 +31,7 @@ const NAV_LINKS = [
   { label: 'Speaking', href: '/speakingquestion', icon: Mic },
   { label: 'Mock tests', href: '/mock-test', icon: ClipboardCheck },
   { label: 'Blog', href: '/blog', icon: Newspaper },
+  { label: 'Premium', href: '/pricing', icon: Sparkles },
 ];
 
 function BrandMark() {
