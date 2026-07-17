@@ -13,6 +13,7 @@ import { getAnonId, track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
+import { ScoringProgress, CriterionFeedback } from '../components/question/ScoreUI';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -113,15 +114,11 @@ function ScoreReport({ task, result }) {
           const c = criteria[key] || {};
           return (
             <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-1.5 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-foreground">{label}</h3>
                 <BandPill band={c.band} />
               </div>
-              {c.feedback && (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {c.feedback}
-                </p>
-              )}
+              <CriterionFeedback criterion={c} />
             </div>
           );
         })}
@@ -436,14 +433,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
 
       {/* Loading modal */}
       <Modal open={isLoading} onClose={() => {}} title="Analyzing your response" dismissible={false}>
-        <div className="flex flex-col items-center gap-4 py-6 text-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-accent" />
-          <p className="text-sm text-muted-foreground">
-            Scoring against the official IELTS rubric.
-            <br />
-            This can take up to 60 seconds.
-          </p>
-        </div>
+        <ScoringProgress />
       </Modal>
     </>
   );

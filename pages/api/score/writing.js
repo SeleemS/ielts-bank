@@ -191,7 +191,7 @@ UNDER-LENGTH PENALTY: If the response is below the required minimum (150 words f
 
 OVERALL BAND RULE: overallBand = the average of the four criterion bands, rounded to the NEAREST 0.5 (a .25 rounds up to .5, a .75 rounds up to the next whole). Compute it exactly this way; do not eyeball it.
 
-FEEDBACK STYLE: Be specific and constructive. In each criterion's feedback, name the concrete strengths and weaknesses you observed and quote or paraphrase actual phrases from the essay as evidence. Improvements must be actionable. correctedExamples must take real problematic sentences/phrases from the essay ("original") and give an improved version ("suggestion").
+FEEDBACK STYLE: Be specific, constructive and SCANNABLE. For each criterion give 1-3 "strengths" bullets and 1-3 "improvements" bullets. Each bullet is ONE short sentence (under 20 words), states one concrete observation, and quotes or paraphrases a brief phrase from the essay as evidence where useful. NO long paragraphs. The top-level "improvements" list holds the 3-5 highest-impact actions across all criteria. correctedExamples must take real problematic sentences/phrases from the essay ("original") and give an improved version ("suggestion").
 
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
 }
@@ -203,12 +203,20 @@ function buildJsonSchema(task) {
     additionalProperties: false,
     properties: {
       band: { type: 'number', description: 'Band 0-9, halves allowed' },
-      feedback: {
-        type: 'string',
-        description: 'Evidence-based feedback citing the essay',
+      strengths: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          '1-3 bullets, each under 20 words, naming something the candidate did well on this criterion with brief quoted evidence',
+      },
+      improvements: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          '1-3 actionable bullets, each under 20 words, naming what would raise this band, citing the essay where possible',
       },
     },
-    required: ['band', 'feedback'],
+    required: ['band', 'strengths', 'improvements'],
   };
   return {
     name: 'ielts_writing_assessment',

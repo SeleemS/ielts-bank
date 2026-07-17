@@ -25,6 +25,7 @@ import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
 import { getAnonId, track } from '../src/lib/analytics';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
+import { ScoringProgress, CriterionFeedback } from '../src/components/question/ScoreUI';
 
 const SITE_URL = 'https://ielts-bank.com';
 const SCORE_API = '/api/score/writing';
@@ -113,13 +114,11 @@ function ScoreReport({ apiTask, result }) {
           const c = criteria[key] || {};
           return (
             <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-1.5 flex items-center justify-between gap-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-foreground">{label}</h3>
                 <BandPill band={c.band} />
               </div>
-              {c.feedback && (
-                <p className="text-sm leading-relaxed text-muted-foreground">{c.feedback}</p>
-              )}
+              <CriterionFeedback criterion={c} />
             </div>
           );
         })}
@@ -529,11 +528,11 @@ export default function WritingCheckerPage() {
 
             {/* Loading state */}
             {isLoading && (
-              <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-8 text-center shadow-sm">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-accent" />
-                <p className="text-sm text-muted-foreground">
-                  Scoring against the official IELTS rubric. This can take up to a minute.
-                </p>
+              <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+                <h2 className="mb-2 text-lg font-bold tracking-tight text-foreground">
+                  Analyzing your response
+                </h2>
+                <ScoringProgress />
               </div>
             )}
 
