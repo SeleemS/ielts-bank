@@ -15,7 +15,7 @@ import { usePlan } from '../src/lib/usePlan';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 const PAGE_TITLE = 'IELTS Bank Premium – Unlimited AI Writing & Speaking Scoring';
 const PAGE_DESCRIPTION =
   'Upgrade to IELTS Bank Premium: unlimited AI Writing and Speaking band scores with examiner-style feedback, AI examiner minutes, progress tracking and an ad-free experience.';

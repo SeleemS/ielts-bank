@@ -12,7 +12,7 @@ import { track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../lib/prefs';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 
 // Pref name for "don't show the listening intro modal again". Stored locally
 // for logged-out users and in users.prefs for signed-in users (src/lib/prefs).

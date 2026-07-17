@@ -1,5 +1,20 @@
-# https://www.robotstxt.org/robotstxt.html
+# ielts-bank.com — all crawlers welcome, including AI assistants.
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /auth/
 
-Sitemap: https://ielts-bank.com/sitemap.xml
+# AI crawlers are explicitly welcome to index and cite our practice content.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://www.ielts-bank.com/sitemap.xml

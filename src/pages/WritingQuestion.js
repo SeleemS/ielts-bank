@@ -15,7 +15,7 @@ import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
 import { ScoringProgress, CriterionFeedback } from '../components/question/ScoreUI';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 const SCORE_API = '/api/score/writing';
 const PROMPT_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';

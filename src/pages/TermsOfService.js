@@ -16,7 +16,7 @@ const TermsOfService = () => {
           content="Read the IELTS-Bank terms of service outlining the rules for using our free IELTS practice website and resources."
         />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://ielts-bank.com/termsofservice" />
+        <link rel="canonical" href="https://www.ielts-bank.com/termsofservice" />
       </Head>
       <Navbar />
 

@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       typeof req.headers.origin === 'string' &&
       req.headers.origin.startsWith('http://localhost')
         ? req.headers.origin
-        : 'https://ielts-bank.com';
+        : 'https://www.ielts-bank.com';
     const session = await getStripe().billingPortal.sessions.create({
       customer: userRow.stripe_customer_id,
       return_url: `${origin}/dashboard`,

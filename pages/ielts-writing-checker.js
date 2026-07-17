@@ -27,7 +27,7 @@ import { getAnonId, track } from '../src/lib/analytics';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import { ScoringProgress, CriterionFeedback } from '../src/components/question/ScoreUI';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 const SCORE_API = '/api/score/writing';
 const CANONICAL = `${SITE_URL}/ielts-writing-checker`;
 const DRAFT_KEY = 'ielts-writing-checker-draft';

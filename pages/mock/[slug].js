@@ -15,7 +15,7 @@ import { useAuth } from '../../src/lib/auth';
 import { usePlan } from '../../src/lib/usePlan';
 import { track } from '../../src/lib/analytics';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 const PASSAGE_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6';
 

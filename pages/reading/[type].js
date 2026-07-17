@@ -11,7 +11,7 @@ import {
   READING_QUESTION_TYPE_SLUGS,
 } from '../../lib/readingQuestionTypes';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 
 const DIFFICULTY_STYLES = {
   easy: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',

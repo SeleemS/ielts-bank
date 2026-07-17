@@ -16,7 +16,7 @@ const PrivacyPolicy = () => {
           content="Read the IELTS-Bank privacy policy covering how we handle information when you use our free IELTS practice resources."
         />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://ielts-bank.com/privacypolicy" />
+        <link rel="canonical" href="https://www.ielts-bank.com/privacypolicy" />
       </Head>
       <Navbar />
 

@@ -6,7 +6,7 @@ import Footer from "../../src/components/Footer";
 import { Card } from "../../components/ui/card";
 import { posts } from "../../lib/posts";
 
-const SITE_URL = "https://ielts-bank.com";
+import { SITE_URL } from "../../lib/site";
 const PAGE_TITLE = "IELTS Blog: Tips, Strategies and Band Score Guides | IELTS-Bank";
 const PAGE_DESCRIPTION =
   "Free IELTS preparation articles covering Reading, Writing, Listening and Speaking strategies, band score calculation, and proven tips to raise your score.";

@@ -25,7 +25,7 @@ import { getSupabase } from '../../lib/supabase';
 import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 const SCORE_API = '/api/score/speaking';
 const UPLOAD_BUCKET = 'speaking-uploads';
 // Hard cap on the recording we upload/score (protects the upstream + storage).

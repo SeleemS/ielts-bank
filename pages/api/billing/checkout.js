@@ -36,7 +36,7 @@ function siteOrigin(req) {
     const origin = req.headers.origin;
     if (typeof origin === 'string' && origin.startsWith('http://localhost')) return origin;
   }
-  return 'https://ielts-bank.com';
+  return 'https://www.ielts-bank.com';
 }
 
 export default async function handler(req, res) {

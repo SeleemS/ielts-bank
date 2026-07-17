@@ -9,6 +9,8 @@ export default function Document() {
         <link rel="apple-touch-icon" href="/logo192.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
+        {/* Allow large image previews in Google Search / Discover. */}
+        <meta name="robots" content="max-image-preview:large" />
       </Head>
       <body>
         <Main />

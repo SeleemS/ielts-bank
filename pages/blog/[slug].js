@@ -8,7 +8,7 @@ import { posts } from "../../lib/posts";
 import { sanitizeHtml } from "../../lib/sanitize";
 import AdUnit from "../../src/components/AdUnit";
 
-const SITE_URL = "https://ielts-bank.com";
+import { SITE_URL } from "../../lib/site";
 
 // Explicit "prose"-like typography via arbitrary child selectors. The
 // @tailwindcss/typography plugin is intentionally NOT used; Tailwind Preflight
@@ -37,7 +37,9 @@ export default function BlogPost({ post }) {
     "@type": "Article",
     headline: post.title,
     description: post.excerpt,
+    image: [ogImage],
     datePublished: new Date(post.date).toISOString(),
+    dateModified: new Date(post.date).toISOString(),
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": canonical,
@@ -51,6 +53,10 @@ export default function BlogPost({ post }) {
       "@type": "Organization",
       name: "IELTS-Bank",
       url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/logo512.png`,
+      },
     },
   };
 

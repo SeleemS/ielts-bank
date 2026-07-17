@@ -68,7 +68,7 @@ const ContactUs = () => {
           content="Get in touch with the IELTS-Bank team. Email us at info@ielts-bank.com or use our contact form for questions about IELTS practice and preparation."
         />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://ielts-bank.com/contactus" />
+        <link rel="canonical" href="https://www.ielts-bank.com/contactus" />
       </Head>
       <Navbar />
 

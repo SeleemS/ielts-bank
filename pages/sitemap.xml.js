@@ -2,7 +2,7 @@ import { posts } from '../lib/posts';
 import { SKILLS, listMockTests, listPassages } from '../lib/supabase';
 import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 
 const STATIC_ROUTES = [
   '/',

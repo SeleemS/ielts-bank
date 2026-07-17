@@ -21,7 +21,7 @@ import { track } from '../src/lib/analytics';
 import NewsletterSignup from '../src/components/NewsletterSignup';
 import { useAuth } from '../src/lib/auth';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 const PAGE_TITLE = 'IELTS Band Score Calculator – Listening, Reading & Overall Band';
 const PAGE_DESCRIPTION =
   'Free IELTS band score calculator. Convert your Listening and Reading raw scores to band scores, add Writing and Speaking, and get your estimated overall band with the official rounding rule.';

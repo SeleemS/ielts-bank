@@ -8,7 +8,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { listMockTests } from '../lib/supabase';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 
 export default function MockTestIndex({ mocks = [] }) {
   return (

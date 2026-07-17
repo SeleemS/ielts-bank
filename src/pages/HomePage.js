@@ -24,7 +24,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import NewsletterSignup from '../components/NewsletterSignup';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
   'Master IELTS with real, auto-scored practice'
 )}&type=home`;
@@ -35,9 +35,30 @@ const PAGE_DESCRIPTION =
 
 const websiteJsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'IELTS-Bank',
-  url: SITE_URL,
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'IELTS-Bank',
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo512.png`,
+        width: 512,
+        height: 512,
+      },
+      description:
+        'Free IELTS practice platform: auto-scored Reading, Writing, Listening and Speaking questions with AI band feedback and full-length mock tests.',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: 'IELTS-Bank',
+      url: SITE_URL,
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      inLanguage: 'en',
+    },
+  ],
 };
 
 const fmt = (n) => (typeof n === 'number' && n > 0 ? `${n}+` : '—');

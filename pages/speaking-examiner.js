@@ -16,7 +16,7 @@ import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../lib/site';
 const PAGE_TITLE = 'Live AI IELTS Speaking Examiner – Real Mock Interview';
 const PAGE_DESCRIPTION =
   'Take a live IELTS Speaking mock interview with an AI examiner: adaptive Part 1 questions, a timed Part 2 cue card, probing Part 3 follow-ups, and a band score with feedback at the end.';

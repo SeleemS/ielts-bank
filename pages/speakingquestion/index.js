@@ -7,8 +7,9 @@ import { Badge } from '../../components/ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
 import { cn } from '../../src/lib/utils';
 import { listSpeakingItems } from '../../lib/supabase';
+import { SECTION_FAQS, FaqSection, faqJsonLdFor } from '../../src/components/SectionLanding';
 
-const SITE_URL = 'https://ielts-bank.com';
+import { SITE_URL } from '../../lib/site';
 const PAGE_TITLE = 'IELTS Speaking Practice with AI Feedback | IELTS-Bank';
 const PAGE_DESCRIPTION =
   'Practise IELTS Speaking Part 1, Part 2 cue cards and Part 3 discussion questions with an examiner voice. Record your answers and get instant AI band feedback on Fluency, Lexical Resource and Grammar.';
@@ -161,6 +162,12 @@ export default function SpeakingIndex({ items = [] }) {
         <meta property="og:image:alt" content="IELTS Speaking Practice — IELTS-Bank" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content={OG_IMAGE} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqJsonLdFor(SECTION_FAQS.speaking)).replace(/</g, '\\u003c'),
+          }}
+        />
       </Head>
 
       <div className="flex min-h-screen flex-col bg-background font-sans text-foreground">
@@ -219,6 +226,7 @@ export default function SpeakingIndex({ items = [] }) {
                 </p>
               </div>
             )}
+            <FaqSection faqs={SECTION_FAQS.speaking} />
           </div>
         </main>
 
