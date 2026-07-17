@@ -51,6 +51,7 @@ const PERKS = [
   'Unlimited AI Writing scores (fair use) with per-criterion band feedback',
   'Unlimited AI Speaking scores (fair use) from your recordings',
   '60 live AI examiner minutes per month — real-time mock speaking interviews',
+  'All full-length timed mock tests with band estimates and section breakdowns',
   'Progress tracking across attempts',
   'Stronger scoring model + priority processing',
   'Completely ad-free',

@@ -14,20 +14,21 @@ export default function MockTestIndex({ mocks = [] }) {
   return (
     <>
       <Head>
-        <title>Free IELTS Mock Tests | IELTS-Bank</title>
-        <meta name="description" content="Take a free full-length IELTS Reading or Listening mock test with a real timer, instant scoring and an estimated band." />
+        <title>IELTS Mock Tests | IELTS-Bank</title>
+        <meta name="description" content="Take a full-length IELTS Reading or Listening mock test with a real timer, instant scoring, a per-section breakdown and an estimated band. Included with Premium." />
         <link rel="canonical" href={`${SITE_URL}/mock-test`} />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <Badge variant="emerald">Full test practice</Badge>
+            <Badge variant="emerald">Included with Premium</Badge>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Free IELTS mock tests
+              IELTS mock tests
             </h1>
             <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-              Practise a complete test under timed conditions, then review every answer and get an estimated IELTS band.
+              Practise a complete test under timed conditions, then review every answer with a
+              per-section breakdown and an estimated IELTS band.
             </p>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -37,6 +38,7 @@ export default function MockTestIndex({ mocks = [] }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className="capitalize">{mock.skill}</Badge>
                     {mock.module ? <Badge variant="outline" className="capitalize">{mock.module}</Badge> : null}
+                    <Badge variant="emerald">Premium</Badge>
                   </div>
                   <h2 className="mt-4 text-xl font-bold text-foreground">{mock.title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{mock.description}</p>

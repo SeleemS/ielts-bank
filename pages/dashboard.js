@@ -25,7 +25,7 @@ import LearningInsights from '../src/components/dashboard/LearningInsights';
 // + slug embedded (PostgREST embedding on the passage_id FK; passages have a
 // public read policy). Writing is handled by the scores query below.
 const ATTEMPTS_SELECT =
-  'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill )';
+  'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
 
 // AI writing/speaking scores, newest first. The prompt title lives on the
 // linked attempt's passage, so embed attempts -> passages (two-level embedding).

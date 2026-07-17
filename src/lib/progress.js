@@ -85,6 +85,7 @@ export async function resolvePassageId(slugOrLegacyId, skill) {
 export async function saveAttemptToSupabase({
   userId,
   passageId,
+  mockTestId,
   skill,
   responses,
   rawScore,
@@ -100,6 +101,7 @@ export async function saveAttemptToSupabase({
     const row = {
       user_id: userId,
       passage_id: passageId ?? null,
+      mock_test_id: mockTestId ?? null,
       skill,
       responses: responses ?? {},
       raw_score: typeof rawScore === 'number' ? rawScore : null,

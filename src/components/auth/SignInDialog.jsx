@@ -68,6 +68,7 @@ export default function SignInDialog({
   title = 'Create your free account',
   description = 'Save your scores and progress across devices.',
   trigger = 'site',
+  initialMode = 'signup', // 'signup' | 'signin'
 }) {
   const {
     user,
@@ -99,7 +100,7 @@ export default function SignInDialog({
   // Reset whenever the dialog is (re)opened.
   React.useEffect(() => {
     if (open) {
-      setMode('signup');
+      setMode(initialMode === 'signin' ? 'signin' : 'signup');
       setStep('account');
       setVerifySource('signup');
       setPassword('');
@@ -111,7 +112,7 @@ export default function SignInDialog({
       setNotice('');
       track('signin_gate_shown', { trigger, signed_in: false });
     }
-  }, [open, trigger]);
+  }, [open, trigger, initialMode]);
 
   // Esc + scroll lock.
   React.useEffect(() => {

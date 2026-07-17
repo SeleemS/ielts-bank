@@ -46,8 +46,10 @@ export function formatBand(band) {
 }
 
 // Normalize a reading/listening `attempts` row into a common activity item.
+// Mock-test attempts carry mock_tests instead of a passage.
 function attemptToItem(row) {
   const passage = Array.isArray(row.passages) ? row.passages[0] : row.passages;
+  const mock = Array.isArray(row.mock_tests) ? row.mock_tests[0] : row.mock_tests;
   const band = toBand(row.band);
   const raw = row.raw_score === null || row.raw_score === undefined ? null : Number(row.raw_score);
   return {
@@ -55,8 +57,8 @@ function attemptToItem(row) {
     skill: row.skill,
     band,
     date: row.submitted_at || row.created_at,
-    title: passage?.title || 'Practice passage',
-    href: passageHref(passage),
+    title: mock?.title || passage?.title || 'Practice passage',
+    href: mock?.slug ? `/mock/${mock.slug}` : passageHref(passage),
     // Reading/Listening are auto-scored: surface the correct-answer count.
     detail: raw === null ? null : `${raw} correct`,
     perQuestion: row.per_question || {},

@@ -57,10 +57,11 @@ function persistAttempt(skill, storageKey, answers, result, questions, startedAt
 // attempt into Supabase (in addition to the localStorage write above). This is
 // fully fail-soft — any resolution/DB error is swallowed so the results UI is
 // never affected. Logged-out/offline users keep only the localStorage copy.
-async function persistAttemptToSupabase(userId, skill, storageKey, answers, result, questions, startedAt, submittedAt, module) {
+async function persistAttemptToSupabase(userId, skill, storageKey, answers, result, questions, startedAt, submittedAt, module, mockTestId) {
   if (!userId || !storageKey) return;
   try {
-    const passageId = await resolvePassageId(storageKey, skill);
+    // Mock attempts link to mock_tests, not a single passage.
+    const passageId = mockTestId ? null : await resolvePassageId(storageKey, skill);
     const band = estimateBand(result.score, result.total, skill, module);
     const perQuestion = {};
     Object.entries(result.byNumber).forEach(([num, item]) => {
@@ -73,6 +74,7 @@ async function persistAttemptToSupabase(userId, skill, storageKey, answers, resu
     const res = await saveAttemptToSupabase({
       userId,
       passageId,
+      mockTestId: mockTestId || null,
       skill,
       responses: answers || {},
       rawScore: result.score,
@@ -92,9 +94,18 @@ async function persistAttemptToSupabase(userId, skill, storageKey, answers, resu
   }
 }
 
-function ResultsSummary({ score, total, skill, module, showBand, onReset, summaryRef, signedIn }) {
+function ResultsSummary({ score, total, skill, module, showBand, onReset, summaryRef, signedIn, sections, byNumber }) {
   const pct = total ? Math.round((score / total) * 100) : 0;
   const band = showBand ? estimateBand(score, total, skill, module) : null;
+  // Per-section breakdown for mock tests: count correct answers per section.
+  const sectionScores =
+    Array.isArray(sections) && byNumber
+      ? sections.map((section) => ({
+          label: section.label,
+          total: section.numbers.length,
+          correct: section.numbers.filter((n) => byNumber[n]?.correct).length,
+        }))
+      : null;
   return (
     <div
       ref={summaryRef}
@@ -123,6 +134,21 @@ function ResultsSummary({ score, total, skill, module, showBand, onReset, summar
           Try again
         </Button>
       </div>
+      {sectionScores && (
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {sectionScores.map((s) => (
+            <div key={s.label} className="rounded-md border border-border bg-card px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {s.label}
+              </div>
+              <div className="mt-0.5 text-lg font-bold tabular-nums text-foreground">
+                {s.correct}
+                <span className="text-sm font-medium text-muted-foreground"> / {s.total}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <p className="mt-3 text-sm text-muted-foreground">
         Review your answers below — correct answers are shown in green and each incorrect
         question reveals the right answer.
@@ -156,8 +182,13 @@ export default function QuestionEngine({
   postSubmitContent = null,
   durationSeconds = null,
   module = 'academic',
+  // Mock-test extras: link the saved attempt to mock_tests, and show a
+  // per-section score breakdown ([{ label, numbers: [1, 2, …] }]).
+  mockTestId = null,
+  sections = null,
 }) {
   const [answers, setAnswers] = useState({});
+  const [confirmArmed, setConfirmArmed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
   const [flagged, setFlagged] = useState([]);
@@ -270,7 +301,7 @@ export default function QuestionEngine({
     }
     if (user?.id) {
       // Cross-device mirror for signed-in users (fire-and-forget, fail-soft).
-      persistAttemptToSupabase(user.id, skill, storageKey, answers, result, questions, startedAt, submittedAt, module).catch(
+      persistAttemptToSupabase(user.id, skill, storageKey, answers, result, questions, startedAt, submittedAt, module, mockTestId).catch(
         () => {}
       );
     }
@@ -289,7 +320,23 @@ export default function QuestionEngine({
       });
       window.setTimeout(() => resultsRef.current?.focus(), 0);
     }
-  }, [groups, answers, skill, storageKey, user?.id, inProgressKey, module, questions, answeredCount]);
+  }, [groups, answers, skill, storageKey, user?.id, inProgressKey, module, questions, answeredCount, mockTestId]);
+
+  // Two-step submit: with unanswered questions, the first click arms an
+  // inline confirmation instead of submitting. Any answer change disarms it.
+  const unansweredCount = totalQuestions - answeredCount;
+  const handleSubmitClick = useCallback(() => {
+    if (unansweredCount > 0 && !confirmArmed) {
+      setConfirmArmed(true);
+      return;
+    }
+    setConfirmArmed(false);
+    handleSubmit();
+  }, [unansweredCount, confirmArmed, handleSubmit]);
+
+  useEffect(() => {
+    setConfirmArmed(false);
+  }, [answeredCount]);
 
   useEffect(() => {
     if (!hydrated || submitted || !timed || !deadline) return undefined;
@@ -392,6 +439,8 @@ export default function QuestionEngine({
             onReset={handleReset}
             summaryRef={resultsRef}
             signedIn={Boolean(user?.id)}
+            sections={sections}
+            byNumber={results.byNumber}
           />
           {postSubmitContent}
         </>
@@ -439,11 +488,17 @@ export default function QuestionEngine({
 
       {!submitted && (
         <div className="sticky bottom-0 -mx-1 mt-2 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-1 py-4 backdrop-blur">
-          <span className="text-sm text-muted-foreground">
-            {answeredCount} / {totalQuestions} answered
+          <span className={cn('text-sm', confirmArmed ? 'font-medium text-amber-600' : 'text-muted-foreground')}>
+            {confirmArmed
+              ? `${unansweredCount} question${unansweredCount === 1 ? '' : 's'} unanswered — submit anyway?`
+              : `${answeredCount} / ${totalQuestions} answered`}
           </span>
-          <Button variant="accent" size="lg" onClick={handleSubmit}>
-            Submit answers
+          <Button
+            variant={confirmArmed ? 'default' : 'accent'}
+            size="lg"
+            onClick={handleSubmitClick}
+          >
+            {confirmArmed ? 'Submit anyway' : 'Submit answers'}
           </Button>
         </div>
       )}
