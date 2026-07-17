@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalizeSpelling, estimateBand, gradeAll, gradeQuestion, normalizeText } from './grade';
+import {
+  canonicalizeSpelling,
+  cleanGroupPrompt,
+  estimateBand,
+  gradeAll,
+  gradeQuestion,
+  normalizeText,
+  stripOptionKeyPrefix,
+} from './grade';
 
 const question = (answerKey) => ({ number: 1, answerKey });
 
@@ -37,5 +45,30 @@ describe('question grading', () => {
   it('uses the module-aware forty-question band conversion', () => {
     expect(estimateBand(30, 40, 'reading', 'academic')).not.toBe(estimateBand(30, 40, 'reading', 'general'));
     expect(estimateBand(30, 40, 'listening')).toBeTypeOf('number');
+  });
+
+  it('strips a duplicated option key from the option text', () => {
+    expect(stripOptionKeyPrefix('A', 'A) It suits a small space.')).toBe('It suits a small space.');
+    expect(stripOptionKeyPrefix('B', 'B. Browns provide carbon.')).toBe('Browns provide carbon.');
+    expect(stripOptionKeyPrefix('C', '(C) A closed bin.')).toBe('A closed bin.');
+    // A different letter, or a legitimate word, is left alone.
+    expect(stripOptionKeyPrefix('A', 'B) Not this option.')).toBe('B) Not this option.');
+    expect(stripOptionKeyPrefix('A', 'Alligators eat greens.')).toBe('Alligators eat greens.');
+    expect(stripOptionKeyPrefix('A', 'A)')).toBe('A)');
+  });
+
+  it('drops the redundant "Question N:" lead-in from group prompts', () => {
+    expect(cleanGroupPrompt('Question 7: Choose the correct letter, A, B, C or D.')).toBe(
+      'Choose the correct letter, A, B, C or D.'
+    );
+    expect(cleanGroupPrompt('Questions 1–6: Do the statements agree?')).toBe(
+      'Do the statements agree?'
+    );
+    expect(cleanGroupPrompt('Section 2 · Question 15: Choose one answer.')).toBe(
+      'Section 2 · Choose one answer.'
+    );
+    expect(cleanGroupPrompt('Label the town map. Where is each place?')).toBe(
+      'Label the town map. Where is each place?'
+    );
   });
 });

@@ -4,7 +4,7 @@ import { Input } from '../../../components/ui/input';
 import { Select } from '../../../components/ui/select';
 import { Checkbox } from '../../../components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../../../components/ui/radio-group';
-import { typeConfig, booleanChoices } from './grade';
+import { typeConfig, booleanChoices, stripOptionKeyPrefix } from './grade';
 import { sanitizeHtml } from '../../../lib/sanitize';
 
 // Renders ONE question of any type, in both the active (answering) and review
@@ -75,7 +75,7 @@ export default function QuestionItem({
             return (
               <OptionRow key={opt.key} tone={tone}>
                 <span className="font-semibold text-foreground">{opt.key}.</span>
-                <span className="text-foreground">{opt.text}</span>
+                <span className="text-foreground">{stripOptionKeyPrefix(opt.key, opt.text)}</span>
                 {isCorrect && (
                   <span className="ml-auto text-xs font-semibold text-accent">Correct</span>
                 )}
@@ -100,7 +100,8 @@ export default function QuestionItem({
           >
             <RadioGroupItem value={opt.key} className="mt-0.5" />
             <span className="text-foreground">
-              <span className="font-semibold">{opt.key}.</span> {opt.text}
+              <span className="font-semibold">{opt.key}.</span>{' '}
+              {stripOptionKeyPrefix(opt.key, opt.text)}
             </span>
           </label>
         ))}
@@ -149,7 +150,8 @@ export default function QuestionItem({
                 className="mt-0.5"
               />
               <span className="text-foreground">
-                <span className="font-semibold">{opt.key}.</span> {opt.text}
+                <span className="font-semibold">{opt.key}.</span>{' '}
+                {stripOptionKeyPrefix(opt.key, opt.text)}
               </span>
               {submitted && isCorrect && (
                 <span className="ml-auto text-xs font-semibold text-accent">Correct</span>
@@ -223,7 +225,7 @@ export default function QuestionItem({
         </option>
         {group.options.map((opt) => (
           <option key={opt.key} value={opt.key}>
-            {opt.key}. {opt.text}
+            {opt.key}. {stripOptionKeyPrefix(opt.key, opt.text)}
           </option>
         ))}
       </Select>

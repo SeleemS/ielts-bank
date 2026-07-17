@@ -186,6 +186,13 @@ export default function QuestionEngine({
   // per-section score breakdown ([{ label, numbers: [1, 2, …] }]).
   mockTestId = null,
   sections = null,
+  // Positioning classes for the sticky timer/palette toolbar (merged via
+  // twMerge so they can override the defaults). Pages rendering the engine in
+  // normal page flow keep 'top-16' (below the fixed navbar). Pages wrapping it
+  // in an internal overflow-y-auto panel should pass 'top-0' plus negative
+  // margins matching the panel's padding (e.g. '-mx-5 -mt-4 rounded-none
+  // border-x-0 border-t-0') so the bar docks flush to the panel's top edge.
+  stickyTopClass = 'top-16',
 }) {
   const [answers, setAnswers] = useState({});
   const [confirmArmed, setConfirmArmed] = useState(false);
@@ -409,25 +416,6 @@ export default function QuestionEngine({
 
   return (
     <div className={cn('', className)}>
-      {durationSeconds && !submitted ? (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-secondary/40 px-4 py-3">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {timed ? 'Timed practice' : 'Untimed practice'}
-            </div>
-            {timed ? (
-              <div className="text-xl font-bold tabular-nums text-foreground" aria-label={`${formatRemaining(remaining)} remaining`}>
-                {formatRemaining(remaining)}
-              </div>
-            ) : null}
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={toggleTimed}>
-            Switch to {timed ? 'untimed' : 'timed'}
-          </Button>
-          <span className="sr-only" aria-live="assertive">{timerAnnouncement}</span>
-        </div>
-      ) : null}
-
       {submitted && results && (
         <>
           <ResultsSummary
@@ -446,32 +434,64 @@ export default function QuestionEngine({
         </>
       )}
 
-      <nav
-        aria-label="Question navigation"
-        className="sticky top-16 z-20 mb-6 flex flex-wrap gap-2 rounded-lg border border-border bg-background/95 p-3 shadow-sm backdrop-blur"
-      >
+      {/* Docked toolbar: timer (while running) + question palette as ONE solid
+          sticky unit — fully opaque so questions never bleed through it. */}
+      <div className={cn('sticky z-20 mb-6 overflow-hidden rounded-lg border border-border bg-background shadow-md', stickyTopClass)}>
+        {durationSeconds && !submitted ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-secondary/60 px-4 py-2">
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {timed ? 'Timed' : 'Untimed'}
+              </span>
+              {timed ? (
+                <span
+                  className={cn(
+                    'text-lg font-bold tabular-nums',
+                    remaining <= 300 ? 'text-destructive' : 'text-foreground'
+                  )}
+                  aria-label={`${formatRemaining(remaining)} remaining`}
+                >
+                  {formatRemaining(remaining)}
+                </span>
+              ) : null}
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={toggleTimed} className="text-muted-foreground">
+              Switch to {timed ? 'untimed' : 'timed'}
+            </Button>
+            <span className="sr-only" aria-live="assertive">{timerAnnouncement}</span>
+          </div>
+        ) : null}
+        <nav aria-label="Question navigation" className="flex flex-wrap gap-1.5 p-2.5">
         {questions.map((question) => {
           const number = question.number;
           const value = answers[number];
           const answered = Array.isArray(value) ? value.length > 0 : value != null && value !== '';
           const isFlagged = flagged.includes(number);
+          const reviewState = submitted && results ? results.byNumber[number]?.correct : null;
           return (
             <button
               key={number}
               type="button"
-              aria-label={`Question ${number}${answered ? ', answered' : ', unanswered'}${isFlagged ? ', flagged' : ''}`}
+              aria-label={`Question ${number}${answered ? ', answered' : ', unanswered'}${isFlagged ? ', flagged' : ''}${reviewState === true ? ', correct' : reviewState === false ? ', incorrect' : ''}`}
               onClick={() => document.getElementById(`question-${number}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
               className={cn(
                 'flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                answered ? 'border-accent bg-accent text-accent-foreground' : 'border-border bg-card text-muted-foreground',
-                isFlagged && 'border-amber-500 bg-amber-100 text-amber-900'
+                submitted && results
+                  ? reviewState
+                    ? 'border-accent bg-accent text-accent-foreground'
+                    : 'border-destructive/60 bg-destructive/10 text-destructive'
+                  : answered
+                    ? 'border-accent bg-accent text-accent-foreground'
+                    : 'border-border bg-card text-muted-foreground hover:border-accent/50 hover:text-foreground',
+                !submitted && isFlagged && 'border-amber-500 bg-amber-100 text-amber-900'
               )}
             >
               {number}
             </button>
           );
         })}
-      </nav>
+        </nav>
+      </div>
 
       {(groups || []).map((group) => (
         <QuestionGroup

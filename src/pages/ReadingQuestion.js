@@ -172,6 +172,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
                   skill="reading"
                   durationSeconds={20 * 60}
                   module={passage.module || 'academic'}
+                  stickyTopClass="-top-4 -mx-5 -mt-4 rounded-none border-x-0 border-t-0 shadow-sm"
                 />
               </div>
             </div>

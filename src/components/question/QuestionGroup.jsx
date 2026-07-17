@@ -1,6 +1,6 @@
 import React from 'react';
 import QuestionItem from './QuestionItem';
-import { typeConfig } from './grade';
+import { typeConfig, stripOptionKeyPrefix, cleanGroupPrompt } from './grade';
 import { sanitizeHtml, sanitizeSvg } from '../../../lib/sanitize';
 
 // Renders one question_group: heading + instructions (+ an options legend for
@@ -25,13 +25,16 @@ export default function QuestionGroup({
   const last = group.questions[group.questions.length - 1]?.number;
   const range =
     group.questions.length > 1 ? `Questions ${first}–${last}` : `Question ${first}`;
+  // The range eyebrow above already names the question number(s) — drop a
+  // redundant "Question N:" lead-in baked into imported prompts.
+  const prompt = cleanGroupPrompt(group.prompt);
 
   return (
     <section className="mb-8">
       <div className="mb-3">
         <div className="text-xs font-semibold uppercase tracking-wide text-accent">{range}</div>
-        {group.prompt ? (
-          <h3 className="mt-1 text-base font-bold text-foreground">{group.prompt}</h3>
+        {prompt ? (
+          <h3 className="mt-1 text-base font-bold text-foreground">{prompt}</h3>
         ) : null}
       </div>
 
@@ -62,7 +65,8 @@ export default function QuestionGroup({
           <ul className="grid gap-1 text-sm text-foreground">
             {group.options.map((opt) => (
               <li key={opt.key}>
-                <span className="font-semibold">{opt.key}.</span> {opt.text}
+                <span className="font-semibold">{opt.key}.</span>{' '}
+                {stripOptionKeyPrefix(opt.key, opt.text)}
               </li>
             ))}
           </ul>

@@ -265,3 +265,32 @@ export function estimateBand(score, total, skill = 'reading', module = 'academic
     ? listeningBand(scaledRaw)
     : readingBand(scaledRaw, module);
 }
+
+// ---------------------------------------------------------------------------
+// Display helpers (shared by QuestionGroup / QuestionItem).
+// ---------------------------------------------------------------------------
+
+// Some imported option texts already start with their own key ("A) It suits a
+// small space…"), which doubles up with the "A." the UI renders. Strip a
+// leading "A)", "A.", "(A)", "A:" or "A -" ONLY when it matches this option's
+// key, so texts that legitimately start with a letter are untouched.
+export function stripOptionKeyPrefix(key, text) {
+  if (!key || !text) return text;
+  const esc = String(key).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`^\\s*(?:\\(${esc}\\)|${esc}\\s*[).:\\-])\\s*`, 'i');
+  const stripped = String(text).replace(re, '');
+  return stripped.trim() ? stripped : text;
+}
+
+// Group prompts imported as "Question 7: Choose the correct letter…" repeat
+// the "QUESTION 7" range eyebrow the UI already renders above them. Drop the
+// redundant "Question(s) N(–M):" lead-in (also after a mock's "Section 1 · "
+// prefix) but keep the rest of the prompt.
+export function cleanGroupPrompt(prompt) {
+  if (!prompt) return prompt;
+  const cleaned = String(prompt).replace(
+    /(^|·\s*)questions?\s+\d+\s*(?:[-–—]\s*\d+)?\s*[:.]\s*/i,
+    '$1'
+  );
+  return cleaned.trim() ? cleaned.trim() : prompt;
+}
