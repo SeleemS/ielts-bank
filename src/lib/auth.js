@@ -128,14 +128,16 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  // Verify the 6-digit code from the signup confirmation email. Falls back to
-  // type 'email' so codes from magic-link/OTP emails also work.
-  const verifyEmailOtp = React.useCallback(async (email, token) => {
+  // Verify an emailed 6-digit code. `type` is the expected OTP kind
+  // ('signup' for confirmation emails, 'email' for sign-in codes); the other
+  // kind is tried as a fallback since failed attempts are limited per token.
+  const verifyEmailOtp = React.useCallback(async (email, token, type = 'signup') => {
     const supabase = getSupabase();
-    const first = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
-    if (!first.error) return { error: null };
-    const second = await supabase.auth.verifyOtp({ email, token, type: 'email' });
-    return { error: second.error ? first.error : null };
+    const primary = await supabase.auth.verifyOtp({ email, token, type });
+    if (!primary.error) return { error: null };
+    const altType = type === 'signup' ? 'email' : 'signup';
+    const secondary = await supabase.auth.verifyOtp({ email, token, type: altType });
+    return { error: secondary.error ? primary.error : null };
   }, []);
 
   const resendSignupEmail = React.useCallback(async (email, next) => {

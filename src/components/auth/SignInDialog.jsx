@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import {
   X,
   Mail,
-  CheckCircle2,
   ShieldCheck,
   GraduationCap,
   Briefcase,
@@ -26,13 +25,12 @@ import { inter } from '../../lib/fonts';
 // Flow (all in this one modal — the user never leaves the page, so "return
 // to where they were" is free):
 //   1. account  — email + password; Create account (default) or Sign in.
-//   2. verify   — 6-digit code from the confirmation email. Clicking the
-//                 emailed link in another tab also works: supabase-js syncs
-//                 the session across tabs and we advance automatically.
+//   2. verify   — 6-digit emailed code (OTP only, no magic links; the
+//                 Supabase email templates must render {{ .Token }}).
 //   3. about    — two quick questions (goal + target band) saved to the
 //                 users row (target_band column + prefs jsonb). Skippable.
-// Existing users signing in with a password skip 2–3 entirely. A magic-link
-// fallback remains for accounts created before passwords existed.
+// Existing users signing in with a password skip 2–3 entirely. Accounts from
+// the magic-link era (no password) sign in via an emailed one-time code.
 
 const GOALS = [
   { key: 'study', label: 'Study abroad', icon: GraduationCap },
@@ -82,7 +80,10 @@ export default function SignInDialog({
 
   const [mounted, setMounted] = React.useState(false);
   const [mode, setMode] = React.useState('signup'); // signup | signin
-  const [step, setStep] = React.useState('account'); // account | verify | about | magic-sent
+  const [step, setStep] = React.useState('account'); // account | verify | about
+  // What triggered the verify step — decides how "Resend code" re-sends:
+  // 'signup' -> confirmation email, 'signin' -> one-time sign-in code.
+  const [verifySource, setVerifySource] = React.useState('signup');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [code, setCode] = React.useState('');
@@ -100,6 +101,7 @@ export default function SignInDialog({
     if (open) {
       setMode('signup');
       setStep('account');
+      setVerifySource('signup');
       setPassword('');
       setCode('');
       setGoal('');
@@ -126,16 +128,21 @@ export default function SignInDialog({
     };
   }, [open, onOpenChange]);
 
-  // If the user clicks the emailed confirmation link in another tab while we
-  // sit on the verify step, supabase-js syncs the session into this tab —
-  // advance to onboarding without requiring the code.
+  // Safety net: if a session appears in another tab while we sit on the
+  // verify step (e.g. an old emailed link), supabase-js syncs it here —
+  // continue without requiring the code.
   React.useEffect(() => {
     if (open && step === 'verify' && user?.id) {
-      track('signup_verified', { trigger, method: 'link' });
       setErrorMsg('');
-      setStep('about');
+      if (verifySource === 'signin') {
+        track('login_success', { method: 'email_otp', trigger });
+        onOpenChange?.(false);
+      } else {
+        track('signup_verified', { trigger, method: 'link' });
+        setStep('about');
+      }
     }
-  }, [open, step, user?.id, trigger]);
+  }, [open, step, user?.id, verifySource, trigger, onOpenChange]);
 
   // Resend cooldown ticker.
   React.useEffect(() => {
@@ -176,6 +183,7 @@ export default function SignInDialog({
           setStep('about');
           return;
         }
+        setVerifySource('signup');
         setResendIn(30);
         setStep('verify');
       } else {
@@ -186,13 +194,14 @@ export default function SignInDialog({
           // dead-end error.
           if (/email not confirmed/i.test(error.message || '')) {
             await resendSignupEmail(trimmed, currentPath());
+            setVerifySource('signup');
             setResendIn(30);
             setStep('verify');
             return;
           }
           setErrorMsg(
             /invalid login credentials/i.test(error.message || '')
-              ? 'Email or password is incorrect. If you signed up before we added passwords, use the magic-link option below.'
+              ? 'Email or password is incorrect. If you signed up before we added passwords, use the emailed code option below.'
               : error.message || 'Could not sign you in. Please try again.'
           );
           return;
@@ -212,9 +221,19 @@ export default function SignInDialog({
     setBusy(true);
     setErrorMsg('');
     try {
-      const { error } = await verifyEmailOtp(email.trim(), token);
+      const { error } = await verifyEmailOtp(
+        email.trim(),
+        token,
+        verifySource === 'signin' ? 'email' : 'signup'
+      );
       if (error) {
         setErrorMsg('That code didn’t work. Check the latest email or resend a fresh one.');
+        return;
+      }
+      if (verifySource === 'signin') {
+        // Existing account signing in with a code — no onboarding questions.
+        track('login_success', { method: 'email_otp', trigger });
+        close();
         return;
       }
       track('signup_verified', { trigger, method: 'otp' });
@@ -228,21 +247,29 @@ export default function SignInDialog({
     if (resendIn > 0) return;
     setResendIn(30);
     setErrorMsg('');
-    const { error } = await resendSignupEmail(email.trim(), currentPath());
+    const { error } =
+      verifySource === 'signin'
+        ? await signInWithEmail(email.trim())
+        : await resendSignupEmail(email.trim(), currentPath());
     if (error) setErrorMsg(error.message || 'Could not resend the email. Please try again.');
   };
 
-  const handleMagicLink = async () => {
+  // Passwordless sign-in for magic-link-era accounts: email a one-time code,
+  // verified in the same modal (no link round-trip).
+  const handleEmailCode = async () => {
     setBusy(true);
     setErrorMsg('');
     try {
-      track('login_start', { method: 'email', trigger, signed_in: false });
-      const { error } = await signInWithEmail(email.trim(), currentPath());
+      track('login_start', { method: 'email_otp', trigger, signed_in: false });
+      const { error } = await signInWithEmail(email.trim());
       if (error) {
-        setErrorMsg(error.message || 'Could not send the link. Please try again.');
+        setErrorMsg(error.message || 'Could not send the code. Please try again.');
         return;
       }
-      setStep('magic-sent');
+      setVerifySource('signin');
+      setResendIn(30);
+      setCode('');
+      setStep('verify');
     } finally {
       setBusy(false);
     }
@@ -286,34 +313,15 @@ export default function SignInDialog({
     );
 
   let body;
-  if (step === 'magic-sent') {
-    body = (
-      <div className="flex flex-col items-center gap-3 py-4 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
-          <CheckCircle2 className="h-7 w-7 text-accent" />
-        </span>
-        <h2 id="signin-title" className="text-xl font-bold tracking-tight text-foreground">
-          Check your email
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          We sent a sign-in link to <span className="font-medium text-foreground">{email.trim()}</span>.
-          Click it and you’ll come straight back here.
-        </p>
-        <Button variant="outline" className="mt-2 w-full" onClick={() => setStep('account')}>
-          Back
-        </Button>
-      </div>
-    );
-  } else if (step === 'verify') {
+  if (step === 'verify') {
     body = (
       <>
         {header(
           <ShieldCheck className="h-5 w-5 text-primary" />,
-          'Confirm your email',
+          verifySource === 'signin' ? 'Enter your sign-in code' : 'Confirm your email',
           <>
-            Enter the code we sent to{' '}
-            <span className="font-medium text-foreground">{email.trim()}</span> — or click the link
-            in the email and we’ll continue automatically.
+            Enter the 6-digit code we sent to{' '}
+            <span className="font-medium text-foreground">{email.trim()}</span>.
           </>
         )}
         <form onSubmit={handleVerifySubmit} className="flex flex-col gap-3">
@@ -323,9 +331,9 @@ export default function SignInDialog({
               id="signin-otp"
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={10}
-              placeholder="12345678"
-              className="text-center text-lg font-semibold tracking-[0.35em]"
+              maxLength={6}
+              placeholder="123456"
+              className="text-center text-lg font-semibold tracking-[0.5em]"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               disabled={busy}
@@ -338,7 +346,7 @@ export default function SignInDialog({
             </p>
           )}
           <Button type="submit" variant="accent" className="w-full" disabled={busy || code.length < 6}>
-            {busy ? 'Verifying…' : 'Verify email'}
+            {busy ? 'Verifying…' : verifySource === 'signin' ? 'Sign in' : 'Verify email'}
           </Button>
           <button
             type="button"
@@ -490,9 +498,9 @@ export default function SignInDialog({
                 type="button"
                 disabled={busy || !email.trim()}
                 className="font-medium underline-offset-4 hover:text-foreground hover:underline disabled:opacity-60"
-                onClick={handleMagicLink}
+                onClick={handleEmailCode}
               >
-                Email me a magic link instead
+                Email me a one-time code instead
               </button>
             </>
           )}
