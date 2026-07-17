@@ -8,10 +8,9 @@
 // Idempotent: the ALTER is `add column if not exists`, and each UPDATE overwrites
 // with the same SVG. Grading, options and answer keys are never touched.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import pg from 'pg';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -77,29 +76,31 @@ const townMap =
   // river along the top
   `<rect x="0" y="58" width="640" height="30" fill="#bae6fd"/>` +
   ref(16, 52, 'River') +
-  // Packhorse bridge crossing the river (fixed landmark, next to the mill)
-  `<rect x="342" y="56" width="30" height="34" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>` +
+  // (no bridge glyph: the Packhorse Bridge is itself a question place — drawing
+  // an obvious river crossing next to marker E would give the answer away)
   // roads
   road(320, 88, 320, 210) + // Mill Street (river down to Church Lane junction)
   road(320, 210, 320, 350) + // High Street (junction down to the square)
   road(92, 210, 320, 210, 20) + // Church Lane (west)
   // Market Square (fixed start reference) with the old stone cross
   box(250, 306, 140, 92, '#e2e8f0') +
-  `<path d="M320,336 v26 M308,349 h24" stroke="#64748b" stroke-width="3"/>` +
-  ref(320, 300, 'Market Square', 'middle') +
+  // stone cross above marker F so both stay visible
+  `<path d="M320,332 v20 M310,342 h20" stroke="#64748b" stroke-width="3"/>` +
+  ref(320, 326, 'Market Square', 'middle') + // inside the square, above the cross
   // street / feature labels (navigation aids from the audio)
   ref(332, 150, 'Mill Street') +
-  ref(332, 286, 'High Street') +
+  ref(308, 286, 'High Street', 'end') + // west of the road, clear of marker A
   ref(118, 200, 'Church Lane') +
   compass(600, 66) +
-  entrance(214, 384, 'START', 234, 380) +
+  // tour starts IN the square — chevron just inside its south edge
+  entrance(266, 392, 'START', 266, 412, 'middle') +
   // lettered positions
   M(357, 296, 'A') + // right as you enter the High St
   M(150, 264, 'B') + // set back, left of Church Lane
   M(150, 156, 'C') + // right of Church Lane, opposite the church
   M(296, 112, 'D') + // bottom of Mill St, on the riverbank
-  M(357, 112, 'E') + // next to the mill (the bridge), same side
-  M(320, 352, 'F') + // middle of the Market Square
+  M(242, 112, 'E') + // next to the mill, SAME side of Mill St as D
+  M(320, 372, 'F') + // middle of the Market Square, below the cross
   note +
   close;
 
@@ -116,7 +117,7 @@ const festivalMap =
   // big oak tree on the right
   `<circle cx="512" cy="150" r="16" fill="#bbf7d0" stroke="#059669" stroke-width="2"/>` +
   `<line x1="512" y1="166" x2="512" y2="182" stroke="#65651e" stroke-width="3"/>` +
-  ref(512, 200, 'oak tree', 'middle') +
+  ref(488, 154, 'oak tree', 'end') + // left of the tree, clear of markers C and D
   // main gate at the bottom of the field
   `<rect x="290" y="340" width="60" height="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>` +
   compass(600, 66) +
@@ -124,8 +125,8 @@ const festivalMap =
   // lettered positions
   M(320, 152, 'A') + // straight ahead from the gate — Food Market
   M(122, 152, 'B') + // left of the Food Market, along the hedge
-  M(500, 192, 'C') + // right, near the oak tree
-  M(524, 122, 'D') + // far corner, behind the demo kitchen
+  M(492, 196, 'C') + // right, near the oak tree
+  M(545, 114, 'D') + // far corner, behind the demo kitchen — clear of the canopy
   M(320, 240, 'E') + // centre of the field
   M(372, 316, 'F') + // just inside the main gate, on the right
   note +
@@ -142,7 +143,7 @@ const gardenMap =
   ref(84, 250, 'fence') +
   // pond tucked in the far corner (fixed landmark, not a question)
   `<ellipse cx="102" cy="112" rx="20" ry="13" fill="#bae6fd" stroke="#38bdf8" stroke-width="2"/>` +
-  ref(126, 108, 'pond') +
+  ref(102, 144, 'pond', 'middle') + // below the pond, clear of marker D
   // Canal Street along the bottom, with the entrance gate
   road(70, 372, 570, 372, 16) +
   ref(560, 392, 'Canal Street', 'end') +
@@ -151,11 +152,11 @@ const gardenMap =
   entrance(320, 366, 'GATE', 320, 336, 'middle') +
   // lettered positions
   M(320, 214, 'A') + // straight ahead — main lawn
-  M(150, 190, 'B') + // left of the lawn, along the fence — veg beds
+  M(128, 190, 'B') + // left of the lawn, hugging the fence — veg beds
   M(505, 214, 'C') + // right of the lawn, sunny corner — meadow
   M(150, 122, 'D') + // far end, beyond the veg beds — orchard
   M(515, 132, 'E') + // far right, next to the meadow — greenhouse
-  M(210, 320, 'F') + // by the gate, on the left — tool shed / compost
+  M(248, 318, 'F') + // right by the gate, on the left — tool shed / compost
   note +
   close;
 
@@ -168,10 +169,10 @@ const museumMap =
   M(266, 74, 'C') + // Natural History Gallery, first floor
   // ground floor building
   box(80, 116, 480, 244, '#f8fafc') +
-  ref(94, 134, 'Ground floor') +
+  ref(546, 134, 'Ground floor', 'end') + // top-right, clear of the stairs link line
   // courtyard garden the cafe overlooks (fixed landmark)
   `<rect x="484" y="250" width="60" height="60" rx="4" fill="#dcfce7" stroke="#059669" stroke-width="2"/>` +
-  ref(514, 302, 'courtyard', 'middle') +
+  ref(514, 324, 'courtyard', 'middle') + // below the box — too wide to fit inside
   // main staircase on the left, with a dashed link up to the inset
   `<rect x="96" y="228" width="46" height="60" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>` +
   `<line x1="96" y1="240" x2="142" y2="240" stroke="#94a3b8" stroke-width="1.5"/>` +
@@ -189,7 +190,7 @@ const museumMap =
   `<rect x="300" y="320" width="40" height="16" rx="3" fill="#d1fae5" stroke="#059669" stroke-width="2"/>` +
   ref(320, 315, 'info desk', 'middle') +
   // lettered positions
-  M(430, 330, 'A') + // immediately right of the entrance — cloakroom
+  M(396, 330, 'A') + // immediately right of the entrance — cloakroom
   M(320, 156, 'B') + // straight ahead, far end — Egyptian Gallery
   M(150, 156, 'D') + // corner, left of the Egyptian Gallery — Coins & Medals
   M(500, 210, 'E') + // right, past the cloakroom — cafe
@@ -202,8 +203,8 @@ const leisureMap =
   open('Floor plan of the leisure centre') +
   title('Oakvale Leisure Centre — floor plan') +
   // first-floor inset (studios, above the gym)
-  inset(360, 44, 210, 52, 'First floor (up the stairs)') +
-  M(452, 72, 'E') + // studios, first floor
+  inset(340, 44, 230, 52, 'First floor (up the stairs)') +
+  M(542, 72, 'E') + // studios, first floor — right of the inset label
   // ground floor building
   box(80, 108, 490, 252, '#f8fafc') +
   ref(94, 126, 'Ground floor') +
@@ -241,7 +242,28 @@ const MAPS = {
   'tour-of-the-new-leisure-centre-1gr7dc': leisureMap,
 };
 
+// --dump <dir>: write the 5 SVGs (plus a review.html contact sheet) to <dir>
+// for visual review instead of touching the database.
+function dump(dir) {
+  mkdirSync(dir, { recursive: true });
+  let html = '<meta charset="utf-8"><body style="font-family:system-ui;background:#f8fafc;margin:24px">';
+  for (const [slug, svg] of Object.entries(MAPS)) {
+    writeFileSync(path.join(dir, `${slug}.svg`), svg);
+    html += `<h3>${slug}</h3><div style="max-width:660px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;padding:10px;margin-bottom:28px">${svg}</div>`;
+  }
+  writeFileSync(path.join(dir, 'review.html'), html);
+  console.log(`wrote ${Object.keys(MAPS).length} SVGs + review.html to ${dir}`);
+}
+
 async function main() {
+  const dumpIdx = process.argv.indexOf('--dump');
+  if (dumpIdx !== -1) {
+    dump(process.argv[dumpIdx + 1] || path.join(ROOT, 'svg-review'));
+    return;
+  }
+  // pg is only needed for the DB path — imported lazily so --dump works
+  // without it installed.
+  const { default: pg } = await import('pg');
   loadEnvLocal();
   const connectionString = process.env.SUPABASE_DB_SESSION_URL;
   if (!connectionString) throw new Error('SUPABASE_DB_SESSION_URL missing');

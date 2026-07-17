@@ -454,7 +454,7 @@ export default function SpeakingExaminerPage() {
         open={signInOpen}
         onOpenChange={setSignInOpen}
         title="Sign in to meet your examiner"
-        description="We'll email you a one-tap magic link, then bring you straight back here."
+        description="Create your account or sign in — you'll stay right on this page."
         trigger="speaking_examiner"
       />
     </>

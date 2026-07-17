@@ -25,13 +25,15 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
+import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_TRANSCRIBE_URL = 'https://api.openai.com/v1/audio/transcriptions';
-const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-4.1-mini';
+// See writing.js: the production key's OpenAI project blocks gpt-4.1-mini;
+// gpt-5.4-nano is on the allowlist. Fallback to PAID_MODEL covers drift.
+const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-5.4-nano';
 const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_SPEAKING_MODEL || 'gpt-5.1';
 const WHISPER_MODEL = 'whisper-1';
 
@@ -574,35 +576,28 @@ ${transcript}
 
 Assess this transcript as an IELTS Speaking examiner on the three transcript-assessable criteria and return the structured JSON.`;
 
-    const openaiRes = await fetch(OPENAI_CHAT_URL, {
-      method: 'POST',
+    const ai = await chatCompletionWithFallback({
+      model: scoringModel,
+      fallbackModel: PAID_MODEL,
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      messages: [
+        { role: 'system', content: buildSystemPrompt() },
+        { role: 'user', content: userContent },
+      ],
+      responseFormat: {
+        type: 'json_schema',
+        json_schema: buildJsonSchema(),
       },
-      body: JSON.stringify({
-        model: scoringModel,
-        messages: [
-          { role: 'system', content: buildSystemPrompt() },
-          { role: 'user', content: userContent },
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: buildJsonSchema(),
-        },
-      }),
     });
 
-    if (!openaiRes.ok) {
-      const detail = await openaiRes.text().catch(() => '');
-      console.error('OpenAI error', openaiRes.status, detail.slice(0, 500));
+    if (!ai.ok) {
+      console.error('OpenAI error', ai.status, (ai.detail || '').slice(0, 500));
       return res.status(502).json({
         error: 'The scoring service could not process your response. Please try again.',
       });
     }
 
-    const payload = await openaiRes.json();
+    const payload = ai.payload;
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));
@@ -651,7 +646,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       transcript,
       overallBand,
       criteria,
-      model: scoringModel,
+      model: ai.model,
       startedAt: typeof body.started_at === 'string' ? body.started_at : null,
     });
 

@@ -4,13 +4,19 @@ import { getSupabase } from '../../lib/supabase';
 
 // Minimal OAuth / magic-link landing page. supabase-js has detectSessionInUrl
 // on by default, so simply reading the session here lets it consume the URL
-// hash/code and persist the session. Then we redirect to the dashboard.
+// hash/code and persist the session. Then we return the user to where they
+// were (?next=/some/path) or the dashboard.
 export default function AuthCallback() {
   const router = useRouter();
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!router.isReady) return undefined;
     let active = true;
+
+    // Only same-origin paths — the emailed link must never redirect off-site.
+    const rawNext = typeof router.query.next === 'string' ? router.query.next : '';
+    const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard';
 
     async function finish() {
       try {
@@ -24,7 +30,7 @@ export default function AuthCallback() {
             const retry = await supabase.auth.getSession();
             if (!active) return;
             if (retry.data?.session) {
-              router.replace('/dashboard');
+              router.replace(next);
             } else {
               setError(true);
               router.replace('/');
@@ -32,7 +38,7 @@ export default function AuthCallback() {
           }, 600);
           return;
         }
-        router.replace('/dashboard');
+        router.replace(next);
       } catch (err) {
         if (!active) return;
         setError(true);
@@ -44,7 +50,7 @@ export default function AuthCallback() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, router.isReady]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">

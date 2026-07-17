@@ -421,7 +421,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       </div>
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} title="Sign in to get AI feedback" description="We’ll email you a one-tap magic link. Your draft stays saved on this device." trigger="writing_task_score" />
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} title="Sign in to get AI feedback" description="Your draft stays right here — sign up in seconds and get your band score." trigger="writing_task_score" />
       <Modal
         open={feedbackOpen && !!result}
         onClose={() => setFeedbackOpen(false)}

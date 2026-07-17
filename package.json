@@ -53,6 +53,9 @@
     "next": {
       "postcss": "8.5.10"
     },
+    "isomorphic-dompurify": {
+      "jsdom": "26.1.0"
+    },
     "picomatch@2.3.1": "2.3.2",
     "readdirp": {
       "picomatch": "2.3.2"

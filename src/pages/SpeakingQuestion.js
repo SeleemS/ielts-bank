@@ -968,7 +968,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         open={signInOpen}
         onOpenChange={setSignInOpen}
         title="Sign in to get AI feedback on your speaking"
-        description="Create a free account to score your recording and track your speaking bands. No password required."
+        description="Create a free account to score your recording and track your speaking bands."
         trigger="speaking_score"
       />
 

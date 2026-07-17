@@ -262,7 +262,7 @@ export default function PricingPage() {
         open={signInOpen}
         onOpenChange={setSignInOpen}
         title="Sign in to upgrade"
-        description="We’ll email you a one-tap magic link, then bring you straight back here."
+        description="Create your account or sign in — you’ll stay right on this page."
         trigger="pricing_upgrade"
       />
     </>

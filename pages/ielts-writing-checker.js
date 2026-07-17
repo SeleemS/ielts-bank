@@ -708,7 +708,7 @@ export default function WritingCheckerPage() {
           if (!v) pendingSubmitRef.current = false;
         }}
         title="Sign in to check your writing"
-        description="We'll email you a one-tap magic link and save your score. Your draft is kept safe."
+        description="Create a free account to see your band score. Your draft is kept safe."
         trigger="writing_checker_score"
       />
     </>

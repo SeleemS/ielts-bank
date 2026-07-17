@@ -15,12 +15,16 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-4.1-mini';
+// NOTE: the production OPENAI_API_KEY is scoped to an OpenAI project whose
+// model allowlist blocks gpt-4.1-mini (403 model_not_found). gpt-5.4-nano is
+// allowed, cheap, and passes the structured-output schema. If the model is
+// ever blocked again, chatCompletionWithFallback retries with PAID_MODEL.
+const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-5.4-nano';
 const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
 
 const MIN_WORDS = 50; // below this it is not scorable
@@ -391,35 +395,28 @@ ${essay}
 
 Assess this essay as an IELTS examiner and return the structured JSON.`;
 
-    const openaiRes = await fetch(OPENAI_URL, {
-      method: 'POST',
+    const ai = await chatCompletionWithFallback({
+      model: scoringModel,
+      fallbackModel: PAID_MODEL,
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      messages: [
+        { role: 'system', content: buildSystemPrompt(task) },
+        { role: 'user', content: userContent },
+      ],
+      responseFormat: {
+        type: 'json_schema',
+        json_schema: buildJsonSchema(task),
       },
-      body: JSON.stringify({
-        model: scoringModel,
-        messages: [
-          { role: 'system', content: buildSystemPrompt(task) },
-          { role: 'user', content: userContent },
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: buildJsonSchema(task),
-        },
-      }),
     });
 
-    if (!openaiRes.ok) {
-      const detail = await openaiRes.text().catch(() => '');
-      console.error('OpenAI error', openaiRes.status, detail.slice(0, 500));
+    if (!ai.ok) {
+      console.error('OpenAI error', ai.status, (ai.detail || '').slice(0, 500));
       return res.status(502).json({
         error: 'The scoring service could not process your response. Please try again.',
       });
     }
 
-    const payload = await openaiRes.json();
+    const payload = ai.payload;
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));
@@ -443,7 +440,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       passageId,
       task,
       essay,
-      model: scoringModel,
+      model: ai.model,
       result,
       startedAt: typeof req.body?.started_at === 'string' ? req.body.started_at : null,
       anonId: typeof req.body?.anon_id === 'string' ? req.body.anon_id : null,
