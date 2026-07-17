@@ -351,15 +351,10 @@ export default function WritingCheckerPage() {
     }
   }, [active.label, apiTask, essay, isSufficient, minWords, prompt, user, wordCount]);
 
-  // After a signed-out user signs in via the dialog, useAuth().user becomes
-  // non-null; if they had pressed submit, run the score automatically.
-  useEffect(() => {
-    if (user && pendingSubmitRef.current) {
-      pendingSubmitRef.current = false;
-      setSignInOpen(false);
-      runScore();
-    }
-  }, [user, runScore]);
+  // After a signed-out user completes the sign-in/onboarding dialog, run the
+  // pending score automatically. This fires from onOpenChange when the dialog
+  // CLOSES (not the moment the session appears) so the onboarding questions
+  // inside the dialog aren't cut short.
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -705,7 +700,11 @@ export default function WritingCheckerPage() {
         open={signInOpen}
         onOpenChange={(v) => {
           setSignInOpen(v);
-          if (!v) pendingSubmitRef.current = false;
+          if (!v) {
+            const shouldRun = pendingSubmitRef.current && Boolean(user);
+            pendingSubmitRef.current = false;
+            if (shouldRun) runScore();
+          }
         }}
         title="Sign in to check your writing"
         description="Create a free account to see your band score. Your draft is kept safe."
