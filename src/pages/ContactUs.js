@@ -84,13 +84,7 @@ const ContactUs = () => {
             </p>
             <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4 text-accent" />
-              Or email us directly at{' '}
-              <a
-                href="mailto:info@ielts-bank.com"
-                className="font-medium text-accent underline underline-offset-2 hover:text-accent/80"
-              >
-                info@ielts-bank.com
-              </a>
+              Send us a message below and we&rsquo;ll get back to you by email.
             </p>
           </div>
 

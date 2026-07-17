@@ -46,6 +46,49 @@ function getAdmin() {
   return _admin;
 }
 
+// ---------------------------------------------------------------------------
+// Email notification (Resend). The destination address lives ONLY in server
+// env (CONTACT_EMAIL, falling back to REPORT_EMAIL) — it is never rendered
+// client-side. Reply-To is set to the visitor so replying goes straight to
+// them. Fail-soft: the message is already persisted, so an email hiccup must
+// not fail the submission; it is logged instead.
+// ---------------------------------------------------------------------------
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function notifyByEmail({ name, email, message }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.CONTACT_EMAIL || process.env.REPORT_EMAIL;
+  if (!apiKey || !to) return { sent: false, reason: 'email-not-configured' };
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      from: process.env.REPORT_FROM || 'IELTS Bank <onboarding@resend.dev>',
+      to: [to],
+      reply_to: email,
+      subject: `Contact form: ${name}`,
+      html: `
+        <h2 style="font-size:16px;margin:0 0 12px">New contact message — ielts-bank.com</h2>
+        <p style="margin:0 0 4px"><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+        <p style="margin:0 0 12px;color:#64748b;font-size:13px">Reply to this email to answer them directly.</p>
+        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px;white-space:pre-wrap;font-size:14px;line-height:1.6">${escapeHtml(message)}</div>
+      `,
+    }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    return { sent: false, reason: `resend-${response.status}: ${detail.slice(0, 200)}` };
+  }
+  return { sent: true };
+}
+
 // Returns true if still within allowance, false if over the limit. Unlike the
 // scoring route (which fails OPEN for availability), a contact-form flood is
 // pure abuse, so on a rate-limit infra error we FAIL CLOSED.
@@ -101,8 +144,7 @@ export default async function handler(req, res) {
     const ok = await withinLimit('contact', ip, CONTACT_WINDOW_SECONDS, CONTACT_MAX);
     if (!ok) {
       return res.status(429).json({
-        error:
-          'You have sent several messages already. Please try again tomorrow or email us directly.',
+        error: 'You have sent several messages already. Please try again tomorrow.',
       });
     }
   } catch (e) {
@@ -128,6 +170,14 @@ export default async function handler(req, res) {
     return res
       .status(502)
       .json({ error: 'We could not send your message. Please try again later.' });
+  }
+
+  // --- Notify (fail-soft: message is already saved) ------------------------
+  try {
+    const result = await notifyByEmail({ name, email, message });
+    if (!result.sent) console.error('contact email not sent:', result.reason);
+  } catch (e) {
+    console.error('contact email error:', e.message);
   }
 
   return res.status(200).json({ ok: true });
