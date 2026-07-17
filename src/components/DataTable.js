@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import { Search, ArrowRight, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listPassages } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
@@ -58,6 +59,7 @@ function LoadingSkeleton() {
 }
 
 const DataTable = ({ items, skill, selectedOption }) => {
+  const router = useRouter();
   // Route prefix / fetch key. Accept either an explicit skill or the legacy
   // capitalized selectedOption prop.
   const skillLower = String(skill || selectedOption || 'reading').toLowerCase();
@@ -191,10 +193,22 @@ const DataTable = ({ items, skill, selectedOption }) => {
               <tbody>
                 {pageItems.map((item, index) => {
                   const href = `/${skillLower}question/${item.legacyId || item.id}`;
+                  // Whole row navigates. The inner links stay for keyboard
+                  // access and middle-click; they stopPropagation so a click
+                  // on them doesn't also fire the row handler.
+                  const onRowClick = (e) => {
+                    if (e.defaultPrevented) return;
+                    if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                      window.open(href, '_blank', 'noopener');
+                    } else {
+                      router.push(href);
+                    }
+                  };
                   return (
                     <tr
                       key={item.id}
-                      className="group border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
+                      onClick={onRowClick}
+                      className="group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
                     >
                       <td className="px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:px-6">
                         {start + index + 1}
@@ -202,6 +216,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
                       <td className="px-4 py-4 align-middle">
                         <NextLink
                           href={href}
+                          onClick={(e) => e.stopPropagation()}
                           className="text-sm font-semibold text-foreground no-underline transition-colors hover:text-accent"
                         >
                           {item.title}
@@ -212,7 +227,11 @@ const DataTable = ({ items, skill, selectedOption }) => {
                       </td>
                       <td className="px-4 py-4 text-right align-middle sm:px-6">
                         <Button asChild size="sm" variant="ghost" className="text-accent hover:text-accent">
-                          <NextLink href={href} className="no-underline">
+                          <NextLink
+                            href={href}
+                            onClick={(e) => e.stopPropagation()}
+                            className="no-underline"
+                          >
                             Practise
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                           </NextLink>
