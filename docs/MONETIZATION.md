@@ -373,6 +373,8 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 
 ## 9. Realtime AI Speaking Examiner (premium flagship feature)
 
+> **Status: SHIPPED 2026-07-17** — `/speaking-examiner` (WebRTC client), `/api/realtime/session` (metered mint, refund-on-failure), `/api/score/speaking-realtime` (post-interview `gpt-5.1` rubric pass). Verified live: mint + metering + scoring + persistence; the voice conversation itself was validated by component (automated E2E cannot capture microphone audio).
+
 **Decision (2026-07-17):** build Speaking's premium tier on the OpenAI Realtime voice API — a live AI examiner that conducts the full 3-part IELTS interview (adaptive Part 1 questions, timed Part 2 cue card with 1-min prep, probing Part 3 follow-ups), instead of only the current record → Whisper → transcript-score pipeline.
 
 ### 9.1 Why
