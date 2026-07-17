@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import Image from 'next/image';
 import {
   Menu,
@@ -127,6 +128,15 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
+  const router = useRouter();
+
+  // On any practice surface (question detail pages, mock runner) a signed-out
+  // visitor is already practising — the CTA pivots from "Start practicing" to
+  // creating an account (opens the signup dialog in place).
+  const onQuestionPage = /^\/(reading|writing|listening|speaking)question\/\[|^\/mock\/\[/.test(
+    router.pathname
+  );
+  const showCreateAccount = !loading && !user && onQuestionPage;
 
   const openSignIn = () => {
     setOpen(false);
@@ -156,12 +166,19 @@ export default function Navbar() {
 
         {/* Desktop CTA + account */}
         <div className="hidden items-center gap-2 md:flex">
-          <Button asChild variant="accent" className="shadow-sm">
-            <NextLink href="/readingquestion" className="no-underline">
-              Start practicing
+          {showCreateAccount ? (
+            <Button variant="accent" className="shadow-sm" onClick={openSignIn}>
+              Create account
               <ArrowRight className="h-4 w-4" />
-            </NextLink>
-          </Button>
+            </Button>
+          ) : (
+            <Button asChild variant="accent" className="shadow-sm">
+              <NextLink href="/readingquestion" className="no-underline">
+                Start practicing
+                <ArrowRight className="h-4 w-4" />
+              </NextLink>
+            </Button>
+          )}
 
           {!loading && user ? (
             <AccountMenu user={user} onSignOut={signOut} />
@@ -207,12 +224,19 @@ export default function Navbar() {
               );
             })}
           </nav>
-          <Button asChild variant="accent" size="lg" className="mt-2 w-full">
-            <NextLink href="/readingquestion" onClick={() => setOpen(false)} className="no-underline">
-              Start practicing
+          {showCreateAccount ? (
+            <Button variant="accent" size="lg" className="mt-2 w-full" onClick={openSignIn}>
+              Create account
               <ArrowRight className="h-4 w-4" />
-            </NextLink>
-          </Button>
+            </Button>
+          ) : (
+            <Button asChild variant="accent" size="lg" className="mt-2 w-full">
+              <NextLink href="/readingquestion" onClick={() => setOpen(false)} className="no-underline">
+                Start practicing
+                <ArrowRight className="h-4 w-4" />
+              </NextLink>
+            </Button>
+          )}
 
           {/* Account section (mobile) */}
           <Separator className="my-2" />
