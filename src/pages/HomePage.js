@@ -23,6 +23,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import NewsletterSignup from '../components/NewsletterSignup';
+import DashboardTeaser from '../components/home/DashboardTeaser';
 
 import { SITE_URL } from '../../lib/site';
 const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
@@ -325,6 +326,9 @@ const HomePage = ({ counts = {} }) => {
               })}
             </div>
           </section>
+
+          {/* ==================== ACCOUNT DASHBOARD ==================== */}
+          <DashboardTeaser />
 
           {/* ====================== WHY IELTS-BANK ====================== */}
           <section className="border-y border-border bg-secondary/50">

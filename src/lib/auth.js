@@ -8,15 +8,14 @@
 //   useAuth() -> {
 //     user,                              // Supabase user object or null (user.id, user.email)
 //     loading,                           // true until the initial session resolves
-//     signInWithEmail(email, next): Promise<{error}>,          // magic link (fallback)
-//     signUpWithPassword(email, password, next): Promise<{data, error}>,
+//     signInWithEmail(email): Promise<{error}>,          // magic link (fallback)
+//     signUpWithPassword(email, password): Promise<{data, error}>,
 //     signInWithPassword(email, password): Promise<{error}>,
 //     verifyEmailOtp(email, token): Promise<{error}>,          // 6-digit signup code
-//     resendSignupEmail(email, next): Promise<{error}>,
+//     resendSignupEmail(email): Promise<{error}>,
 //     signOut(): Promise<void>,
 //   }
-//   `next` is a same-origin path ('/writingquestion/foo') the emailed link
-//   should return the user to, via /auth/callback?next=…
+// Successful account creation and sign-in always land on /dashboard.
 //
 // All .auth calls go through the single existing anon browser client
 // (persistSession true). No second client, no anonymous sign-in — logged-out
@@ -25,6 +24,7 @@
 import * as React from 'react';
 import { getSupabase } from '../../lib/supabase';
 import { setAnalyticsUser, track } from './analytics';
+import { buildAuthCallbackUrl } from './authPaths';
 
 const AuthContext = React.createContext(null);
 
@@ -36,15 +36,11 @@ function getOrigin() {
   return '';
 }
 
-// Build the emailed-link landing URL. `next` must be a same-origin path
-// ('/writingquestion/foo'); anything else is dropped so the email can never
-// redirect off-site.
-function callbackUrl(next) {
-  const base = `${getOrigin()}/auth/callback`;
-  if (typeof next === 'string' && next.startsWith('/') && !next.startsWith('//')) {
-    return `${base}?next=${encodeURIComponent(next)}`;
-  }
-  return base;
+// Every emailed auth link uses one callback. The callback owns the final
+// destination so individual sign-in gates cannot accidentally bypass the
+// learner dashboard.
+function callbackUrl() {
+  return buildAuthCallbackUrl(getOrigin());
 }
 
 export function AuthProvider({ children }) {
@@ -103,21 +99,21 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signInWithEmail = React.useCallback(async (email, next) => {
+  const signInWithEmail = React.useCallback(async (email) => {
     const supabase = getSupabase();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: callbackUrl(next) },
+      options: { emailRedirectTo: callbackUrl() },
     });
     return { error };
   }, []);
 
-  const signUpWithPassword = React.useCallback(async (email, password, next) => {
+  const signUpWithPassword = React.useCallback(async (email, password) => {
     const supabase = getSupabase();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: callbackUrl(next) },
+      options: { emailRedirectTo: callbackUrl() },
     });
     return { data, error };
   }, []);
@@ -159,12 +155,12 @@ export function AuthProvider({ children }) {
     return { error };
   }, []);
 
-  const resendSignupEmail = React.useCallback(async (email, next) => {
+  const resendSignupEmail = React.useCallback(async (email) => {
     const supabase = getSupabase();
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
-      options: { emailRedirectTo: callbackUrl(next) },
+      options: { emailRedirectTo: callbackUrl() },
     });
     return { error };
   }, []);

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/router';
 import {
   X,
   Mail,
@@ -17,21 +18,22 @@ import { cn } from '../../lib/utils';
 import { useAuth } from '../../lib/auth';
 import { getSupabase } from '../../../lib/supabase';
 import { track } from '../../lib/analytics';
+import { POST_AUTH_PATH } from '../../lib/authPaths';
 import { inter } from '../../lib/fonts';
 
 // Auth + onboarding dialog. Keeps the historical SignInDialog prop contract
 // (open / onOpenChange / title / description / trigger) so every existing
 // sign-in gate gets the new flow.
 //
-// Flow (all in this one modal — the user never leaves the page, so "return
-// to where they were" is free):
+// Flow (all in this one modal until authentication is complete):
 //   1. account  — email + password; Create account (default) or Sign in.
 //   2. verify   — 6-digit emailed code (OTP only, no magic links; the
 //                 Supabase email templates must render {{ .Token }}).
 //   3. about    — two quick questions (goal + target band) saved to the
 //                 users row (target_band column + prefs jsonb). Skippable.
 // Existing users signing in with a password skip 2–3 entirely. Accounts from
-// the magic-link era (no password) sign in via an emailed one-time code.
+// the magic-link era (no password) sign in via an emailed one-time code. All
+// successful signup and sign-in paths finish on /dashboard.
 
 const GOALS = [
   { key: 'study', label: 'Study abroad', icon: GraduationCap },
@@ -40,11 +42,6 @@ const GOALS = [
   { key: 'general', label: 'General English', icon: Sparkles },
 ];
 const BANDS = ['6.0', '6.5', '7.0', '7.5', '8.0+'];
-
-function currentPath() {
-  if (typeof window === 'undefined') return '/';
-  return window.location.pathname + window.location.search;
-}
 
 // Merge goal + target band into the signed-in user's row. Fails soft — the
 // worst outcome is an unanswered onboarding question.
@@ -71,6 +68,7 @@ export default function SignInDialog({
   trigger = 'site',
   initialMode = 'signup', // 'signup' | 'signin'
 }) {
+  const router = useRouter();
   const {
     user,
     signInWithEmail,
@@ -100,6 +98,24 @@ export default function SignInDialog({
   const [notice, setNotice] = React.useState('');
   const [resendIn, setResendIn] = React.useState(0);
 
+  const finishStandardAuth = React.useCallback(() => {
+    onOpenChange?.(false);
+    if (router.asPath !== POST_AUTH_PATH) {
+      void router.replace(POST_AUTH_PATH);
+    }
+  }, [onOpenChange, router]);
+
+  const closeDialog = React.useCallback(() => {
+    // Reaching onboarding means signup has already produced a valid session.
+    // Closing or skipping this optional step must still honor the dashboard-
+    // first destination.
+    if (step === 'about') {
+      finishStandardAuth();
+      return;
+    }
+    onOpenChange?.(false);
+  }, [step, finishStandardAuth, onOpenChange]);
+
   React.useEffect(() => setMounted(true), []);
 
   // Reset whenever the dialog is (re)opened.
@@ -123,7 +139,7 @@ export default function SignInDialog({
   React.useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => {
-      if (e.key === 'Escape') onOpenChange?.(false);
+      if (e.key === 'Escape') closeDialog();
     };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
@@ -132,7 +148,7 @@ export default function SignInDialog({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onOpenChange]);
+  }, [open, closeDialog]);
 
   // Safety net: if a session appears in another tab while we sit on the
   // verify step (e.g. an old emailed link), supabase-js syncs it here —
@@ -142,7 +158,7 @@ export default function SignInDialog({
       setErrorMsg('');
       if (verifySource === 'signin') {
         track('login_success', { method: 'email_otp', trigger });
-        onOpenChange?.(false);
+        finishStandardAuth();
       } else if (verifySource === 'recovery') {
         setPassword('');
         setStep('newpass');
@@ -151,7 +167,7 @@ export default function SignInDialog({
         setStep('about');
       }
     }
-  }, [open, step, user?.id, verifySource, trigger, onOpenChange]);
+  }, [open, step, user?.id, verifySource, trigger, finishStandardAuth]);
 
   // Resend cooldown ticker.
   React.useEffect(() => {
@@ -162,7 +178,7 @@ export default function SignInDialog({
 
   if (!mounted || !open) return null;
 
-  const close = () => onOpenChange?.(false);
+  const close = closeDialog;
 
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
@@ -174,7 +190,7 @@ export default function SignInDialog({
     try {
       if (mode === 'signup') {
         track('signup_start', { method: 'password', trigger, signed_in: false });
-        const { data, error } = await signUpWithPassword(trimmed, password, currentPath());
+        const { data, error } = await signUpWithPassword(trimmed, password);
         if (error) {
           setErrorMsg(error.message || 'Could not create your account. Please try again.');
           return;
@@ -202,7 +218,7 @@ export default function SignInDialog({
           // Unconfirmed account: push them into the verify step instead of a
           // dead-end error.
           if (/email not confirmed/i.test(error.message || '')) {
-            await resendSignupEmail(trimmed, currentPath());
+            await resendSignupEmail(trimmed);
             setVerifySource('signup');
             setResendIn(30);
             setStep('verify');
@@ -216,7 +232,7 @@ export default function SignInDialog({
           return;
         }
         track('login_success', { method: 'password', trigger });
-        close();
+        finishStandardAuth();
       }
     } finally {
       setBusy(false);
@@ -242,7 +258,7 @@ export default function SignInDialog({
       if (verifySource === 'signin') {
         // Existing account signing in with a code — no onboarding questions.
         track('login_success', { method: 'email_otp', trigger });
-        close();
+        finishStandardAuth();
         return;
       }
       if (verifySource === 'recovery') {
@@ -269,7 +285,7 @@ export default function SignInDialog({
         ? await signInWithEmail(email.trim())
         : verifySource === 'recovery'
           ? await requestPasswordReset(email.trim())
-          : await resendSignupEmail(email.trim(), currentPath());
+          : await resendSignupEmail(email.trim());
     if (error) setErrorMsg(error.message || 'Could not resend the email. Please try again.');
   };
 
@@ -345,7 +361,7 @@ export default function SignInDialog({
       });
     } finally {
       setBusy(false);
-      close();
+      finishStandardAuth();
     }
   };
 
