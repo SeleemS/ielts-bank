@@ -36,6 +36,14 @@ const PER_IP_MAX = 8; // 8 scorings / hour / IP
 const GLOBAL_WINDOW_SECONDS = 86400; // 1 day
 const GLOBAL_MAX = 500; // hard daily ceiling across all users (cost circuit breaker)
 
+// Anonymous free trial: ONE writing score per anon_id before signup, tracked
+// via check_rate_limit with a 30-day window (effectively a lifetime cap for
+// trial purposes). anon_id is client-generated and spoofable — the per-IP and
+// global limits above remain the real cost backstops, and anon scoring always
+// uses the cheap FREE_MODEL.
+const ANON_TRIAL_WINDOW_SECONDS = 30 * 86400;
+const ANON_TRIAL_MAX = 1;
+
 const OPENAI_TIMEOUT_MS = 45000;
 
 // ---------------------------------------------------------------------------
@@ -79,7 +87,8 @@ async function consumeQuota(userId) {
 }
 
 // ---------------------------------------------------------------------------
-// Required auth: writing scoring is signed-in-only in both the UI and API.
+// Auth: signed-in users score against their quota; signed-out visitors get a
+// single trial score keyed on their anon_id (see ANON_TRIAL_* above).
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
   try {
@@ -107,6 +116,21 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
   try {
     const admin = getAdmin();
     const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
+
+    if (!userId) {
+      // Anonymous trial score: no owner to attach attempts/scores rows to —
+      // record telemetry only. The client keeps a local copy of the attempt
+      // that syncs into the account on signup.
+      if (UUID_RE.test(anonId || '')) {
+        await admin.from('activity_events').insert({
+          anon_id: anonId,
+          event: 'writing_score_server',
+          skill: 'writing',
+          props: { task, word_count: wordCount, band: overall, model, anon_trial: true },
+        });
+      }
+      return;
+    }
 
     const { data: attempt, error: attemptErr } = await admin
       .from('attempts')
@@ -290,12 +314,16 @@ export default async function handler(req, res) {
   }
 
   const userId = await resolveUserId(req);
-  if (!userId) {
-    return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
-  }
 
   // --- Validate body -------------------------------------------------------
   const body = req.body || {};
+  const anonId =
+    typeof body.anon_id === 'string' && UUID_RE.test(body.anon_id) ? body.anon_id : null;
+
+  // Signed-out requests must carry a valid anon_id to claim the trial score.
+  if (!userId && !anonId) {
+    return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
+  }
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   const task = body.task === 1 || body.task === '1' ? 1 : 2;
@@ -359,27 +387,55 @@ export default async function handler(req, res) {
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
 
-  let quota;
-  try {
-    quota = await consumeQuota(userId);
-  } catch (error) {
-    console.error('quota check failed:', error.message);
-    return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  let quota = null;
+  if (userId) {
+    try {
+      quota = await consumeQuota(userId);
+    } catch (error) {
+      console.error('quota check failed:', error.message);
+      return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    }
+    if (!quota?.allowed) {
+      return res.status(402).json({
+        error:
+          quota?.reason === 'daily_cap'
+            ? quota?.plan === 'premium'
+              ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
+              : 'You’ve used your free Writing score for today. It resets at midnight UTC — Premium includes 2 per day.'
+            : 'You have used all 3 free AI scores for this 30-day period.',
+        remaining: 0,
+        reason: quota?.reason || 'quota_exceeded',
+        resetsAt: quota?.resetsAt || null,
+      });
+    }
+  } else {
+    // Anonymous trial: one score per anon_id. Fails closed — an RPC outage
+    // must not open unmetered anonymous OpenAI spend.
+    let anonOk = false;
+    try {
+      anonOk = await withinLimit(
+        'writing-score-anon',
+        anonId,
+        ANON_TRIAL_WINDOW_SECONDS,
+        ANON_TRIAL_MAX,
+        true
+      );
+    } catch (e) {
+      console.error('anon trial check failed:', e.message);
+      return res
+        .status(503)
+        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    }
+    if (!anonOk) {
+      // 401 (not 402): the client treats it as a sign-in gate and re-runs the
+      // pending score once the visitor has an account.
+      return res.status(401).json({
+        error:
+          'You’ve used your free writing score. Create a free account to keep practising.',
+      });
+    }
   }
-  if (!quota?.allowed) {
-    return res.status(402).json({
-      error:
-        quota?.reason === 'daily_cap'
-          ? quota?.plan === 'premium'
-            ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
-            : 'You’ve used your free Writing score for today. It resets at midnight UTC — Premium includes 2 per day.'
-          : 'You have used all 3 free AI scores for this 30-day period.',
-      remaining: 0,
-      reason: quota?.reason || 'quota_exceeded',
-      resetsAt: quota?.resetsAt || null,
-    });
-  }
-  const scoringModel = quota.plan === 'free' ? FREE_MODEL : PAID_MODEL;
+  const scoringModel = quota && quota.plan !== 'free' ? PAID_MODEL : FREE_MODEL;
 
   // --- Call OpenAI ---------------------------------------------------------
   if (!process.env.OPENAI_API_KEY) {
@@ -453,11 +509,17 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       model: ai.model,
       result,
       startedAt: typeof req.body?.started_at === 'string' ? req.body.started_at : null,
-      anonId: typeof req.body?.anon_id === 'string' ? req.body.anon_id : null,
+      anonId,
       wordCount: words,
     });
 
-    return res.status(200).json({ task, wordCount: words, quotaRemaining: quota.remaining, plan: quota.plan, ...result });
+    return res.status(200).json({
+      task,
+      wordCount: words,
+      quotaRemaining: quota ? quota.remaining : 0,
+      plan: quota ? quota.plan : 'anon',
+      ...result,
+    });
   } catch (e) {
     if (e.name === 'AbortError') {
       console.error('OpenAI request timed out');

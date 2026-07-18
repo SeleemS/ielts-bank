@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
 import { Button } from '../../components/ui/button';
@@ -14,6 +14,8 @@ import { useAuth } from '../lib/auth';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
 import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../components/question/ScoreUI';
+import { canUseFreeSubmit, recordFreeSubmit } from '../lib/freeAttempts';
+import { syncLocalAttempts } from '../lib/progress';
 
 import { SITE_URL } from '../../lib/site';
 const SCORE_API = '/api/score/writing';
@@ -169,6 +171,16 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [quotaOpen, setQuotaOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  // Set when a signed-out visitor hits the free-score gate — scoring resumes
+  // automatically once the sign-up dialog closes with a session present.
+  const pendingSubmitRef = useRef(false);
+
+  // Backfill attempts completed while signed out (including the free
+  // anonymous writing score persisted below) as soon as a session appears.
+  useEffect(() => {
+    if (!user?.id) return;
+    syncLocalAttempts(user.id).catch(() => {});
+  }, [user?.id]);
 
   // Restore any local draft for this prompt (foundation for the accounts wave).
   useEffect(() => {
@@ -200,23 +212,8 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const progressValue = Math.min((wordCount / minWords) * 100, 100);
   const isSufficient = wordCount >= minWords;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-
-    if (!isSufficient) {
-      setErrorMsg(
-        `Your answer must be at least ${minWords} words. Current word count: ${wordCount}.`
-      );
-      return;
-    }
-
-    if (!user) {
-      setSignInOpen(true);
-      return;
-    }
-
-    track('writing_submit', { skill: 'writing', slug: storageKey, task, word_count: wordCount, signed_in: true });
+  const runScore = useCallback(async () => {
+    track('writing_submit', { skill: 'writing', slug: storageKey, task, word_count: wordCount, signed_in: Boolean(user) });
 
     setResult(null);
     setIsLoading(true);
@@ -258,31 +255,81 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         // its remaining stages and opens the feedback via onFinished.
         scored = true;
         setResult(data);
-        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: true });
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: Boolean(user) });
+        if (!user) {
+          // Free anonymous score: consume the free slot and keep a local
+          // attempt record so syncLocalAttempts pushes it into their account
+          // the moment they sign up.
+          recordFreeSubmit('writing', storageKey);
+          try {
+            window.localStorage.setItem(
+              `ielts-attempt:writing:${storageKey}`,
+              JSON.stringify({
+                skill: 'writing',
+                slug: storageKey,
+                answers: { essay: userResponse, task },
+                band: typeof data.overallBand === 'number' ? data.overallBand : null,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          } catch {
+            /* localStorage unavailable — non-fatal */
+          }
+        }
       } else if (response.status === 401) {
+        // Signed-in session expired, or the anonymous free score is already
+        // used on the server — either way, sign in and the score re-runs.
+        pendingSubmitRef.current = true;
         setSignInOpen(true);
-        setErrorMsg('Your session expired. Sign in again to score this response.');
+        setErrorMsg(
+          (data && data.error) ||
+            'Please sign in to score this response.'
+        );
       } else if (response.status === 402 || response.status === 429) {
         setQuotaOpen(true);
-        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'rate_limited', task, signed_in: true });
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'rate_limited', task, signed_in: Boolean(user) });
         setErrorMsg(
           (data && data.error) ||
             'You have reached the scoring limit. Please try again later.'
         );
       } else {
-        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', http_status: response.status, task, signed_in: true });
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', http_status: response.status, task, signed_in: Boolean(user) });
         setErrorMsg(
           (data && data.error) || 'Failed to score your answer. Please try again.'
         );
       }
     } catch {
-      track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', error_type: 'network', task, signed_in: true });
+      track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', error_type: 'network', task, signed_in: Boolean(user) });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
       // On success the loading modal stays up until the animation completes
       // (handleScoringFinished); every failure path closes it immediately.
       if (!scored) setIsLoading(false);
     }
+  }, [passage?.id, promptHtml, storageKey, task, user, userResponse, wordCount]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!isSufficient) {
+      setErrorMsg(
+        `Your answer must be at least ${minWords} words. Current word count: ${wordCount}.`
+      );
+      return;
+    }
+
+    // Free-tier gate: one anonymous writing score (retrying the same prompt
+    // stays on this slot). The draft is persisted on every keystroke, so it
+    // survives sign-up; scoring resumes when the dialog closes.
+    if (!user && !canUseFreeSubmit('writing', storageKey)) {
+      pendingSubmitRef.current = true;
+      setSignInOpen(true);
+      track('free_limit_gate', { skill: 'writing', slug: storageKey });
+      return;
+    }
+
+    runScore();
   };
 
   const handleScoringFinished = useCallback(() => {
@@ -428,14 +475,36 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       </div>
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} title="Sign in to get AI feedback" description="Your draft stays right here — sign up in seconds and get your band score." trigger="writing_task_score" />
+      <SignInDialog
+        open={signInOpen}
+        onOpenChange={(v) => {
+          setSignInOpen(v);
+          if (!v) {
+            // Fires when the dialog CLOSES (after optional onboarding), not
+            // the moment the session appears — mirrors the writing checker.
+            const shouldRun = pendingSubmitRef.current && Boolean(user);
+            pendingSubmitRef.current = false;
+            if (shouldRun) runScore();
+          }
+        }}
+        redirectOnFinish={false}
+        title="Sign up free to score this response"
+        description="You’ve used your free writing score. Your draft stays right here — create a free account and it’s scored the moment you’re done."
+        trigger="writing_task_score"
+      />
       <Modal
         open={feedbackOpen && !!result}
         onClose={() => setFeedbackOpen(false)}
         title="Your AI Feedback & Score"
       >
         {result && <ScoreReport task={task} result={result} />}
-        {result ? <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you&rsquo;re ready.</p> : null}
+        {result ? (
+          <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">
+            {user
+              ? 'This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you’re ready.'
+              : 'That was your free writing score — create a free account to save it to your dashboard and keep practising.'}
+          </p>
+        ) : null}
         <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>

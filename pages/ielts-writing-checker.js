@@ -24,6 +24,7 @@ import { Label } from '../components/ui/label';
 import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
 import { getAnonId, track } from '../src/lib/analytics';
+import { canUseFreeSubmit, recordFreeSubmit } from '../src/lib/freeAttempts';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../src/components/question/ScoreUI';
 
@@ -31,6 +32,9 @@ import { SITE_URL } from '../lib/site';
 const SCORE_API = '/api/score/writing';
 const CANONICAL = `${SITE_URL}/ielts-writing-checker`;
 const DRAFT_KEY = 'ielts-writing-checker-draft';
+// Free-slot identifier: the checker shares the ONE anonymous writing score
+// with the writing question pages (the server enforces it per anon_id anyway).
+const CHECKER_SLUG = 'writing-checker';
 
 // Task-type options. The scoring API only distinguishes Task 1 vs Task 2, so
 // both Task 1 variants map to apiTask=1; the label is passed to the model as
@@ -323,6 +327,14 @@ export default function WritingCheckerPage() {
         scored = true;
         setResult(data);
         track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
+        // A signed-out success consumes the one anonymous writing score.
+        if (!user) recordFreeSubmit('writing', CHECKER_SLUG);
+      } else if (response.status === 401) {
+        // Anonymous free score already used (or session expired): sign in and
+        // the pending score re-runs when the dialog closes.
+        pendingSubmitRef.current = true;
+        setSignInOpen(true);
+        setErrorMsg((data && data.error) || 'Please sign in to score this essay.');
       } else if (response.status === 402 || response.status === 429) {
         setQuotaOpen(true);
         track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'rate_limited', task: apiTask, signed_in: Boolean(user) });
@@ -358,11 +370,13 @@ export default function WritingCheckerPage() {
       return;
     }
 
-    // Signed-out: draft is already persisted by the effect above. Open the
-    // existing magic-link sign-in dialog; scoring runs once they're signed in.
-    if (!loading && !user) {
+    // Signed-out visitors get one free score (shared with the writing
+    // question pages). After that: draft is already persisted by the effect
+    // above, so open the sign-in dialog; scoring runs once they're signed in.
+    if (!loading && !user && !canUseFreeSubmit('writing', CHECKER_SLUG)) {
       pendingSubmitRef.current = true;
       setSignInOpen(true);
+      track('free_limit_gate', { skill: 'writing', slug: CHECKER_SLUG });
       return;
     }
 
@@ -697,8 +711,9 @@ export default function WritingCheckerPage() {
             if (shouldRun) runScore();
           }
         }}
-        title="Sign in to check your writing"
-        description="Create a free account to see your band score. Your draft is kept safe."
+        redirectOnFinish={false}
+        title="Sign up free to keep checking your writing"
+        description="You’ve used your free score. Create a free account — your draft is kept safe and is scored as soon as you’re done."
         trigger="writing_checker_score"
       />
     </>

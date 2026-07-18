@@ -7,6 +7,8 @@ import { gradeAll, estimateBand } from './grade';
 import { useAuth } from '../../lib/auth';
 import { track } from '../../lib/analytics';
 import NewsletterSignup from '../NewsletterSignup';
+import SignInDialog from '../auth/SignInDialog';
+import { canUseFreeSubmit, recordFreeSubmit } from '../../lib/freeAttempts';
 import {
   resolvePassageId,
   saveAttemptToSupabase,
@@ -204,6 +206,10 @@ export default function QuestionEngine({
   const [remaining, setRemaining] = useState(durationSeconds || 0);
   const [hydrated, setHydrated] = useState(false);
   const [timerAnnouncement, setTimerAnnouncement] = useState('');
+  const [signInOpen, setSignInOpen] = useState(false);
+  // Set when a signed-out visitor hits the free-question gate — the pending
+  // submission resumes once the sign-up dialog closes with a session present.
+  const pendingSubmitRef = useRef(false);
   const announcedRef = useRef(new Set());
   const resultsRef = useRef(null);
   const startedAtRef = useRef(null);
@@ -293,6 +299,20 @@ export default function QuestionEngine({
   }, []);
 
   const handleSubmit = useCallback(() => {
+    // Free-tier gate: signed-out visitors get one free question per skill
+    // (retrying the same question stays free; mock tests have their own
+    // PremiumGate). Answers are already autosaved to localStorage, so nothing
+    // is lost across sign-up — the submission resumes when the dialog closes.
+    if (!user?.id && !mockTestId && !canUseFreeSubmit(skill, storageKey)) {
+      pendingSubmitRef.current = true;
+      // Stop a running timer so an expired clock doesn't re-trigger the gate
+      // every tick; they can submit manually after signing up.
+      setTimed(false);
+      setDeadline(null);
+      setSignInOpen(true);
+      track('free_limit_gate', { skill, slug: storageKey });
+      return;
+    }
     const result = gradeAll(groups, answers);
     setResults(result);
     setSubmitted(true);
@@ -311,6 +331,9 @@ export default function QuestionEngine({
       persistAttemptToSupabase(user.id, skill, storageKey, answers, result, questions, startedAt, submittedAt, module, mockTestId).catch(
         () => {}
       );
+    } else if (!mockTestId) {
+      // Signed-out submission — this consumes the skill's free slot.
+      recordFreeSubmit(skill, storageKey);
     }
     if (typeof window !== 'undefined') {
       const band = estimateBand(result.score, result.total, skill, module);
@@ -475,7 +498,7 @@ export default function QuestionEngine({
               aria-label={`Question ${number}${answered ? ', answered' : ', unanswered'}${isFlagged ? ', flagged' : ''}${reviewState === true ? ', correct' : reviewState === false ? ', incorrect' : ''}`}
               onClick={() => document.getElementById(`question-${number}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
               className={cn(
-                'flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8 sm:min-w-8',
                 submitted && results
                   ? reviewState
                     ? 'border-accent bg-accent text-accent-foreground'
@@ -507,7 +530,7 @@ export default function QuestionEngine({
       ))}
 
       {!submitted && (
-        <div className="sticky bottom-0 -mx-1 mt-2 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-1 py-4 backdrop-blur">
+        <div className="sticky bottom-0 -mx-1 mt-2 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-1 pt-4 backdrop-blur pb-[max(1rem,env(safe-area-inset-bottom))]">
           <span className={cn('text-sm', confirmArmed ? 'font-medium text-amber-600' : 'text-muted-foreground')}>
             {confirmArmed
               ? `${unansweredCount} question${unansweredCount === 1 ? '' : 's'} unanswered — submit anyway?`
@@ -522,6 +545,24 @@ export default function QuestionEngine({
           </Button>
         </div>
       )}
+
+      <SignInDialog
+        open={signInOpen}
+        onOpenChange={(v) => {
+          setSignInOpen(v);
+          if (!v) {
+            // Fires when the dialog CLOSES (after optional onboarding), not
+            // the moment the session appears — mirrors the writing checker.
+            const shouldRun = pendingSubmitRef.current && Boolean(user?.id);
+            pendingSubmitRef.current = false;
+            if (shouldRun) handleSubmit();
+          }
+        }}
+        redirectOnFinish={false}
+        title={`Sign up free to submit this ${skill} question`}
+        description="Your answers are safe — create a free account to see your score and track your progress. Reading and listening practice stays free."
+        trigger={`${skill}_free_limit`}
+      />
     </div>
   );
 }

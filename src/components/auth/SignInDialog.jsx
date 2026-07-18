@@ -33,7 +33,8 @@ import { inter } from '../../lib/fonts';
 //                 users row (target_band column + prefs jsonb). Skippable.
 // Existing users signing in with a password skip 2–3 entirely. Accounts from
 // the magic-link era (no password) sign in via an emailed one-time code. All
-// successful signup and sign-in paths finish on /dashboard.
+// successful signup and sign-in paths finish on /dashboard, unless the caller
+// passes redirectOnFinish={false} to stay on the current page.
 
 const GOALS = [
   { key: 'study', label: 'Study abroad', icon: GraduationCap },
@@ -67,6 +68,10 @@ export default function SignInDialog({
   description = 'Save your scores and progress across devices.',
   trigger = 'site',
   initialMode = 'signup', // 'signup' | 'signin'
+  // In-context gates (e.g. a question page resuming a pending submission)
+  // pass false so finishing auth keeps the user on the page instead of the
+  // default dashboard-first redirect.
+  redirectOnFinish = true,
 }) {
   const router = useRouter();
   const {
@@ -100,10 +105,10 @@ export default function SignInDialog({
 
   const finishStandardAuth = React.useCallback(() => {
     onOpenChange?.(false);
-    if (router.asPath !== POST_AUTH_PATH) {
+    if (redirectOnFinish && router.asPath !== POST_AUTH_PATH) {
       void router.replace(POST_AUTH_PATH);
     }
-  }, [onOpenChange, router]);
+  }, [onOpenChange, redirectOnFinish, router]);
 
   const closeDialog = React.useCallback(() => {
     // Reaching onboarding means signup has already produced a valid session.
@@ -645,7 +650,7 @@ export default function SignInDialog({
         onClick={close}
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
       />
-      <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
         <div
           role="dialog"
           aria-modal="true"
