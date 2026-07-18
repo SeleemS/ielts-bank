@@ -25,7 +25,7 @@ import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
 import { getAnonId, track } from '../src/lib/analytics';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
-import { ScoringProgress, CriterionFeedback } from '../src/components/question/ScoreUI';
+import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../src/components/question/ScoreUI';
 
 import { SITE_URL } from '../lib/site';
 const SCORE_API = '/api/score/writing';
@@ -89,34 +89,22 @@ function ScoreReport({ apiTask, result }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-5 py-4">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Estimated Overall Band
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Writing Task {apiTask}
-            {result.wordCount ? ` · ${result.wordCount} words` : ''}
-          </div>
-        </div>
-        <span
-          className={cn(
-            'inline-flex h-14 w-14 items-center justify-center rounded-full text-2xl font-extrabold tabular-nums',
-            bandTone(result.overallBand)
-          )}
-        >
-          {formatBand(result.overallBand)}
-        </span>
-      </div>
+      <BandHero
+        band={result.overallBand}
+        subtitle={`Writing Task ${apiTask}${result.wordCount ? ` · ${result.wordCount} words` : ''}`}
+      />
 
       <div className="space-y-3">
         {criteriaMeta.map(([key, label]) => {
           const c = criteria[key] || {};
           return (
             <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2.5 flex items-center justify-between gap-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-foreground">{label}</h3>
                 <BandPill band={c.band} />
+              </div>
+              <div className="mb-3">
+                <BandMeter band={c.band} />
               </div>
               <CriterionFeedback criterion={c} />
             </div>
@@ -295,6 +283,7 @@ export default function WritingCheckerPage() {
 
     setIsLoading(true);
     track('writing_submit', { skill: 'writing', slug: 'writing-checker', task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
+    let scored = false;
     try {
       const headers = { 'Content-Type': 'application/json' };
       try {
@@ -329,6 +318,9 @@ export default function WritingCheckerPage() {
       }
 
       if (response.ok && data) {
+        // Result renders after the ScoringProgress run-through completes
+        // (results show when result && !isLoading; onFinished flips loading).
+        scored = true;
         setResult(data);
         track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
       } else if (response.status === 402 || response.status === 429) {
@@ -346,7 +338,7 @@ export default function WritingCheckerPage() {
       track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'error', error_type: 'network', task: apiTask, signed_in: Boolean(user) });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      if (!scored) setIsLoading(false);
     }
   }, [active.label, apiTask, essay, isSufficient, minWords, prompt, user, wordCount]);
 
@@ -516,7 +508,7 @@ export default function WritingCheckerPage() {
                     ? 'Sign in & check my writing'
                     : 'Check my writing'}
                 </Button>
-                <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} />
+                <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" />
                 {!loading && !user && (
                   <p className="text-center text-xs text-muted-foreground">
                     We&apos;ll email you a one-tap magic link to save your score. Your draft
@@ -532,7 +524,7 @@ export default function WritingCheckerPage() {
                 <h2 className="mb-2 text-lg font-bold tracking-tight text-foreground">
                   Analyzing your response
                 </h2>
-                <ScoringProgress />
+                <ScoringProgress done={Boolean(result)} onFinished={() => setIsLoading(false)} />
               </div>
             )}
 

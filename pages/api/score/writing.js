@@ -370,7 +370,9 @@ export default async function handler(req, res) {
     return res.status(402).json({
       error:
         quota?.reason === 'daily_cap'
-          ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
+          ? quota?.plan === 'premium'
+            ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
+            : 'You’ve used your free Writing score for today. It resets at midnight UTC — Premium includes 2 per day.'
           : 'You have used all 3 free AI scores for this 30-day period.',
       remaining: 0,
       reason: quota?.reason || 'quota_exceeded',
@@ -455,7 +457,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       wordCount: words,
     });
 
-    return res.status(200).json({ task, wordCount: words, quotaRemaining: quota.remaining, ...result });
+    return res.status(200).json({ task, wordCount: words, quotaRemaining: quota.remaining, plan: quota.plan, ...result });
   } catch (e) {
     if (e.name === 'AbortError') {
       console.error('OpenAI request timed out');

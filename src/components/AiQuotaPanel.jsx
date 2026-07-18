@@ -5,7 +5,7 @@ import Modal from './AccessibleModal';
 import { getSupabase } from '../../lib/supabase';
 import { track } from '../lib/analytics';
 
-export default function AiQuotaPanel({ userId, remaining, open = false, onClose = () => {} }) {
+export default function AiQuotaPanel({ userId, remaining, open = false, onClose = () => {}, skill = 'speaking' }) {
   const [dbRemaining, setDbRemaining] = React.useState(null);
   const [resetsAt, setResetsAt] = React.useState(null);
 
@@ -26,7 +26,11 @@ export default function AiQuotaPanel({ userId, remaining, open = false, onClose 
     <>
       {userId ? (
         <p className="text-center text-xs font-medium text-muted-foreground">
-          {shown == null ? 'Loading your AI score allowance…' : `${shown} of 3 free AI scores left this period`}
+          {skill === 'writing'
+            ? 'Free plan: 1 AI Writing score per day · Premium: 2 per day'
+            : shown == null
+              ? 'Loading your AI score allowance…'
+              : `${shown} of 3 free AI scores left this period`}
         </p>
       ) : null}
       <Modal open={open} onClose={onClose} title="Keep improving with AI feedback">

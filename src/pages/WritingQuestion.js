@@ -13,7 +13,7 @@ import { getAnonId, track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
-import { ScoringProgress, CriterionFeedback } from '../components/question/ScoreUI';
+import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../components/question/ScoreUI';
 
 import { SITE_URL } from '../../lib/site';
 const SCORE_API = '/api/score/writing';
@@ -88,25 +88,10 @@ function ScoreReport({ task, result }) {
   return (
     <div className="space-y-5">
       {/* Overall band */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-5 py-4">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Overall Band
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Writing Task {task}
-            {result.wordCount ? ` · ${result.wordCount} words` : ''}
-          </div>
-        </div>
-        <span
-          className={cn(
-            'inline-flex h-14 w-14 items-center justify-center rounded-full text-2xl font-extrabold tabular-nums',
-            bandTone(result.overallBand)
-          )}
-        >
-          {formatBand(result.overallBand)}
-        </span>
-      </div>
+      <BandHero
+        band={result.overallBand}
+        subtitle={`Writing Task ${task}${result.wordCount ? ` · ${result.wordCount} words` : ''}`}
+      />
 
       {/* Per-criterion cards */}
       <div className="space-y-3">
@@ -114,9 +99,12 @@ function ScoreReport({ task, result }) {
           const c = criteria[key] || {};
           return (
             <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2.5 flex items-center justify-between gap-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-foreground">{label}</h3>
                 <BandPill band={c.band} />
+              </div>
+              <div className="mb-3">
+                <BandMeter band={c.band} />
               </div>
               <CriterionFeedback criterion={c} />
             </div>
@@ -230,7 +218,9 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
 
     track('writing_submit', { skill: 'writing', slug: storageKey, task, word_count: wordCount, signed_in: true });
 
+    setResult(null);
     setIsLoading(true);
+    let scored = false;
     try {
       // Attach the current session's access token (if signed in) so the scorer
       // can persist the result server-side. Fail-soft: any error here just means
@@ -264,10 +254,11 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       }
 
       if (response.ok && data) {
+        // Don't reveal yet — the ScoringProgress modal fast-forwards through
+        // its remaining stages and opens the feedback via onFinished.
+        scored = true;
         setResult(data);
         track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: true });
-        setFeedbackOpen(true);
-        import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
       } else if (response.status === 401) {
         setSignInOpen(true);
         setErrorMsg('Your session expired. Sign in again to score this response.');
@@ -288,9 +279,17 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'error', error_type: 'network', task, signed_in: true });
       setErrorMsg('A network error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      // On success the loading modal stays up until the animation completes
+      // (handleScoringFinished); every failure path closes it immediately.
+      if (!scored) setIsLoading(false);
     }
   };
+
+  const handleScoringFinished = useCallback(() => {
+    setIsLoading(false);
+    setFeedbackOpen(true);
+    import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
+  }, []);
 
   const pageTitle = title
     ? `${title} | IELTS Writing Practice | IELTS-Bank`
@@ -412,7 +411,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
               {isLoading ? 'Analyzing…' : 'Get AI Feedback'}
             </Button>
           </div>
-          <div className="mt-2"><AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} /></div>
+          <div className="mt-2"><AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" /></div>
           <RelatedPractice skill="writing" items={related} className="mt-10" />
         </main>
       </div>
@@ -433,7 +432,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
 
       {/* Loading modal */}
       <Modal open={isLoading} onClose={() => {}} title="Analyzing your response" dismissible={false}>
-        <ScoringProgress />
+        <ScoringProgress done={Boolean(result)} onFinished={handleScoringFinished} />
       </Modal>
     </>
   );
