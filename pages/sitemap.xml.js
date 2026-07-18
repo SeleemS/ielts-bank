@@ -6,6 +6,7 @@ import { SITE_URL } from '../lib/site';
 
 const STATIC_ROUTES = [
   '/',
+  '/about',
   '/contactus',
   '/privacypolicy',
   '/termsofservice',

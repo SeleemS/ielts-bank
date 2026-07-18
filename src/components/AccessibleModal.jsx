@@ -58,7 +58,7 @@ export default function AccessibleModal({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
@@ -70,7 +70,7 @@ export default function AccessibleModal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl focus:outline-none"
+        className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl focus:outline-none supports-[height:100dvh]:max-h-[85dvh]"
       >
         <div className="mb-3 flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-lg font-bold text-foreground">{title}</h2>

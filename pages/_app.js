@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import Head from 'next/head';
 import * as React from 'react';
 import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/react';
@@ -8,6 +9,7 @@ import '../src/styles/globals.css';
 import { inter } from '../src/lib/fonts';
 import { AuthProvider, useAuth } from '../src/lib/auth';
 import { trackPageView } from '../src/lib/analytics';
+import ConsentManager from '../src/components/ConsentManager';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
@@ -38,6 +40,20 @@ function MyApp({ Component, pageProps }) {
   }, []);
   return (
     <AuthProvider>
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+      </Head>
+      {/* Inter must live on <html>, not just the wrapper div below: modals and
+          drawers render in portals attached to <body>, which otherwise fall
+          back to the browser serif font. */}
+      <style jsx global>{`
+        html {
+          font-family: ${inter.style.fontFamily}, ui-sans-serif, system-ui, sans-serif;
+        }
+      `}</style>
       <AppTelemetry router={router} />
       <div className={`${inter.variable} font-sans`}>
       {/* Google AdSense */}
@@ -70,6 +86,7 @@ function MyApp({ Component, pageProps }) {
       </Script>
 
         <Component {...pageProps} />
+        <ConsentManager />
         <Analytics />
       </div>
     </AuthProvider>

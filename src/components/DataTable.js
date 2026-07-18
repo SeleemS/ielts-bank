@@ -139,7 +139,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
             placeholder="Search by title..."
             aria-label={`Search ${itemNoun}s by title`}
             className={cn(
-              'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground',
+              'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground sm:text-sm',
               'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
               'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
             )}
@@ -176,7 +176,9 @@ const DataTable = ({ items, skill, selectedOption }) => {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="w-14 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+                  {/* Hidden on mobile so Title/Difficulty/Action fit 375px
+                      without sideways scrolling. */}
+                  <th className="hidden w-14 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:table-cell sm:px-6">
                     #
                   </th>
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -210,7 +212,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
                       onClick={onRowClick}
                       className="group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
                     >
-                      <td className="px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:px-6">
+                      <td className="hidden px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:table-cell sm:px-6">
                         {start + index + 1}
                       </td>
                       <td className="px-4 py-4 align-middle">

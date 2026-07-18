@@ -156,7 +156,7 @@ export default function BandCalculator() {
   }, [listeningRaw, readingRaw, readingModule, wBand, sBand, overall, user?.id]);
 
   const rawInputClass =
-    'h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background';
+    'h-10 w-full rounded-md border border-input bg-background px-3 text-base text-foreground shadow-sm outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background sm:text-sm';
 
   return (
     <>

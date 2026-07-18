@@ -22,6 +22,7 @@ const TOOLS_LINKS = [
 
 const RESOURCE_LINKS = [
   { label: 'Blog', href: '/blog' },
+  { label: 'About Us', href: '/about' },
   { label: 'Contact Us', href: '/contactus' },
 ];
 

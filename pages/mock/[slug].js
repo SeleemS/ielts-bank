@@ -113,7 +113,7 @@ export default function MockTestPage({ mock }) {
   return (
     <>
       <Head>
-        <title>{mock.title} | IELTS-Bank</title>
+        <title>{`${mock.title} | IELTS-Bank`}</title>
         <meta name="description" content={mock.description} />
         <link rel="canonical" href={canonical} />
       </Head>

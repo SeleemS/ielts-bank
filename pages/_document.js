@@ -11,6 +11,28 @@ export default function Document() {
         <meta name="theme-color" content="#000000" />
         {/* Allow large image previews in Google Search / Discover. */}
         <meta name="robots" content="max-image-preview:large" />
+        {/* Google Consent Mode defaults — must run before gtag.js/AdSense load.
+            Opt-out model: analytics/ads storage is GRANTED by default and only
+            denied if the visitor explicitly opted out via ConsentManager. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              window.gtag = window.gtag || gtag;
+              (function(){
+                var saved = null;
+                try { saved = localStorage.getItem('ib_consent_v1'); } catch (e) {}
+                var optional = saved === 'denied' ? 'denied' : 'granted';
+                gtag('consent', 'default', {
+                  analytics_storage: optional, ad_storage: optional, ad_user_data: optional,
+                  ad_personalization: optional, functionality_storage: 'granted',
+                  security_storage: 'granted', wait_for_update: 500
+                });
+              })();
+            `,
+          }}
+        />
       </Head>
       <body>
         <Main />

@@ -77,21 +77,35 @@
   }
 }
 
-/*
- * Scoped opt-in helpers for Tailwind-migrated surfaces. We deliberately do NOT
- * apply border-color / bg globally (that would fight Chakra). Components that
- * want the design system opt in with the `.` wrapper or Tailwind utils.
- */
 @layer base {
-  .{
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  *,
+  *::before,
+  *::after {
+    border-color: hsl(var(--border));
+  }
+  body {
     color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Avoid iOS Safari inflating text on rotation. */
+    -webkit-text-size-adjust: 100%;
   }
-  .*,
-  .*::before,
-  .*::after {
-    border-color: hsl(var(--border));
+}
+
+/*
+ * Mobile viewport units: 100vh on mobile browsers includes the collapsed
+ * URL-bar area, so full-height shells overflow the visible viewport and
+ * jump when the bar collapses. Prefer dynamic viewport height where
+ * supported; older browsers keep the vh fallback.
+ */
+@layer utilities {
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .h-screen {
+    height: 100vh;
+    height: 100dvh;
   }
 }

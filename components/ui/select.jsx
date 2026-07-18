@@ -6,7 +6,9 @@ const Select = React.forwardRef(({ className, children, ...props }, ref) => (
   <select
     ref={ref}
     className={cn(
-      'flex h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 pr-8 text-sm text-foreground shadow-sm transition-colors',
+      // text-base below sm: font sizes under 16px make iOS Safari zoom the
+      // page whenever the field is focused.
+      'flex h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 pr-8 text-base text-foreground shadow-sm transition-colors sm:text-sm',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
       'disabled:cursor-not-allowed disabled:opacity-60',
       // caret drawn as a background SVG so it survives Preflight being disabled

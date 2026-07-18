@@ -75,14 +75,21 @@ const TermsOfService = () => {
               </div>
 
               <div>
-                <h2 className="mb-1 text-base font-semibold text-foreground">6. Site Terms of Use Modifications</h2>
+                <h2 className="mb-1 text-base font-semibold text-foreground">6. Advertising and Payments</h2>
+                <p>
+                  The website is supported by third-party advertising (including Google AdSense) and an optional premium subscription. Ads are provided by third parties and IELTSBank is not responsible for the content of advertisements or the products and services they promote. Premium subscriptions are billed through Stripe and renew automatically until cancelled; you can cancel at any time and retain access until the end of the current billing period. See our Privacy Policy for how advertising and payment data are handled.
+                </p>
+              </div>
+
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">7. Site Terms of Use Modifications</h2>
                 <p>
                   IELTSBank may revise these terms at any time without notice. By using this site, you agree to be bound by the current version.
                 </p>
               </div>
 
               <p>
-                <strong className="font-semibold text-foreground">Last Updated:</strong> December 11, 2024
+                <strong className="font-semibold text-foreground">Last Updated:</strong> July 18, 2026
               </p>
 
               <p>

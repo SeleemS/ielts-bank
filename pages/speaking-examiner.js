@@ -404,7 +404,12 @@ export default function SpeakingExaminerPage() {
       const pc = new RTCPeerConnection();
       pcRef.current = pc;
       pc.ontrack = (e) => {
-        if (audioRef.current) audioRef.current.srcObject = e.streams[0];
+        if (audioRef.current) {
+          audioRef.current.srcObject = e.streams[0];
+          // iOS Safari can silently ignore autoPlay for a srcObject assigned
+          // after the starting tap — kick playback explicitly.
+          audioRef.current.play().catch(() => {});
+        }
         analyserExamRef.current = attachAnalyser(e.streams[0]);
       };
       const micTrack = mic.getTracks()[0];
@@ -828,7 +833,7 @@ export default function SpeakingExaminerPage() {
         ) : null}
 
         {/* remote examiner audio */}
-        <audio ref={audioRef} autoPlay className="hidden" />
+        <audio ref={audioRef} autoPlay playsInline className="hidden" />
       </main>
       <Footer />
       <SignInDialog

@@ -151,7 +151,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
                   Reading Passage
                 </h2>
               </div>
-              <div className="max-h-[45vh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
+              <div className="max-h-[45vh] supports-[height:100dvh]:max-h-[45dvh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
                 <div
                   className={PASSAGE_HTML_CLASS}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(bodyHtml) }}
@@ -165,7 +165,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
                   Questions
                 </h2>
               </div>
-              <div className="max-h-[70vh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
+              <div className="max-h-[70vh] supports-[height:100dvh]:max-h-[70dvh] overflow-y-auto px-5 py-4 lg:max-h-[calc(100vh-13rem)]">
                 <QuestionEngine
                   groups={groups}
                   storageKey={slug || id}

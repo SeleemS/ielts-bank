@@ -325,7 +325,7 @@ const AudioPlayer = ({ src, onPlay, onEnded, onDurationChange, className }) => {
           type="button"
           onClick={cycleRate}
           aria-label={`Playback speed ${RATES[rateIndex]}x`}
-          className="ml-1 h-9 min-w-[3.25rem] rounded-full border border-input px-2 text-xs font-semibold tabular-nums text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="ml-1 h-10 min-w-[3.25rem] rounded-full border border-input px-2 text-xs font-semibold tabular-nums text-foreground transition-colors hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9"
         >
           {RATES[rateIndex]}x
         </button>

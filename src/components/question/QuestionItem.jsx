@@ -290,7 +290,7 @@ export default function QuestionItem({
             aria-pressed={flagged}
             onClick={() => onToggleFlag?.(n)}
             className={cn(
-              'shrink-0 rounded-md border px-2 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'shrink-0 rounded-md border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:py-1',
               flagged
                 ? 'border-amber-500 bg-amber-100 text-amber-900'
                 : 'border-border bg-background text-muted-foreground hover:text-foreground'

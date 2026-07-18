@@ -61,7 +61,7 @@ const SheetContent = React.forwardRef(
         role="dialog"
         aria-modal="true"
         className={cn(
-          'fixed z-[2001] flex flex-col gap-6 bg-background p-6 shadow-2xl border-border',
+          'fixed z-[2001] flex flex-col gap-6 overflow-y-auto bg-background p-6 shadow-2xl border-border pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]',
           'animate-in slide-in-from-right duration-300',
           sideClasses[side],
           className
