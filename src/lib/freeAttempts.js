@@ -1,14 +1,15 @@
 // src/lib/freeAttempts.js
 // Anonymous free-tier gate: signed-out visitors get ONE question submission
-// per skill (reading / listening / writing) before we ask them to create a
-// free account. We remember WHICH question consumed the free slot so retrying
+// per skill (reading / listening) before we ask them to create a free
+// account. We remember WHICH question consumed the free slot so retrying
 // the same question stays free — only a *different* question triggers the
-// sign-up gate. Speaking is already fully gated behind auth.
+// sign-up gate. Writing and Speaking don't use this gate: since 2026-07-18
+// their AI scoring is Premium-only from the first attempt (sign-up + upgrade
+// gates live in the pages and are enforced server-side).
 //
-// This is a soft client-side gate (localStorage). Writing is additionally
-// enforced server-side per anon_id in /api/score/writing; reading/listening
-// grade client-side, so clearing storage resets the slot — acceptable, the
-// goal is signup conversion, not hard enforcement.
+// This is a soft client-side gate (localStorage). Reading/listening grade
+// client-side, so clearing storage resets the slot — acceptable, the goal is
+// signup conversion, not hard enforcement.
 
 const KEY = 'ielts-free-submits';
 

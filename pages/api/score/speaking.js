@@ -3,8 +3,8 @@
 // audio: the client uploads a recording to the OWNER-ONLY `speaking-uploads`
 // bucket, then POSTs the storage path here. This route (Node runtime, needs the
 // secret OPENAI_API_KEY + Supabase service role):
-//   * REQUIRES sign-in — verifies the Supabase bearer token and resolves the
-//     user (product decision: speaking scoring is a signed-in feature);
+//   * REQUIRES sign-in AND an active Premium plan (2026-07-18 product change:
+//     no free scores of any kind — enforced here AND in consume_ai_score);
 //   * enforces per-user ownership of the audio path (the bucket is per-uid);
 //   * rate-limits per user AND enforces a daily global circuit breaker via the
 //     SAME Supabase check_rate_limit() RPC used by writing (service role);
@@ -26,14 +26,13 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
+import { fetchIsPremium } from '../../../lib/premium';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 const OPENAI_TRANSCRIBE_URL = 'https://api.openai.com/v1/audio/transcriptions';
-// See writing.js: the production key's OpenAI project blocks gpt-4.1-mini;
-// gpt-5.4-nano is on the allowlist. Fallback to PAID_MODEL covers drift.
-const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-5.4-nano';
+// Scoring is Premium-only, so every score uses the strong paid model.
 const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_SPEAKING_MODEL || 'gpt-5.1';
 const WHISPER_MODEL = 'whisper-1';
 
@@ -355,6 +354,17 @@ export default async function handler(req, res) {
       .json({ error: 'Please sign in to get your speaking answer scored.' });
   }
 
+  // --- Premium gate BEFORE anything costly (2026-07-18: no free scores) ----
+  // consume_ai_score also refuses free users; this route-level check keeps the
+  // gate airtight regardless of DB migration rollout order.
+  if (!(await fetchIsPremium(getAdmin(), userId))) {
+    return res.status(402).json({
+      error: 'AI Speaking scoring is a Premium feature. Upgrade to get your answer scored.',
+      reason: 'premium_required',
+      remaining: 0,
+    });
+  }
+
   // --- Validate body -------------------------------------------------------
   const body = req.body || {};
   const passageSlug =
@@ -434,15 +444,15 @@ export default async function handler(req, res) {
   if (!quota?.allowed) {
     return res.status(402).json({
       error:
-        quota?.reason === 'daily_cap'
-          ? 'You have reached today’s fair-use limit of 1 Speaking score. It resets at midnight UTC.'
-          : 'You have used all 3 free AI scores for this 30-day period.',
+        quota?.reason === 'premium_required'
+          ? 'AI Speaking scoring is a Premium feature. Upgrade to get your answer scored.'
+          : 'You have reached today’s fair-use limit of 1 Speaking score. It resets at midnight UTC.',
       remaining: 0,
       reason: quota?.reason || 'quota_exceeded',
       resetsAt: quota?.resetsAt || null,
     });
   }
-  const scoringModel = quota.plan === 'free' ? FREE_MODEL : PAID_MODEL;
+  const scoringModel = PAID_MODEL;
 
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');

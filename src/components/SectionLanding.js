@@ -87,7 +87,7 @@ export const SECTION_FAQS = {
     },
     {
       q: 'Is speaking practice free?',
-      a: 'Practising with examiner audio and recording yourself is free. AI feedback uses your free AI scores; Premium removes the limits.',
+      a: 'Practising with examiner audio and recording yourself is free. AI feedback and band scores are part of Premium.',
     },
   ],
 };

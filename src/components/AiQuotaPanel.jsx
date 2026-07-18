@@ -2,60 +2,59 @@ import * as React from 'react';
 import NextLink from 'next/link';
 import { Sparkles } from 'lucide-react';
 import Modal from './AccessibleModal';
-import { getSupabase } from '../../lib/supabase';
+import { usePlan } from '../lib/usePlan';
 import { track } from '../lib/analytics';
 
-export default function AiQuotaPanel({ userId, remaining, open = false, onClose = () => {}, skill = 'speaking' }) {
-  const [dbRemaining, setDbRemaining] = React.useState(null);
-  const [resetsAt, setResetsAt] = React.useState(null);
+// Limit modal for the AI-scoring CTAs. Since 2026-07-18 there are no free
+// scores at all, so this opens in two situations:
+//   * a premium user hit the per-skill daily fair-use cap (or an IP limit) —
+//     tell them when it resets, no upsell;
+//   * a non-premium user hit a limit response we didn't route to /pricing —
+//     show the premium pitch.
+// The userId / remaining props are kept for call-site compatibility.
+export default function AiQuotaPanel({ open = false, onClose = () => {}, skill = 'speaking' }) {
+  const { isPremium } = usePlan();
 
-  React.useEffect(() => {
-    if (!userId) return;
-    let active = true;
-    getSupabase().from('user_quotas').select('ai_scores_remaining, period_resets_at').eq('user_id', userId).maybeSingle()
-      .then(({ data }) => {
-        if (!active) return;
-        setDbRemaining(data?.ai_scores_remaining ?? 3);
-        setResetsAt(data?.period_resets_at || null);
-      }).catch(() => {});
-    return () => { active = false; };
-  }, [userId]);
+  const skillLabel = skill === 'writing' ? 'Writing' : 'Speaking';
 
-  const shown = remaining ?? dbRemaining;
   return (
-    <>
-      {/* Writing pages intentionally show no quota line under the CTA — the
-          limit is only surfaced when it's actually hit (402 -> this modal). */}
-      {userId && skill !== 'writing' ? (
-        <p className="text-center text-xs font-medium text-muted-foreground">
-          {shown == null
-            ? 'Loading your AI score allowance…'
-            : `${shown} of 3 free AI scores left this period`}
-        </p>
-      ) : null}
-      <Modal open={open} onClose={onClose} title="Keep improving with AI feedback">
-        <div className="space-y-5">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={isPremium ? 'You’ve hit today’s fair-use limit' : `AI ${skillLabel} scoring is a Premium feature`}
+    >
+      <div className="space-y-5">
+        {isPremium ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            You have reached the current free scoring limit{resetsAt ? `, which resets on ${new Date(resetsAt).toLocaleDateString()}` : ''}.
+            You’ve used today’s included AI {skillLabel} scores. Your allowance resets at
+            midnight UTC — come back tomorrow, or review your saved feedback on the
+            dashboard in the meantime.
           </p>
-          <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
-            <li>Unlimited Writing and Speaking AI scores (fair use)</li>
-            <li>Criterion-by-criterion feedback and progress tracking</li>
-            <li>Ad-free, with the strongest scoring model</li>
-          </ul>
-          <NextLink
-            href="/pricing"
-            onClick={() => track('paywall_upgrade_click', { source: 'quota_modal' })}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
-          >
-            <Sparkles className="h-4 w-4" />
-            Upgrade to Premium
-          </NextLink>
-          <p className="text-center text-xs text-muted-foreground">
-            From $3.75/mo — cancel anytime.
-          </p>
-        </div>
-      </Modal>
-    </>
+        ) : (
+          <>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Running examiner-grade AI on every response is expensive, so band scoring is
+              part of Premium. Upgrade to unlock:
+            </p>
+            <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
+              <li>Writing and Speaking AI band scores (fair-use daily limits)</li>
+              <li>Criterion-by-criterion feedback and progress tracking</li>
+              <li>Live AI examiner minutes and an ad-free experience</li>
+            </ul>
+            <NextLink
+              href="/pricing"
+              onClick={() => track('paywall_upgrade_click', { source: 'quota_modal' })}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
+            >
+              <Sparkles className="h-4 w-4" />
+              Upgrade to Premium
+            </NextLink>
+            <p className="text-center text-xs text-muted-foreground">
+              From $3.75/mo — cancel anytime.
+            </p>
+          </>
+        )}
+      </div>
+    </Modal>
   );
 }

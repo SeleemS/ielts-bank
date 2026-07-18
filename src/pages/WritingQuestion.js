@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
@@ -11,10 +12,10 @@ import RelatedPractice from '../components/RelatedPractice';
 import Modal from '../components/AccessibleModal';
 import { getAnonId, track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
+import { usePlan } from '../lib/usePlan';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
 import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../components/question/ScoreUI';
-import { canUseFreeSubmit, recordFreeSubmit } from '../lib/freeAttempts';
 import { syncLocalAttempts } from '../lib/progress';
 
 import { SITE_URL } from '../../lib/site';
@@ -156,6 +157,8 @@ function ScoreReport({ task, result }) {
 
 const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const { user } = useAuth();
+  const { isPremium, loading: planLoading } = usePlan();
+  const router = useRouter();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
   const title = passage?.title || '';
   const task = passage?.writing?.task === 1 ? 1 : 2;
@@ -171,12 +174,12 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [quotaOpen, setQuotaOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
-  // Set when a signed-out visitor hits the free-score gate — scoring resumes
+  // Set when a signed-out visitor hits the sign-up gate — submission resumes
   // automatically once the sign-up dialog closes with a session present.
   const pendingSubmitRef = useRef(false);
 
-  // Backfill attempts completed while signed out (including the free
-  // anonymous writing score persisted below) as soon as a session appears.
+  // Backfill attempts persisted while signed out (including the essay captured
+  // at the premium gate below) as soon as a session appears.
   useEffect(() => {
     if (!user?.id) return;
     syncLocalAttempts(user.id).catch(() => {});
@@ -211,6 +214,42 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const wordCount = userResponse.split(/\s+/).filter(Boolean).length;
   const progressValue = Math.min((wordCount / minWords) * 100, 100);
   const isSufficient = wordCount >= minWords;
+
+  // Capture the submitted essay as a local attempt record so it lands on the
+  // user's account (via syncLocalAttempts) the moment they have a session —
+  // work is never lost across the sign-up + upgrade round trip. Idempotent:
+  // an unchanged essay keeps its original timestamp, so the sync marker in
+  // progress.js prevents duplicate attempt rows.
+  const captureAttemptLocally = useCallback(() => {
+    if (!storageKey || typeof window === 'undefined') return;
+    try {
+      const key = `ielts-attempt:writing:${storageKey}`;
+      const existing = JSON.parse(window.localStorage.getItem(key) || 'null');
+      if (existing?.answers?.essay === userResponse && existing?.answers?.task === task) return;
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({
+          skill: 'writing',
+          slug: storageKey,
+          answers: { essay: userResponse, task },
+          band: null,
+          timestamp: new Date().toISOString(),
+        })
+      );
+    } catch {
+      /* localStorage unavailable — non-fatal */
+    }
+  }, [storageKey, task, userResponse]);
+
+  // Premium gate: save the essay to the account (attempt row without a band),
+  // then send the user to the billing page. The per-keystroke draft stays in
+  // localStorage, so the editor is intact when they come back.
+  const goToPremium = useCallback(async () => {
+    captureAttemptLocally();
+    if (user?.id) await syncLocalAttempts(user.id).catch(() => {});
+    track('paywall_redirect', { skill: 'writing', slug: storageKey, source: 'writing_submit' });
+    router.push('/pricing?upgrade=writing');
+  }, [captureAttemptLocally, router, storageKey, user?.id]);
 
   const runScore = useCallback(async () => {
     track('writing_submit', { skill: 'writing', slug: storageKey, task, word_count: wordCount, signed_in: Boolean(user) });
@@ -256,35 +295,19 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         scored = true;
         setResult(data);
         track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: Boolean(user) });
-        if (!user) {
-          // Free anonymous score: consume the free slot and keep a local
-          // attempt record so syncLocalAttempts pushes it into their account
-          // the moment they sign up.
-          recordFreeSubmit('writing', storageKey);
-          try {
-            window.localStorage.setItem(
-              `ielts-attempt:writing:${storageKey}`,
-              JSON.stringify({
-                skill: 'writing',
-                slug: storageKey,
-                answers: { essay: userResponse, task },
-                band: typeof data.overallBand === 'number' ? data.overallBand : null,
-                timestamp: new Date().toISOString(),
-              })
-            );
-          } catch {
-            /* localStorage unavailable — non-fatal */
-          }
-        }
       } else if (response.status === 401) {
-        // Signed-in session expired, or the anonymous free score is already
-        // used on the server — either way, sign in and the score re-runs.
+        // No session (or it expired): sign in and the submission resumes.
         pendingSubmitRef.current = true;
         setSignInOpen(true);
         setErrorMsg(
           (data && data.error) ||
             'Please sign in to score this response.'
         );
+      } else if (response.status === 402 && data?.reason === 'premium_required') {
+        // Server-side premium gate (covers a stale client plan): capture the
+        // essay to the account and send them to billing.
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'premium_gate', task, signed_in: Boolean(user) });
+        await goToPremium();
       } else if (response.status === 402 || response.status === 429) {
         setQuotaOpen(true);
         track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'rate_limited', task, signed_in: Boolean(user) });
@@ -306,7 +329,19 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       // (handleScoringFinished); every failure path closes it immediately.
       if (!scored) setIsLoading(false);
     }
-  }, [passage?.id, promptHtml, storageKey, task, user, userResponse, wordCount]);
+  }, [goToPremium, passage?.id, promptHtml, storageKey, task, user, userResponse, wordCount]);
+
+  // Continue a submission: score for premium users, otherwise capture the
+  // essay and route to billing. When the plan is still loading we let the
+  // server decide (the 402 premium_required handler above catches it).
+  const continueSubmit = useCallback(() => {
+    if (!planLoading && !isPremium) {
+      track('premium_gate', { skill: 'writing', slug: storageKey, stage: 'upgrade' });
+      void goToPremium();
+      return;
+    }
+    runScore();
+  }, [goToPremium, isPremium, planLoading, runScore, storageKey]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -319,17 +354,19 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       return;
     }
 
-    // Free-tier gate: one anonymous writing score (retrying the same prompt
-    // stays on this slot). The draft is persisted on every keystroke, so it
-    // survives sign-up; scoring resumes when the dialog closes.
-    if (!user && !canUseFreeSubmit('writing', storageKey)) {
+    // Premium-only scoring: signed-out visitors sign up first (the draft is
+    // persisted on every keystroke and the essay is captured as a local
+    // attempt, so nothing is lost); the submission resumes when the dialog
+    // closes and routes to billing if they're not premium yet.
+    if (!user) {
+      captureAttemptLocally();
       pendingSubmitRef.current = true;
       setSignInOpen(true);
-      track('free_limit_gate', { skill: 'writing', slug: storageKey });
+      track('premium_gate', { skill: 'writing', slug: storageKey, stage: 'signup' });
       return;
     }
 
-    runScore();
+    continueSubmit();
   };
 
   const handleScoringFinished = useCallback(() => {
@@ -484,12 +521,12 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
             // the moment the session appears — mirrors the writing checker.
             const shouldRun = pendingSubmitRef.current && Boolean(user);
             pendingSubmitRef.current = false;
-            if (shouldRun) runScore();
+            if (shouldRun) continueSubmit();
           }
         }}
         redirectOnFinish={false}
-        title="Sign up free to score this response"
-        description="You’ve used your free writing score. Your draft stays right here — create a free account and it’s scored the moment you’re done."
+        title="Sign up to get this response scored"
+        description="AI Writing scoring is a Premium feature. Create your account first — your essay is saved to it, so nothing you've written is lost."
         trigger="writing_task_score"
       />
       <Modal
@@ -500,9 +537,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         {result && <ScoreReport task={task} result={result} />}
         {result ? (
           <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">
-            {user
-              ? 'This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you’re ready.'
-              : 'That was your free writing score — create a free account to save it to your dashboard and keep practising.'}
+            This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you’re ready.
           </p>
         ) : null}
         <div className="mt-5 flex justify-end">

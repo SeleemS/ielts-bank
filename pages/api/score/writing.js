@@ -2,6 +2,8 @@
 // Server-side IELTS Writing scoring. Replaces the old unauthenticated AWS API
 // Gateway GPT endpoint that the browser called directly. This route:
 //   * runs only on the server (needs the secret OPENAI_API_KEY),
+//   * REQUIRES sign-in AND an active Premium plan (2026-07-18 product change:
+//     no free scores of any kind — enforced here AND in consume_ai_score),
 //   * rate-limits per client IP AND enforces a daily global circuit breaker via
 //     the Supabase check_rate_limit() RPC (service role),
 //   * checks Origin/Referer against an allow-list,
@@ -16,15 +18,12 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
+import { fetchIsPremium } from '../../../lib/premium';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-// NOTE: the production OPENAI_API_KEY is scoped to an OpenAI project whose
-// model allowlist blocks gpt-4.1-mini (403 model_not_found). gpt-5.4-nano is
-// allowed, cheap, and passes the structured-output schema. If the model is
-// ever blocked again, chatCompletionWithFallback retries with PAID_MODEL.
-const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-5.4-nano';
+// Scoring is Premium-only, so every score uses the strong paid model.
 const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
 
 const MIN_WORDS = 50; // below this it is not scorable
@@ -35,14 +34,6 @@ const PER_IP_WINDOW_SECONDS = 3600; // 1 hour
 const PER_IP_MAX = 8; // 8 scorings / hour / IP
 const GLOBAL_WINDOW_SECONDS = 86400; // 1 day
 const GLOBAL_MAX = 500; // hard daily ceiling across all users (cost circuit breaker)
-
-// Anonymous free trial: ONE writing score per anon_id before signup, tracked
-// via check_rate_limit with a 30-day window (effectively a lifetime cap for
-// trial purposes). anon_id is client-generated and spoofable — the per-IP and
-// global limits above remain the real cost backstops, and anon scoring always
-// uses the cheap FREE_MODEL.
-const ANON_TRIAL_WINDOW_SECONDS = 30 * 86400;
-const ANON_TRIAL_MAX = 1;
 
 const OPENAI_TIMEOUT_MS = 45000;
 
@@ -87,8 +78,8 @@ async function consumeQuota(userId) {
 }
 
 // ---------------------------------------------------------------------------
-// Auth: signed-in users score against their quota; signed-out visitors get a
-// single trial score keyed on their anon_id (see ANON_TRIAL_* above).
+// REQUIRED auth: scoring is a signed-in, Premium-only feature. A null here is
+// a 401 upstream.
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
   try {
@@ -116,21 +107,6 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
   try {
     const admin = getAdmin();
     const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
-
-    if (!userId) {
-      // Anonymous trial score: no owner to attach attempts/scores rows to —
-      // record telemetry only. The client keeps a local copy of the attempt
-      // that syncs into the account on signup.
-      if (UUID_RE.test(anonId || '')) {
-        await admin.from('activity_events').insert({
-          anon_id: anonId,
-          event: 'writing_score_server',
-          skill: 'writing',
-          props: { task, word_count: wordCount, band: overall, model, anon_trial: true },
-        });
-      }
-      return;
-    }
 
     const { data: attempt, error: attemptErr } = await admin
       .from('attempts')
@@ -314,16 +290,25 @@ export default async function handler(req, res) {
   }
 
   const userId = await resolveUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
+  }
+
+  // --- Premium gate BEFORE anything costly ---------------------------------
+  // consume_ai_score also refuses free users; this route-level check keeps the
+  // gate airtight regardless of DB migration rollout order.
+  if (!(await fetchIsPremium(getAdmin(), userId))) {
+    return res.status(402).json({
+      error: 'AI Writing scoring is a Premium feature. Upgrade to get your essay scored.',
+      reason: 'premium_required',
+      remaining: 0,
+    });
+  }
 
   // --- Validate body -------------------------------------------------------
   const body = req.body || {};
   const anonId =
     typeof body.anon_id === 'string' && UUID_RE.test(body.anon_id) ? body.anon_id : null;
-
-  // Signed-out requests must carry a valid anon_id to claim the trial score.
-  if (!userId && !anonId) {
-    return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
-  }
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   const task = body.task === 1 || body.task === '1' ? 1 : 2;
@@ -388,54 +373,24 @@ export default async function handler(req, res) {
   }
 
   let quota = null;
-  if (userId) {
-    try {
-      quota = await consumeQuota(userId);
-    } catch (error) {
-      console.error('quota check failed:', error.message);
-      return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-    }
-    if (!quota?.allowed) {
-      return res.status(402).json({
-        error:
-          quota?.reason === 'daily_cap'
-            ? quota?.plan === 'premium'
-              ? 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.'
-              : 'You’ve used your free Writing score for today. It resets at midnight UTC — Premium includes 2 per day.'
-            : 'You have used all 3 free AI scores for this 30-day period.',
-        remaining: 0,
-        reason: quota?.reason || 'quota_exceeded',
-        resetsAt: quota?.resetsAt || null,
-      });
-    }
-  } else {
-    // Anonymous trial: one score per anon_id. Fails closed — an RPC outage
-    // must not open unmetered anonymous OpenAI spend.
-    let anonOk = false;
-    try {
-      anonOk = await withinLimit(
-        'writing-score-anon',
-        anonId,
-        ANON_TRIAL_WINDOW_SECONDS,
-        ANON_TRIAL_MAX,
-        true
-      );
-    } catch (e) {
-      console.error('anon trial check failed:', e.message);
-      return res
-        .status(503)
-        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-    }
-    if (!anonOk) {
-      // 401 (not 402): the client treats it as a sign-in gate and re-runs the
-      // pending score once the visitor has an account.
-      return res.status(401).json({
-        error:
-          'You’ve used your free writing score. Create a free account to keep practising.',
-      });
-    }
+  try {
+    quota = await consumeQuota(userId);
+  } catch (error) {
+    console.error('quota check failed:', error.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
-  const scoringModel = quota && quota.plan !== 'free' ? PAID_MODEL : FREE_MODEL;
+  if (!quota?.allowed) {
+    return res.status(402).json({
+      error:
+        quota?.reason === 'premium_required'
+          ? 'AI Writing scoring is a Premium feature. Upgrade to get your essay scored.'
+          : 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.',
+      remaining: 0,
+      reason: quota?.reason || 'quota_exceeded',
+      resetsAt: quota?.resetsAt || null,
+    });
+  }
+  const scoringModel = PAID_MODEL;
 
   // --- Call OpenAI ---------------------------------------------------------
   if (!process.env.OPENAI_API_KEY) {
@@ -516,8 +471,8 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
     return res.status(200).json({
       task,
       wordCount: words,
-      quotaRemaining: quota ? quota.remaining : 0,
-      plan: quota ? quota.plan : 'anon',
+      quotaRemaining: quota.remaining,
+      plan: quota.plan,
       ...result,
     });
   } catch (e) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import {
   Mic,
   Square,
@@ -10,6 +11,7 @@ import {
   RotateCcw,
   ChevronDown,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -20,6 +22,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth';
+import { usePlan } from '../lib/usePlan';
 import SignInDialog from '../components/auth/SignInDialog';
 import { getSupabase } from '../../lib/supabase';
 import { track } from '../lib/analytics';
@@ -28,6 +31,10 @@ import AiQuotaPanel from '../components/AiQuotaPanel';
 import { SITE_URL } from '../../lib/site';
 const SCORE_API = '/api/score/speaking';
 const UPLOAD_BUCKET = 'speaking-uploads';
+// Premium gate: when a signed-in non-premium user submits a recording we
+// upload it to their owner-only bucket and remember the path here, so the
+// answer survives the trip to the billing page and can be scored on return.
+const PENDING_PREFIX = 'ielts-pending-speaking:';
 // Hard cap on the recording we upload/score (protects the upstream + storage).
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // ~5 MB
 // Sensible recording cap for Part 1 / Part 3 answer sets (Part 2 uses the cue
@@ -713,6 +720,8 @@ function CueCard({ cueCard, examiner }) {
 // ---------------------------------------------------------------------------
 const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
   const { user } = useAuth();
+  const { isPremium, loading: planLoading } = usePlan();
+  const router = useRouter();
   const examiner = useExaminerAudio();
 
   const part = item?.part;
@@ -729,6 +738,35 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [quotaOpen, setQuotaOpen] = useState(false);
+  // A recording saved to the user's account at the premium gate, waiting to
+  // be scored (survives the round trip to the billing page).
+  const [pendingRecording, setPendingRecording] = useState(null);
+
+  const pendingKey = `${PENDING_PREFIX}${item?.slug || routeId}`;
+
+  // Restore a saved-but-unscored recording pointer for this question.
+  useEffect(() => {
+    if (!user?.id || typeof window === 'undefined') return;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(pendingKey) || 'null');
+      if (saved && saved.userId === user.id && saved.audioPath) {
+        setPendingRecording(saved);
+      }
+    } catch {
+      /* ignore malformed entry */
+    }
+  }, [pendingKey, user?.id]);
+
+  const clearPendingRecording = useCallback(() => {
+    setPendingRecording(null);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(pendingKey);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [pendingKey]);
 
   useEffect(() => {
     if (!recorder.blob) return;
@@ -757,6 +795,80 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
     return (data && data.error) || 'Failed to score your recording. Please try again.';
   };
 
+  // Premium gate: the recording is already uploaded to the user's owner-only
+  // bucket (their account) — remember the path so it survives the trip to the
+  // billing page, then send them there.
+  const goToPremium = (audioPath) => {
+    if (audioPath && user?.id && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(
+          pendingKey,
+          JSON.stringify({
+            userId: user.id,
+            audioPath,
+            part,
+            timestamp: new Date().toISOString(),
+          })
+        );
+      } catch {
+        /* localStorage unavailable — non-fatal */
+      }
+    }
+    track('paywall_redirect', { skill: 'speaking', slug: item.slug, source: 'speaking_submit' });
+    router.push('/pricing?upgrade=speaking');
+  };
+
+  // POST an already-uploaded recording to the scorer and handle the outcome.
+  const scoreAudioPath = async (audioPath, accessToken, fromPending = false) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(SCORE_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          passageSlug: item.slug,
+          part: fromPending ? pendingRecording?.part || part : part,
+          audioPath,
+        }),
+      });
+
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        /* non-JSON error body */
+      }
+
+      if (response.ok && data) {
+        clearPendingRecording();
+        setResult(data);
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'ok', band: data.overallBand, part, signed_in: true });
+        setFeedbackOpen(true);
+        import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
+      } else if (response.status === 402 && data?.reason === 'premium_required') {
+        // Server-side premium gate (covers a stale client plan).
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'premium_gate', part, signed_in: true });
+        goToPremium(audioPath);
+      } else if (fromPending && (response.status === 403 || response.status === 404)) {
+        // The saved recording is gone or not theirs — drop the stale pointer.
+        clearPendingRecording();
+        setErrorMsg('Your saved recording is no longer available. Please record your answer again.');
+      } else {
+        if (response.status === 402 || response.status === 429) setQuotaOpen(true);
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: response.status === 402 || response.status === 429 ? 'rate_limited' : 'error', http_status: response.status, part, signed_in: true });
+        setErrorMsg(errorForStatus(response.status, data));
+      }
+    } catch {
+      track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'network', part, signed_in: true });
+      setErrorMsg('A network error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGetFeedback = async () => {
     setErrorMsg('');
 
@@ -765,7 +877,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
       return;
     }
 
-    // Sign-in gate.
+    // Sign-in gate: scoring is a Premium account feature.
     if (!user) {
       setSignInOpen(true);
       return;
@@ -784,7 +896,9 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         return;
       }
 
-      // Upload the recording to the owner-only speaking-uploads bucket.
+      // Upload the recording to the owner-only speaking-uploads bucket. This
+      // also happens for non-premium users: it captures the answer to their
+      // account before they're sent to the billing page.
       const blobType = recorder.blob.type || 'audio/webm';
       const ext = blobType.includes('mp4') ? 'mp4' : blobType.includes('ogg') ? 'ogg' : 'webm';
       const audioPath = `${user.id}/${cryptoRandomId()}.${ext}`;
@@ -798,43 +912,39 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         return;
       }
 
-      // Score against the contract.
-      const response = await fetch(SCORE_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          passageSlug: item.slug,
-          part,
-          audioPath,
-        }),
-      });
-
-      let data = null;
-      try {
-        data = await response.json();
-      } catch {
-        /* non-JSON error body */
+      // Premium gate BEFORE the scoring call. When the plan is still loading
+      // we let the server decide (the 402 premium_required handler catches it).
+      if (!planLoading && !isPremium) {
+        setIsLoading(false);
+        track('premium_gate', { skill: 'speaking', slug: item.slug, stage: 'upgrade' });
+        goToPremium(audioPath);
+        return;
       }
 
-      if (response.ok && data) {
-        setResult(data);
-        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'ok', band: data.overallBand, part, signed_in: true });
-        setFeedbackOpen(true);
-        import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
-      } else {
-        if (response.status === 402 || response.status === 429) setQuotaOpen(true);
-        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: response.status === 402 || response.status === 429 ? 'rate_limited' : 'error', http_status: response.status, part, signed_in: true });
-        setErrorMsg(errorForStatus(response.status, data));
-      }
+      await scoreAudioPath(audioPath, accessToken);
     } catch {
+      setIsLoading(false);
       track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'network', part, signed_in: true });
       setErrorMsg('A network error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
+  };
+
+  // Score the recording saved at the premium gate (banner CTA below).
+  const handleScorePending = async () => {
+    setErrorMsg('');
+    if (!pendingRecording?.audioPath) return;
+    if (!user) {
+      setSignInOpen(true);
+      return;
+    }
+    const { data: sessionData } = await getSupabase().auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      setSignInOpen(true);
+      return;
+    }
+    track('speaking_submit', { skill: 'speaking', slug: item.slug, part, from_pending: true, signed_in: true });
+    await scoreAudioPath(pendingRecording.audioPath, accessToken, true);
   };
 
   // SEO.
@@ -933,6 +1043,21 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
                 minSeconds={minSeconds}
               />
 
+              {user && pendingRecording && !result ? (
+                <div className="rounded-lg border border-accent/40 bg-accent/5 p-4">
+                  <p className="text-sm font-semibold text-foreground">
+                    Your earlier recording is saved to your account
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Get it scored now — no need to record again.
+                  </p>
+                  <Button className="mt-3" variant="accent" disabled={isLoading} onClick={handleScorePending}>
+                    <Sparkles className="h-4 w-4" />
+                    Score my saved recording
+                  </Button>
+                </div>
+              ) : null}
+
               {errorMsg && (
                 <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {errorMsg}
@@ -950,7 +1075,8 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
                 </Button>
                 {!user && (
                   <p className="text-center text-xs text-muted-foreground">
-                    You’ll be asked to sign in (free) to get AI feedback on your speaking.
+                    AI feedback is a Premium feature — you’ll be asked to sign up first, and
+                    your recording is saved to your account so it’s never lost.
                   </p>
                 )}
                 <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} />
@@ -967,8 +1093,9 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
       <SignInDialog
         open={signInOpen}
         onOpenChange={setSignInOpen}
-        title="Sign in to get AI feedback on your speaking"
-        description="Create a free account to score your recording and track your speaking bands."
+        redirectOnFinish={false}
+        title="Sign up to get your speaking scored"
+        description="AI Speaking feedback is a Premium feature. Create your account first — your recording stays right here, ready to submit."
         trigger="speaking_score"
       />
 
@@ -979,7 +1106,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         title="Your AI Feedback & Score"
       >
         {result && <ScoreReport result={result} />}
-        {result ? <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4"><p className="text-sm font-semibold text-foreground">Try another answer while the feedback is fresh{result.quotaRemaining != null ? ` — ${result.quotaRemaining} free score${result.quotaRemaining === 1 ? '' : 's'} left.` : '.'}</p><Button className="mt-3" variant="outline" onClick={() => { setFeedbackOpen(false); setResult(null); recorder.reset(); }}>Record another answer</Button></div> : null}
+        {result ? <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4"><p className="text-sm font-semibold text-foreground">Try another answer while the feedback is fresh{result.quotaRemaining != null ? ` — ${result.quotaRemaining} score${result.quotaRemaining === 1 ? '' : 's'} left today.` : '.'}</p><Button className="mt-3" variant="outline" onClick={() => { setFeedbackOpen(false); setResult(null); recorder.reset(); }}>Record another answer</Button></div> : null}
         <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>

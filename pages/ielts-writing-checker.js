@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Sparkles,
   PenLine,
@@ -16,6 +17,8 @@ import Footer from '../src/components/Footer';
 import NewsletterSignup from '../src/components/NewsletterSignup';
 import SignInDialog from '../src/components/auth/SignInDialog';
 import { useAuth } from '../src/lib/auth';
+import { usePlan } from '../src/lib/usePlan';
+import { saveAttemptToSupabase } from '../src/lib/progress';
 import { getSupabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
@@ -24,7 +27,6 @@ import { Label } from '../components/ui/label';
 import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
 import { getAnonId, track } from '../src/lib/analytics';
-import { canUseFreeSubmit, recordFreeSubmit } from '../src/lib/freeAttempts';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../src/components/question/ScoreUI';
 
@@ -32,8 +34,7 @@ import { SITE_URL } from '../lib/site';
 const SCORE_API = '/api/score/writing';
 const CANONICAL = `${SITE_URL}/ielts-writing-checker`;
 const DRAFT_KEY = 'ielts-writing-checker-draft';
-// Free-slot identifier: the checker shares the ONE anonymous writing score
-// with the writing question pages (the server enforces it per anon_id anyway).
+// Analytics identifier for this tool (there is no passage row behind it).
 const CHECKER_SLUG = 'writing-checker';
 
 // Task-type options. The scoring API only distinguishes Task 1 vs Task 2, so
@@ -178,11 +179,11 @@ const FAQ = [
   },
   {
     q: 'Is it free?',
-    a: 'Yes, the writing checker is free to use. To keep costs sustainable there is a fair-use daily limit on how many essays can be scored, so very heavy usage may be temporarily paused.',
+    a: 'Writing your essay here and saving your draft is free. AI band scoring is a Premium feature — running a real examiner-grade model on every essay is expensive, so scoring requires a Premium subscription (with fair-use daily limits).',
   },
   {
     q: 'Do you store my essay?',
-    a: 'You sign in with a magic link before scoring, and your essay and its band score are saved to your account so you can review your progress on your dashboard. We do not sell or publish your writing, and you can request deletion at any time.',
+    a: 'You create an account before scoring, and your essay and its band score are saved to it so you can review your progress on your dashboard — your draft is never lost while you sign up or upgrade. We do not sell or publish your writing, and you can request deletion at any time.',
   },
   {
     q: 'Which tasks can I check?',
@@ -221,6 +222,8 @@ const SAMPLE_FEEDBACK = {
 
 export default function WritingCheckerPage() {
   const { user, loading } = useAuth();
+  const { isPremium, loading: planLoading } = usePlan();
+  const router = useRouter();
 
   const [taskType, setTaskType] = useState('task2');
   const [prompt, setPrompt] = useState('');
@@ -231,8 +234,11 @@ export default function WritingCheckerPage() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [quotaOpen, setQuotaOpen] = useState(false);
   // True once the user has pressed submit while signed-out — after they sign in
-  // we auto-restore the draft and let them submit again.
+  // the submission resumes automatically (score if premium, billing if not).
   const pendingSubmitRef = useRef(false);
+  // Last essay text already captured to the account — prevents duplicate
+  // attempt rows when the gate fires repeatedly for the same draft.
+  const capturedEssayRef = useRef('');
 
   const active = TASK_TYPES.find((t) => t.value === taskType) || TASK_TYPES[2];
   const apiTask = active.apiTask;
@@ -273,6 +279,25 @@ export default function WritingCheckerPage() {
       /* storage full / unavailable — non-fatal */
     }
   }, [taskType, prompt, essay]);
+
+  // Premium gate: capture the essay to the signed-in user's account (attempt
+  // row without a band — the checker has no passage row, so passage_id stays
+  // null), then send them to billing. The draft also persists in localStorage
+  // on every change, so the form is intact when they come back.
+  const goToPremium = useCallback(async () => {
+    if (user?.id && essay.trim() && capturedEssayRef.current !== essay) {
+      const res = await saveAttemptToSupabase({
+        userId: user.id,
+        passageId: null,
+        skill: 'writing',
+        responses: { essay, prompt: prompt.trim(), task: apiTask },
+        band: null,
+      });
+      if (res.ok) capturedEssayRef.current = essay;
+    }
+    track('paywall_redirect', { skill: 'writing', slug: CHECKER_SLUG, source: 'writing_checker_submit' });
+    router.push('/pricing?upgrade=writing');
+  }, [apiTask, essay, prompt, router, user?.id]);
 
   const runScore = useCallback(async () => {
     setErrorMsg('');
@@ -327,14 +352,17 @@ export default function WritingCheckerPage() {
         scored = true;
         setResult(data);
         track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
-        // A signed-out success consumes the one anonymous writing score.
-        if (!user) recordFreeSubmit('writing', CHECKER_SLUG);
       } else if (response.status === 401) {
-        // Anonymous free score already used (or session expired): sign in and
-        // the pending score re-runs when the dialog closes.
+        // No session (or it expired): sign in and the submission resumes when
+        // the dialog closes.
         pendingSubmitRef.current = true;
         setSignInOpen(true);
         setErrorMsg((data && data.error) || 'Please sign in to score this essay.');
+      } else if (response.status === 402 && data?.reason === 'premium_required') {
+        // Server-side premium gate (covers a stale client plan): capture the
+        // essay to the account and send them to billing.
+        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'premium_gate', task: apiTask, signed_in: Boolean(user) });
+        await goToPremium();
       } else if (response.status === 402 || response.status === 429) {
         setQuotaOpen(true);
         track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'rate_limited', task: apiTask, signed_in: Boolean(user) });
@@ -352,12 +380,19 @@ export default function WritingCheckerPage() {
     } finally {
       if (!scored) setIsLoading(false);
     }
-  }, [active.label, apiTask, essay, isSufficient, minWords, prompt, user, wordCount]);
+  }, [active.label, apiTask, essay, goToPremium, isSufficient, minWords, prompt, user, wordCount]);
 
-  // After a signed-out user completes the sign-in/onboarding dialog, run the
-  // pending score automatically. This fires from onOpenChange when the dialog
-  // CLOSES (not the moment the session appears) so the onboarding questions
-  // inside the dialog aren't cut short.
+  // Continue a submission: score for premium users, otherwise capture the
+  // essay and route to billing. When the plan is still loading we let the
+  // server decide (the 402 premium_required handler above catches it).
+  const continueSubmit = useCallback(() => {
+    if (!planLoading && !isPremium) {
+      track('premium_gate', { skill: 'writing', slug: CHECKER_SLUG, stage: 'upgrade' });
+      void goToPremium();
+      return;
+    }
+    runScore();
+  }, [goToPremium, isPremium, planLoading, runScore]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -370,17 +405,17 @@ export default function WritingCheckerPage() {
       return;
     }
 
-    // Signed-out visitors get one free score (shared with the writing
-    // question pages). After that: draft is already persisted by the effect
-    // above, so open the sign-in dialog; scoring runs once they're signed in.
-    if (!loading && !user && !canUseFreeSubmit('writing', CHECKER_SLUG)) {
+    // Premium-only scoring: signed-out visitors sign up first (the draft is
+    // persisted by the effect above, so nothing is lost); the submission
+    // resumes when the dialog closes and routes to billing if needed.
+    if (!loading && !user) {
       pendingSubmitRef.current = true;
       setSignInOpen(true);
-      track('free_limit_gate', { skill: 'writing', slug: CHECKER_SLUG });
+      track('premium_gate', { skill: 'writing', slug: CHECKER_SLUG, stage: 'signup' });
       return;
     }
 
-    runScore();
+    continueSubmit();
   };
 
   const faqJsonLd = {
@@ -393,9 +428,9 @@ export default function WritingCheckerPage() {
     })),
   };
 
-  const pageTitle = 'Free IELTS Writing Checker – Instant AI Band Score & Feedback';
+  const pageTitle = 'IELTS Writing Checker – Instant AI Band Score & Feedback';
   const metaDescription =
-    'Free AI IELTS writing checker. Paste your Task 1 or Task 2 essay and get an instant estimated band score with feedback on Task Achievement, Coherence & Cohesion, Lexical Resource and Grammar.';
+    'AI IELTS writing checker. Paste your Task 1 or Task 2 essay and get an instant estimated band score with feedback on Task Achievement, Coherence & Cohesion, Lexical Resource and Grammar.';
 
   return (
     <>
@@ -425,10 +460,10 @@ export default function WritingCheckerPage() {
             <div className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-6 md:py-16 lg:px-8">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-accent" />
-                Free AI tool
+                AI-powered tool
               </span>
               <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-                Free AI IELTS Writing Checker
+                AI IELTS Writing Checker
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Paste your essay and get an instant estimated band score with detailed
@@ -525,8 +560,8 @@ export default function WritingCheckerPage() {
                 <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" />
                 {!loading && !user && (
                   <p className="text-center text-xs text-muted-foreground">
-                    We&apos;ll email you a one-tap magic link to save your score. Your draft
-                    is kept while you sign in.
+                    AI scoring is a Premium feature. Your draft is kept safe while you sign
+                    up and upgrade.
                   </p>
                 )}
               </form>
@@ -708,12 +743,12 @@ export default function WritingCheckerPage() {
           if (!v) {
             const shouldRun = pendingSubmitRef.current && Boolean(user);
             pendingSubmitRef.current = false;
-            if (shouldRun) runScore();
+            if (shouldRun) continueSubmit();
           }
         }}
         redirectOnFinish={false}
-        title="Sign up free to keep checking your writing"
-        description="You’ve used your free score. Create a free account — your draft is kept safe and is scored as soon as you’re done."
+        title="Sign up to get your essay scored"
+        description="AI Writing scoring is a Premium feature. Create your account first — your draft is saved to it, so nothing you've written is lost."
         trigger="writing_checker_score"
       />
     </>

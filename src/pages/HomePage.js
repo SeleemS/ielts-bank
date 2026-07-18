@@ -128,7 +128,7 @@ const FEATURES = [
   {
     icon: Star,
     title: 'Free core practice',
-    desc: 'Open any question and start practising without an account. Signed-in learners also receive three free AI Writing or Speaking scores per 30-day period.',
+    desc: 'Open any question and start practising without an account. All Reading and Listening practice is free forever — Premium unlocks AI Writing and Speaking scoring.',
   },
 ];
 
