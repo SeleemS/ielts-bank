@@ -20,7 +20,7 @@ import { cn } from '../../lib/utils';
 //                            `feedback` paragraph for scores saved before the
 //                            schema change.
 
-const STAGES = [
+const WRITING_STAGES = [
   { icon: FileText, label: 'Reading your response' },
   { icon: ListChecks, label: 'Judging task response' },
   { icon: AlignLeft, label: 'Checking coherence & cohesion' },
@@ -32,7 +32,7 @@ const STAGES = [
 // 10-45s; the last stage simply holds until the result arrives.
 const STAGE_AT = [0, 6, 13, 20, 27, 35];
 
-const TIPS = [
+const WRITING_TIPS = [
   'Examiners reward a clear position held from the first paragraph to the last.',
   'One well-developed example beats three unexplained ones.',
   'Linking words help — but only when each one earns its place.',
@@ -48,7 +48,16 @@ const TIPS = [
 //                only then calls onFinished. The score reveal always follows
 //                a completed animation arc.
 //   onFinished — called exactly once after the accelerated run-through.
-export function ScoringProgress({ done = false, onFinished }) {
+//   stages/tips/heading — optional overrides (default: writing flavour).
+export function ScoringProgress({
+  done = false,
+  onFinished,
+  stages,
+  tips,
+  heading = 'Marking against the official IELTS rubric',
+}) {
+  const STAGES = stages && stages.length ? stages : WRITING_STAGES;
+  const TIPS = tips && tips.length ? tips : WRITING_TIPS;
   const [elapsed, setElapsed] = React.useState(0);
   const [tipIndex, setTipIndex] = React.useState(0);
   const [fastStage, setFastStage] = React.useState(null);
@@ -65,9 +74,12 @@ export function ScoringProgress({ done = false, onFinished }) {
   React.useEffect(() => {
     const t = setInterval(() => setTipIndex((i) => (i + 1) % TIPS.length), 6000);
     return () => clearInterval(t);
-  }, []);
+  }, [TIPS.length]);
 
-  const timelineStage = STAGE_AT.reduce((acc, at, i) => (elapsed >= at ? i : acc), 0);
+  const timelineStage = STAGE_AT.slice(0, STAGES.length).reduce(
+    (acc, at, i) => (elapsed >= at ? i : acc),
+    0
+  );
   const activeStage = fastStage != null ? fastStage : timelineStage;
 
   // Fast-forward once the result is in: complete each remaining stage on a
@@ -105,7 +117,7 @@ export function ScoringProgress({ done = false, onFinished }) {
     <div className="py-2">
       {/* Progress bar */}
       <div className="mb-1 flex items-center justify-between text-xs font-medium text-muted-foreground">
-        <span>Marking against the official IELTS rubric</span>
+        <span>{heading}</span>
         <span className="tabular-nums">{progress}%</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-secondary">

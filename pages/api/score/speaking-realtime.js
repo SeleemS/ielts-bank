@@ -73,7 +73,7 @@ EVIDENCE: base every band on what is actually present across ALL candidate turns
 
 OVERALL BAND RULE: overallBand = the average of the THREE criterion bands, rounded to the NEAREST 0.5. Compute it exactly; do not eyeball it.
 
-FEEDBACK STYLE: specific and constructive; quote or paraphrase actual candidate phrases as evidence. improvements must be concrete, actionable practice steps.
+FEEDBACK STYLE: specific, constructive and SCANNABLE. For each criterion give 1-3 "strengths" bullets and 1-3 "improvements" bullets. Each bullet is ONE short sentence (under 20 words), states one concrete observation, and quotes a brief candidate phrase as evidence where useful. NO long paragraphs. The top-level "improvements" list holds the 3-5 highest-impact practice actions across all criteria.
 
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
 }
@@ -84,9 +84,20 @@ function buildJsonSchema() {
     additionalProperties: false,
     properties: {
       band: { type: 'number', description: 'Band 0-9, halves allowed' },
-      feedback: { type: 'string', description: 'Evidence-based feedback citing the transcript' },
+      strengths: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          '1-3 bullets, each under 20 words, naming something the candidate did well with brief quoted evidence',
+      },
+      improvements: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          '1-3 actionable bullets, each under 20 words, naming what would raise this band',
+      },
     },
-    required: ['band', 'feedback'],
+    required: ['band', 'strengths', 'improvements'],
   };
   return {
     name: 'ielts_speaking_assessment',

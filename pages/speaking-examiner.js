@@ -5,7 +5,7 @@
 import React from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { Mic, PhoneOff, Sparkles, Loader2, Clock, CheckCircle2 } from 'lucide-react';
+import { Mic, PhoneOff, Sparkles, Clock, CheckCircle2, Headphones, MessageSquare, Timer, Gauge } from 'lucide-react';
 import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
 import { Card, CardContent } from '../components/ui/card';
@@ -15,6 +15,15 @@ import { usePlan } from '../src/lib/usePlan';
 import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
+import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../src/lib/prefs';
+import { Checkbox } from '../components/ui/checkbox';
+import { Button } from '../components/ui/button';
+import {
+  ScoringProgress,
+  CriterionFeedback,
+  BandHero,
+  BandMeter,
+} from '../src/components/question/ScoreUI';
 
 import { SITE_URL } from '../lib/site';
 const PAGE_TITLE = 'Live AI IELTS Speaking Examiner – Real Mock Interview';
@@ -33,6 +42,118 @@ function fmtTime(totalSeconds) {
   const s = totalSeconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+
+// Minimum candidate words before an interview can be ended for a score (the
+// scoring API enforces the same threshold server-side).
+const MIN_SCORABLE_WORDS = 40;
+const INTRO_PREF = 'examinerIntroDismissed';
+
+const INTRO_STEPS = [
+  {
+    icon: Headphones,
+    title: 'A real spoken interview',
+    body: 'Your examiner speaks and listens in real time, following the real 3-part IELTS format. Find a quiet spot and use headphones if you can.',
+  },
+  {
+    icon: MessageSquare,
+    title: 'Just talk naturally',
+    body: 'Answer in full sentences and take your time — the examiner waits while you think. Longer, developed answers score better than one-liners.',
+  },
+  {
+    icon: Timer,
+    title: 'The cue card (Part 2)',
+    body: 'You get one minute to prepare, then speak for up to two minutes. Say “I’m ready” whenever you want to begin early.',
+  },
+  {
+    icon: Gauge,
+    title: 'Your band score at the end',
+    body: 'The interview ends automatically and your band is marked from the transcript. Speak for at least a couple of minutes so there is enough to assess.',
+  },
+];
+
+// One-time explainer shown before the first interview (mirrors the listening
+// intro modal: local pref for guests, users.prefs for signed-in users).
+function ExaminerIntroModal({ open, onClose, onStart }) {
+  const [dontShowAgain, setDontShowAgain] = React.useState(false);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="examiner-intro-title">
+      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => onClose({ dontShowAgain, start: false })} aria-hidden="true" />
+      <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl sm:p-7">
+        <h2 id="examiner-intro-title" className="pr-6 text-lg font-bold text-foreground">
+          How the live examiner works
+        </h2>
+        <ol className="mt-5 space-y-4">
+          {INTRO_STEPS.map(({ icon: Icon, title, body }) => (
+            <li key={title} className="flex gap-3">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                <Icon className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{title}</p>
+                <p className="mt-0.5 text-sm leading-6 text-muted-foreground">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <label className="mt-6 flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+          <Checkbox checked={dontShowAgain} onCheckedChange={setDontShowAgain} />
+          Don&rsquo;t show this again
+        </label>
+        <Button variant="accent" className="mt-4 w-full" onClick={() => { onClose({ dontShowAgain, start: true }); onStart(); }}>
+          <Mic className="h-4 w-4" /> Start my interview
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Connection animation: concentric pulse rings around a mic orb with staged
+// status text — replaces the bare spinner.
+const CONNECT_STEPS = [
+  'Requesting your microphone…',
+  'Reserving your examiner…',
+  'Establishing a secure audio line…',
+  'Almost there — say hello when the examiner greets you…',
+];
+function ConnectingExaminer() {
+  const [step, setStep] = React.useState(0);
+  React.useEffect(() => {
+    const t = setInterval(() => setStep((s) => Math.min(s + 1, CONNECT_STEPS.length - 1)), 1800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="mt-12 flex flex-col items-center gap-6">
+      <div className="relative flex h-32 w-32 items-center justify-center">
+        <span className="absolute inset-0 animate-ping rounded-full bg-accent/20 [animation-duration:2s]" />
+        <span className="absolute inset-4 animate-ping rounded-full bg-accent/25 [animation-duration:2s] [animation-delay:300ms]" />
+        <span className="absolute inset-8 animate-pulse rounded-full bg-accent/30" />
+        <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg">
+          <Mic className="h-7 w-7" />
+        </span>
+      </div>
+      <p key={step} className="text-sm font-medium text-muted-foreground animate-in fade-in duration-500">
+        {CONNECT_STEPS[step]}
+      </p>
+    </div>
+  );
+}
+
+const SPEAKING_STAGES = [
+  { icon: MessageSquare, label: 'Reviewing your transcript' },
+  { icon: Headphones, label: 'Assessing fluency & coherence' },
+  { icon: Sparkles, label: 'Weighing your vocabulary' },
+  { icon: CheckCircle2, label: 'Checking grammatical range' },
+  { icon: Gauge, label: 'Benchmarking against band descriptors' },
+  { icon: Clock, label: 'Preparing your feedback' },
+];
+const SPEAKING_TIPS = [
+  'Examiners reward answers that are developed — a reason and an example beat a one-liner.',
+  'Pausing to think is fine; filling every silence with “you know” costs more.',
+  'Paraphrasing the question in your answer shows lexical range.',
+  'Self-correcting a small mistake is a positive sign, not a penalty.',
+  'In Part 2, using the full two minutes almost always helps your fluency band.',
+];
 
 export default function SpeakingExaminerPage() {
   const { user } = useAuth();
@@ -66,6 +187,33 @@ export default function SpeakingExaminerPage() {
   const canvasRef = React.useRef(null);
   const speakingStateRef = React.useRef(null);
   const [speaking, setSpeaking] = React.useState(null); // 'examiner' | 'candidate' | null
+  // Intro modal (shown before the first interview unless dismissed forever).
+  const [introOpen, setIntroOpen] = React.useState(false);
+  const introDismissedRef = React.useRef(false);
+  const pendingModeRef = React.useRef(null);
+  // Live candidate word count — gates the End button.
+  const [candidateWords, setCandidateWords] = React.useState(0);
+  // Auto-end when the examiner closes the test.
+  const autoEndRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (getLocalPref(INTRO_PREF)) {
+      introDismissedRef.current = true;
+      return undefined;
+    }
+    let active = true;
+    if (user?.id) {
+      loadUserPref(user.id, INTRO_PREF).then((dismissed) => {
+        if (active && dismissed) {
+          introDismissedRef.current = true;
+          setLocalPref(INTRO_PREF, true);
+        }
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
 
   React.useEffect(() => {
     if (captionsBoxRef.current) {
@@ -78,6 +226,8 @@ export default function SpeakingExaminerPage() {
   function teardown() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
+    if (autoEndRef.current) clearTimeout(autoEndRef.current);
+    autoEndRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = 0;
     try {
@@ -172,8 +322,23 @@ export default function SpeakingExaminerPage() {
 
   function pushTranscript(role, text) {
     if (!text || !text.trim()) return;
-    transcriptRef.current = [...transcriptRef.current, { role, text: text.trim() }];
+    const trimmed = text.trim();
+    // Guard against duplicate event deliveries of the same turn.
+    const last = transcriptRef.current[transcriptRef.current.length - 1];
+    if (last && last.role === role && last.text === trimmed) return;
+    transcriptRef.current = [...transcriptRef.current, { role, text: trimmed }];
     setCaptions(transcriptRef.current);
+    if (role === 'candidate') {
+      setCandidateWords(
+        transcriptRef.current
+          .filter((t) => t.role === 'candidate')
+          .reduce((n, t) => n + t.text.split(/\s+/).filter(Boolean).length, 0)
+      );
+    }
+    // The examiner formally closes the test -> fetch the score automatically.
+    if (role === 'examiner' && /that is the end of the speaking/i.test(trimmed) && !autoEndRef.current) {
+      autoEndRef.current = setTimeout(() => endInterview(), 2500);
+    }
   }
 
   async function authHeader() {
@@ -188,12 +353,22 @@ export default function SpeakingExaminerPage() {
       setSignInOpen(true);
       return;
     }
+    // First interview: show the explainer once, then continue with this mode.
+    if (!introDismissedRef.current) {
+      pendingModeRef.current = mode;
+      setIntroOpen(true);
+      introDismissedRef.current = true; // once per visit unless "don't show again"
+      track('examiner_intro_shown', {});
+      return;
+    }
     setPhase('connecting');
     setActiveMode(mode);
     transcriptRef.current = [];
     setCaptions([]);
+    setCandidateWords(0);
     setResult(null);
     endedRef.current = false;
+    autoEndRef.current = null;
     track('realtime_session_start', { mode });
 
     try {
@@ -232,7 +407,16 @@ export default function SpeakingExaminerPage() {
         if (audioRef.current) audioRef.current.srcObject = e.streams[0];
         analyserExamRef.current = attachAnalyser(e.streams[0]);
       };
-      pc.addTrack(mic.getTracks()[0], mic);
+      const micTrack = mic.getTracks()[0];
+      // Keep the mic MUTED until the examiner finishes the greeting — early
+      // room noise was tripping VAD and making the examiner stumble/restart
+      // its first line.
+      micTrack.enabled = false;
+      pc.addTrack(micTrack, mic);
+      const unmuteMic = () => {
+        micTrack.enabled = true;
+      };
+      const micFailsafe = setTimeout(unmuteMic, 9000);
 
       const dc = pc.createDataChannel('oai-events');
       dc.onopen = () => {
@@ -249,11 +433,13 @@ export default function SpeakingExaminerPage() {
             ev.type === 'conversation.item.audio_transcription.completed'
           ) {
             pushTranscript('candidate', ev.transcript);
-          } else if (
-            ev.type === 'response.output_audio_transcript.done' ||
-            ev.type === 'response.audio_transcript.done'
-          ) {
+          } else if (ev.type === 'response.output_audio_transcript.done') {
+            // ONE event name only — subscribing to aliases duplicated turns.
             pushTranscript('examiner', ev.transcript);
+          } else if (ev.type === 'response.done') {
+            // Greeting finished — open the candidate's mic.
+            clearTimeout(micFailsafe);
+            unmuteMic();
           } else if (ev.type === 'error') {
             console.error('realtime event error:', ev.error?.message || ev);
           }
@@ -315,7 +501,7 @@ export default function SpeakingExaminerPage() {
     const candidateWords = transcript
       .filter((t) => t.role === 'candidate')
       .reduce((n, t) => n + t.text.split(/\s+/).filter(Boolean).length, 0);
-    if (candidateWords < 40) {
+    if (candidateWords < MIN_SCORABLE_WORDS) {
       setPhase('idle');
       setError('The session ended before there was enough speech to score.');
       return;
@@ -335,14 +521,32 @@ export default function SpeakingExaminerPage() {
         setError(body.error || 'Scoring failed. Your interview still counted — try again.');
         return;
       }
+      // Hold the reveal: the scoring animation fast-forwards to 100% first
+      // (its onFinished flips the phase to 'done').
       setResult(body);
-      setPhase('done');
       track('realtime_session_scored', { mode: activeMode, band: body.overallBand });
     } catch {
       setPhase('idle');
       setError('Scoring failed. Please try again.');
     }
   }
+
+  const handleScoringFinished = React.useCallback(() => {
+    setPhase('done');
+    import('canvas-confetti')
+      .then(({ default: confetti }) =>
+        confetti({ spread: 100, particleCount: 180, origin: { y: 0.4 }, zIndex: 3000, scalar: 1.3 })
+      )
+      .catch(() => {});
+  }, []);
+
+  const handleIntroClose = ({ dontShowAgain }) => {
+    setIntroOpen(false);
+    if (dontShowAgain) {
+      setLocalPref(INTRO_PREF, true);
+      if (user?.id) saveUserPref(user.id, INTRO_PREF, true);
+    }
+  };
 
   const minutesLeft = Math.floor(minutes.remainingSeconds / 60);
 
@@ -436,12 +640,7 @@ export default function SpeakingExaminerPage() {
         ) : null}
 
         {/* ---------- connecting ---------- */}
-        {phase === 'connecting' ? (
-          <div className="mt-10 flex flex-col items-center gap-3 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="text-sm">Connecting you to the examiner…</p>
-          </div>
-        ) : null}
+        {phase === 'connecting' ? <ConnectingExaminer /> : null}
 
         {/* ---------- live interview ---------- */}
         {phase === 'live' ? (
@@ -520,12 +719,15 @@ export default function SpeakingExaminerPage() {
               <button
                 type="button"
                 onClick={endInterview}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                disabled={candidateWords < MIN_SCORABLE_WORDS}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <PhoneOff className="h-4 w-4" /> End interview &amp; get my score
               </button>
               <p className="text-xs text-muted-foreground">
-                Take your time — the examiner waits while you think.
+                {candidateWords < MIN_SCORABLE_WORDS
+                  ? `Keep going — speak a little more for a fair score (${candidateWords}/${MIN_SCORABLE_WORDS} words so far). The interview also ends by itself.`
+                  : 'Take your time — the examiner waits while you think. The interview ends by itself when the test finishes.'}
               </p>
             </div>
           </div>
@@ -533,51 +735,83 @@ export default function SpeakingExaminerPage() {
 
         {/* ---------- scoring ---------- */}
         {phase === 'scoring' ? (
-          <div className="mt-10 flex flex-col items-center gap-3 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="text-sm">The examiner is marking your interview…</p>
+          <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 shadow-sm sm:p-7">
+            <h2 className="mb-2 text-lg font-bold tracking-tight text-foreground">
+              Marking your interview
+            </h2>
+            <ScoringProgress
+              done={Boolean(result)}
+              onFinished={handleScoringFinished}
+              stages={SPEAKING_STAGES}
+              tips={SPEAKING_TIPS}
+              heading="Marking your transcript against the official rubric"
+            />
           </div>
         ) : null}
 
         {/* ---------- results ---------- */}
         {phase === 'done' && result ? (
-          <div className="mt-8">
-            <div className="rounded-xl border bg-card p-6 text-center shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Estimated overall band
-              </p>
-              <p className="mt-1 text-5xl font-bold">{result.overallBand}</p>
-              <p className="mt-3 text-sm text-muted-foreground">{result.summary}</p>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-8 space-y-4">
+            <BandHero band={result.overallBand} subtitle="Live speaking interview" />
+
+            {result.summary ? (
+              <div className="rounded-xl border bg-card p-5 shadow-sm">
+                <p className="text-sm font-semibold text-foreground">Examiner&apos;s summary</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {result.summary}
+                </p>
+              </div>
+            ) : null}
+
+            <div className="grid gap-4 lg:grid-cols-3">
               {[
                 ['Fluency & Coherence', result.criteria?.fluencyCoherence],
                 ['Lexical Resource', result.criteria?.lexicalResource],
-                ['Grammatical Range', result.criteria?.grammaticalRange],
+                ['Grammatical Range & Accuracy', result.criteria?.grammaticalRange],
               ].map(([label, c]) => (
                 <Card key={label}>
-                  <CardContent className="p-4">
-                    <p className="text-sm font-semibold">{label}</p>
-                    <p className="mt-1 text-2xl font-bold">{c?.band}</p>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{c?.feedback}</p>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-foreground">{label}</p>
+                      <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-sm font-bold tabular-nums text-accent">
+                        {typeof c?.band === 'number' ? c.band.toFixed(1) : '—'}
+                      </span>
+                    </div>
+                    <div className="mt-2.5">
+                      <BandMeter band={c?.band} />
+                    </div>
+                    <div className="mt-4">
+                      <CriterionFeedback criterion={c} />
+                    </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
+
+            <p className="rounded-md bg-secondary/60 px-4 py-3 text-xs leading-5 text-muted-foreground">
+              <span className="font-semibold text-foreground">A note on pronunciation:</span>{' '}
+              pronunciation can&apos;t be judged fairly from a transcript, so this estimate covers
+              the three criteria above. In the real test it counts for a quarter of your score —
+              keep practising aloud with the examiner.
+            </p>
+
             {Array.isArray(result.improvements) && result.improvements.length ? (
-              <div className="mt-4 rounded-xl border bg-card p-5">
-                <p className="text-sm font-semibold">What to practise next</p>
-                <ul className="mt-2 space-y-1.5">
+              <div className="rounded-xl border bg-card p-5 shadow-sm">
+                <p className="text-sm font-semibold text-foreground">What to practise next</p>
+                <ul className="mt-3 space-y-2">
                   {result.improvements.map((tip, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[11px] font-bold text-accent">
+                        {i + 1}
+                      </span>
                       {tip}
                     </li>
                   ))}
                 </ul>
               </div>
             ) : null}
-            <div className="mt-6 text-center">
+
+            <div className="pt-2 text-center">
               <button
                 type="button"
                 onClick={() => {
@@ -603,6 +837,15 @@ export default function SpeakingExaminerPage() {
         title="Sign in to meet your examiner"
         description="Create your account or sign in — you'll stay right on this page."
         trigger="speaking_examiner"
+      />
+      <ExaminerIntroModal
+        open={introOpen}
+        onClose={handleIntroClose}
+        onStart={() => {
+          const pending = pendingModeRef.current;
+          pendingModeRef.current = null;
+          if (pending) startSession(pending);
+        }}
       />
     </>
   );
