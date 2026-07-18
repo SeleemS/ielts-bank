@@ -24,13 +24,13 @@ export default function AiQuotaPanel({ userId, remaining, open = false, onClose 
   const shown = remaining ?? dbRemaining;
   return (
     <>
-      {userId ? (
+      {/* Writing pages intentionally show no quota line under the CTA — the
+          limit is only surfaced when it's actually hit (402 -> this modal). */}
+      {userId && skill !== 'writing' ? (
         <p className="text-center text-xs font-medium text-muted-foreground">
-          {skill === 'writing'
-            ? 'Free plan: 1 AI Writing score per day · Premium: 2 per day'
-            : shown == null
-              ? 'Loading your AI score allowance…'
-              : `${shown} of 3 free AI scores left this period`}
+          {shown == null
+            ? 'Loading your AI score allowance…'
+            : `${shown} of 3 free AI scores left this period`}
         </p>
       ) : null}
       <Modal open={open} onClose={onClose} title="Keep improving with AI feedback">

@@ -129,15 +129,34 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Verify an emailed 6-digit code. `type` is the expected OTP kind
-  // ('signup' for confirmation emails, 'email' for sign-in codes); the other
-  // kind is tried as a fallback since failed attempts are limited per token.
+  // ('signup' for confirmation emails, 'email' for sign-in codes, 'recovery'
+  // for password resets). For the signup/email pair the other kind is tried
+  // as a fallback since failed attempts are limited per token; recovery codes
+  // are only ever recovery codes, so no fallback there.
   const verifyEmailOtp = React.useCallback(async (email, token, type = 'signup') => {
     const supabase = getSupabase();
     const primary = await supabase.auth.verifyOtp({ email, token, type });
     if (!primary.error) return { error: null };
-    const altType = type === 'signup' ? 'email' : 'signup';
+    const altType = type === 'signup' ? 'email' : type === 'email' ? 'signup' : null;
+    if (!altType) return { error: primary.error };
     const secondary = await supabase.auth.verifyOtp({ email, token, type: altType });
     return { error: secondary.error ? primary.error : null };
+  }, []);
+
+  // Password reset, OTP-style: emails a 6-digit recovery code (the Supabase
+  // "Reset Password" template must render {{ .Token }}), verified with
+  // verifyEmailOtp(type 'recovery'), after which updatePassword sets the new
+  // password on the recovered session.
+  const requestPasswordReset = React.useCallback(async (email) => {
+    const supabase = getSupabase();
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return { error };
+  }, []);
+
+  const updatePassword = React.useCallback(async (password) => {
+    const supabase = getSupabase();
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
   }, []);
 
   const resendSignupEmail = React.useCallback(async (email, next) => {
@@ -165,6 +184,8 @@ export function AuthProvider({ children }) {
       signInWithPassword,
       verifyEmailOtp,
       resendSignupEmail,
+      requestPasswordReset,
+      updatePassword,
       signOut,
     }),
     [
@@ -175,6 +196,8 @@ export function AuthProvider({ children }) {
       signInWithPassword,
       verifyEmailOtp,
       resendSignupEmail,
+      requestPasswordReset,
+      updatePassword,
       signOut,
     ]
   );
@@ -195,6 +218,8 @@ export function useAuth() {
       signInWithPassword: async () => ({ error: new Error('AuthProvider missing') }),
       verifyEmailOtp: async () => ({ error: new Error('AuthProvider missing') }),
       resendSignupEmail: async () => ({ error: new Error('AuthProvider missing') }),
+      requestPasswordReset: async () => ({ error: new Error('AuthProvider missing') }),
+      updatePassword: async () => ({ error: new Error('AuthProvider missing') }),
       signOut: async () => {},
     };
   }

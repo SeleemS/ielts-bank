@@ -8,6 +8,7 @@ import {
   Briefcase,
   Globe2,
   Sparkles,
+  KeyRound,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -77,13 +78,17 @@ export default function SignInDialog({
     signInWithPassword,
     verifyEmailOtp,
     resendSignupEmail,
+    requestPasswordReset,
+    updatePassword,
   } = useAuth();
 
   const [mounted, setMounted] = React.useState(false);
   const [mode, setMode] = React.useState('signup'); // signup | signin
-  const [step, setStep] = React.useState('account'); // account | verify | about
-  // What triggered the verify step — decides how "Resend code" re-sends:
-  // 'signup' -> confirmation email, 'signin' -> one-time sign-in code.
+  const [step, setStep] = React.useState('account'); // account | verify | newpass | about
+  // What triggered the verify step — decides how "Resend code" re-sends and
+  // where verification continues: 'signup' -> confirmation email -> about,
+  // 'signin' -> one-time sign-in code -> done, 'recovery' -> password reset
+  // code -> choose a new password.
   const [verifySource, setVerifySource] = React.useState('signup');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -138,6 +143,9 @@ export default function SignInDialog({
       if (verifySource === 'signin') {
         track('login_success', { method: 'email_otp', trigger });
         onOpenChange?.(false);
+      } else if (verifySource === 'recovery') {
+        setPassword('');
+        setStep('newpass');
       } else {
         track('signup_verified', { trigger, method: 'link' });
         setStep('about');
@@ -225,7 +233,7 @@ export default function SignInDialog({
       const { error } = await verifyEmailOtp(
         email.trim(),
         token,
-        verifySource === 'signin' ? 'email' : 'signup'
+        verifySource === 'signin' ? 'email' : verifySource === 'recovery' ? 'recovery' : 'signup'
       );
       if (error) {
         setErrorMsg('That code didn’t work. Check the latest email or resend a fresh one.');
@@ -235,6 +243,14 @@ export default function SignInDialog({
         // Existing account signing in with a code — no onboarding questions.
         track('login_success', { method: 'email_otp', trigger });
         close();
+        return;
+      }
+      if (verifySource === 'recovery') {
+        // Code accepted -> the user is signed in on a recovery session;
+        // finish by letting them choose a new password.
+        track('password_reset_verified', { trigger });
+        setPassword('');
+        setStep('newpass');
         return;
       }
       track('signup_verified', { trigger, method: 'otp' });
@@ -251,8 +267,49 @@ export default function SignInDialog({
     const { error } =
       verifySource === 'signin'
         ? await signInWithEmail(email.trim())
-        : await resendSignupEmail(email.trim(), currentPath());
+        : verifySource === 'recovery'
+          ? await requestPasswordReset(email.trim())
+          : await resendSignupEmail(email.trim(), currentPath());
     if (error) setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+  };
+
+  // "Forgot password?" — email a 6-digit recovery code, verified in the same
+  // modal, then the user sets a new password on the recovered session.
+  const handleForgotPassword = async () => {
+    setBusy(true);
+    setErrorMsg('');
+    try {
+      track('password_reset_start', { trigger, signed_in: false });
+      const { error } = await requestPasswordReset(email.trim());
+      if (error) {
+        setErrorMsg(error.message || 'Could not send the reset code. Please try again.');
+        return;
+      }
+      setVerifySource('recovery');
+      setResendIn(30);
+      setCode('');
+      setStep('verify');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleNewPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (password.length < 8) return;
+    setBusy(true);
+    setErrorMsg('');
+    try {
+      const { error } = await updatePassword(password);
+      if (error) {
+        setErrorMsg(error.message || 'Could not update your password. Please try again.');
+        return;
+      }
+      track('password_reset_success', { trigger });
+      close();
+    } finally {
+      setBusy(false);
+    }
   };
 
   // Passwordless sign-in for magic-link-era accounts: email a one-time code,
@@ -319,7 +376,11 @@ export default function SignInDialog({
       <>
         {header(
           <ShieldCheck className="h-5 w-5 text-primary" />,
-          verifySource === 'signin' ? 'Enter your sign-in code' : 'Confirm your email',
+          verifySource === 'signin'
+            ? 'Enter your sign-in code'
+            : verifySource === 'recovery'
+              ? 'Reset your password'
+              : 'Confirm your email',
           <>
             Enter the 6-digit code we sent to{' '}
             <span className="font-medium text-foreground">{email.trim()}</span>.
@@ -347,7 +408,13 @@ export default function SignInDialog({
             </p>
           )}
           <Button type="submit" variant="accent" className="w-full" disabled={busy || code.length < 6}>
-            {busy ? 'Verifying…' : verifySource === 'signin' ? 'Sign in' : 'Verify email'}
+            {busy
+              ? 'Verifying…'
+              : verifySource === 'signin'
+                ? 'Sign in'
+                : verifySource === 'recovery'
+                  ? 'Continue'
+                  : 'Verify email'}
           </Button>
           <button
             type="button"
@@ -357,6 +424,41 @@ export default function SignInDialog({
           >
             {resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
           </button>
+        </form>
+      </>
+    );
+  } else if (step === 'newpass') {
+    body = (
+      <>
+        {header(
+          <KeyRound className="h-5 w-5 text-primary" />,
+          'Choose a new password',
+          'You’re signed in — set a new password to finish resetting it.'
+        )}
+        <form onSubmit={handleNewPasswordSubmit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="signin-newpass">New password</Label>
+            <Input
+              id="signin-newpass"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              autoFocus
+            />
+          </div>
+          {errorMsg && (
+            <p role="alert" className="text-sm font-medium text-destructive">
+              {errorMsg}
+            </p>
+          )}
+          <Button type="submit" variant="accent" className="w-full" disabled={busy || password.length < 8}>
+            {busy ? 'Saving…' : 'Save new password'}
+          </Button>
         </form>
       </>
     );
@@ -502,6 +604,14 @@ export default function SignInDialog({
                 onClick={handleEmailCode}
               >
                 Email me a one-time code instead
+              </button>
+              <button
+                type="button"
+                disabled={busy || !email.trim()}
+                className="font-medium underline-offset-4 hover:text-foreground hover:underline disabled:opacity-60"
+                onClick={handleForgotPassword}
+              >
+                Forgot password?
               </button>
             </>
           )}

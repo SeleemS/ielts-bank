@@ -288,8 +288,19 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const handleScoringFinished = useCallback(() => {
     setIsLoading(false);
     setFeedbackOpen(true);
+    // The essay is scored and saved to the account — clear the editor (and
+    // the local draft) so the same text can't just be re-submitted for
+    // another score.
+    setUserResponse('');
+    if (storageKey && typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(`ielts-writing-draft:${storageKey}`);
+      } catch {
+        /* ignore */
+      }
+    }
     import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
-  }, []);
+  }, [storageKey]);
 
   const pageTitle = title
     ? `${title} | IELTS Writing Practice | IELTS-Bank`
@@ -424,7 +435,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         title="Your AI Feedback & Score"
       >
         {result && <ScoreReport task={task} result={result} />}
-        {result ? <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">You have {result.quotaRemaining ?? 'a limited number of'} free AI scores remaining. Revise this draft using the feedback, then score it again.</p> : null}
+        {result ? <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you&rsquo;re ready.</p> : null}
         <div className="mt-5 flex justify-end">
           <Button onClick={() => setFeedbackOpen(false)}>Close</Button>
         </div>
