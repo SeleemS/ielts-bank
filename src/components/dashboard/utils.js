@@ -85,12 +85,57 @@ function scoreToItem(row) {
     href: passageHref(passage),
     detail: 'AI-scored',
     criteria: row.criteria || {},
+    startedAt: attempt?.started_at || null,
+    submittedAt: attempt?.submitted_at || row.created_at,
   };
 }
 
 function avg(nums) {
   if (!nums.length) return null;
   return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function validDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function minutesBetween(start, end) {
+  const from = validDate(start);
+  const to = validDate(end);
+  if (!from || !to || to <= from) return 0;
+  // Cap malformed or abandoned sessions so one row cannot distort the KPI.
+  return Math.min(180, Math.max(1, Math.round((to - from) / 60000)));
+}
+
+function localDateKey(value) {
+  const date = value instanceof Date ? value : validDate(value);
+  if (!date) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function bandDescriptor(band) {
+  const value = toBand(band);
+  if (value === null) return 'Start practising';
+  if (value >= 8) return 'Expert';
+  if (value >= 7) return 'Good';
+  if (value >= 6) return 'Competent';
+  if (value >= 5) return 'Developing';
+  return 'Building foundations';
+}
+
+export function getInitials(name, email = '') {
+  const source = String(name || email.split('@')[0] || 'IELTS learner').trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'IL';
+  return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+}
+
+export function prettyQuestionType(value) {
+  return String(value || 'other')
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 // Merge raw attempts + scores into everything the dashboard renders:
@@ -100,7 +145,11 @@ function avg(nums) {
 // but still appear in the activity feed.
 export function buildDashboardData(attempts = [], scores = []) {
   const items = [
-    ...attempts.map(attemptToItem),
+    ...attempts.map((row) => ({
+      ...attemptToItem(row),
+      startedAt: row.started_at || null,
+      submittedAt: row.submitted_at || row.created_at,
+    })),
     ...scores.map(scoreToItem),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -117,6 +166,9 @@ export function buildDashboardData(attempts = [], scores = []) {
       avg: avg(bands),
       best: bands.length ? Math.max(...bands) : null,
       series: bands,
+      latest: bands.length ? bands.at(-1) : null,
+      previous: bands.length > 1 ? bands.at(-2) : null,
+      delta: bands.length > 1 ? bands.at(-1) - bands.at(-2) : null,
     };
   }
 
@@ -153,16 +205,12 @@ export function buildDashboardData(attempts = [], scores = []) {
     }))
     .sort((a, b) => a.percentage - b.percentage);
 
-  const dateKey = (value) => {
-    const date = value instanceof Date ? value : new Date(value);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  };
-  const practiceDays = new Set(items.map((item) => dateKey(item.date)));
+  const practiceDays = new Set(items.map((item) => localDateKey(item.date)).filter(Boolean));
   let streak = 0;
   const cursor = new Date();
   cursor.setHours(0, 0, 0, 0);
-  if (!practiceDays.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
-  while (practiceDays.has(dateKey(cursor))) {
+  if (!practiceDays.has(localDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (practiceDays.has(localDateKey(cursor))) {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
@@ -177,6 +225,41 @@ export function buildDashboardData(attempts = [], scores = []) {
     }
   }
 
+  const latestBands = SKILL_ORDER.map((key) => skills[key].latest).filter((band) => band !== null);
+  const overallBand = avg(latestBands);
+  const rankedSkills = SKILL_ORDER
+    .filter((key) => skills[key].avg !== null)
+    .sort((a, b) => skills[b].avg - skills[a].avg);
+  const missingSkill = SKILL_ORDER.find((key) => skills[key].count === 0);
+  const recommendedSkill = missingSkill || rankedSkills.at(-1) || 'reading';
+
+  const totalMinutes = items.reduce(
+    (sum, item) => sum + minutesBetween(item.startedAt, item.submittedAt),
+    0
+  );
+
+  const activity = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let offset = 27; offset >= 0; offset -= 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - offset);
+    const key = localDateKey(date);
+    activity.push({
+      key,
+      date,
+      count: items.filter((item) => localDateKey(item.date) === key).length,
+    });
+  }
+
+  const weekStart = new Date(today);
+  const day = weekStart.getDay();
+  weekStart.setDate(weekStart.getDate() - ((day + 6) % 7));
+  const weeklyCount = items.filter((item) => {
+    const date = validDate(item.date);
+    return date && date >= weekStart;
+  }).length;
+
   return {
     items,
     totalPractised: items.length,
@@ -186,5 +269,12 @@ export function buildDashboardData(attempts = [], scores = []) {
     typeAccuracy,
     streak,
     criteria,
+    overallBand,
+    strongestSkill: rankedSkills[0] || null,
+    recommendedSkill,
+    totalMinutes,
+    activity,
+    activeDays: practiceDays.size,
+    weeklyCount,
   };
 }
