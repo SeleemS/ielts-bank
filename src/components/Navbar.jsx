@@ -22,7 +22,7 @@ import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth';
 import SignInDialog from './auth/SignInDialog';
 
-// Pure Tailwind/shadcn Navbar. NO Chakra imports — this renders on every page,
+// Pure Tailwind/shadcn Navbar. No Chakra imports — this renders on every page,
 // including pages still built with Chakra, so it must be self-contained.
 
 const NAV_LINKS = [
@@ -127,6 +127,7 @@ function AccountMenu({ user, onSignOut }) {
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
@@ -138,10 +139,13 @@ export default function Navbar() {
   );
   const showCreateAccount = !loading && !user && onQuestionPage;
 
-  const openSignIn = () => {
+  const openAuth = (mode) => {
     setOpen(false);
+    setAuthMode(mode);
     setSignInOpen(true);
   };
+  const openSignIn = () => openAuth('signin');
+  const openSignUp = () => openAuth('signup');
 
   return (
     <header className="sticky top-0 z-[1000] w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -167,7 +171,7 @@ export default function Navbar() {
         {/* Desktop CTA + account */}
         <div className="hidden items-center gap-2 md:flex">
           {showCreateAccount ? (
-            <Button variant="accent" className="shadow-sm" onClick={openSignIn}>
+            <Button variant="accent" className="shadow-sm" onClick={openSignUp}>
               Create account
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -225,7 +229,7 @@ export default function Navbar() {
             })}
           </nav>
           {showCreateAccount ? (
-            <Button variant="accent" size="lg" className="mt-2 w-full" onClick={openSignIn}>
+            <Button variant="accent" size="lg" className="mt-2 w-full" onClick={openSignUp}>
               Create account
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -279,7 +283,11 @@ export default function Navbar() {
         </SheetContent>
       </Sheet>
 
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+      <SignInDialog
+        open={signInOpen}
+        onOpenChange={setSignInOpen}
+        initialMode={authMode}
+      />
     </header>
   );
 }
