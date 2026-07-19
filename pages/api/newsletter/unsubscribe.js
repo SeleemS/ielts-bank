@@ -17,11 +17,16 @@ export default async function handler(req, res) {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return res.status(503).send('Unsubscribe is temporarily unavailable.');
-  const admin = createClient(url, key, { auth: { persistSession: false } });
-  const { error } = await admin
-    .from('newsletter_subscribers')
-    .update({ unsubscribed_at: new Date().toISOString() })
-    .eq('email', email);
-  if (error) return res.status(503).send('Unsubscribe is temporarily unavailable.');
+  try {
+    const admin = createClient(url, key, { auth: { persistSession: false } });
+    const { error } = await admin
+      .from('newsletter_subscribers')
+      .update({ unsubscribed_at: new Date().toISOString() })
+      .eq('email', email);
+    if (error) throw error;
+  } catch (error) {
+    console.error('newsletter unsubscribe update failed:', error?.message || String(error));
+    return res.status(503).send('Unsubscribe is temporarily unavailable.');
+  }
   return res.status(200).send('You have been unsubscribed from IELTS Bank weekly emails.');
 }
