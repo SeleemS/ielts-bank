@@ -1,0 +1,107 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
+
+const testState = vi.hoisted(() => ({
+  result: { data: null, error: null },
+}));
+
+vi.mock('./auth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'audit@example.com' },
+  }),
+}));
+vi.mock('../../lib/supabase', () => ({
+  getSupabase: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => testState.result,
+        }),
+      }),
+    }),
+  }),
+}));
+
+import { usePlan } from './usePlan';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+let container;
+let root;
+
+function Harness() {
+  const plan = usePlan();
+  return (
+    <output>
+      {JSON.stringify({
+        loading: plan.loading,
+        plan: plan.plan,
+        isPremium: plan.isPremium,
+        error: plan.error,
+      })}
+    </output>
+  );
+}
+
+async function renderHook() {
+  await act(async () => {
+    root.render(<Harness />);
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return JSON.parse(container.querySelector('output').textContent);
+}
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  vi.clearAllMocks();
+});
+
+describe('usePlan query failures', () => {
+  it('exposes a resolved Supabase error instead of silently reporting Free', async () => {
+    testState.result = {
+      data: null,
+      error: new Error('database unavailable'),
+    };
+
+    const plan = await renderHook();
+
+    expect(plan.loading).toBe(false);
+    expect(plan.isPremium).toBe(false);
+    expect(plan.error).toBe(
+      'Could not verify your current plan. Please refresh and try again.'
+    );
+  });
+
+  it('returns verified Premium state without an error', async () => {
+    testState.result = {
+      data: {
+        plan: 'premium',
+        plan_status: 'active',
+        plan_renews_at: '2026-10-01T00:00:00.000Z',
+        plan_expires_at: null,
+        billing_pause_until: null,
+        billing_pause_used_at: null,
+        stripe_customer_id: 'cus_test',
+      },
+      error: null,
+    };
+
+    const plan = await renderHook();
+
+    expect(plan.loading).toBe(false);
+    expect(plan.plan).toBe('premium');
+    expect(plan.isPremium).toBe(true);
+    expect(plan.error).toBeNull();
+  });
+});

@@ -12,6 +12,7 @@ const testState = vi.hoisted(() => ({
   user: null,
   authLoading: false,
   accessToken: 'test-access-token',
+  planError: null,
 }));
 
 vi.mock('next/head', () => ({
@@ -62,6 +63,7 @@ vi.mock('../src/lib/usePlan', () => ({
     expiresAt: null,
     hasBillingAccount: false,
     loading: false,
+    error: testState.planError,
   }),
 }));
 vi.mock('../lib/supabase', () => ({
@@ -128,6 +130,7 @@ beforeEach(() => {
   testState.user = null;
   testState.authLoading = false;
   testState.accessToken = 'test-access-token';
+  testState.planError = null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -232,5 +235,27 @@ describe('pricing authentication handoff', () => {
       },
       body: JSON.stringify({ sku: 'monthly', offer: '' }),
     });
+  });
+
+  it('disables every checkout action when current plan verification fails', async () => {
+    testState.router = {
+      isReady: true,
+      query: {},
+    };
+    testState.planError =
+      'Could not verify your current plan. Please refresh and try again.';
+
+    await renderPage();
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Checkout is temporarily disabled'
+    );
+    const checkoutButtons = [...container.querySelectorAll('button')].filter(
+      (button) =>
+        button.textContent.includes('Choose this plan')
+        || button.textContent.includes('Get the Exam Pass')
+    );
+    expect(checkoutButtons).toHaveLength(4);
+    expect(checkoutButtons.every((button) => button.disabled)).toBe(true);
   });
 });

@@ -30,11 +30,12 @@ export function usePlan() {
     pauseUntil: null,
     pauseUsedAt: null,
     hasBillingAccount: false,
+    error: null,
   });
 
   React.useEffect(() => {
     if (!user?.id) {
-      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, pauseUsedAt: null, hasBillingAccount: false });
+      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, pauseUsedAt: null, hasBillingAccount: false, error: null });
       return undefined;
     }
     let active = true;
@@ -43,8 +44,16 @@ export function usePlan() {
       .select('plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at, stripe_customer_id')
       .eq('id', user.id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!active) return;
+        if (error) {
+          setState((current) => ({
+            ...current,
+            loading: false,
+            error: 'Could not verify your current plan. Please refresh and try again.',
+          }));
+          return;
+        }
         setState({
           loading: false,
           plan: data?.plan || 'free',
@@ -54,10 +63,17 @@ export function usePlan() {
           pauseUntil: data?.billing_pause_until || null,
           pauseUsedAt: data?.billing_pause_used_at || null,
           hasBillingAccount: Boolean(data?.stripe_customer_id),
+          error: null,
         });
       })
       .catch(() => {
-        if (active) setState((s) => ({ ...s, loading: false }));
+        if (active) {
+          setState((current) => ({
+            ...current,
+            loading: false,
+            error: 'Could not verify your current plan. Please refresh and try again.',
+          }));
+        }
       });
     return () => {
       active = false;

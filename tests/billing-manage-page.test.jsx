@@ -4,6 +4,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
+const testState = vi.hoisted(() => ({
+  planError: null,
+}));
+
 vi.mock('next/head', () => ({
   default: ({ children }) => React.createElement(React.Fragment, null, children),
 }));
@@ -33,6 +37,7 @@ vi.mock('../src/lib/usePlan', () => ({
     pauseUsedAt: null,
     hasBillingAccount: true,
     loading: false,
+    error: testState.planError,
   }),
 }));
 vi.mock('../lib/supabase', () => ({
@@ -57,6 +62,7 @@ let container;
 let root;
 
 beforeEach(() => {
+  testState.planError = null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -108,5 +114,25 @@ describe('billing pause state', () => {
     expect(track).toHaveBeenCalledWith('subscription_pause', {
       source: 'billing_interstitial',
     });
+  });
+
+  it('hides all billing mutations when plan verification fails', async () => {
+    testState.planError =
+      'Could not verify your current plan. Please refresh and try again.';
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Billing actions are temporarily disabled.'
+    );
+    expect(
+      [...container.querySelectorAll('button')].some(
+        (button) =>
+          button.textContent.includes('Pause once')
+          || button.textContent.includes('Continue to Stripe')
+      )
+    ).toBe(false);
   });
 });

@@ -29,6 +29,7 @@ export default function ManageBillingPage() {
     pauseUsedAt,
     hasBillingAccount,
     loading,
+    error: planError,
   } = usePlan();
   const [busy, setBusy] = React.useState('');
   const [message, setMessage] = React.useState('');
@@ -101,6 +102,10 @@ export default function ManageBillingPage() {
 
           {pending ? (
             <p className="py-16 text-center text-sm text-slate-500"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Loading billing…</p>
+          ) : planError ? (
+            <div role="alert" className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center text-sm font-semibold text-amber-900">
+              {planError} Billing actions are temporarily disabled.
+            </div>
           ) : !user ? (
             <div className="mt-6 rounded-2xl border bg-white p-6 text-center">
               <p className="font-bold">Sign in to manage billing.</p>

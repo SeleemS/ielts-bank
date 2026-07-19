@@ -191,6 +191,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     expiresAt,
     hasBillingAccount,
     loading: planLoading,
+    error: planError,
   } = usePlan();
   const [busySku, setBusySku] = React.useState(null);
   const [error, setError] = React.useState('');
@@ -387,6 +388,11 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             {error}
           </div>
         ) : null}
+        {planError ? (
+          <div role="alert" className="mx-auto mt-6 max-w-xl rounded-lg border border-amber-300 bg-amber-50 p-4 text-center text-sm text-amber-900">
+            {planError} Checkout is temporarily disabled so your existing access is not misrepresented.
+          </div>
+        ) : null}
 
         {isPremium ? (
           <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
@@ -445,7 +451,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
                       type="button"
                       variant={plan.hero ? 'accent' : 'outline'}
                       onClick={() => startCheckout(plan.sku)}
-                      disabled={busySku !== null || planLoading}
+                      disabled={busySku !== null || planLoading || Boolean(planError)}
                       className="mt-auto w-full"
                     >
                       {busySku === plan.sku ? (
