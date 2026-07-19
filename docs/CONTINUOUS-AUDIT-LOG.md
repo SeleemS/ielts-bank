@@ -561,6 +561,39 @@ False positives are kept in the investigation notes so they are not rediscovered
   `path=/`, `source=homepage`, `outcome=error`, `signed_in=false`, and `status=400` fields plus
   standard anonymous session/acquisition metadata.
 
+## CA-029 — Optional analytics ran before consent and ignored rejection
+
+- Status: `FIXED`
+- Area: Privacy / consent / Google Analytics / Vercel Analytics / first-party telemetry
+- Severity: High
+- Evidence: first-time visitors were assigned `granted` for Google analytics, advertising storage,
+  ad-user-data, and ad-personalization before interacting with the consent banner. GA, Vercel
+  Analytics, first-party activity events, anonymous/session identifiers, and engaged-time
+  heartbeats also ran independently of the saved choice. Global Privacy Control was not checked
+  despite the privacy policy saying it is honored. [Google documents denied-until-granted Consent
+  Mode initialization](https://developers.google.com/tag-platform/security/guides/consent), and
+  [current ICO guidance](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/online-tracking/consent-or-pay/privacy-by-design/)
+  says non-essential storage must not run before consent.
+- Fix: default every optional Google consent type to `denied` before any tag, enable ads-data
+  redaction, require an explicit grant before mounting GA or Vercel Analytics, and gate all
+  first-party events, page views, and heartbeats on the same choice. Preserve essential practice
+  storage and limited non-personalized advertising, honor rejection immediately and across reloads,
+  honor Global Privacy Control over a stored grant, and retain the choice in memory if browser
+  storage is blocked.
+- Regression coverage: `src/lib/consent.test.js`, `src/components/ConsentManager.test.jsx`, and
+  `src/lib/analytics.test.js` cover default denial, explicit grant/reject, saved denial, storage
+  failure, GPC override, pre-tag ordering, ads-data redaction, Vercel suppression, Google consent
+  updates, and zero analytics identifiers or requests without a grant.
+- Commit: `Require consent before optional analytics`
+- Verification: 16 focused consent/analytics tests, the complete current-worktree
+  50-file/263-test Vitest suite, ESLint, the 140-file analytics audit, and the 528-page production
+  build. Deployed HTML contained the denied-until-granted bootstrap and ads-data redaction but no
+  server-rendered GA or Vercel loader. Live rejection/reload QA retained AdSense for limited ads
+  while loading zero GA/Vercel scripts and producing zero first-party events. Explicit acceptance
+  immediately loaded exactly one GA and one Vercel script; the same behavior survived reload, and
+  the live event ledger began a new anonymous session with the accept interaction followed by page
+  views.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
