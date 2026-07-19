@@ -1739,6 +1739,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   with a real passage slug but no credentials returned HTTP 401 before storage, limiter, quota, or
   OpenAI work. No recording, score, attempt, quota, or account was created or changed.
 
+## CA-078 — Speaking audio controls had ambiguous and stale accessible names
+
+- Status: `FIXED`
+- Area: Speaking practice / examiner audio / accessibility
+- Severity: Medium
+- Evidence: live 390×844 browser QA exposed five Part 1 audio buttons with the identical accessible
+  name `Play examiner question`, so screen-reader users could not identify which prompt a control
+  would play. The fixed label also continued to say `Play` while the visible control changed to
+  Pause or Loading.
+- Fix: identify every list control by its question number and full prompt, keep the cue-card
+  control's specific context, and derive the accessible action from disabled, loading, playing, or
+  idle state.
+- Regression coverage: a pure label contract used by the production page tests unique multi-item
+  question names plus loading, pause, cue-card, and unavailable states.
+- Commit: `649d29d` (`Name every Speaking audio control`)
+- Verification: focused 2-file/5-test Speaking label and SEO coverage, the complete
+  current-worktree 69-file/414-test Vitest suite, ESLint, the 152-file analytics audit, and the
+  528-page production build passed. Vercel deployed the exact commit successfully. Fresh 390×844
+  production browser QA exposed five unique button names containing their question number and full
+  text, with a 390px document width inside the 390px viewport. No audio, microphone, authentication,
+  storage, scoring, or quota action was triggered.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
