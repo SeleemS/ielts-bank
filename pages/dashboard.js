@@ -15,6 +15,7 @@ import { LoadingState, SignedOutState, ErrorState } from '../src/components/dash
 import { buildDashboardData, formatBand, getInitials, SKILL_META } from '../src/components/dashboard/utils';
 import LearningInsights from '../src/components/dashboard/LearningInsights';
 import { isPremiumActive } from '../src/lib/usePlan';
+import BaselineCard from '../src/components/estimator/BaselineCard';
 
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
@@ -248,6 +249,7 @@ function DashboardBody({ user, signOut }) {
           <>
             {!data.hasData && <EmptyNudge />}
             {!isPremium && <FreeUpgradeCard examDate={profile.exam_date || profile.prefs?.examDate} />}
+            <BaselineCard />
             <StatsOverview data={data} weeklyGoal={weeklyGoal} />
             <BandTrend skills={data.skills} targetBand={targetBand} isPremium={isPremium} />
             <LearningInsights data={data} targetBand={targetBand} />

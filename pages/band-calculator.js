@@ -333,6 +333,17 @@ export default function BandCalculator() {
               </p>
             </div>
 
+            <div className="mb-12 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-950">
+              <h2 className="text-lg font-bold">Haven&apos;t taken a full test yet?</h2>
+              <p className="mt-2 text-sm leading-6">
+                Take the free 15-minute Band Estimator to answer real Reading and Listening
+                questions and get a four-skill starting range.
+              </p>
+              <NextLink href="/band-estimator" className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-emerald-800 no-underline hover:underline">
+                Estimate my band <ArrowRight className="h-4 w-4" />
+              </NextLink>
+            </div>
+
             {/* ===================== CONVERSION TABLES ===================== */}
             <section className="mb-12">
               <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground">

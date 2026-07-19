@@ -16,6 +16,7 @@ const PRACTICE_LINKS = [
 ];
 
 const TOOLS_LINKS = [
+  { label: 'Band Estimator', href: '/band-estimator' },
   { label: 'Writing Checker', href: '/ielts-writing-checker' },
   { label: 'Band Calculator', href: '/band-calculator' },
 ];

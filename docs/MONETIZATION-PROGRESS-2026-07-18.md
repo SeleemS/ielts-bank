@@ -36,6 +36,7 @@ Last updated: 2026-07-19
 - Dashboard upsell `IMPLEMENTED` — Overview membership pitch and Writing/Speaking trend-specific locked states.
 - Calculator/blog CTAs `IMPLEMENTED` — result-level Writing checker CTA and one product CTA above every blog newsletter.
 - Regional display `IMPLEMENTED` — trusted server geography controls visible regional prices; the client cannot select PPP eligibility.
+- Band Estimator `VERIFIED` — anonymous 20-question Reading/Listening diagnostic, honest Writing/Speaking ranges, local resume/baseline persistence, dashboard hook, analytics, SEO/FAQ schema, launch article, and sitewide links; mobile production-browser flow completed with zero console errors.
 
 ## Days 60–90
 
@@ -47,15 +48,20 @@ Last updated: 2026-07-19
 
 ## External owner checklist
 
-1. `OWNER` — confirm all eight Stripe lookup-key prices exist: monthly, six-month, annual, and Exam Pass, each global and `_ppp`.
-2. `OWNER` — confirm the Stripe webhook is exactly `https://www.ielts-bank.com/api/webhooks/stripe`, includes `invoice.paid`, and recent deliveries are green.
-3. `OWNER` — confirm Stripe Radar and `STRIPE_AUTOMATIC_TAX=1`.
+1. `OWNER` — create the two missing Exam Pass lookup-key prices. A live read-only check confirmed the other six global/PPP prices and amounts.
+2. `OWNER` — add `invoice.paid` to the enabled Stripe events. The exact live URL is correct and enabled; all other required event types are present.
+3. `OWNER` — finish Stripe Tax setup (`pending` in the live account), confirm Radar, and add `STRIPE_AUTOMATIC_TAX=1` to Vercel Production.
 4. `OWNER` — create a 40%-off Monthly coupon and set `STRIPE_WINBACK_COUPON_ID`.
 5. `OWNER` — verify the Resend sending domain and set `EMAIL_FROM`; confirm `RESEND_API_KEY`.
-6. `OWNER` — change the apex-to-www redirect to permanent 308 in Vercel.
+6. `OWNER` — change the apex-to-www redirect from the verified current 307 to permanent 308 in Vercel.
 7. `OWNER` — verify Supabase OTP templates render `{{ .Token }}` and rotate the previously exposed service-role/database credentials.
 
 ## Review checkpoints
 
-- Checkpoint 1: `git diff --check` passed; ESLint passed with zero warnings; Vitest passed 158/158 after expanding billing mocks and adding PPP/Exam Pass assertions.
-- Final build, browser/API QA, migration/live database verification, remote publication, and post-push checks are pending.
+- Checkpoint 1: `git diff --check` passed; ESLint passed with zero warnings; Vitest passed after expanding billing mocks and adding PPP/Exam Pass assertions.
+- Checkpoint 2: review fixed required `anon_id` values on billing telemetry and preserved realtime quota through a pause while enforcing entitlement separately.
+- Checkpoint 3: integrated and completed the linked Band Estimator plan; its 49 focused tests pass inside the full suite.
+- Final local verification: `git diff --check`, ESLint, 22 test files / 224 tests, and a Next 15.5.20 production build with 527 static pages all pass.
+- Browser QA: 375px anonymous estimator flow reached a 6.0 result with skipped measured sections and completed W/S ranges; contextual Writing pricing rendered all four plans, trust content, guarantee, and comparison table; both pages had zero browser console warnings/errors.
+- API QA: unsigned Writing, Premium mock payload, and checkout reconciliation all reject with `401`; unauthorized lifecycle cron rejects with `401`; invalid unsubscribe token rejects with `400`; static mock HTML is metadata-only.
+- Production database migration: isolated dry-run contains exactly `20260719010159_monetization_funnel_and_free_writing_score.sql`; production apply is pending explicit live-schema approval.
