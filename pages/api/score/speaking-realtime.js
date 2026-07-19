@@ -113,6 +113,30 @@ export default async function handler(req, res) {
     });
   }
 
+  // --- Validate transcript before mutating rate-limit counters -------------
+  const body = req.body || {};
+  const mode = typeof body.mode === 'string' ? body.mode : 'mock';
+  const transcript = Array.isArray(body.transcript) ? body.transcript : [];
+  const turns = transcript
+    .filter(
+      (t) =>
+        t &&
+        (t.role === 'examiner' || t.role === 'candidate') &&
+        typeof t.text === 'string' &&
+        t.text.trim()
+    )
+    .map((t) => ({ role: t.role, text: t.text.trim() }));
+
+  const candidateWords = turns
+    .filter((t) => t.role === 'candidate')
+    .reduce((n, t) => n + countWords(t.text), 0);
+  if (candidateWords < MIN_CANDIDATE_WORDS) {
+    return res.status(422).json({
+      error:
+        'There is not enough of your speech in this session to score fairly. Try a longer conversation with the examiner.',
+    });
+  }
+
   const dayKey = new Date().toISOString().slice(0, 10);
   const globalLimit = await checkLimit(
     'realtime-score-global',
@@ -139,30 +163,6 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
     }
     return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
-  }
-
-  // --- Validate transcript -------------------------------------------------
-  const body = req.body || {};
-  const mode = typeof body.mode === 'string' ? body.mode : 'mock';
-  const transcript = Array.isArray(body.transcript) ? body.transcript : [];
-  const turns = transcript
-    .filter(
-      (t) =>
-        t &&
-        (t.role === 'examiner' || t.role === 'candidate') &&
-        typeof t.text === 'string' &&
-        t.text.trim()
-    )
-    .map((t) => ({ role: t.role, text: t.text.trim() }));
-
-  const candidateWords = turns
-    .filter((t) => t.role === 'candidate')
-    .reduce((n, t) => n + countWords(t.text), 0);
-  if (candidateWords < MIN_CANDIDATE_WORDS) {
-    return res.status(422).json({
-      error:
-        'There is not enough of your speech in this session to score fairly. Try a longer conversation with the examiner.',
-    });
   }
 
   const rendered = turns

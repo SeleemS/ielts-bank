@@ -52,11 +52,12 @@ function makeReq({
   method = 'POST',
   origin = 'https://www.ielts-bank.com',
   authorization = 'Bearer token',
+  body = {},
 } = {}) {
   return {
     method,
     headers: { origin, authorization },
-    body: {},
+    body,
     socket: { remoteAddress: '127.0.0.1' },
   };
 }
@@ -165,7 +166,7 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.planRow = { plan: 'premium', plan_status: 'active' };
     state.rateLimitError = new Error('limiter unavailable');
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const res = await callRoute();
+    const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls).toHaveLength(1);
@@ -176,7 +177,7 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.planRow = { plan: 'premium', plan_status: 'active' };
     state.rateLimitReject = new Error('network unavailable');
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const res = await callRoute();
+    const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls).toHaveLength(1);
@@ -186,7 +187,7 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.authUser = { id: 'user-1' };
     state.planRow = { plan: 'premium', plan_status: 'active' };
     state.rateLimits['realtime-score-global'] = false;
-    const res = await callRoute();
+    const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls).toHaveLength(1);
@@ -196,7 +197,7 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.authUser = { id: 'user-1' };
     state.planRow = { plan: 'premium', plan_status: 'active' };
     state.rateLimits['realtime-score-ip'] = false;
-    const res = await callRoute();
+    const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(429);
     expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
@@ -204,4 +205,33 @@ describe('POST /api/score/speaking-realtime access gate', () => {
       'realtime-score-ip',
     ]);
   });
+
+  it('rejects an unscorable transcript before consuming limiter allowance', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+
+    const res = await callRoute({
+      body: {
+        transcript: [{ role: 'candidate', text: 'This answer is too short.' }],
+      },
+    });
+
+    expect(res.statusCode).toBe(422);
+    expect(state.rpcCalls).toEqual([]);
+  });
 });
+
+function validTranscriptBody() {
+  return {
+    mode: 'mock',
+    transcript: [
+      {
+        role: 'candidate',
+        text: Array.from(
+          { length: 40 },
+          (_, index) => `candidate${index}`
+        ).join(' '),
+      },
+    ],
+  };
+}
