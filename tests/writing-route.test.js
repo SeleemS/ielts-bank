@@ -6,16 +6,19 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 
 const state = {
   authUser: null,
+  authReject: null,
   rpcCalls: [],
 };
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     auth: {
-      getUser: async () =>
-        state.authUser
+      getUser: async () => {
+        if (state.authReject) throw state.authReject;
+        return state.authUser
           ? { data: { user: state.authUser }, error: null }
-          : { data: null, error: { message: 'invalid token' } },
+          : { data: null, error: { message: 'invalid token' } };
+      },
     },
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
@@ -79,7 +82,19 @@ function makeRes() {
 describe('POST /api/score/writing account and quota safety', () => {
   beforeEach(() => {
     state.authUser = null;
+    state.authReject = null;
     state.rpcCalls = [];
+    vi.restoreAllMocks();
+  });
+
+  it('rejects missing authentication before consuming quota', async () => {
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ userToken: '' }), res);
+
+    expect(res.statusCode).toBe(401);
+    expect(state.rpcCalls).toEqual([]);
   });
 
   it('rejects a valid anonymous-auth token before consuming quota', async () => {
@@ -90,6 +105,19 @@ describe('POST /api/score/writing account and quota safety', () => {
     await handler(makeReq(), res);
 
     expect(res.statusCode).toBe(401);
+    expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('returns a service error when auth verification rejects', async () => {
+    state.authReject = new Error('auth service unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq(), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/temporarily unavailable/i);
     expect(state.rpcCalls).toEqual([]);
   });
 

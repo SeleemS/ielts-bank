@@ -98,21 +98,17 @@ async function refundQuota(userId, quota) {
 // a 401 upstream.
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
-  try {
-    const authz = req.headers.authorization || req.headers.Authorization || '';
-    const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
-    if (!match) return null;
-    const token = match[1].trim();
-    if (!token) return null;
-    const { data, error } = await getAdmin().auth.getUser(token);
-    if (error || !data || !data.user) return null;
-    // Supabase anonymous-auth tokens are valid JWTs, but the lifetime sample
-    // is specifically the reward for linking an email/OAuth account.
-    if (data.user.is_anonymous === true || !data.user.email) return null;
-    return data.user.id;
-  } catch {
-    return null;
-  }
+  const authz = req.headers.authorization || req.headers.Authorization || '';
+  const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
+  if (!match) return null;
+  const token = match[1].trim();
+  if (!token) return null;
+  const { data, error } = await getAdmin().auth.getUser(token);
+  if (error || !data || !data.user) return null;
+  // Supabase anonymous-auth tokens are valid JWTs, but the lifetime sample
+  // is specifically the reward for linking an email/OAuth account.
+  if (data.user.is_anonymous === true || !data.user.email) return null;
+  return data.user.id;
 }
 
 // Persist a completed writing score for a signed-in user. Because scores.attempt_id
@@ -308,7 +304,15 @@ export default async function handler(req, res) {
       .json({ error: 'Requests from this origin are not allowed.' });
   }
 
-  const userId = await resolveUserId(req);
+  let userId;
+  try {
+    userId = await resolveUserId(req);
+  } catch (error) {
+    console.error('writing auth check failed:', error.message);
+    return res
+      .status(503)
+      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
   if (!userId) {
     return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
   }
