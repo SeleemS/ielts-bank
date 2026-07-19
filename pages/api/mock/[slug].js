@@ -2,7 +2,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { getMockTest } from '../../../lib/supabase';
-import { fetchIsPremium } from '../../../lib/premium';
+import { fetchPremiumStatus } from '../../../lib/premium';
 
 function getAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,10 +18,25 @@ export default async function handler(req, res) {
   }
   const match = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || '').trim());
   if (!match) return res.status(401).json({ error: 'Sign in first.' });
-  const admin = getAdmin();
-  const { data, error } = await admin.auth.getUser(match[1].trim());
+
+  let admin;
+  let data;
+  let error;
+  try {
+    admin = getAdmin();
+    ({ data, error } = await admin.auth.getUser(match[1].trim()));
+  } catch (authError) {
+    console.error('protected mock auth failed:', authError.message);
+    return res.status(503).json({ error: 'Could not verify access. Please try again.' });
+  }
   if (error || !data?.user) return res.status(401).json({ error: 'Sign in first.' });
-  if (!(await fetchIsPremium(admin, data.user.id))) {
+
+  const premium = await fetchPremiumStatus(admin, data.user.id);
+  if (premium.error) {
+    console.error('protected mock entitlement failed:', premium.error.message);
+    return res.status(503).json({ error: 'Could not verify access. Please try again.' });
+  }
+  if (!premium.isPremium) {
     return res.status(402).json({ error: 'Premium is required.', reason: 'premium_required' });
   }
 
