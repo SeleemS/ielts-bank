@@ -66,7 +66,11 @@ vi.mock('@supabase/supabase-js', () => ({
             async list(prefix, options) {
               state.listCalls.push({ bucket, prefix, options });
               if (state.listRejects[prefix]) throw state.listRejects[prefix];
-              return state.listResponses[prefix] || { data: [], error: null };
+              const responses = state.listResponses[prefix];
+              if (Array.isArray(responses)) {
+                return responses.shift() || { data: [], error: null };
+              }
+              return responses || { data: [], error: null };
             },
             async remove(paths) {
               state.removeCalls.push({ bucket, paths });
@@ -256,6 +260,27 @@ describe('GET /api/cron/cleanup', () => {
     expect(state.removeCalls).toEqual([]);
   });
 
+  it('does not partially delete a folder when a later storage page fails', async () => {
+    state.users = [{ id: 'user-1' }];
+    state.listResponses['user-1'] = [
+      {
+        data: Array.from({ length: 1000 }, (_, index) => ({
+          name: `expired-${index}.webm`,
+          created_at: '2020-01-01T00:00:00.000Z',
+        })),
+        error: null,
+      },
+      { data: null, error: { message: 'second page unavailable' } },
+    ];
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody).toEqual({ error: 'Upload cleanup failed.' });
+    expect(state.listCalls).toHaveLength(2);
+    expect(state.removeCalls).toEqual([]);
+  });
+
   it('fails the run when removal of an expired recording fails', async () => {
     state.users = [{ id: 'user-1' }];
     state.listResponses['user-1'] = {
@@ -312,12 +337,80 @@ describe('GET /api/cron/cleanup', () => {
     expect(state.rateDeletes[0].column).toBe('window_start');
     expect(Date.parse(state.rateDeletes[0].cutoff)).toBeGreaterThan(0);
     expect(state.listCalls).toEqual([
-      { bucket: 'speaking-uploads', prefix: 'user-1', options: { limit: 1000 } },
-      { bucket: 'speaking-uploads', prefix: 'user-2', options: { limit: 1000 } },
+      {
+        bucket: 'speaking-uploads',
+        prefix: 'user-1',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+      {
+        bucket: 'speaking-uploads',
+        prefix: 'user-2',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
     ]);
     expect(state.removeCalls).toEqual([
       { bucket: 'speaking-uploads', paths: ['user-1/old-a.webm'] },
       { bucket: 'speaking-uploads', paths: ['user-2/old-b.webm'] },
     ]);
+  });
+
+  it('lists every storage page and removes expired recordings in bounded batches', async () => {
+    state.users = [{ id: 'user-1' }];
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      name: `expired-${String(index).padStart(4, '0')}.webm`,
+      created_at: '2020-01-01T00:00:00.000Z',
+    }));
+    state.listResponses['user-1'] = [
+      { data: firstPage, error: null },
+      {
+        data: [
+          { name: 'expired-1000.webm', updated_at: '2020-01-01T00:00:00.000Z' },
+          { name: 'expired-1001.webm', created_at: '2020-01-01T00:00:00.000Z' },
+          { name: 'current.webm', created_at: '2099-01-01T00:00:00.000Z' },
+        ],
+        error: null,
+      },
+    ];
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 1002 });
+    expect(state.listCalls).toEqual([
+      {
+        bucket: 'speaking-uploads',
+        prefix: 'user-1',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+      {
+        bucket: 'speaking-uploads',
+        prefix: 'user-1',
+        options: {
+          limit: 1000,
+          offset: 1000,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+    ]);
+    expect(state.removeCalls).toHaveLength(2);
+    expect(state.removeCalls[0].paths).toHaveLength(1000);
+    expect(state.removeCalls[0].paths[0]).toBe('user-1/expired-0000.webm');
+    expect(state.removeCalls[0].paths[999]).toBe('user-1/expired-0999.webm');
+    expect(state.removeCalls[1]).toEqual({
+      bucket: 'speaking-uploads',
+      paths: ['user-1/expired-1000.webm', 'user-1/expired-1001.webm'],
+    });
   });
 });

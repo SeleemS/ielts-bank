@@ -2,6 +2,9 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 
+const STORAGE_PAGE_SIZE = 1000;
+const STORAGE_REMOVE_BATCH_SIZE = 1000;
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -41,20 +44,31 @@ export default async function handler(req, res) {
       .limit(5000);
     if (userError) throw userError;
     for (const user of users || []) {
-      const { data: files, error: listError } = await admin.storage
-        .from('speaking-uploads')
-        .list(user.id, { limit: 1000 });
-      if (listError) throw listError;
-      const old = (files || [])
-        .filter(
-          (file) =>
-            Date.parse(file.created_at || file.updated_at || '') < audioCutoff
-        )
-        .map((file) => `${user.id}/${file.name}`);
-      if (old.length) {
-        const { error } = await admin.storage.from('speaking-uploads').remove(old);
+      const bucket = admin.storage.from('speaking-uploads');
+      const old = [];
+      for (let offset = 0; ; offset += STORAGE_PAGE_SIZE) {
+        const { data, error: listError } = await bucket.list(user.id, {
+          limit: STORAGE_PAGE_SIZE,
+          offset,
+          sortBy: { column: 'name', order: 'asc' },
+        });
+        if (listError) throw listError;
+        const files = data || [];
+        old.push(
+          ...files
+            .filter(
+              (file) =>
+                Date.parse(file.created_at || file.updated_at || '') < audioCutoff
+            )
+            .map((file) => `${user.id}/${file.name}`)
+        );
+        if (files.length < STORAGE_PAGE_SIZE) break;
+      }
+      for (let index = 0; index < old.length; index += STORAGE_REMOVE_BATCH_SIZE) {
+        const batch = old.slice(index, index + STORAGE_REMOVE_BATCH_SIZE);
+        const { error } = await bucket.remove(batch);
         if (error) throw error;
-        removed += old.length;
+        removed += batch.length;
       }
     }
   } catch (error) {
