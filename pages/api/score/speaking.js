@@ -27,6 +27,10 @@ import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { fetchPremiumStatus } from '../../../lib/premium';
+import {
+  buildSpeakingScoreSchema,
+  isValidSpeakingBand,
+} from '../../../lib/speakingScoreSchema';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -262,10 +266,6 @@ function roundHalfBand(a, b, c) {
   return Math.round(avg * 2) / 2;
 }
 
-function isBand(n) {
-  return typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 9;
-}
-
 // ---------------------------------------------------------------------------
 // Examiner rubric (system prompt) — THREE transcript-assessable criteria only.
 // ---------------------------------------------------------------------------
@@ -296,51 +296,6 @@ OVERALL BAND RULE: overallBand = the average of the THREE criterion bands, round
 FEEDBACK STYLE: Be specific and constructive. In each criterion's feedback, name concrete strengths and weaknesses and quote or paraphrase actual phrases from the transcript as evidence. The summary should give an honest overall picture. improvements must be concrete, actionable next steps the candidate can practise.
 
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
-}
-
-function buildJsonSchema() {
-  const criterion = {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      band: { type: 'number', description: 'Band 0-9, halves allowed' },
-      feedback: {
-        type: 'string',
-        description: 'Evidence-based feedback citing the transcript',
-      },
-    },
-    required: ['band', 'feedback'],
-  };
-  return {
-    name: 'ielts_speaking_assessment',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        overallBand: {
-          type: 'number',
-          description: 'Average of the three criteria, rounded to nearest 0.5',
-        },
-        criteria: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            fluencyCoherence: criterion,
-            lexicalResource: criterion,
-            grammaticalRange: criterion,
-          },
-          required: ['fluencyCoherence', 'lexicalResource', 'grammaticalRange'],
-        },
-        summary: { type: 'string' },
-        improvements: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-      },
-      required: ['overallBand', 'criteria', 'summary', 'improvements'],
-    },
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -657,7 +612,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       ],
       responseFormat: {
         type: 'json_schema',
-        json_schema: buildJsonSchema(),
+        json_schema: buildSpeakingScoreSchema(),
       },
     });
 
@@ -694,7 +649,11 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     const fc = c.fluencyCoherence || {};
     const lr = c.lexicalResource || {};
     const gr = c.grammaticalRange || {};
-    if (!isBand(fc.band) || !isBand(lr.band) || !isBand(gr.band)) {
+    if (
+      !isValidSpeakingBand(fc.band) ||
+      !isValidSpeakingBand(lr.band) ||
+      !isValidSpeakingBand(gr.band)
+    ) {
       console.error('OpenAI returned invalid bands', JSON.stringify(c).slice(0, 300));
       await refundQuota(userId, quota);
       return res.status(502).json({
