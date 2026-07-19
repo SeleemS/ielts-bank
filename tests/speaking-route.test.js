@@ -18,6 +18,14 @@ const state = {
   rateLimits: {},
   rateLimitErrors: {},
   rateLimitRejects: {},
+  quotaResult: {
+    allowed: true,
+    free: false,
+    remaining: 0,
+    consumedAt: '2026-07-19T12:00:00.000Z',
+  },
+  quotaError: null,
+  quotaReject: null,
   rpcCalls: [],
   removedPaths: [],
 };
@@ -46,14 +54,10 @@ vi.mock('@supabase/supabase-js', () => ({
         };
       }
       if (name === 'consume_ai_score') {
+        if (state.quotaReject) throw state.quotaReject;
         return {
-          data: {
-            allowed: true,
-            free: false,
-            remaining: 0,
-            consumedAt: '2026-07-19T12:00:00.000Z',
-          },
-          error: null,
+          data: state.quotaResult,
+          error: state.quotaError,
         };
       }
       if (name === 'refund_ai_score') return { data: true, error: null };
@@ -151,6 +155,14 @@ describe('POST /api/score/speaking quota safety', () => {
     state.rateLimits = {};
     state.rateLimitErrors = {};
     state.rateLimitRejects = {};
+    state.quotaResult = {
+      allowed: true,
+      free: false,
+      remaining: 0,
+      consumedAt: '2026-07-19T12:00:00.000Z',
+    };
+    state.quotaError = null;
+    state.quotaReject = null;
     state.rpcCalls = [];
     state.removedPaths = [];
     vi.restoreAllMocks();
@@ -212,6 +224,7 @@ describe('POST /api/score/speaking quota safety', () => {
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
   it('fails closed when the global limiter rejects', async () => {
@@ -221,6 +234,7 @@ describe('POST /api/score/speaking quota safety', () => {
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
   it('returns 429 only for verified global exhaustion', async () => {
@@ -229,6 +243,7 @@ describe('POST /api/score/speaking quota safety', () => {
 
     expect(res.statusCode).toBe(429);
     expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
   it('fails closed instead of opening cost access on a per-user limiter error', async () => {
@@ -241,6 +256,7 @@ describe('POST /api/score/speaking quota safety', () => {
       'speaking-score-global',
       'speaking-score',
     ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
   it('returns 429 for a verified per-user limit', async () => {
@@ -252,6 +268,52 @@ describe('POST /api/score/speaking quota safety', () => {
       'speaking-score-global',
       'speaking-score',
     ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('cleans the upload when quota verification returns an error', async () => {
+    state.quotaError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('cleans the upload when quota verification rejects', async () => {
+    state.quotaReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('cleans the upload when the verified daily quota is exhausted', async () => {
+    state.quotaResult = {
+      allowed: false,
+      remaining: 0,
+      reason: 'daily_cap',
+      resetsAt: '2026-07-20T00:00:00.000Z',
+    };
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(402);
+    expect(res.jsonBody.reason).toBe('daily_cap');
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('preserves the upload only for the Premium checkout handoff', async () => {
+    state.quotaResult = {
+      allowed: false,
+      remaining: 0,
+      reason: 'premium_required',
+    };
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(402);
+    expect(res.jsonBody.reason).toBe('premium_required');
+    expect(state.removedPaths).toEqual([]);
   });
 
   it('refunds the consumed daily unit when scoring cannot start', async () => {

@@ -436,11 +436,13 @@ export default async function handler(req, res) {
   );
   if (globalLimit.error) {
     console.error('rate-limit check failed:', globalLimit.error.message);
+    await cleanupRecording(audioPath);
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!globalLimit.allowed) {
+    await cleanupRecording(audioPath);
     return res.status(429).json({
       error:
         'AI scoring is temporarily unavailable due to high demand. Please try again later.',
@@ -455,11 +457,13 @@ export default async function handler(req, res) {
   );
   if (userLimit.error) {
     console.error('rate-limit check failed:', userLimit.error.message);
+    await cleanupRecording(audioPath);
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!userLimit.allowed) {
+    await cleanupRecording(audioPath);
     return res.status(429).json({
       error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
     });
@@ -470,9 +474,14 @@ export default async function handler(req, res) {
     quota = await consumeQuota(userId);
   } catch (error) {
     console.error('quota check failed:', error.message);
+    await cleanupRecording(audioPath);
     return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!quota?.allowed) {
+    // Preserve the upload only for the intentional upgrade handoff: the client
+    // stores this exact path and resumes scoring after purchase. Every other
+    // denial is terminal for this request and must not orphan private audio.
+    if (quota?.reason !== 'premium_required') await cleanupRecording(audioPath);
     return res.status(402).json({
       error:
         quota?.reason === 'premium_required'
