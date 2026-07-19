@@ -1553,6 +1553,27 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin valid payload, and HTTP 400 for a
   same-origin invalid payload. No live rate-limit or activity mutation occurred.
 
+## CA-070 — Newsletter writes failed open on resolved limiter errors
+
+- Status: `FIXED`
+- Area: Newsletter subscription / abuse prevention / database availability
+- Severity: Medium
+- Evidence: the subscription handler intended to fail closed when its rate limiter was unavailable,
+  but `withinLimit` returned `true` when the RPC resolved with an error. A database outage could
+  therefore bypass the only per-IP write control and permit unbounded public upserts.
+- Fix: throw resolved limiter errors into the handler's existing fail-closed HTTP 503 path. A
+  verified `data === false` remains the only condition that returns HTTP 429, and successful
+  allowance continues to upsert without revealing subscriber existence.
+- Regression coverage: new route tests cover returned limiter errors, rejected calls, verified
+  denials, and successful normalized-email upserts. Both outage forms require HTTP 503 and zero
+  table writes.
+- Commit: `63ad9f4` (`Fail closed on newsletter limiter errors`)
+- Verification: focused 4-test newsletter route coverage, the complete current-worktree
+  68-file/396-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin valid payload, and HTTP 400 for a
+  same-origin invalid payload. No live limiter or subscriber mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
