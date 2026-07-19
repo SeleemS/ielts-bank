@@ -2279,6 +2279,47 @@ False positives are kept in the investigation notes so they are not rediscovered
   root-level objects. The authorized mutating cleanup was not invoked, so no database, recording,
   account, payment, consent, content, or provider state changed.
 
+## CA-097 — Privileged profile deletion could orphan a live Auth account and erase dependent data
+
+- Status: `FIXED`
+- Area: Auth / profile integrity / database deletion safety
+- Severity: High
+- Evidence: the documented 1:1 `auth.users` → `public.users` invariant was false in production:
+  45 Auth accounts existed but only 43 profile rows. Both unmatched accounts were confirmed,
+  non-anonymous users; one owned a current private recording. Neither had surviving quota, attempt,
+  purchase-email, or billing-event rows, although they had 47 activity events in aggregate. The
+  enabled signup trigger had successfully mirrored all eight newer accounts after the latest
+  orphan, isolating the cause to privileged/out-of-band profile deletion rather than an active
+  signup failure. Deleting `public.users` also cascades through quota and practice foreign keys, so
+  such an operation could silently erase account state while leaving Auth alive.
+- Fix: add an idempotent migration that backfills every missing profile from authoritative Auth
+  metadata with the original Auth timestamps, restores missing quota rows, and installs a hardened
+  `BEFORE DELETE` guard. A direct profile delete is rejected with SQLSTATE 23503 while the Auth
+  owner exists. Proper account deletion through `auth.users` remains allowed and cascades normally.
+  The security-definer trigger function uses an empty search path and has no direct execution grant
+  for `anon`, `authenticated`, or `service_role`.
+- Regression coverage: a new four-case migration contract suite requires the idempotent profile and
+  quota backfills, Auth-derived anonymity and timestamps, the conditional 23503 guard, exact trigger
+  wiring, empty search path, and privilege revocation. The committed apply script performs the
+  migration and its integrity/metadata assertions in one transaction and supports a guaranteed-
+  rollback dry run. The exact migration passed that dry run before publication. A separate
+  rollback-only temporary-table integration proved that parent/Auth deletion still cascades while
+  direct child/profile deletion is blocked.
+- Commit: `40b6ac7` (`Protect auth profile mirror rows`)
+- Verification: the focused four-test migration suite, the complete 78-file/488-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_GyDiKQ3c9ixgZqs3MnnNzcXadLX1` reached promoted
+  `READY` from exact Git SHA `40b6ac77642f72e38516ef41189baee629f07f7c`. The production
+  migration committed with zero remaining auth/profile gaps, zero profile/quota gaps, and the guard
+  enabled. A disposable production Auth account then proved synchronous profile/quota creation,
+  direct-delete rejection with 23503, preservation after that rejection, proper Auth cascade
+  deletion, and zero residual Auth, profile, quota, or lifecycle rows. Final read-only security
+  checks confirmed RLS remains enabled, no client DELETE policy exists, the trigger is enabled, and
+  no API role can directly execute its function. The Supabase advisor connector was permission-
+  blocked, so equivalent live catalog/privilege checks were run directly. The only customer-state
+  changes were restoring the two missing profile and quota rows; no billing, payment, email,
+  recording, attempt, entitlement, consent, or content state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
