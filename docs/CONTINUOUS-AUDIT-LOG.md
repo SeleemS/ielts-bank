@@ -213,6 +213,20 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit, generated HTML inspection, and the 527-page production build. Live production returned
   every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
+## CA-012 — About-page links had no controlled share preview
+
+- Status: `IN VERIFICATION`
+- Area: About / trust content / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: `/about` had canonical title and description metadata but no Open Graph or Twitter
+  fields, leaving shared trust/mission links without a controlled preview.
+- Fix: add a shared About SEO contract, a mission-specific 1200×630 card, complete Open Graph
+  metadata, and matching Twitter large-card fields.
+- Regression coverage: `lib/aboutSeo.test.js` verifies canonical content and every decoded dynamic
+  image parameter.
+- Commit: `Add About page share metadata`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

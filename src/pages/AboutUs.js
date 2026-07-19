@@ -5,18 +5,30 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
+import { ABOUT_SEO } from '../../lib/aboutSeo';
 
 const AboutUs = () => {
   return (
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
-        <title>About Us | IELTS-Bank</title>
-        <meta
-          name="description"
-          content="Learn about IELTS-Bank — free IELTS practice content plus optional Premium AI feedback, mock tests and study guides."
-        />
+        <title>{ABOUT_SEO.title}</title>
+        <meta name="description" content={ABOUT_SEO.description} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.ielts-bank.com/about" />
+        <link rel="canonical" href={ABOUT_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={ABOUT_SEO.title} />
+        <meta property="og:description" content={ABOUT_SEO.description} />
+        <meta property="og:url" content={ABOUT_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={ABOUT_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={ABOUT_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ABOUT_SEO.title} />
+        <meta name="twitter:description" content={ABOUT_SEO.description} />
+        <meta name="twitter:image" content={ABOUT_SEO.ogImage} />
       </Head>
       <Navbar />
 
