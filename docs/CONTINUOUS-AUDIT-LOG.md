@@ -1422,6 +1422,27 @@ False positives are kept in the investigation notes so they are not rediscovered
   cross-origin POST, and HTTP 401 for a same-origin unauthenticated POST. No live limiter, OpenAI,
   or persistence mutation occurred.
 
+## CA-064 — Realtime feedback counts were descriptive rather than enforced
+
+- Status: `FIXED`
+- Area: Realtime examiner / Structured Outputs / feedback completeness
+- Severity: Medium
+- Evidence: the scoring prompt promised 1–3 strengths and 1–3 improvements for every criterion,
+  plus 3–5 top-level practice actions, but its strict JSON schema placed no bounds on those arrays.
+  A schema-valid response could therefore contain no actionable feedback or an excessive,
+  unscannable list despite the learner-facing contract.
+- Fix: enforce `minItems: 1` and `maxItems: 3` on every criterion's strengths and improvements,
+  and `minItems: 3` and `maxItems: 5` on the priority-action list at the Structured Output boundary.
+- Regression coverage: direct schema assertions cover both arrays for all three transcript-assessed
+  criteria and the top-level action list, while the full realtime route suite continues to verify
+  the schema is sent to OpenAI.
+- Commit: `91de2fe` (`Enforce realtime feedback counts`)
+- Verification: focused 16-test realtime route/schema coverage, the complete current-worktree
+  66-file/380-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated request. No live limiter, OpenAI, or persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
