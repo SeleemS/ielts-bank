@@ -474,6 +474,19 @@ describe('POST /api/billing/verify-session', () => {
     expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
   });
 
+  it('returns a retryable response when auth verification rejects', async () => {
+    mockState.authReject = new Error('auth service unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_valid' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/still processing/i);
+    expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
+  });
+
   it('rejects a completed checkout belonging to another account', async () => {
     mockState.authUser = { id: 'user-1' };
     mockState.retrievedSession = {

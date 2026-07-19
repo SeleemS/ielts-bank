@@ -21,9 +21,16 @@ function getAdmin() {
 
 async function resolveUser(req) {
   const match = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || '').trim());
-  if (!match) return null;
-  const { data, error } = await getAdmin().auth.getUser(match[1].trim());
-  return error ? null : data?.user || null;
+  if (!match) return { user: null, error: null };
+  try {
+    const { data, error } = await getAdmin().auth.getUser(match[1].trim());
+    return {
+      user: error ? null : data?.user || null,
+      error: null,
+    };
+  } catch (error) {
+    return { user: null, error };
+  }
 }
 
 export default async function handler(req, res) {
@@ -33,7 +40,11 @@ export default async function handler(req, res) {
   }
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
 
-  const user = await resolveUser(req);
+  const { user, error: authError } = await resolveUser(req);
+  if (authError) {
+    console.error('verify-session auth error:', authError.message);
+    return res.status(503).json({ error: 'Activation is still processing.' });
+  }
   if (!user) return res.status(401).json({ error: 'Sign in first.' });
 
   const sessionId =
