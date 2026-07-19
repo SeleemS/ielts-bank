@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Headphones, ListChecks, FileText, X } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Checkbox } from '../../../components/ui/checkbox';
+import { useDialogFocus } from '../../lib/dialogFocus';
 
 // One-time explainer shown when a user opens a Listening question. The parent
 // decides WHETHER to show it (see the pref logic in ListeningQuestion); this
@@ -26,14 +27,9 @@ const STEPS = [
   },
 ];
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 const ListeningIntroModal = ({ open, onClose }) => {
   const [dontShowAgain, setDontShowAgain] = React.useState(false);
-  const closeButtonRef = React.useRef(null);
   const dialogRef = React.useRef(null);
-  const previousFocusRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
   const dontShowAgainRef = React.useRef(dontShowAgain);
   onCloseRef.current = onClose;
@@ -43,44 +39,22 @@ const ListeningIntroModal = ({ open, onClose }) => {
     onCloseRef.current?.({ dontShowAgain: dontShowAgainRef.current });
   }, []);
 
-  // Escape, focus containment/restoration, and scroll lock while open.
+  useDialogFocus({
+    active: open,
+    containerRef: dialogRef,
+    onDismiss: close,
+    focusKey: 'listening-intro',
+  });
+
+  // Prevent the obscured page from scrolling while the dialog is open.
   React.useEffect(() => {
     if (!open) return undefined;
-    previousFocusRef.current = document.activeElement;
-    const dialog = dialogRef.current;
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        close();
-        return;
-      }
-      if (event.key !== 'Tab' || !dialog) return;
-      const focusable = Array.from(dialog.querySelectorAll(FOCUSABLE));
-      if (!focusable.length) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    (closeButtonRef.current || dialog)?.focus();
     return () => {
-      document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
-      previousFocusRef.current?.focus?.();
     };
-  }, [open, close]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -103,10 +77,10 @@ const ListeningIntroModal = ({ open, onClose }) => {
       />
       <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl sm:p-7">
         <button
-          ref={closeButtonRef}
           type="button"
           onClick={close}
           aria-label="Close"
+          data-dialog-initial-focus
           className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="h-4 w-4" />
