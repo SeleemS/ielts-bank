@@ -26,7 +26,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
-import { fetchIsPremium } from '../../../lib/premium';
+import { fetchPremiumStatus } from '../../../lib/premium';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -125,18 +125,14 @@ async function cleanupRecording(audioPath) {
 // here is a 401 upstream. Uses the Supabase auth API via the admin client.
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
-  try {
-    const authz = req.headers.authorization || req.headers.Authorization || '';
-    const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
-    if (!match) return null;
-    const token = match[1].trim();
-    if (!token) return null;
-    const { data, error } = await getAdmin().auth.getUser(token);
-    if (error || !data || !data.user) return null;
-    return data.user.id;
-  } catch {
-    return null;
-  }
+  const authz = req.headers.authorization || req.headers.Authorization || '';
+  const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
+  if (!match) return null;
+  const token = match[1].trim();
+  if (!token) return null;
+  const { data, error } = await getAdmin().auth.getUser(token);
+  if (error || !data || !data.user) return null;
+  return data.user.id;
 }
 
 // Fetch the passage (+ speaking detail) by slug via the service role, so the
@@ -381,7 +377,14 @@ export default async function handler(req, res) {
   // --- Premium gate BEFORE anything costly (2026-07-18: no free scores) ----
   // consume_ai_score also refuses free users; this route-level check keeps the
   // gate airtight regardless of DB migration rollout order.
-  if (!(await fetchIsPremium(getAdmin(), userId))) {
+  const premium = await fetchPremiumStatus(getAdmin(), userId);
+  if (premium.error) {
+    console.error('speaking entitlement failed:', premium.error.message);
+    return res
+      .status(503)
+      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!premium.isPremium) {
     return res.status(402).json({
       error: 'AI Speaking scoring is a Premium feature. Upgrade to get your answer scored.',
       reason: 'premium_required',
