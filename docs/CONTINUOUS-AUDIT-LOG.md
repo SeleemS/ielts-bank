@@ -2039,6 +2039,35 @@ False positives are kept in the investigation notes so they are not rediscovered
   recordings; no database, recording, account, payment, consent, content, or provider state
   changed.
 
+## CA-089 — Daily reports returned success when their system-of-record write failed
+
+- Status: `FIXED`
+- Area: Analytics / scheduled daily report / Supabase persistence
+- Severity: High
+- Evidence: the route explicitly defines `daily_reports` as its system of record, but a resolved
+  Supabase upsert error was only written to the server log. Execution then continued to the email
+  step and returned HTTP 200 with `{ok:true}` and the transient in-memory report. A database outage,
+  constraint regression, or permission failure could therefore produce a success signal—and
+  potentially an emailed report—while leaving no durable daily record for trends or later audits.
+- Fix: make a non-null upsert error fail the run inside the existing recovery boundary. Persistence
+  must now succeed before email delivery is considered or HTTP 200 is returned; resolved provider
+  errors and rejected network calls both produce the same controlled HTTP 503 response.
+- Regression coverage: a new eight-case route suite proves method and bearer-secret gates, missing
+  configuration, required-source failures, the optional-retention fail-soft contract, exact
+  `report_date` upsert semantics, persistence-before-success ordering, and zero email calls after
+  both resolved and rejected system-of-record write failures.
+- Commit: `7cbffe2` (`Fail closed when report persistence fails`)
+- Verification: the focused eight-test daily-report suite, the complete 77-file/469-test Vitest
+  suite, ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the
+  528-page production build passed. Vercel deployment `dpl_7BpLtpNwL9KYBUruCwimjf5qQLx5`
+  reached `READY` from exact Git SHA `7cbffe29dbaf6d51962857e4005b3c0cd7ad960d`. Fresh production
+  probes returned HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer secret,
+  both before report generation, persistence, or email delivery. A read-only live database check
+  confirmed `report_date` is the `daily_reports` primary key used by the upsert and found three
+  existing durable reports. The authorized cron/backfill path was deliberately verified with
+  injected dependencies to avoid generating a duplicate report or administrative email; no
+  database, email, account, payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
