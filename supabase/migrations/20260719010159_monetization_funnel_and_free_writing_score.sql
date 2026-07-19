@@ -314,6 +314,69 @@ revoke all on function public.refund_ai_score(uuid, text, boolean, timestamptz)
 grant execute on function public.refund_ai_score(uuid, text, boolean, timestamptz)
   to service_role;
 
+-- Atomic compensation for a Realtime session token that failed after its
+-- seconds were reserved. The caller-generated key makes retries idempotent.
+create table if not exists public.realtime_meter_refunds (
+  refund_key uuid primary key,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  seconds    int not null check (seconds > 0 and seconds <= 3600),
+  created_at timestamptz not null default now()
+);
+
+alter table public.realtime_meter_refunds enable row level security;
+revoke all on table public.realtime_meter_refunds from anon, authenticated;
+grant all on table public.realtime_meter_refunds to service_role;
+
+create or replace function public.refund_realtime_seconds(
+  p_uid uuid,
+  p_seconds int,
+  p_refund_key uuid
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_affected int := 0;
+begin
+  if coalesce((select auth.jwt() ->> 'role'), '') <> 'service_role' then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+  if p_uid is null
+    or p_refund_key is null
+    or p_seconds is null
+    or p_seconds <= 0
+    or p_seconds > 3600
+  then
+    return false;
+  end if;
+
+  insert into public.realtime_meter_refunds (refund_key, user_id, seconds)
+  values (p_refund_key, p_uid, p_seconds)
+  on conflict (refund_key) do nothing;
+  get diagnostics v_affected = row_count;
+  if v_affected = 0 then return false; end if;
+
+  update public.user_quotas
+  set realtime_seconds_remaining = least(
+    realtime_seconds_quota,
+    realtime_seconds_remaining + p_seconds
+  )
+  where user_id = p_uid;
+  get diagnostics v_affected = row_count;
+  if v_affected <> 1 then
+    raise exception 'realtime quota row not found for refund' using errcode = 'P0002';
+  end if;
+  return true;
+end;
+$$;
+
+revoke all on function public.refund_realtime_seconds(uuid, int, uuid)
+  from public, anon, authenticated;
+grant execute on function public.refund_realtime_seconds(uuid, int, uuid)
+  to service_role;
+
 -- Keep the legacy one-argument wrapper aligned with v6.
 create or replace function public.consume_ai_score(p_uid uuid)
 returns jsonb

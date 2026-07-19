@@ -119,6 +119,7 @@ const state = {
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
   planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
   updates: [],
+  realtimeRefunds: [],
   speakingRows: [{ passage_id: 'p1', part: 1, part1_questions: { topic: 'T', questions: [] } }],
 };
 
@@ -130,12 +131,16 @@ vi.mock('@supabase/supabase-js', () => ({
           ? { data: { user: state.authUser }, error: null }
           : { data: null, error: { message: 'bad token' } },
     },
-    rpc: async (fn) => {
+    rpc: async (fn, args) => {
       if (fn === 'check_rate_limit') return { data: state.rateLimit, error: null };
       if (fn === 'consume_realtime_seconds') {
         return state.meterError
           ? { data: null, error: { message: state.meterError } }
           : { data: state.meter, error: null };
+      }
+      if (fn === 'refund_realtime_seconds') {
+        state.realtimeRefunds.push(args);
+        return { data: true, error: null };
       }
       return { data: null, error: { message: `unknown rpc ${fn}` } };
     },
@@ -197,6 +202,7 @@ describe('POST /api/realtime/session', () => {
     state.rateLimit = true;
     state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
     state.updates = [];
+    state.realtimeRefunds = [];
     fetchMock = vi.fn(async () => ({
       ok: true,
       json: async () => ({ value: 'ek_test_secret', expires_at: 12345 }),
@@ -258,8 +264,14 @@ describe('POST /api/realtime/session', () => {
     fetchMock.mockResolvedValue({ ok: false, json: async () => ({ error: { message: 'nope' } }) });
     const res = await call({ mode: 'part1' });
     expect(res.statusCode).toBe(502);
-    const refund = state.updates.find((u) => u.table === 'user_quotas');
-    expect(refund.fields.realtime_seconds_remaining).toBe(300); // 0 + 300 refunded
+    expect(state.realtimeRefunds).toHaveLength(1);
+    expect(state.realtimeRefunds[0]).toMatchObject({
+      p_uid: 'u1',
+      p_seconds: 300,
+    });
+    expect(state.realtimeRefunds[0].p_refund_key).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
   });
 
   it('fails closed when the global rate limit trips', async () => {

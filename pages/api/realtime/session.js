@@ -5,6 +5,7 @@
 // client can never start a session it has not paid minutes for.
 export const config = { runtime: 'nodejs' };
 
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { fetchIsPremium } from '../../../lib/premium';
@@ -113,25 +114,16 @@ export default async function handler(req, res) {
   }
 
   // Compensating refund: if minting fails after the decrement, give the
-  // seconds back so a transient OpenAI error never eats a user's minutes.
+  // seconds back atomically. The key makes every retry idempotent.
+  const refundKey = randomUUID();
   async function refundSeconds() {
     try {
-      const { data: q } = await getAdmin()
-        .from('user_quotas')
-        .select('realtime_seconds_remaining, realtime_seconds_quota')
-        .eq('user_id', userId)
-        .single();
-      if (q) {
-        await getAdmin()
-          .from('user_quotas')
-          .update({
-            realtime_seconds_remaining: Math.min(
-              q.realtime_seconds_quota,
-              q.realtime_seconds_remaining + durationSeconds
-            ),
-          })
-          .eq('user_id', userId);
-      }
+      const { error } = await getAdmin().rpc('refund_realtime_seconds', {
+        p_uid: userId,
+        p_seconds: durationSeconds,
+        p_refund_key: refundKey,
+      });
+      if (error) throw error;
     } catch (e) {
       console.error('realtime refund failed:', e.message);
     }
