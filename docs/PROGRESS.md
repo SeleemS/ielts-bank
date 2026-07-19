@@ -77,9 +77,9 @@ Last updated: 2026-07-19
 
 ## Remaining owner checklist
 
-1. Complete canonical host task 1.2 in Vercel, then implement/approve the legacy-ID redirect map in 6.3(e).
+1. Implement/approve the legacy-ID redirect map in 6.3(e); canonical host task 1.2 is complete with a verified permanent apex-to-www 308.
 2. Rotate the exposed Supabase credentials in task 1.5 and update every deployment/GitHub secret that uses them.
 3. Register GA4 custom dimensions and confirm the sitemap in Google Search Console.
 4. Verify the Resend sending domain and production lifecycle-email environment values.
 5. Add the explicit AdSense slot ID if desired now.
-6. Monitor Stripe webhook delivery/Radar and finish Stripe Tax setup; all eight lookup-key prices, `invoice.paid`, the win-back coupon, and managed portal are configured.
+6. Finish Stripe Tax setup; all eight lookup-key prices, the required webhook events, zero-pending recent live deliveries, Radar access, the win-back coupon, and managed portal are verified.

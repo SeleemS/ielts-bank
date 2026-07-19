@@ -49,12 +49,12 @@ Last updated: 2026-07-19
 ## External production checklist
 
 1. `VERIFIED` — all eight global/PPP lookup-key prices exist with the required amounts and cadences, including the two one-time Exam Pass prices.
-2. `VERIFIED` — the exact production webhook URL is enabled with all eight required event types, including `invoice.paid`.
+2. `VERIFIED` — the exact production webhook URL is enabled with all eight required event types, including `invoice.paid`; recent live checkout, subscription, invoice-paid, and cancellation events have zero pending webhook deliveries.
 3. `OWNER` — finish Stripe Tax setup (`pending` with no head office in the live account), then add `STRIPE_AUTOMATIC_TAX=1` to Vercel Production. The live Radar API is available.
 4. `VERIFIED` — the single-use 40%-off Monthly win-back coupon, managed cancellation portal, and their Vercel Production IDs are configured.
-5. `OWNER` — verify the Resend sending domain and set `EMAIL_FROM` if a dedicated sender is desired; `RESEND_API_KEY` and the working `REPORT_FROM` fallback are present in Vercel Production.
-6. `OWNER` — change the apex-to-www redirect from the verified current 307 to permanent 308 in Vercel.
-7. `OWNER` — verify Supabase OTP templates render `{{ .Token }}`; enable Auth leaked-password protection if password login is introduced.
+5. `OWNER` — verify the Resend sending domain and set `EMAIL_FROM` if a dedicated sender is desired; `RESEND_API_KEY` and the working `REPORT_FROM` fallback are present in Vercel Production, but the deployed key is send-only and cannot read domain status.
+6. `VERIFIED` — the Vercel project-domain mapping now sends the apex to `www` with permanent 308, confirmed through both the API record and a public HTTP probe.
+7. `OWNER` — the Supabase confirmation and reauthentication templates render `{{ .Token }}`, but the app's sign-in and recovery flows also expect numeric OTPs while their templates remain link-only. Update those two templates and enable Auth leaked-password protection after explicit approval for the live login/recovery change.
 8. `OWNER` — rotate the previously exposed Supabase service-role/database credentials and the Stripe live key shared in chat, then update deployment/local secrets.
 
 ## Review checkpoints
@@ -70,6 +70,7 @@ Last updated: 2026-07-19
 - Checkpoint 9: Realtime review replaced the read-then-write compensation path with a service-role-only, atomic, idempotent refund RPC; a missing-function-only compatibility path prevents lost minutes before the production migration lands without risking double-refunds after ambiguous failures. Focused route tests, ESLint, migration diff checks, and an isolated production dry-run pass.
 - Checkpoint 10: plan reconciliation made both Realtime mint limiters fail closed on infrastructure errors, removed an implied human-certification claim from the examiner prompt, replaced uncaveated “unlimited”/60-minute UI claims with the actual fair-use and regional allowances, aligned the monetization source-of-truth and environment template with the live model/configuration choices, and upgraded the Stripe catalog utility to audit/provision all eight lookup keys without creating test discounts by default.
 - Checkpoint 11: production deployment targeted the linked `IELTS-Bank` project in `SeleemS Org`; the monetization and advisor-remediation migrations are recorded, live Data API/RLS/ACL/trigger/audio probes pass, and all database-object advisor warnings are cleared. Stripe now passes repeatable catalog/configuration audits with eight prices, eight webhook events, the win-back coupon, managed portal, and Vercel IDs.
+- Checkpoint 12: recent required Stripe live events have zero pending webhook deliveries; the Vercel apex redirect is permanently 308; and read-only provider audits narrowed the remaining owner work to legal/business Tax data, a Resend dashboard-only domain check, live Auth template/security approval, and credential rotation.
 - Final local verification: `git diff --check`, ESLint, 17 test files / 139 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
 - Browser QA: 375px anonymous estimator flow reached a 6.0 result with skipped measured sections and completed W/S ranges; contextual Writing pricing rendered all four plans, trust content, guarantee, and comparison table; both pages had zero browser console warnings/errors.
 - API QA: unsigned Writing, Premium mock payload, and checkout reconciliation all reject with `401`; unauthorized lifecycle cron rejects with `401`; invalid unsubscribe token rejects with `400`; static mock HTML is metadata-only.
