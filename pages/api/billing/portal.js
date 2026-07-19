@@ -76,14 +76,34 @@ export default async function handler(req, res) {
   const authz = req.headers.authorization || '';
   const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
   if (!match) return res.status(401).json({ error: 'Sign in first.' });
-  const { data, error } = await getAdmin().auth.getUser(match[1].trim());
-  if (error || !data?.user) return res.status(401).json({ error: 'Sign in first.' });
 
-  const { data: userRow } = await getAdmin()
-    .from('users')
-    .select('stripe_customer_id')
-    .eq('id', data.user.id)
-    .single();
+  let user;
+  try {
+    const { data, error } = await getAdmin().auth.getUser(match[1].trim());
+    if (error || !data?.user) return res.status(401).json({ error: 'Sign in first.' });
+    user = data.user;
+  } catch (error) {
+    console.error('portal auth lookup error:', error.message);
+    return res.status(503).json({
+      error: 'Could not verify your billing account. Please try again.',
+    });
+  }
+
+  let userRow;
+  try {
+    const { data, error } = await getAdmin()
+      .from('users')
+      .select('stripe_customer_id')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (error) throw error;
+    userRow = data;
+  } catch (error) {
+    console.error('portal account lookup error:', error.message);
+    return res.status(503).json({
+      error: 'Could not verify your billing account. Please try again.',
+    });
+  }
   if (!userRow?.stripe_customer_id) {
     return res.status(404).json({ error: 'No billing account yet.' });
   }
