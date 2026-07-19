@@ -1143,6 +1143,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No quota, storage object, or OpenAI request was created.
 
+## CA-052 — Speaking per-user limiter failed open on database errors
+
+- Status: `FIXED`
+- Area: Speaking scoring / global and per-user rate limits / cost controls
+- Severity: High
+- Evidence: the recorded Speaking limiter returned `true` for a resolved Supabase error unless
+  explicitly called in fail-closed mode. The global circuit breaker opted into fail-closed
+  behavior, but the per-user limiter did not, so its database failure silently allowed scoring to
+  continue. Global limiter errors were also surfaced as ordinary HTTP 429 demand rather than
+  dependency failure.
+- Fix: replace the ambiguous boolean helper with an explicit `{ allowed, error }` result for both
+  limiters. Resolved errors and rejected promises now return HTTP 503 at either stage. Verified
+  global exhaustion and verified per-user exhaustion retain HTTP 429, and quota consumption begins
+  only after both checks are positively verified.
+- Regression coverage: the expanded Speaking suite covers global resolved error, global rejection,
+  verified global exhaustion, per-user resolved error, and verified per-user exhaustion. It asserts
+  exact check order and proves every error stops before `consume_ai_score`, while the existing
+  provider-failure test continues to verify refund and cleanup.
+- Commit: `988b02a` (`Fail closed on speaking limiter errors`)
+- Verification: focused 11-test Speaking route coverage, the complete current-worktree
+  63-file/343-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter, quota, storage, or OpenAI mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
