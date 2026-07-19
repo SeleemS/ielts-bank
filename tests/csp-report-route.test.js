@@ -250,4 +250,40 @@ describe('POST /api/csp-report', () => {
     expect(warning).not.toHaveBeenCalled();
     expect(state.rpcCalls).toHaveLength(1);
   });
+
+  it('throttles limiter infrastructure diagnostics to one per minute', async () => {
+    const failure = { data: null, error: { message: 'database unavailable' } };
+    state.limitResponses = [failure, failure, failure];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const base = Date.now() + 120_000;
+    vi.spyOn(Date, 'now')
+      .mockReturnValueOnce(base)
+      .mockReturnValueOnce(base + 59_999)
+      .mockReturnValueOnce(base + 60_000);
+    const request = {
+      body: { 'csp-report': { 'document-uri': 'https://www.ielts-bank.com/' } },
+    };
+
+    const first = await callRoute(request);
+    const second = await callRoute(request);
+    const third = await callRoute(request);
+
+    expect([first.statusCode, second.statusCode, third.statusCode]).toEqual([
+      204, 204, 204,
+    ]);
+    expect(error).toHaveBeenCalledTimes(2);
+    expect(error).toHaveBeenNthCalledWith(
+      1,
+      'csp-report rate-limit check failed:',
+      'database unavailable'
+    );
+    expect(error).toHaveBeenNthCalledWith(
+      2,
+      'csp-report rate-limit check failed:',
+      'database unavailable'
+    );
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toHaveLength(3);
+  });
 });
