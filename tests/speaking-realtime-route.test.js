@@ -13,6 +13,7 @@ const state = {
   rateLimitError: null,
   rateLimitReject: null,
   rpcCalls: [],
+  tableCalls: [],
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -25,7 +26,7 @@ vi.mock('@supabase/supabase-js', () => ({
           : { data: null, error: { message: 'invalid token' } };
       },
     },
-    from: () => ({
+    from: (table) => ({
       select: () => ({
         eq: () => ({
           maybeSingle: async () => {
@@ -34,6 +35,20 @@ vi.mock('@supabase/supabase-js', () => ({
           },
         }),
       }),
+      insert: (values) => {
+        state.tableCalls.push({ table, values });
+        if (table === 'attempts') {
+          return {
+            select: () => ({
+              single: async () => ({
+                data: { id: 'attempt-id' },
+                error: null,
+              }),
+            }),
+          };
+        }
+        return Promise.resolve({ data: null, error: null });
+      },
     }),
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
@@ -99,6 +114,8 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.rateLimitError = null;
     state.rateLimitReject = null;
     state.rpcCalls = [];
+    state.tableCalls = [];
+    delete process.env.OPENAI_API_KEY;
     vi.restoreAllMocks();
   });
 
@@ -219,6 +236,77 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     expect(res.statusCode).toBe(422);
     expect(state.rpcCalls).toEqual([]);
   });
+
+  it('computes and persists the overall from the three criterion bands', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    process.env.OPENAI_API_KEY = 'sk-test-dummy';
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 3,
+                criteria: {
+                  fluencyCoherence: criterion(6.5),
+                  lexicalResource: criterion(7.5),
+                  grammaticalRange: criterion(8),
+                },
+                summary: 'A clear interview.',
+                improvements: ['Develop longer answers.'],
+              }),
+            },
+          },
+        ],
+      }),
+    });
+
+    const res = await callRoute({ body: validTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.overallBand).toBe(7.5);
+    expect(
+      state.tableCalls.find(({ table }) => table === 'attempts').values.band
+    ).toBe(7.5);
+    expect(
+      state.tableCalls.find(({ table }) => table === 'scores').values
+        .overall_band
+    ).toBe(7.5);
+  });
+
+  it('rejects malformed criterion bands without persisting a score', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    process.env.OPENAI_API_KEY = 'sk-test-dummy';
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 7,
+                criteria: {
+                  fluencyCoherence: criterion(6.5),
+                  lexicalResource: criterion(7.5),
+                },
+                summary: 'Incomplete provider result.',
+                improvements: [],
+              }),
+            },
+          },
+        ],
+      }),
+    });
+
+    const res = await callRoute({ body: validTranscriptBody() });
+
+    expect(res.statusCode).toBe(502);
+    expect(state.tableCalls).toEqual([]);
+  });
 });
 
 function validTranscriptBody() {
@@ -233,5 +321,13 @@ function validTranscriptBody() {
         ).join(' '),
       },
     ],
+  };
+}
+
+function criterion(band) {
+  return {
+    band,
+    strengths: ['Clear organization.'],
+    improvements: ['Add more detail.'],
   };
 }

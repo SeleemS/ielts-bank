@@ -8,8 +8,10 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { roundBandMean } from '../../../lib/bandTables';
 import { fetchPremiumStatus } from '../../../lib/premium';
 import { buildSpeakingRealtimeScoreSchema } from '../../../lib/speakingRealtimeScoreSchema';
+import { isValidSpeakingBand } from '../../../lib/speakingScoreSchema';
 
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const SCORING_MODEL =
@@ -215,17 +217,34 @@ export default async function handler(req, res) {
     clearTimeout(timeout);
   }
 
+  const criteria = result?.criteria || {};
+  const fluency = criteria.fluencyCoherence?.band;
+  const lexical = criteria.lexicalResource?.band;
+  const grammar = criteria.grammaticalRange?.band;
+  if (
+    !isValidSpeakingBand(fluency) ||
+    !isValidSpeakingBand(lexical) ||
+    !isValidSpeakingBand(grammar)
+  ) {
+    console.error(
+      'realtime scoring returned invalid bands:',
+      JSON.stringify(criteria).slice(0, 500)
+    );
+    return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+  }
+  const overallBand = roundBandMean((fluency + lexical + grammar) / 3);
+  result = { ...result, overallBand };
+
   // --- Persist (fail-soft) -------------------------------------------------
   try {
     const admin = getAdmin();
-    const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
     const { data: attempt, error: attemptErr } = await admin
       .from('attempts')
       .insert({
         user_id: userId,
         skill: 'speaking',
         responses: { realtime: true, mode, transcript: turns },
-        band: overall,
+        band: overallBand,
         submitted_at: new Date().toISOString(),
       })
       .select('id')
@@ -235,7 +254,7 @@ export default async function handler(req, res) {
         attempt_id: attempt.id,
         user_id: userId,
         skill: 'speaking',
-        overall_band: overall,
+        overall_band: overallBand,
         criteria: result.criteria || {},
         model: SCORING_MODEL,
       });
