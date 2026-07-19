@@ -9,6 +9,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { fetchPremiumStatus } from '../../../lib/premium';
+import { buildSpeakingRealtimeScoreSchema } from '../../../lib/speakingRealtimeScoreSchema';
 
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const SCORING_MODEL =
@@ -84,53 +85,6 @@ OVERALL BAND RULE: overallBand = the average of the THREE criterion bands, round
 FEEDBACK STYLE: specific, constructive and SCANNABLE. For each criterion give 1-3 "strengths" bullets and 1-3 "improvements" bullets. Each bullet is ONE short sentence (under 20 words), states one concrete observation, and quotes a brief candidate phrase as evidence where useful. NO long paragraphs. The top-level "improvements" list holds the 3-5 highest-impact practice actions across all criteria.
 
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
-}
-
-function buildJsonSchema() {
-  const criterion = {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      band: { type: 'number', description: 'Band 0-9, halves allowed' },
-      strengths: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          '1-3 bullets, each under 20 words, naming something the candidate did well with brief quoted evidence',
-      },
-      improvements: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          '1-3 actionable bullets, each under 20 words, naming what would raise this band',
-      },
-    },
-    required: ['band', 'strengths', 'improvements'],
-  };
-  return {
-    name: 'ielts_speaking_assessment',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        overallBand: { type: 'number', description: 'Average of the three criteria, rounded to nearest 0.5' },
-        criteria: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            fluencyCoherence: criterion,
-            lexicalResource: criterion,
-            grammaticalRange: criterion,
-          },
-          required: ['fluencyCoherence', 'lexicalResource', 'grammaticalRange'],
-        },
-        summary: { type: 'string' },
-        improvements: { type: 'array', items: { type: 'string' } },
-      },
-      required: ['overallBand', 'criteria', 'summary', 'improvements'],
-    },
-  };
 }
 
 export default async function handler(req, res) {
@@ -242,7 +196,10 @@ export default async function handler(req, res) {
             content: `Session type: ${mode}. Full interview transcript:\n\n${rendered}`,
           },
         ],
-        response_format: { type: 'json_schema', json_schema: buildJsonSchema() },
+        response_format: {
+          type: 'json_schema',
+          json_schema: buildSpeakingRealtimeScoreSchema(),
+        },
       }),
     });
     const payload = await r.json().catch(() => ({}));
