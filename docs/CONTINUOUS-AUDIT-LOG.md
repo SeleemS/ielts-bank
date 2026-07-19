@@ -424,8 +424,10 @@ False positives are kept in the investigation notes so they are not rediscovered
   asserts the 405 status, `Allow: GET`, and completed response.
 - Commit: `Complete API method contracts`
 - Verification: focused 4-handler contract coverage, the complete current-worktree
-  42-file/233-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
-  production verification will be recorded after deployment.
+  42-file/233-test Vitest suite, ESLint, analytics audit, and the 527-page production build. The
+  clean Vercel build from the committed fix reached `Ready` with the production aliases. The safe
+  live wrong-method sweep then passed all 18 endpoints: every route returned HTTP 405 and its exact
+  supported `Allow` value, with no endpoint action executed.
 
 ## Investigation notes
 
