@@ -1574,6 +1574,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin valid payload, and HTTP 400 for a
   same-origin invalid payload. No live limiter or subscriber mutation occurred.
 
+## CA-071 — Checkout could create duplicate unlinked Stripe customers
+
+- Status: `FIXED`
+- Area: Billing checkout / Stripe customer creation / distributed consistency
+- Severity: High
+- Evidence: when a user lacked `stripe_customer_id`, Checkout created a Stripe customer, logged any
+  failure to save that ID in Supabase, and still attempted session creation. A failed or retried
+  flow could therefore create duplicate customers with no durable account link.
+- Fix: require the customer link before creating a Checkout Session. A confirmed failed link
+  compensating-deletes the new Stripe customer; a rejected write is read back first so a committed
+  link is never deleted. Confirmed read-back success continues, while ambiguous state stops safely
+  without deleting a possibly linked customer.
+- Regression coverage: Checkout tests cover returned link errors, rejected writes confirmed
+  unlinked, rejected writes confirmed committed, and unavailable read-back. They require cleanup
+  only when safe, prohibit session creation on failure, and preserve the linked customer on
+  confirmed success or ambiguity.
+- Commit: `e2975ed` (`Roll back unlinked Stripe customers`)
+- Verification: focused 29-test billing route coverage, the complete current-worktree
+  68-file/400-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated POST. No live Stripe customer, Checkout Session, or Supabase mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
