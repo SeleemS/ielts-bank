@@ -8,7 +8,7 @@ import { useAuth } from '../../lib/auth';
 import { usePlan } from '../../lib/usePlan';
 import NewsletterSignup from '../NewsletterSignup';
 import SignInDialog from '../auth/SignInDialog';
-import { BandHero, bandDescriptor } from '../question/ScoreUI';
+import { BandHero } from '../question/ScoreUI';
 import { formatBand } from './score';
 import { ESTIMATOR_VERSION } from '../../../lib/estimatorConfig';
 import { biggestGap } from './flow';

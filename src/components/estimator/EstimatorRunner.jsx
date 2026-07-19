@@ -97,8 +97,10 @@ export default function EstimatorRunner({
 
   // ---- Hydrate on mount ---------------------------------------------------
   React.useEffect(() => {
-    setLastResult(readLocal(RESULT_KEY));
-    setDetail(readLocal(DETAIL_KEY));
+    const storedResult = readLocal(RESULT_KEY);
+    setLastResult(storedResult && storedResult.version === ESTIMATOR_VERSION ? storedResult : null);
+    const storedDetail = readLocal(DETAIL_KEY);
+    setDetail(storedDetail && storedDetail.version === ESTIMATOR_VERSION ? storedDetail : null);
     const saved = readLocal(IN_PROGRESS_KEY);
     if (saved && saved.version === ESTIMATOR_VERSION && saved.step && saved.step !== 'results') {
       setStep(STEPS.includes(saved.step) ? saved.step : 'intro');
@@ -205,7 +207,12 @@ export default function EstimatorRunner({
       skipped: finalSkipped,
       targetBand: prefillTarget,
     });
-    const detailSnapshot = { ...sections, skipped: finalSkipped, targetBand: prefillTarget };
+    const detailSnapshot = {
+      ...sections,
+      skipped: finalSkipped,
+      targetBand: prefillTarget,
+      version: ESTIMATOR_VERSION,
+    };
 
     writeLocal(RESULT_KEY, result);
     writeLocal(DETAIL_KEY, detailSnapshot);
