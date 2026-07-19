@@ -44,6 +44,36 @@ function siteOrigin(req) {
   return 'https://www.ielts-bank.com';
 }
 
+async function linkStripeCustomer(admin, userId, customerId) {
+  try {
+    const { error } = await admin
+      .from('users')
+      .update({ stripe_customer_id: customerId })
+      .eq('id', userId);
+    if (error) return { linked: false, confirmedUnlinked: true, error };
+    return { linked: true, confirmedUnlinked: false, error: null };
+  } catch (error) {
+    try {
+      const { data, error: readError } = await admin
+        .from('users')
+        .select('stripe_customer_id')
+        .eq('id', userId)
+        .maybeSingle();
+      if (readError) throw readError;
+      if (data?.stripe_customer_id === customerId) {
+        return { linked: true, confirmedUnlinked: false, error: null };
+      }
+      return { linked: false, confirmedUnlinked: true, error };
+    } catch (readbackError) {
+      console.error(
+        'checkout: customer link state is ambiguous:',
+        readbackError.message
+      );
+      return { linked: false, confirmedUnlinked: false, error };
+    }
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -105,8 +135,10 @@ export default async function handler(req, res) {
   const country = String(req.headers['x-vercel-ip-country'] || '').toUpperCase();
   const lookupKey = resolveLookupKey(sku, country);
 
+  let stripe;
+  let unpersistedCustomerId = null;
   try {
-    const stripe = getStripe();
+    stripe = getStripe();
 
     const prices = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
     const price = prices.data[0];
@@ -122,11 +154,13 @@ export default async function handler(req, res) {
         metadata: { user_id: userRow.id },
       });
       customerId = customer.id;
-      const { error: saveErr } = await admin
-        .from('users')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', userRow.id);
-      if (saveErr) console.error('checkout: failed to save customer id:', saveErr.message);
+      unpersistedCustomerId = customerId;
+      const link = await linkStripeCustomer(admin, userRow.id, customerId);
+      if (!link.linked) {
+        if (!link.confirmedUnlinked) unpersistedCustomerId = null;
+        throw link.error;
+      }
+      unpersistedCustomerId = null;
     }
 
     const origin = siteOrigin(req);
@@ -157,6 +191,16 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ url: session.url });
   } catch (e) {
+    if (stripe && unpersistedCustomerId) {
+      try {
+        await stripe.customers.del(unpersistedCustomerId);
+      } catch (cleanupError) {
+        console.error(
+          'checkout: failed to remove unlinked customer:',
+          cleanupError.message
+        );
+      }
+    }
     console.error('checkout error:', e.message, 'ip:', clientIp(req));
     return res.status(500).json({ error: 'Could not start checkout. Please try again.' });
   }

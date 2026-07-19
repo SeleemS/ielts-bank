@@ -114,6 +114,11 @@ const mockState = {
   userRow: null,
   userError: null,
   userReject: null,
+  userUpdateError: null,
+  userUpdateReject: null,
+  customerLinkReadback: null,
+  customerLinkReadbackError: null,
+  customerLinkReadbackReject: null,
   retrievedSession: null,
   reconciliationOutcome: 'activated user user-1 (active)',
   stripeCalls: {},
@@ -133,9 +138,18 @@ vi.mock('@supabase/supabase-js', () => ({
       },
     },
     from: () => ({
-      select: () => ({
+      select: (columns) => ({
         eq: () => ({
           maybeSingle: async () => {
+            if (columns === 'stripe_customer_id') {
+              if (mockState.customerLinkReadbackReject) {
+                throw mockState.customerLinkReadbackReject;
+              }
+              return {
+                data: mockState.customerLinkReadback,
+                error: mockState.customerLinkReadbackError,
+              };
+            }
             if (mockState.userReject) throw mockState.userReject;
             return {
               data: mockState.userRow,
@@ -144,7 +158,12 @@ vi.mock('@supabase/supabase-js', () => ({
           },
         }),
       }),
-      update: () => ({ eq: async () => ({ error: null }) }),
+      update: () => ({
+        eq: async () => {
+          if (mockState.userUpdateReject) throw mockState.userUpdateReject;
+          return { error: mockState.userUpdateError };
+        },
+      }),
     }),
   }),
 }));
@@ -168,6 +187,10 @@ vi.mock('../lib/billing', async (importOriginal) => {
         create: async (args) => {
           mockState.stripeCalls.customerCreate = args;
           return { id: 'cus_mock_1' };
+        },
+        del: async (id) => {
+          mockState.stripeCalls.customerDelete = id;
+          return { id, deleted: true };
         },
       },
       checkout: {
@@ -204,6 +227,11 @@ describe('POST /api/billing/checkout', () => {
     mockState.userRow = null;
     mockState.userError = null;
     mockState.userReject = null;
+    mockState.userUpdateError = null;
+    mockState.userUpdateReject = null;
+    mockState.customerLinkReadback = null;
+    mockState.customerLinkReadbackError = null;
+    mockState.customerLinkReadbackReject = null;
     mockState.retrievedSession = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
@@ -343,6 +371,89 @@ describe('POST /api/billing/checkout', () => {
     await callCheckout({ headers: { authorization: 'Bearer tok' } });
     expect(mockState.stripeCalls.customerCreate).toBeUndefined();
     expect(mockState.stripeCalls.sessionCreate.customer).toBe('cus_existing');
+  });
+
+  it('removes a new Stripe customer when linking it returns an error', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.userUpdateError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockState.stripeCalls.customerDelete).toBe('cus_mock_1');
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
+  });
+
+  it('removes a new Stripe customer when linking it rejects', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.userUpdateReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockState.stripeCalls.customerDelete).toBe('cus_mock_1');
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
+  });
+
+  it('keeps a customer when read-back proves a rejected link committed', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.userUpdateReject = new Error('response lost');
+    mockState.customerLinkReadback = {
+      stripe_customer_id: 'cus_mock_1',
+    };
+
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockState.stripeCalls.customerDelete).toBeUndefined();
+    expect(mockState.stripeCalls.sessionCreate.customer).toBe('cus_mock_1');
+  });
+
+  it('does not delete a customer when rejected link state cannot be confirmed', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.userUpdateReject = new Error('response lost');
+    mockState.customerLinkReadbackReject = new Error('read-back unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockState.stripeCalls.customerDelete).toBeUndefined();
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
   });
 
   it('creates a non-renewing PPP Exam Pass payment with payment metadata', async () => {
