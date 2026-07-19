@@ -405,8 +405,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused 4-test schema coverage, the complete current-worktree 41-file/229-test
   Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact generated HTML
   inspection parsed and validated the five-item collection plus all five paid resource graphs,
-  durations, sections, access conditions, canonicals, and breadcrumbs. Live production verification
-  will be recorded after deployment.
+  durations, sections, access conditions, canonicals, and breadcrumbs. The clean Vercel build from
+  the committed fix reached `Ready` with the production aliases. Live production returned HTTP 200
+  and valid JSON-LD on all six routes: a five-item collection, three 60-minute/three-section Reading
+  mocks, and two 40-minute/four-section Listening mocks, all accurately marked as paid.
 
 ## Investigation notes
 
