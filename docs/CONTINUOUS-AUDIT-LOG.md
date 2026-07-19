@@ -786,6 +786,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   console entries were the previously documented Google-managed AdSense `unfilled` rejection, not
   account code.
 
+## CA-038 — Sign-out failures escaped as unhandled promises
+
+- Status: `FIXED`
+- Area: Authentication / session controls / analytics identity / network recovery
+- Severity: Medium
+- Evidence: the shared `signOut` method awaited Supabase without handling either a returned error
+  or rejected request, while navbar and dashboard controls invoked it without awaiting or catching.
+  A network failure could therefore produce an unhandled promise with no recoverable UI. Successful
+  sign-out also depended on the auth listener to clear the analytics identity.
+- Fix: make the shared method return an explicit `{ error }` result for service errors and rejected
+  requests, preserve local session state on failure, and clear both user and analytics identity
+  immediately on success. The dashboard session control now shows a busy state, reports the
+  returned error, and re-enables retry. Rename the JSX-bearing auth module to `.jsx` for direct
+  provider coverage.
+- Regression coverage: `src/lib/auth.test.jsx` covers rejected and successful provider sign-out,
+  including preserved/cleared user state and analytics cleanup. The expanded account-settings suite
+  verifies dashboard feedback and retry after a returned sign-out error; navbar intent coverage
+  remains green.
+- Commit: `Recover safely from sign-out failures`
+- Verification: focused 8-test auth/provider/account/navbar coverage, the complete current-worktree
+  60-file/284-test Vitest suite, ESLint, the 149-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production QA opened the shared
+  `Welcome back` dialog, confirmed initial email focus, and found zero application console errors.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
