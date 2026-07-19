@@ -47,11 +47,31 @@ describe('lifecycle email delivery safety', () => {
     await expect(recipientAllowsMarketing(admin, 'opted-out@example.com')).resolves.toBe(false);
   });
 
-  it('returns stale sending claims to the retry queue', async () => {
-    const update = vi.fn(() => resultQuery({ data: [{ id: 'email-1' }], error: null }));
+  it('returns every stale sending claim to failed, including terminal attempts', async () => {
+    const filters = [];
+    const query = {
+      eq: (...args) => {
+        filters.push(['eq', ...args]);
+        return query;
+      },
+      is: (...args) => {
+        filters.push(['is', ...args]);
+        return query;
+      },
+      lt: (...args) => {
+        filters.push(['lt', ...args]);
+        return query;
+      },
+      select: () =>
+        Promise.resolve({
+          data: [{ id: 'email-1' }, { id: 'email-terminal' }],
+          error: null,
+        }),
+    };
+    const update = vi.fn(() => query);
     const admin = { from: vi.fn(() => ({ update })) };
 
-    await expect(reclaimStaleDeliveries(admin, NOW)).resolves.toBe(1);
+    await expect(reclaimStaleDeliveries(admin, NOW)).resolves.toBe(2);
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'failed',
@@ -59,6 +79,11 @@ describe('lifecycle email delivery safety', () => {
         updated_at: NOW.toISOString(),
       })
     );
+    expect(filters).toEqual([
+      ['eq', 'status', 'sending'],
+      ['is', 'sent_at', null],
+      ['lt', 'updated_at', '2026-07-19T11:45:00.000Z'],
+    ]);
   });
 
   it('suppresses queued marketing after an unsubscribe without calling the provider', async () => {

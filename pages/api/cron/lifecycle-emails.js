@@ -120,7 +120,6 @@ export async function reclaimStaleDeliveries(admin, now = new Date()) {
     .eq('status', 'sending')
     .is('sent_at', null)
     .lt('updated_at', cutoff)
-    .lt('attempts', 5)
     .select('id');
   if (error) throw error;
   return data?.length || 0;
