@@ -1532,6 +1532,27 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated request. No live limiter, OpenAI, or persistence mutation occurred.
 
+## CA-069 — Telemetry limiter outages were reported as user rate limits
+
+- Status: `FIXED`
+- Area: Analytics ingestion / rate limiting / operational accuracy
+- Severity: Medium
+- Evidence: `/api/track` returned HTTP 429 whenever `check_rate_limit` supplied either a genuine
+  denial or a resolved database error. Infrastructure loss was therefore indistinguishable from
+  user overuse, causing telemetry failures to be classified and retried incorrectly.
+- Fix: return HTTP 503 with the existing generic telemetry-unavailable response for limiter
+  infrastructure errors, log the operational cause, and reserve HTTP 429 for a verified
+  `allowed !== true` result without an error.
+- Regression coverage: new route tests cover resolved limiter errors, rejected limiter calls,
+  verified denials, and the normal HTTP 202 activity insert. Both outage forms require HTTP 503 and
+  zero table writes; only verified exhaustion returns HTTP 429.
+- Commit: `b31702c` (`Distinguish telemetry limiter outages`)
+- Verification: focused 4-test telemetry route coverage, the complete current-worktree
+  67-file/392-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin valid payload, and HTTP 400 for a
+  same-origin invalid payload. No live rate-limit or activity mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
