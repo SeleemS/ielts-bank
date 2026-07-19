@@ -12,6 +12,7 @@ const STATIC_ROUTES = [
   '/termsofservice',
   '/blog',
   '/band-calculator',
+  '/band-estimator',
   '/ielts-writing-checker',
   '/readingquestion',
   '/writingquestion',

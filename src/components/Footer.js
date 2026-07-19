@@ -16,6 +16,7 @@ const PRACTICE_LINKS = [
 ];
 
 const TOOLS_LINKS = [
+  { label: 'Band Estimator', href: '/band-estimator' },
   { label: 'Writing Checker', href: '/ielts-writing-checker' },
   { label: 'Band Calculator', href: '/band-calculator' },
 ];
@@ -82,7 +83,7 @@ export default function Footer() {
           </div>
 
           <FooterColumn title="Practice" links={PRACTICE_LINKS} />
-          <FooterColumn title="Free tools" links={TOOLS_LINKS} />
+          <FooterColumn title="Tools" links={TOOLS_LINKS} />
           <FooterColumn title="Resources" links={RESOURCE_LINKS} />
           <FooterColumn title="Legal" links={LEGAL_LINKS} />
         </div>

@@ -236,6 +236,16 @@ const HomePage = ({ counts = {} }) => {
                       Read study tips
                     </NextLink>
                   </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-emerald-300/40 bg-emerald-300/10 text-emerald-100 hover:bg-emerald-300/20 hover:text-white sm:w-auto"
+                  >
+                    <NextLink href="/band-estimator" className="no-underline">
+                      Estimate my band
+                    </NextLink>
+                  </Button>
                 </div>
               </div>
 

@@ -14,6 +14,7 @@ import AccountSettings from '../src/components/dashboard/AccountSettings';
 import { LoadingState, SignedOutState, ErrorState } from '../src/components/dashboard/States';
 import { buildDashboardData, formatBand, getInitials, SKILL_META } from '../src/components/dashboard/utils';
 import LearningInsights from '../src/components/dashboard/LearningInsights';
+import BaselineCard from '../src/components/estimator/BaselineCard';
 
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
@@ -213,6 +214,7 @@ function DashboardBody({ user, signOut }) {
         {activeTab === 'overview' && (
           <>
             {!data.hasData && <EmptyNudge />}
+            <BaselineCard />
             <StatsOverview data={data} weeklyGoal={weeklyGoal} />
             <BandTrend skills={data.skills} targetBand={targetBand} />
             <LearningInsights data={data} targetBand={targetBand} />
