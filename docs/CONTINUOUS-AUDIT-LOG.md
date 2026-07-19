@@ -2215,6 +2215,37 @@ False positives are kept in the investigation notes so they are not rediscovered
   repair was required. Crash recovery was verified with injected queue results; no queue, email,
   account, payment, consent, content, or provider state changed.
 
+## CA-095 — Recording retention inspected only the first 1,000 files in each user folder
+
+- Status: `FIXED`
+- Area: Privacy / recording retention / Supabase Storage pagination
+- Severity: High
+- Evidence: the daily cleanup requested one `speaking-uploads` listing per user with
+  `limit: 1000` and no subsequent page. Because every recording is stored below its owner's folder,
+  any object beyond that first page was never evaluated against the 30-day cutoff and could remain
+  indefinitely. A full first page also concealed failures on later pages, while a future attempt to
+  pass more than 1,000 expired paths to one removal request would exceed the provider's batch limit.
+- Fix: enumerate each user folder with deterministic name ordering and 1,000-object offset pages,
+  collecting all expired paths before any deletion begins. Remove the completed set in bounded
+  1,000-object batches and count only successful batches; any listing or removal error still fails
+  the protected run with a controlled HTTP 503.
+- Regression coverage: the expanded 15-case cleanup suite proves exact offsets and sort options,
+  traversal beyond a full first page, exclusion of current files on later pages, two bounded removal
+  batches for 1,002 expired recordings, an exact aggregate count, and zero partial deletion when the
+  second listing page fails. All method, auth, configuration, rate-limit cleanup, user-query,
+  Storage rejection, and removal-failure coverage remains active.
+- Commit: `b6ec291` (`Paginate recording retention cleanup`)
+- Verification: the focused 15-test cleanup suite, the complete 77-file/484-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_C93HJM1oipd3hhjp6KyotqmXiz1K` reached `READY`
+  from exact Git SHA `b6ec2916a6802656597f43370946347ebdd2dfb8`. Fresh canonical-production
+  probes returned HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer-secret GET,
+  both before database or Storage work. A read-only live Storage-metadata aggregate found seven
+  objects across six owner prefixes, a current maximum of two objects per prefix, and zero prefixes
+  above the old 1,000-object boundary. The authorized cleanup was deliberately verified with
+  injected dependencies instead of deleting customer recordings; no database, recording, account,
+  payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
