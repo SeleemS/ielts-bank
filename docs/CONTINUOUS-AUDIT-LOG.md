@@ -837,6 +837,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   with `Allow: POST` for GET and HTTP 401 for an unauthenticated valid-origin POST. No live
   subscription was mutated for this failure-path verification.
 
+## CA-040 — Plan lookup failures silently presented paid users as Free
+
+- Status: `FIXED`
+- Area: Billing / Pricing / Supabase plan state / fail-closed mutations
+- Severity: High
+- Evidence: `usePlan` ignored Supabase's resolved `{ error }` result and treated the missing row as
+  `plan=free` with `plan_status=inactive`; rejected requests likewise ended loading without
+  exposing a failure. A temporary database outage could therefore show a Premium learner the Free
+  pricing state, enable another checkout, or present billing controls against an unverified
+  subscription snapshot.
+- Fix: expose an explicit plan-verification error from the shared hook for both resolved query
+  failures and rejected requests. Pricing now explains the temporary problem and disables every
+  checkout action; Billing Management shows the same recovery guidance and withholds all billing
+  mutations until the current plan can be verified. Verified and signed-out states retain their
+  existing behavior.
+- Regression coverage: `src/lib/usePlan.test.jsx` proves a resolved Supabase error cannot silently
+  become a verified Free state and that a valid Premium row remains recognized. The Pricing
+  integration suite requires all four checkout actions to be disabled during verification
+  failure, while the Billing Management suite requires pause and Stripe-portal actions to be
+  absent.
+- Commit: `3827c20` (`Fail closed when plan lookup fails`)
+- Verification: focused 12-test plan/pricing/billing coverage, the complete current-worktree
+  61-file/291-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh signed-out production browser
+  QA confirmed the Pricing route renders all four plan choices and Billing Management renders its
+  correct page-level heading and sign-in boundary. The injected database-failure branches were
+  verified in rendered integration tests rather than causing an unsafe live service outage.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
