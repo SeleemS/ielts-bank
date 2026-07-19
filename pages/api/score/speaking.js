@@ -95,6 +95,30 @@ async function consumeQuota(userId) {
   return data;
 }
 
+async function refundQuota(userId, quota) {
+  if (!quota?.allowed || !quota?.consumedAt) return;
+  try {
+    const { error } = await getAdmin().rpc('refund_ai_score', {
+      p_uid: userId,
+      p_skill: 'speaking',
+      p_free: false,
+      p_consumed_at: quota.consumedAt,
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error('quota refund failed:', error.message);
+  }
+}
+
+async function cleanupRecording(audioPath) {
+  if (!audioPath) return;
+  try {
+    await getAdmin().storage.from('speaking-uploads').remove([audioPath]);
+  } catch (error) {
+    console.error('speaking upload cleanup failed:', error.message);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // REQUIRED auth: verify `Authorization: Bearer <access token>` and return the
 // user id. Unlike writing (optional auth), speaking REQUIRES sign-in, so a null
@@ -456,6 +480,8 @@ export default async function handler(req, res) {
 
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');
+    await refundQuota(userId, quota);
+    await cleanupRecording(audioPath);
     return res
       .status(502)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
@@ -475,18 +501,23 @@ export default async function handler(req, res) {
       { headers: { Authorization: `Bearer ${key}`, apikey: key } }
     );
     if (objRes.status === 404 || objRes.status === 400) {
+      await refundQuota(userId, quota);
       return res
         .status(404)
         .json({ error: 'Recording not found. Please upload it again.' });
     }
     if (!objRes.ok) {
       console.error('storage download error', objRes.status);
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res
         .status(502)
         .json({ error: 'Could not read your recording. Please try again.' });
     }
     const declaredLen = Number(objRes.headers.get('content-length') || 0);
     if (declaredLen && declaredLen > MAX_AUDIO_BYTES) {
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res
         .status(413)
         .json({ error: 'Your recording is too large to score (max 10 MB).' });
@@ -495,17 +526,23 @@ export default async function handler(req, res) {
     const arrBuf = await objRes.arrayBuffer();
     audioBuffer = Buffer.from(arrBuf);
     if (audioBuffer.length > MAX_AUDIO_BYTES) {
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res
         .status(413)
         .json({ error: 'Your recording is too large to score (max 10 MB).' });
     }
     if (audioBuffer.length === 0) {
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res
         .status(422)
         .json({ error: 'Your recording appears to be empty. Please record again.' });
     }
   } catch (e) {
     console.error('audio download failed:', e.message);
+    await refundQuota(userId, quota);
+    await cleanupRecording(audioPath);
     return res
       .status(502)
       .json({ error: 'Could not read your recording. Please try again.' });
@@ -538,6 +575,8 @@ export default async function handler(req, res) {
       const detail = await wRes.text().catch(() => '');
       console.error('Whisper error', wRes.status, detail.slice(0, 500));
       clearTimeout(timeout);
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res.status(502).json({
         error: 'We could not transcribe your recording. Please try again.',
       });
@@ -548,11 +587,15 @@ export default async function handler(req, res) {
     clearTimeout(timeout);
     if (e.name === 'AbortError') {
       console.error('Whisper request timed out');
+      await refundQuota(userId, quota);
+      await cleanupRecording(audioPath);
       return res
         .status(502)
         .json({ error: 'Transcription took too long. Please try again.' });
     }
     console.error('transcription failed:', e.message);
+    await refundQuota(userId, quota);
+    await cleanupRecording(audioPath);
     return res
       .status(502)
       .json({ error: 'We could not transcribe your recording. Please try again.' });
@@ -561,6 +604,8 @@ export default async function handler(req, res) {
   const transcriptWords = countWords(transcript);
   if (transcriptWords < MIN_TRANSCRIPT_WORDS) {
     clearTimeout(timeout);
+    await refundQuota(userId, quota);
+    await cleanupRecording(audioPath);
     return res.status(422).json({
       error:
         "We couldn't hear enough speech to score — please record again and speak for longer.",
@@ -602,6 +647,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
 
     if (!ai.ok) {
       console.error('OpenAI error', ai.status, (ai.detail || '').slice(0, 500));
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service could not process your response. Please try again.',
       });
@@ -611,6 +657,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service returned an empty result. Please try again.',
       });
@@ -621,6 +668,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       result = JSON.parse(content);
     } catch (e) {
       console.error('Failed to parse OpenAI JSON:', e.message);
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service returned an invalid result. Please try again.',
       });
@@ -632,6 +680,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     const gr = c.grammaticalRange || {};
     if (!isBand(fc.band) || !isBand(lr.band) || !isBand(gr.band)) {
       console.error('OpenAI returned invalid bands', JSON.stringify(c).slice(0, 300));
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service returned an invalid result. Please try again.',
       });
@@ -671,6 +720,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       quotaRemaining: quota.remaining,
     });
   } catch (e) {
+    await refundQuota(userId, quota);
     if (e.name === 'AbortError') {
       console.error('OpenAI request timed out');
       return res.status(502).json({ error: 'Scoring took too long. Please try again.' });
@@ -683,10 +733,6 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     clearTimeout(timeout);
     // The recording is needed only for this scoring request. Remove it after
     // success or failure so private voice data does not accumulate indefinitely.
-    try {
-      await getAdmin().storage.from('speaking-uploads').remove([audioPath]);
-    } catch (error) {
-      console.error('speaking upload cleanup failed:', error.message);
-    }
+    await cleanupRecording(audioPath);
   }
 }
