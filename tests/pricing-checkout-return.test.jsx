@@ -31,7 +31,19 @@ vi.mock('../src/components/Footer', () => ({
   default: () => React.createElement('footer'),
 }));
 vi.mock('../src/components/auth/SignInDialog', () => ({
-  default: () => null,
+  default: ({ open, onOpenChange, redirectOnFinish }) =>
+    open
+      ? React.createElement(
+          'button',
+          {
+            type: 'button',
+            'data-testid': 'pricing-auth-dialog',
+            'data-redirect-on-finish': String(redirectOnFinish),
+            onClick: () => onOpenChange(false),
+          },
+          'Finish authentication'
+        )
+      : null,
 }));
 vi.mock('../src/components/question/WritingScoreReport', () => ({
   default: () => React.createElement('div', null, 'Sample report'),
@@ -177,6 +189,48 @@ describe('pricing checkout return verification', () => {
     expect(container.textContent).toContain("You're in. Do this first:");
     expect(track).toHaveBeenCalledWith('purchase_success', {
       source: 'pricing',
+    });
+  });
+});
+
+describe('pricing authentication handoff', () => {
+  it('stays on pricing and resumes the plan selected before sign-in', async () => {
+    testState.router = {
+      isReady: true,
+      query: {},
+    };
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: 'Audit stop before Stripe redirect.' }),
+    });
+    await renderPage();
+
+    const monthly = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent.trim() === 'Choose this plan'
+    );
+    act(() => {
+      monthly.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const dialog = container.querySelector('[data-testid="pricing-auth-dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog.getAttribute('data-redirect-on-finish')).toBe('false');
+
+    testState.user = { id: 'user-1' };
+    await act(async () => {
+      dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/billing/checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer test-access-token',
+      },
+      body: JSON.stringify({ sku: 'monthly', offer: '' }),
     });
   });
 });

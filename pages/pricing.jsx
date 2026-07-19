@@ -195,6 +195,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const [busySku, setBusySku] = React.useState(null);
   const [error, setError] = React.useState('');
   const [signInOpen, setSignInOpen] = React.useState(false);
+  const [pendingSku, setPendingSku] = React.useState(null);
   const [examDate, setExamDate] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
   const trackedRef = React.useRef({ paywall: '', purchase: '' });
@@ -255,15 +256,16 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
       .catch(() => setActivation('delayed'));
   }, [checkoutStatus, sessionId, upgrade, user?.id]);
 
-  async function authHeader() {
+  const authHeader = React.useCallback(async () => {
     const { data } = await getSupabase().auth.getSession();
     const token = data?.session?.access_token;
     return token ? { Authorization: `Bearer ${token}` } : null;
-  }
+  }, []);
 
-  async function startCheckout(sku) {
+  const startCheckout = React.useCallback(async (sku) => {
     setError('');
     if (!user) {
+      setPendingSku(sku);
       setSignInOpen(true);
       return;
     }
@@ -292,7 +294,14 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     } finally {
       setBusySku(null);
     }
-  }
+  }, [authHeader, country, offer, regionalPricing, upgrade, user]);
+
+  React.useEffect(() => {
+    if (!user?.id || signInOpen || !pendingSku) return;
+    const sku = pendingSku;
+    setPendingSku(null);
+    void startCheckout(sku);
+  }, [pendingSku, signInOpen, startCheckout, user?.id]);
 
   return (
     <>
@@ -552,6 +561,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         title="Sign in to upgrade"
         description="Create your account or sign in — you’ll stay right on this page."
         trigger="pricing_upgrade"
+        redirectOnFinish={false}
       />
     </>
   );
