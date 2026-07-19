@@ -473,9 +473,8 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Area: Advertising / browser console / revenue / route policy
 - Severity: Medium
 - Evidence: signed-out production browser QA on the homepage logged `AdSense head tag doesn't
-  support data-nscript attribute`, followed by an unhandled promise error in the managed AdSense
-  script. The framework script component adds `data-nscript`, which is not part of Google's
-  supported async AdSense tag.
+  support data-nscript attribute`. The framework script component adds `data-nscript`, which is
+  not part of Google's supported async AdSense tag.
 - Fix: load the official-shape async AdSense script directly and idempotently on allowed public
   routes, remove it when ads become disallowed, and retain the existing public-host and route
   policy. Google Analytics continues to use the framework loader separately.
@@ -484,7 +483,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Load AdSense without unsupported attributes`
 - Verification: focused 3-test loader coverage, the complete current-worktree 45-file/244-test
   Vitest suite, ESLint, the 134-file analytics audit, and the 527-page production build. Production
-  browser verification will be recorded after deployment.
+  browser QA on the clean deployment confirmed the exact publisher URL, native `async` and
+  `crossorigin` attributes, no `data-nscript`, exactly one loader on the homepage, zero loaders on
+  the ad-free pricing route, and exactly one clean loader after navigating back home. The original
+  unsupported-tag warning did not recur.
 
 ## Investigation notes
 
@@ -499,3 +501,7 @@ False positives are kept in the investigation notes so they are not rediscovered
   HTTP origin confirmed enforced CSP, HSTS, MIME sniffing protection, same-origin framing, strict
   referrer policy, camera/geolocation denial, same-origin microphone access, CSP reporting, and an
   HTTP→HTTPS 308 redirect. No defect was found.
+- A fresh article page rendered one AdSense unit and Google marked it `unfilled`; Google's managed
+  script then emitted `Uncaught (in promise) undefined`. Because the loader tag is valid, the
+  application unit rendered, and the rejection coincided with the external `unfilled` result, this
+  remains recorded as third-party ad-serving behavior rather than a confirmed application defect.
