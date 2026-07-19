@@ -1285,6 +1285,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No quota or OpenAI request was created.
 
+## CA-058 — Writing trusted model arithmetic for the overall band
+
+- Status: `FIXED`
+- Area: Writing scoring / IELTS band calculation / score persistence
+- Severity: High
+- Evidence: the Writing prompt asked the model to average four criterion bands, but the server
+  returned and persisted the model-provided `overallBand` without verifying the arithmetic.
+  A structurally valid response could therefore show an overall score that contradicted its own
+  criterion scores. Recorded Speaking already computed its overall server-side.
+- Fix: calculate the Writing overall from the task-specific first criterion plus Coherence and
+  Cohesion, Lexical Resource, and Grammatical Range using the shared official band-rounding helper.
+  Override the model's arithmetic before response and persistence. An incomplete criterion set now
+  returns HTTP 502 and refunds the exact consumed quota.
+- Regression coverage: successful Task 1 and Task 2 route tests deliberately supply a model
+  overall of 3.0 with criterion bands 6.5, 7.0, 7.5, and 8.0. Both require the correctly rounded
+  7.5 in the response, attempt, and score records. A malformed provider-result test proves HTTP 502,
+  no persistence, and exact quota refund.
+- Commit: `09781c9` (`Compute writing overall bands server-side`)
+- Verification: focused 17-test Writing route/schema coverage, the complete current-worktree
+  64-file/362-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No live quota or OpenAI mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
