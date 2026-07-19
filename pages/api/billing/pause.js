@@ -76,13 +76,21 @@ export default async function handler(req, res) {
   // Atomically reserve the one-time action before touching Stripe. Two
   // concurrent requests may both read the old row above, but only one can
   // change billing_pause_used_at from null.
-  const { data: claim, error: claimError } = await admin
-    .from('users')
-    .update({ billing_pause_used_at: pausedAt })
-    .eq('id', user.id)
-    .is('billing_pause_used_at', null)
-    .select('id')
-    .maybeSingle();
+  let claim;
+  let claimError;
+  try {
+    const result = await admin
+      .from('users')
+      .update({ billing_pause_used_at: pausedAt })
+      .eq('id', user.id)
+      .is('billing_pause_used_at', null)
+      .select('id')
+      .maybeSingle();
+    claim = result.data;
+    claimError = result.error;
+  } catch (error) {
+    claimError = error;
+  }
   if (claimError) {
     console.error('pause claim error:', claimError.message);
     return res.status(503).json({ error: 'Could not pause the subscription. Please try again.' });
@@ -99,40 +107,61 @@ export default async function handler(req, res) {
   } catch (stripeError) {
     // Stripe did not change, so release this exact reservation for a safe
     // retry. The timestamp guard prevents one request from undoing another.
-    const { error: rollbackError } = await admin
-      .from('users')
-      .update({ billing_pause_used_at: null })
-      .eq('id', user.id)
-      .eq('billing_pause_used_at', pausedAt)
-      .select('id')
-      .maybeSingle();
+    let rollbackError;
+    try {
+      const result = await admin
+        .from('users')
+        .update({ billing_pause_used_at: null })
+        .eq('id', user.id)
+        .eq('billing_pause_used_at', pausedAt)
+        .select('id')
+        .maybeSingle();
+      rollbackError = result.error;
+    } catch (error) {
+      rollbackError = error;
+    }
     if (rollbackError) console.error('pause claim rollback error:', rollbackError.message);
     console.error('pause subscription error:', stripeError.message);
+    if (rollbackError) {
+      return res.status(503).json({
+        error: 'The subscription was not paused, but the one-time action could not be reset. Please contact support.',
+      });
+    }
     return res.status(503).json({ error: 'Could not pause the subscription. Please try again.' });
   }
 
-  const { error: updateError } = await admin
-    .from('users')
-    .update({
-      billing_pause_until: resumeIso,
-      plan_status: 'active',
-    })
-    .eq('id', user.id)
-    .select('id')
-    .maybeSingle();
+  let updateError;
+  try {
+    const result = await admin
+      .from('users')
+      .update({
+        billing_pause_until: resumeIso,
+        plan_status: 'active',
+      })
+      .eq('id', user.id)
+      .select('id')
+      .maybeSingle();
+    updateError = result.error;
+  } catch (error) {
+    updateError = error;
+  }
   if (updateError) {
     // Stripe is authoritative and will emit customer.subscription.updated,
     // whose mapper restores billing_pause_until. Keep the one-time claim and
     // report the real external outcome instead of inviting a duplicate retry.
     console.error('pause detail persistence pending:', updateError.message);
   }
-  const { error: eventError } = await admin.from('activity_events').insert({
-    anon_id: `billing:${user.id}`,
-    user_id: user.id,
-    event: 'subscription_paused',
-    props: { resumes_at: resumeIso },
-  });
-  if (eventError) console.error('pause activity event error:', eventError.message);
+  try {
+    const { error: eventError } = await admin.from('activity_events').insert({
+      anon_id: `billing:${user.id}`,
+      user_id: user.id,
+      event: 'subscription_paused',
+      props: { resumes_at: resumeIso },
+    });
+    if (eventError) console.error('pause activity event error:', eventError.message);
+  } catch (eventError) {
+    console.error('pause activity event error:', eventError.message);
+  }
   return res.status(200).json({
     paused: true,
     resumesAt: resumeIso,

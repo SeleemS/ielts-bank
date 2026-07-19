@@ -14,7 +14,11 @@ const state = {
   stripeUpdates: [],
   claimAvailable: true,
   claimError: null,
+  claimReject: null,
+  rollbackReject: null,
   detailError: null,
+  detailReject: null,
+  eventReject: null,
   stripeError: null,
 };
 
@@ -61,24 +65,33 @@ vi.mock('@supabase/supabase-js', () => ({
               fields.billing_pause_used_at != null
               && Object.keys(fields).length === 1;
             const isDetail = fields.billing_pause_until != null;
+            const isRollback =
+              fields.billing_pause_used_at === null
+              && Object.keys(fields).length === 1;
             if (isClaim) {
+              if (state.claimReject) throw state.claimReject;
               return {
                 data: state.claimAvailable ? { id: 'user-1' } : null,
                 error: state.claimError,
               };
             }
             if (isDetail) {
+              if (state.detailReject) throw state.detailReject;
               return {
                 data: state.detailError ? null : { id: 'user-1' },
                 error: state.detailError,
               };
             }
+            if (isRollback && state.rollbackReject) throw state.rollbackReject;
             return { data: { id: 'user-1' }, error: null };
           },
         };
         return chain;
       },
-      insert: async () => ({ error: null }),
+      insert: async () => {
+        if (state.eventReject) throw state.eventReject;
+        return { error: null };
+      },
     }),
   }),
 }));
@@ -153,7 +166,11 @@ describe('POST /api/billing/pause', () => {
     state.stripeUpdates = [];
     state.claimAvailable = true;
     state.claimError = null;
+    state.claimReject = null;
+    state.rollbackReject = null;
     state.detailError = null;
+    state.detailReject = null;
+    state.eventReject = null;
     state.stripeError = null;
     vi.restoreAllMocks();
   });
@@ -236,6 +253,16 @@ describe('POST /api/billing/pause', () => {
     });
   });
 
+  it('recovers when the one-time claim promise rejects before Stripe', async () => {
+    state.claimReject = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.stripeUpdates).toEqual([]);
+  });
+
   it('releases the exact claim when Stripe fails before changing the subscription', async () => {
     state.stripeError = new Error('stripe unavailable');
     const res = await callPause();
@@ -255,6 +282,17 @@ describe('POST /api/billing/pause', () => {
     ]);
   });
 
+  it('reports a stuck claim truthfully when its rollback rejects', async () => {
+    state.stripeError = new Error('stripe unavailable');
+    state.rollbackReject = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/contact support/i);
+    expect(state.userUpdates).toHaveLength(2);
+  });
+
   it('keeps the one-time claim and reports reconciliation after Stripe succeeds', async () => {
     state.detailError = new Error('database temporarily unavailable');
     const res = await callPause();
@@ -270,6 +308,32 @@ describe('POST /api/billing/pause', () => {
         (update) => update.fields.billing_pause_used_at === null
       )
     ).toBe(false);
+  });
+
+  it('keeps truthful success when pause-detail persistence rejects', async () => {
+    state.detailReject = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      paused: true,
+      reconciling: true,
+    });
+    expect(state.stripeUpdates).toHaveLength(1);
+  });
+
+  it('keeps truthful success when activity logging rejects', async () => {
+    state.eventReject = new Error('logging unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      paused: true,
+      reconciling: false,
+    });
+    expect(state.stripeUpdates).toHaveLength(1);
   });
 
   it('rejects an expired or otherwise inactive entitlement', async () => {
