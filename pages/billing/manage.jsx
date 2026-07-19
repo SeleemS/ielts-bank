@@ -33,6 +33,7 @@ export default function ManageBillingPage() {
   const [busy, setBusy] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [error, setError] = React.useState('');
+  const [pauseResult, setPauseResult] = React.useState(null);
 
   async function openPortal() {
     setBusy('portal');
@@ -62,6 +63,10 @@ export default function ManageBillingPage() {
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || 'Could not pause the subscription.');
       track('subscription_pause', { source: 'billing_interstitial' });
+      setPauseResult({
+        resumesAt: body.resumesAt,
+        usedAt: new Date().toISOString(),
+      });
       setMessage(`Billing and Premium access are paused until ${new Date(body.resumesAt).toLocaleDateString()}.`);
     } catch (pauseError) {
       setError(pauseError.message);
@@ -71,6 +76,11 @@ export default function ManageBillingPage() {
   }
 
   const pending = authLoading || loading;
+  const effectivePauseUntil = pauseResult?.resumesAt || pauseUntil;
+  const effectivePauseUsedAt = pauseResult?.usedAt || pauseUsedAt;
+  const pauseActive =
+    Boolean(effectivePauseUntil) &&
+    new Date(effectivePauseUntil).getTime() > Date.now();
   return (
     <>
       <Head>
@@ -102,10 +112,12 @@ export default function ManageBillingPage() {
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="mt-1 h-5 w-5 text-emerald-600" />
                   <div>
-                    <h2 className="font-bold">Keep Premium active</h2>
+                    <h2 className="font-bold">
+                      {pauseActive ? 'Premium is paused' : 'Keep Premium active'}
+                    </h2>
                     <p className="mt-1 text-sm text-slate-600">
                       {billingStatusMessage({
-                        pauseUntil,
+                        pauseUntil: effectivePauseUntil,
                         expiresAt,
                         planStatus,
                         renewsAt,
@@ -121,7 +133,7 @@ export default function ManageBillingPage() {
                 planStatus,
                 renewsAt,
                 expiresAt,
-                pauseUsedAt,
+                pauseUsedAt: effectivePauseUsedAt,
               }) ? (
                 <section className="rounded-2xl border bg-white p-6">
                   <div className="flex items-start gap-3">
