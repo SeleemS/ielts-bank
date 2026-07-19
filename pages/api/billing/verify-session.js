@@ -7,6 +7,9 @@ import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe, handleStripeEvent } from '../../../lib/billing';
 
+const VERIFY_WINDOW_SECONDS = 10 * 60;
+const VERIFY_MAX_PER_WINDOW = 20;
+
 let _admin = null;
 function getAdmin() {
   if (_admin) return _admin;
@@ -54,6 +57,19 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { data: allowed, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: 'billing-verify-session',
+      p_identifier: user.id,
+      p_window_seconds: VERIFY_WINDOW_SECONDS,
+      p_max_requests: VERIFY_MAX_PER_WINDOW,
+    });
+    if (error) throw error;
+    if (!allowed) {
+      return res.status(429).json({
+        error: 'Too many activation checks. Please wait a few minutes and try again.',
+      });
+    }
+
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['subscription'],

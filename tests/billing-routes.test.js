@@ -637,6 +637,10 @@ describe('POST /api/billing/verify-session', () => {
     mockState.userRow = null;
     mockState.userError = null;
     mockState.userReject = null;
+    mockState.rateLimit = true;
+    mockState.rateLimitError = null;
+    mockState.rateLimitReject = null;
+    mockState.rpcCalls = [];
     mockState.retrievedSession = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
@@ -666,6 +670,61 @@ describe('POST /api/billing/verify-session', () => {
   it('returns a retryable response when auth verification rejects', async () => {
     mockState.authReject = new Error('auth service unavailable');
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_valid' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/still processing/i);
+    expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
+  });
+
+  it('rate-limits repeated activation checks before Stripe retrieval', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.rateLimit = false;
+
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_valid' },
+    });
+
+    expect(res.statusCode).toBe(429);
+    expect(res.jsonBody.error).toMatch(/too many activation checks/i);
+    expect(mockState.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-verify-session',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max_requests: 20,
+        },
+      },
+    ]);
+    expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
+  });
+
+  it('fails closed when the activation limiter returns an error', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.rateLimitError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_valid' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/still processing/i);
+    expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
+  });
+
+  it('fails closed when the activation limiter rejects', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.rateLimitReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
     const res = await callVerify({
       headers: { authorization: 'Bearer tok' },
       body: { session_id: 'cs_live_valid' },
