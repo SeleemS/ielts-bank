@@ -2387,6 +2387,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   synthetic rows, zero active subscribers, and zero weekly or win-back rows. The authorized cron was
   not invoked, so no customer, email, payment, account, consent, content, or provider state changed.
 
+## CA-100 — Lifecycle audience queries silently stopped at fixed row ceilings
+
+- Status: `FIXED`
+- Area: Lifecycle email / audience completeness / scheduled operations
+- Severity: Medium
+- Evidence: weekly generation fetched at most 50,000 active subscribers and 50,000 account rows,
+  while win-back generation fetched at most 5,000 eligible users. None of the queries specified an
+  order or requested another page, so growth beyond any ceiling would silently and arbitrarily omit
+  recipients forever. The resulting candidate set was also sent through one unbounded upsert,
+  making a nominal attempt to raise the read limit vulnerable to request-size and timeout failures.
+- Fix: traverse every source with deterministic 1,000-row keyset pages—unique subscriber email for
+  the consent list and the users primary key for account/win-back rows—with explicit cursor-progress
+  guards. Queue candidates are written in bounded 1,000-row idempotent batches and their confirmed
+  insert counts are summed. The cron duration budget is raised from 60 to 300 seconds so complete
+  audiences can finish on the production plan; consent, filters, personalization, and delivery caps
+  remain unchanged.
+- Regression coverage: the expanded 12-case lifecycle suite builds 1,001-row subscriber, account,
+  and win-back audiences; requires the exact second-page `gt` cursors and ascending orders; proves
+  two queue writes of 1,000 and one row; verifies aggregate inserted counts; locks the 300-second
+  runtime budget; and requires a second-page failure to abort before any queue write. All exact-
+  count, consent, suppression, stale-claim, provider-rejection, and continuation cases remain active.
+- Commit: `114c836` (`Paginate lifecycle email audiences`)
+- Verification: the focused 12-test lifecycle suite, the complete 79-file/499-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_4nTwpCBXQ98uRbUN4Z1VPDiTGrvr` reached promoted
+  `READY` from exact Git SHA `114c8368dcb6fdb85697cbbd3d8d3a0115e75a96`. Fresh production
+  probes returned HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer-secret GET,
+  both before audience or queue work. A read-only live Supabase request exercised the same ordered
+  users keyset, returned one row on each of two consecutive pages, and confirmed the cursor advanced;
+  the active subscriber count remained zero. The authorized cron was not invoked, so no customer,
+  email, payment, account, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
