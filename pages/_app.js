@@ -13,9 +13,17 @@ import { startSessionHeartbeat } from '../src/lib/sessionHeartbeat';
 import ConsentManager from '../src/components/ConsentManager';
 import InteractionTelemetry from '../src/components/InteractionTelemetry';
 import { adsAllowedForPath } from '../src/lib/adPolicy';
+import { syncAdSenseScript } from '../src/lib/adsenseLoader';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
-const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
+
+function AdSenseScript({ enabled }) {
+  React.useEffect(() => {
+    syncAdSenseScript(document, enabled);
+    return () => syncAdSenseScript(document, false);
+  }, [enabled]);
+  return null;
+}
 
 function AppTelemetry({ router }) {
   const { user, loading } = useAuth();
@@ -63,13 +71,7 @@ function MyApp({ Component, pageProps }) {
       <InteractionTelemetry />
       <div className={`${inter.variable} font-sans`}>
       {/* Google AdSense */}
-      {adsAllowed && adsOnPublicHost ? <Script
-          id="adsbygoogle-init"
-          strategy="afterInteractive"
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-          crossOrigin="anonymous"
-        /> : null}
+      <AdSenseScript enabled={adsAllowed && adsOnPublicHost} />
 
       {/* Google Analytics 4 (gtag.js), proxied first-party via /gt rewrites
           in next.config.js so ad blockers don't drop the script or hits */}

@@ -467,6 +467,25 @@ False positives are kept in the investigation notes so they are not rediscovered
   robots parsing confirmed HTTP 200 text output, public-content access plus all three exclusions for
   every named crawler, matching wildcard exclusions, and the canonical sitemap declaration.
 
+## CA-025 — AdSense rejected the framework-modified script tag
+
+- Status: `FIXED`
+- Area: Advertising / browser console / revenue / route policy
+- Severity: Medium
+- Evidence: signed-out production browser QA on the homepage logged `AdSense head tag doesn't
+  support data-nscript attribute`, followed by an unhandled promise error in the managed AdSense
+  script. The framework script component adds `data-nscript`, which is not part of Google's
+  supported async AdSense tag.
+- Fix: load the official-shape async AdSense script directly and idempotently on allowed public
+  routes, remove it when ads become disallowed, and retain the existing public-host and route
+  policy. Google Analytics continues to use the framework loader separately.
+- Regression coverage: `src/lib/adsenseLoader.test.js` verifies the exact three-attribute tag,
+  publisher URL encoding, absence of `data-nscript`, idempotence, and removal on disallowed routes.
+- Commit: `Load AdSense without unsupported attributes`
+- Verification: focused 3-test loader coverage, the complete current-worktree 45-file/244-test
+  Vitest suite, ESLint, the 134-file analytics audit, and the 527-page production build. Production
+  browser verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
