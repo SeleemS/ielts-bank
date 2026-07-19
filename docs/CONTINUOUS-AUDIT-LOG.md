@@ -1510,6 +1510,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   unauthenticated request. No live limiter, OpenAI, quota, activity, or persistence mutation
   occurred.
 
+## CA-068 — Realtime Speaking ignored failed score persistence
+
+- Status: `FIXED`
+- Area: Realtime examiner / score persistence / data consistency
+- Severity: Medium
+- Evidence: realtime scoring inserted an attempt and then awaited the score insert without
+  inspecting its returned error. Both a resolved database error and a rejected write could leave a
+  permanent attempt with no corresponding score.
+- Fix: inspect the score-insert result, retain the created attempt ID, and compensating-delete that
+  attempt after either a returned error or a thrown persistence failure. Rollback failures remain
+  fail-soft and operationally logged.
+- Regression coverage: complete authenticated realtime route cases force both failure forms after
+  successful model scoring and attempt insertion. Each requires HTTP 200 and deletion of the exact
+  attempt ID, while existing coverage continues to verify server-calculated bands and normal
+  persistence.
+- Commit: `2c9128b` (`Roll back orphaned realtime attempts`)
+- Verification: focused 18-test realtime route/schema coverage, the complete current-worktree
+  66-file/388-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated request. No live limiter, OpenAI, or persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
