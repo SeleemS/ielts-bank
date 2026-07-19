@@ -5,18 +5,30 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
+import { TERMS_SEO } from '../../lib/termsSeo';
 
 const TermsOfService = () => {
   return (
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
-        <title>Terms of Service | IELTS-Bank</title>
-        <meta
-          name="description"
-          content="Read the IELTS-Bank terms for free practice, Premium plans, the Exam Pass, cancellations, and the 14-day refund policy."
-        />
+        <title>{TERMS_SEO.title}</title>
+        <meta name="description" content={TERMS_SEO.description} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.ielts-bank.com/termsofservice" />
+        <link rel="canonical" href={TERMS_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={TERMS_SEO.title} />
+        <meta property="og:description" content={TERMS_SEO.description} />
+        <meta property="og:url" content={TERMS_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={TERMS_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={TERMS_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={TERMS_SEO.title} />
+        <meta name="twitter:description" content={TERMS_SEO.description} />
+        <meta name="twitter:image" content={TERMS_SEO.ogImage} />
       </Head>
       <Navbar />
 

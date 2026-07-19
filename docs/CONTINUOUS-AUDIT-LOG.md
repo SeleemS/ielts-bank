@@ -261,6 +261,21 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit, generated HTML inspection, and the 527-page production build. Live production returned
   every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
+## CA-015 — Terms links had no controlled share preview
+
+- Status: `IN VERIFICATION`
+- Area: Terms / billing trust / Open Graph / Twitter cards
+- Severity: Low
+- Evidence: `/termsofservice` had canonical title and description metadata but no Open Graph or
+  Twitter fields, leaving shared billing, cancellation, and refund-policy links without a controlled
+  preview.
+- Fix: add a shared Terms SEO contract, a terms-specific 1200×630 card, complete Open Graph
+  metadata, and matching Twitter large-card fields.
+- Regression coverage: `lib/termsSeo.test.js` verifies canonical content and every decoded dynamic
+  image parameter.
+- Commit: `Add Terms page share metadata`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
