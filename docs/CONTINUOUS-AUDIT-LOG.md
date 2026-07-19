@@ -1487,6 +1487,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   HTTP 401 for a same-origin unauthenticated request. No live limiter, OpenAI, quota, storage, or
   persistence mutation occurred.
 
+## CA-067 — Writing could leave orphaned attempts and false saved-score events
+
+- Status: `FIXED`
+- Area: Writing scorer / score persistence / analytics integrity
+- Severity: Medium
+- Evidence: Writing inserted an attempt before its score. A returned error or rejected score write
+  left the attempt orphaned; a returned error also continued into `writing_score_server` activity
+  insertion, falsely recording a saved score even though no score row existed.
+- Fix: retain the attempt ID, delete that attempt after either form of score-write failure, return
+  before downstream activity logging on a resolved error, and keep rollback failures fail-soft but
+  operationally visible.
+- Regression coverage: complete route cases force a resolved score error with a valid anonymous
+  analytics ID and a rejected score write. Both require HTTP 200 and deletion of the exact attempt;
+  the resolved-error case also proves only the attempt and score writes occur, with no activity
+  event.
+- Commit: `7aa087a` (`Roll back orphaned writing attempts`)
+- Verification: focused 21-test Writing route/schema coverage, the complete current-worktree
+  66-file/386-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated request. No live limiter, OpenAI, quota, activity, or persistence mutation
+  occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
