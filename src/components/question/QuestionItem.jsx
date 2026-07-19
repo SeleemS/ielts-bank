@@ -293,6 +293,7 @@ export default function QuestionItem({
           <button
             type="button"
             aria-pressed={flagged}
+            aria-label={`${flagged ? 'Unflag' : 'Flag'} question ${n}`}
             onClick={() => onToggleFlag?.(n)}
             className={cn(
               'shrink-0 rounded-md border px-3 py-2 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:py-1',
