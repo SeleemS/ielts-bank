@@ -594,6 +594,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   the live event ledger began a new anonymous session with the accept interaction followed by page
   views.
 
+## CA-030 — Shared footer and contact headings skipped a level
+
+- Status: `FIXED`
+- Area: Accessibility / semantic headings / shared footer and cards
+- Severity: Medium
+- Evidence: axe-core found `heading-order` violations on `/contactus`, `/speaking-examiner`,
+  `/mock/academic-reading-mock-1`, and `/404`. Pages with no intervening section heading jumped
+  directly from the page `h1` to footer `h3` elements; the contact card added another `h3` directly
+  under its `h1`.
+- Fix: use `h2` for each independent footer section, let the reusable `CardTitle` select a semantic
+  heading element while preserving `h3` as its default, and render the top-level contact-card
+  section as `h2`. The footer source now uses a `.jsx` extension so its rendered semantics can be
+  tested directly.
+- Regression coverage: `src/components/Footer.test.jsx`, `components/ui/card.test.jsx`, and the
+  expanded contact-page component suite assert all five footer heading levels, the card-title
+  default/override contract, and the contact form section hierarchy.
+- Commit: `Fix shared heading hierarchy`
+- Verification: focused 7-test component coverage, the complete current-worktree
+  52-file/267-test Vitest suite, ESLint, the 142-file analytics audit, and the 528-page production
+  build. Axe-core found zero violations across 23 representative local production-build templates,
+  including the four original failures. After deployment, the same 23-template live sweep again
+  returned zero violations.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
@@ -615,3 +638,7 @@ False positives are kept in the investigation notes so they are not rediscovered
   The local audit environment does not hold that signing secret and no test inbox is connected, so
   the live forged-token rejection was verified but the delivered-link click remains an explicit
   end-to-end verification gap.
+- The post-publication sitemap contained 474 unique URLs. A no-redirect live crawl found all 474
+  healthy, indexable, and self-canonical. One raw-HTML comparison saw `Australia&#x27;s` in a
+  canonical attribute; direct DOM verification confirmed the browser correctly decodes it to the
+  advertised apostrophe URL, so it is not a canonical defect.
