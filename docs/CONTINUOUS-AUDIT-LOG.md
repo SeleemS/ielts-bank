@@ -163,7 +163,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-009 — Live Speaking Examiner links had no social share metadata
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Speaking examiner / Open Graph / Twitter cards
 - Severity: Medium
 - Evidence: the generated and production `/speaking-examiner` page had a title, description, and
@@ -174,7 +174,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/speakingExaminerSeo.test.js` verifies the canonical route, content
   contract, and every decoded dynamic image parameter.
 - Commit: `Add examiner social share metadata`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, full 28-file/176-test Vitest suite, ESLint, analytics
+  audit, generated HTML inspection, and the 527-page production build. Live production returned
+  every expected OG/Twitter field, matching OG/Twitter image URLs, and an HTTP 200 non-empty
+  `image/png` social card.
 
 ## Investigation notes
 
