@@ -643,6 +643,25 @@ False positives are kept in the investigation notes so they are not rediscovered
   that opened it. The shared Sheet behavior is verified by its DOM integration test because the
   production browser audit viewport is desktop-sized.
 
+## CA-032 — Signed-out dashboard had no page-level heading
+
+- Status: `FIXED`
+- Area: Dashboard / authentication boundary / accessibility / semantic headings
+- Severity: Medium
+- Evidence: the signed-out `/dashboard` state rendered `Sign in to see your progress` with the
+  reusable card title's default `h3`. There was no `h1` anywhere in the main content, so the route
+  began at heading level three and then moved backwards to the footer's `h2` sections.
+- Fix: render the signed-out dashboard title as the route's `h1` while retaining the reusable
+  `CardTitle` default for nested cards. Rename the JSX-bearing state module to `.jsx` so its real
+  rendered semantics can be regression-tested.
+- Regression coverage: `src/components/dashboard/States.test.jsx` renders the signed-out state and
+  requires exactly the expected page-level heading with no lower-level main-content headings.
+- Commit: `Fix signed-out dashboard heading`
+- Verification: focused 3-test state/CardTitle coverage, the complete current-worktree
+  55-file/272-test Vitest suite, ESLint, the 146-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh signed-out production QA found
+  exactly one heading in the dashboard main content: `H1 Sign in to see your progress`.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
@@ -668,3 +687,7 @@ False positives are kept in the investigation notes so they are not rediscovered
   healthy, indexable, and self-canonical. One raw-HTML comparison saw `Australia&#x27;s` in a
   canonical attribute; direct DOM verification confirmed the browser correctly decodes it to the
   advertised apostrophe URL, so it is not a canonical defect.
+- Signed-out production probes sent valid same-origin POST requests to billing checkout, billing
+  pause, billing portal, checkout verification, realtime examiner session, Writing scoring,
+  realtime Speaking scoring, and recorded Speaking scoring. All eight rejected the request with
+  HTTP 401 before performing protected work.
