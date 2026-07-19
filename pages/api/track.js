@@ -103,7 +103,13 @@ export default async function handler(req, res) {
       p_window_seconds: 60,
       p_max: 120,
     });
-    if (limitError || allowed !== true) return res.status(429).json({ error: 'Rate limited.' });
+    if (limitError) {
+      console.error('track rate-limit check failed:', limitError.message);
+      return res.status(503).json({ error: 'Telemetry unavailable.' });
+    }
+    if (allowed !== true) {
+      return res.status(429).json({ error: 'Rate limited.' });
+    }
 
     const country = requestCountry(req);
     const resolvedUserId = await userId(req);
