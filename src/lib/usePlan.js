@@ -28,18 +28,19 @@ export function usePlan() {
     renewsAt: null,
     expiresAt: null,
     pauseUntil: null,
+    pauseUsedAt: null,
     hasBillingAccount: false,
   });
 
   React.useEffect(() => {
     if (!user?.id) {
-      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, hasBillingAccount: false });
+      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, pauseUsedAt: null, hasBillingAccount: false });
       return undefined;
     }
     let active = true;
     getSupabase()
       .from('users')
-      .select('plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, stripe_customer_id')
+      .select('plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at, stripe_customer_id')
       .eq('id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -51,6 +52,7 @@ export function usePlan() {
           renewsAt: data?.plan_renews_at || null,
           expiresAt: data?.plan_expires_at || null,
           pauseUntil: data?.billing_pause_until || null,
+          pauseUsedAt: data?.billing_pause_used_at || null,
           hasBillingAccount: Boolean(data?.stripe_customer_id),
         });
       })

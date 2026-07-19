@@ -18,7 +18,8 @@ alter table public.users
   add column if not exists plan_expires_at     timestamptz,
   add column if not exists exam_date           date,
   add column if not exists canceled_at         timestamptz,
-  add column if not exists billing_pause_until timestamptz;
+  add column if not exists billing_pause_until timestamptz,
+  add column if not exists billing_pause_used_at timestamptz;
 
 create index if not exists users_plan_expires_at_idx
   on public.users (plan_expires_at)
@@ -53,6 +54,7 @@ begin
     new.plan_expires_at        is distinct from old.plan_expires_at or
     new.canceled_at            is distinct from old.canceled_at or
     new.billing_pause_until    is distinct from old.billing_pause_until or
+    new.billing_pause_used_at  is distinct from old.billing_pause_used_at or
     new.stripe_customer_id     is distinct from old.stripe_customer_id or
     new.stripe_subscription_id is distinct from old.stripe_subscription_id
   ) and current_user not in ('postgres', 'supabase_admin', 'service_role') then

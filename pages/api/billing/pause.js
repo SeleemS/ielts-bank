@@ -3,6 +3,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe } from '../../../lib/billing';
+import { isPremiumRow } from '../../../lib/premium';
 
 function getAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -30,11 +31,14 @@ export default async function handler(req, res) {
   if (!user) return res.status(401).json({ error: 'Sign in first.' });
   const { data: row, error } = await admin
     .from('users')
-    .select('stripe_subscription_id, plan, plan_status')
+    .select('stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
     .eq('id', user.id)
     .maybeSingle();
-  if (error || !row?.stripe_subscription_id || row.plan !== 'premium') {
+  if (error || !row?.stripe_subscription_id || !isPremiumRow(row)) {
     return res.status(409).json({ error: 'There is no active subscription to pause.' });
+  }
+  if (row.billing_pause_used_at) {
+    return res.status(409).json({ error: 'The one-time billing pause has already been used.' });
   }
 
   const resumesAt = Math.floor(Date.now() / 1000) + 30 * 86400;
@@ -44,9 +48,14 @@ export default async function handler(req, res) {
       metadata: { user_id: user.id },
     });
     const resumeIso = new Date(resumesAt * 1000).toISOString();
+    const pausedAt = new Date().toISOString();
     const { error: updateError } = await admin
       .from('users')
-      .update({ billing_pause_until: resumeIso, plan_status: 'active' })
+      .update({
+        billing_pause_until: resumeIso,
+        billing_pause_used_at: pausedAt,
+        plan_status: 'active',
+      })
       .eq('id', user.id);
     if (updateError) throw updateError;
     await admin.from('activity_events').insert({

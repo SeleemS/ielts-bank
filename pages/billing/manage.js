@@ -19,7 +19,15 @@ async function authHeaders() {
 
 export default function ManageBillingPage() {
   const { user, loading: authLoading } = useAuth();
-  const { isPremium, renewsAt, expiresAt, pauseUntil, hasBillingAccount, loading } = usePlan();
+  const {
+    isPremium,
+    renewsAt,
+    expiresAt,
+    pauseUntil,
+    pauseUsedAt,
+    hasBillingAccount,
+    loading,
+  } = usePlan();
   const [busy, setBusy] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [error, setError] = React.useState('');
@@ -108,7 +116,7 @@ export default function ManageBillingPage() {
                 </div>
               </section>
 
-              {isPremium && renewsAt && !expiresAt ? (
+              {isPremium && renewsAt && !expiresAt && !pauseUsedAt ? (
                 <section className="rounded-2xl border bg-white p-6">
                   <div className="flex items-start gap-3">
                     <PauseCircle className="mt-1 h-5 w-5 text-amber-600" />

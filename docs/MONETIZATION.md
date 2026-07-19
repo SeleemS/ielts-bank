@@ -203,6 +203,7 @@ The original plan chose Paddle as merchant-of-record because it remits VAT/GST i
   exam_date              date,
   canceled_at            timestamptz,
   billing_pause_until    timestamptz,
+  billing_pause_used_at  timestamptz, -- enforces the one-time pause offer
   stripe_customer_id     text,     -- unique, indexed
   stripe_subscription_id text,     -- unique, indexed
 

@@ -42,7 +42,7 @@ Last updated: 2026-07-19
 
 - Exam Pass `IMPLEMENTED` — fourth one-time 28-day SKU, PPP variant, webhook entitlement, realtime quota, authoritative expiry checks across server/client/email segmentation, refund/dispute revocation, and non-renewal copy.
 - Annual framing `IMPLEMENTED` — positioned around a preparation/retake cycle without changing the live price before evidence exists.
-- Cancellation `IMPLEMENTED` — in-app keep/pause/Exam Pass choices, 30-day Stripe collection pause, and a managed Stripe portal configuration with cancellation reasons and period-end cancellation.
+- Cancellation `IMPLEMENTED` — in-app keep/pause/Exam Pass choices, a server-enforced one-time 30-day Stripe collection pause, and a managed Stripe portal configuration with cancellation reasons and period-end cancellation.
 - Win-back `IMPLEMENTED` — 30-day canceled-user eligibility, idempotent email, and server-validated 40% Monthly checkout path when the Stripe coupon environment value is configured.
 - Mock gating `IMPLEMENTED` — static page props contain metadata only; full sections/questions/answers come from an authenticated Premium-only no-store endpoint.
 
@@ -65,7 +65,8 @@ Last updated: 2026-07-19
 - Checkpoint 5: free-sample review closed the anonymous-auth token bypass and added transactional, retry-safe quota compensation for model errors/timeouts; route tests prove rejection happens before metering and provider failure invokes the exact refund.
 - Checkpoint 6: entitlement review fixed indefinite access after Exam Pass expiry, cleared pass access on refunds, resolved Stripe disputes through their Charge object, and aligned weekly email segmentation with the shared entitlement rule.
 - Checkpoint 7: activation/lifecycle review keyed purchase onboarding to each Checkout Session; Speaking now refunds its daily unit on every pre-result failure and immediately deletes uploaded voice data on transcription/validation failures.
-- Final local verification: `git diff --check`, ESLint, 16 test files / 132 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
+- Checkpoint 8: cancellation review made the advertised one-time pause durable, rejected stale/expired entitlements before Stripe mutation, and hid the pause offer after use.
+- Final local verification: `git diff --check`, ESLint, 17 test files / 135 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
 - Browser QA: 375px anonymous estimator flow reached a 6.0 result with skipped measured sections and completed W/S ranges; contextual Writing pricing rendered all four plans, trust content, guarantee, and comparison table; both pages had zero browser console warnings/errors.
 - API QA: unsigned Writing, Premium mock payload, and checkout reconciliation all reject with `401`; unauthorized lifecycle cron rejects with `401`; invalid unsubscribe token rejects with `400`; static mock HTML is metadata-only.
 - Production database migration: isolated dry-run contains exactly `20260719010159_monetization_funnel_and_free_writing_score.sql`; live schema probes confirm the monetization columns, free-Writing marker, billing event key, and lifecycle outbox are not present yet. Production apply is pending explicit live-schema approval.
