@@ -179,6 +179,21 @@ False positives are kept in the investigation notes so they are not rediscovered
   every expected OG/Twitter field, matching OG/Twitter image URLs, and an HTTP 200 non-empty
   `image/png` social card.
 
+## CA-010 — Writing Checker shares had no preview image
+
+- Status: `IN VERIFICATION`
+- Area: Writing checker / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: `/ielts-writing-checker` supplied OG title, description, URL, and a Twitter large-card
+  declaration but omitted both OG and Twitter image fields, so the large-card contract was
+  incomplete and shares remained text-only.
+- Fix: centralize the Writing Checker SEO contract and add a dedicated 1200×630 Writing card with
+  complete OG image attributes plus matching Twitter title, description, and image fields.
+- Regression coverage: `lib/writingCheckerSeo.test.js` verifies canonical content and every decoded
+  dynamic image parameter.
+- Commit: `Add Writing Checker share image`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

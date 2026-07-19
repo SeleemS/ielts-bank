@@ -30,9 +30,9 @@ import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import { ScoringProgress } from '../src/components/question/ScoreUI';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
 
-import { SITE_URL } from '../lib/site';
+import { WRITING_CHECKER_SEO } from '../lib/writingCheckerSeo';
 const SCORE_API = '/api/score/writing';
-const CANONICAL = `${SITE_URL}/ielts-writing-checker`;
+const CANONICAL = WRITING_CHECKER_SEO.canonical;
 const DRAFT_KEY = 'ielts-writing-checker-draft';
 // Analytics identifier for this tool (there is no passage row behind it).
 const CHECKER_SLUG = 'writing-checker';
@@ -313,9 +313,8 @@ export default function WritingCheckerPage() {
     })),
   };
 
-  const pageTitle = 'IELTS Writing Checker – Try Your First AI Band Score Free';
-  const metaDescription =
-    'Try your first AI IELTS Writing score free. See your estimated overall band and one criterion, then unlock the complete examiner-style feedback with Premium.';
+  const pageTitle = WRITING_CHECKER_SEO.title;
+  const metaDescription = WRITING_CHECKER_SEO.description;
 
   return (
     <>
@@ -329,7 +328,15 @@ export default function WritingCheckerPage() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={CANONICAL} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={WRITING_CHECKER_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={WRITING_CHECKER_SEO.imageAlt} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={WRITING_CHECKER_SEO.ogImage} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
