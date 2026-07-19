@@ -865,6 +865,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   correct page-level heading and sign-in boundary. The injected database-failure branches were
   verified in rendered integration tests rather than causing an unsafe live service outage.
 
+## CA-041 — Billing portal database failures were misreported as no account
+
+- Status: `FIXED`
+- Area: Billing API / customer portal / Supabase failure recovery
+- Severity: High
+- Evidence: `/api/billing/portal` discarded the resolved Supabase error from its customer lookup.
+  A database outage therefore followed the same HTTP 404 path as a verified user who had never
+  purchased, telling a paid learner `No billing account yet.` Auth and customer-query promise
+  rejections also escaped the handler without a controlled response.
+- Fix: distinguish invalid credentials, a verified missing customer, and backend verification
+  failure. The endpoint now catches rejected auth lookups, checks resolved customer-query errors,
+  uses `maybeSingle()` to preserve the real no-row case, and returns a retryable HTTP 503 without
+  contacting Stripe whenever the current billing account cannot be verified.
+- Regression coverage: the new `tests/billing-portal.test.js` route suite covers method and origin
+  enforcement, missing and invalid authentication, rejected auth verification, resolved and
+  rejected customer-query failures, a genuine no-customer user, exact successful Stripe portal
+  session construction, and Stripe session failure.
+- Commit: `dd12462` (`Recover billing portal lookup failures`)
+- Verification: focused 11-test portal/page coverage, the complete current-worktree
+  62-file/300-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 with `Allow: POST` for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for
+  a same-origin unauthenticated POST. The paid-customer success and injected dependency-failure
+  paths are verified by the route tests without opening a live customer session or disrupting
+  production services.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
