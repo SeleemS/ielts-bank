@@ -5,6 +5,9 @@ import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe } from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
 
+const PAUSE_WINDOW_SECONDS = 10 * 60;
+const PAUSE_MAX_PER_WINDOW = 5;
+
 function getAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -67,6 +70,26 @@ export default async function handler(req, res) {
   }
   if (row.billing_pause_used_at) {
     return res.status(409).json({ error: 'The one-time billing pause has already been used.' });
+  }
+
+  try {
+    const { data: allowed, error } = await admin.rpc('check_rate_limit', {
+      p_bucket: 'billing-pause',
+      p_identifier: user.id,
+      p_window_seconds: PAUSE_WINDOW_SECONDS,
+      p_max: PAUSE_MAX_PER_WINDOW,
+    });
+    if (error) throw error;
+    if (!allowed) {
+      return res.status(429).json({
+        error: 'Too many billing pause attempts. Please wait a few minutes and try again.',
+      });
+    }
+  } catch (error) {
+    console.error('pause rate-limit error:', error.message);
+    return res.status(503).json({
+      error: 'Could not pause the subscription. Please try again.',
+    });
   }
 
   const resumesAt = Math.floor(Date.now() / 1000) + 30 * 86400;

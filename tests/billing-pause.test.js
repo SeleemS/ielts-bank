@@ -10,6 +10,10 @@ const state = {
   userRow: null,
   userError: null,
   userReject: null,
+  rateLimit: true,
+  rateLimitError: null,
+  rateLimitReject: null,
+  rpcCalls: [],
   userUpdates: [],
   stripeUpdates: [],
   claimAvailable: true,
@@ -34,6 +38,11 @@ vi.mock('@supabase/supabase-js', () => ({
               error: state.authError || { message: 'invalid token' },
             };
       },
+    },
+    rpc: async (name, args) => {
+      state.rpcCalls.push({ name, args });
+      if (state.rateLimitReject) throw state.rateLimitReject;
+      return { data: state.rateLimit, error: state.rateLimitError };
     },
     from: (table) => ({
       select: () => {
@@ -131,18 +140,25 @@ function makeRes() {
   };
 }
 
-async function callPause() {
-  const { default: handler } = await import('../pages/api/billing/pause');
-  const req = {
-    method: 'POST',
+function makeReq({
+  method = 'POST',
+  origin = 'https://www.ielts-bank.com',
+  authorization = 'Bearer token',
+} = {}) {
+  return {
+    method,
     headers: {
-      origin: 'https://www.ielts-bank.com',
-      authorization: 'Bearer token',
+      origin,
+      authorization,
     },
     socket: { remoteAddress: '127.0.0.1' },
   };
+}
+
+async function callPause(options) {
+  const { default: handler } = await import('../pages/api/billing/pause');
   const res = makeRes();
-  await handler(req, res);
+  await handler(makeReq(options), res);
   return res;
 }
 
@@ -162,6 +178,10 @@ describe('POST /api/billing/pause', () => {
     };
     state.userError = null;
     state.userReject = null;
+    state.rateLimit = true;
+    state.rateLimitError = null;
+    state.rateLimitReject = null;
+    state.rpcCalls = [];
     state.userUpdates = [];
     state.stripeUpdates = [];
     state.claimAvailable = true;
@@ -173,6 +193,27 @@ describe('POST /api/billing/pause', () => {
     state.eventReject = null;
     state.stripeError = null;
     vi.restoreAllMocks();
+  });
+
+  it('allows only same-origin POST requests', async () => {
+    let res = await callPause({ method: 'GET' });
+    expect(res.statusCode).toBe(405);
+    expect(res.headers.Allow).toBe('POST');
+
+    res = await callPause({ origin: 'https://attacker.example' });
+    expect(res.statusCode).toBe(403);
+    expect(state.rpcCalls).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
+  });
+
+  it('requires an authenticated user', async () => {
+    const res = await callPause({ authorization: '' });
+
+    expect(res.statusCode).toBe(401);
+    expect(state.rpcCalls).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
   });
 
   it('returns a retryable service error when auth verification rejects', async () => {
@@ -215,6 +256,7 @@ describe('POST /api/billing/pause', () => {
 
     expect(res.statusCode).toBe(409);
     expect(res.jsonBody.error).toMatch(/no active subscription/i);
+    expect(state.rpcCalls).toEqual([]);
     expect(state.stripeUpdates).toEqual([]);
     expect(state.userUpdates).toEqual([]);
   });
@@ -223,6 +265,17 @@ describe('POST /api/billing/pause', () => {
     const res = await callPause();
 
     expect(res.statusCode).toBe(200);
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-pause',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max: 5,
+        },
+      },
+    ]);
     expect(state.stripeUpdates).toHaveLength(1);
     expect(state.stripeUpdates[0].fields.pause_collection.behavior).toBe('void');
     expect(state.userUpdates[0].fields.billing_pause_used_at).toBeTruthy();
@@ -236,6 +289,53 @@ describe('POST /api/billing/pause', () => {
 
     expect(res.statusCode).toBe(409);
     expect(res.jsonBody.error).toMatch(/already been used/i);
+    expect(state.rpcCalls).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
+  });
+
+  it('rate-limits repeated pause attempts before a claim or Stripe call', async () => {
+    state.rateLimit = false;
+
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(429);
+    expect(res.jsonBody.error).toMatch(/too many billing pause attempts/i);
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-pause',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max: 5,
+        },
+      },
+    ]);
+    expect(state.userUpdates).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
+  });
+
+  it('fails closed when the pause limiter returns an error', async () => {
+    state.rateLimitError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.userUpdates).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
+  });
+
+  it('fails closed when the pause limiter rejects', async () => {
+    state.rateLimitReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.userUpdates).toEqual([]);
     expect(state.stripeUpdates).toEqual([]);
   });
 
