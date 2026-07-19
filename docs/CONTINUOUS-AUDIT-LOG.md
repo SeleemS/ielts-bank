@@ -315,8 +315,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Complete practice share metadata`
 - Verification: focused 6-template regression coverage, the complete current-worktree
   37-file/204-test Vitest suite, ESLint, analytics audit, exact generated metadata inspection across
-  all 475 affected routes, and the 527-page production build. Live production verification will be
-  recorded after deployment.
+  all 475 affected routes, and the 527-page production build. The clean Vercel build from the
+  committed fix reached `Ready` with the production aliases. Live production probes across all six
+  shared template shapes returned HTTP 200, complete large-card fields, and HTTP 200 `image/png`
+  cards.
 
 ## Investigation notes
 
