@@ -27,6 +27,10 @@ import SignInDialog from '../components/auth/SignInDialog';
 import { getSupabase } from '../../lib/supabase';
 import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
+import {
+  speakingAudioControlLabel,
+  speakingQuestionAudioContext,
+} from '../lib/speakingAudioLabel';
 
 import { SITE_URL } from '../../lib/site';
 import {
@@ -299,7 +303,14 @@ function useExaminerAudio() {
 // ---------------------------------------------------------------------------
 // Examiner "play question" button.
 // ---------------------------------------------------------------------------
-function ExaminerButton({ url, id, playingId, loadingId, onToggle, label = 'Play examiner question' }) {
+function ExaminerButton({
+  url,
+  id,
+  playingId,
+  loadingId,
+  onToggle,
+  label = 'examiner question',
+}) {
   const disabled = !url;
   const isPlaying = playingId === id;
   const isLoading = loadingId === id;
@@ -311,7 +322,12 @@ function ExaminerButton({ url, id, playingId, loadingId, onToggle, label = 'Play
       disabled={disabled}
       onClick={() => onToggle(url, id)}
       className="shrink-0"
-      aria-label={disabled ? 'Examiner audio unavailable' : label}
+      aria-label={speakingAudioControlLabel({
+        disabled,
+        isLoading,
+        isPlaying,
+        context: label,
+      })}
     >
       {isLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : isPlaying ? <Pause className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
       {isLoading ? 'Loading…' : isPlaying ? 'Pause' : 'Play'}
@@ -648,6 +664,7 @@ function QuestionList({ heading, questions, examiner }) {
                 playingId={examiner.playingId}
                 loadingId={examiner.loadingId}
                 onToggle={examiner.toggle}
+                label={speakingQuestionAudioContext(i, q.text)}
               />
             </li>
           );
@@ -673,7 +690,7 @@ function CueCard({ cueCard, examiner }) {
           playingId={examiner.playingId}
           loadingId={examiner.loadingId}
           onToggle={examiner.toggle}
-          label="Play examiner reading the cue card"
+          label="examiner reading the cue card"
         />
       </div>
       <p className="text-base font-bold text-foreground">{cueCard.topic}</p>
