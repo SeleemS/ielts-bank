@@ -34,7 +34,7 @@ vi.mock('../../components/ui/card', () => ({
   CardContent: ({ children }) => React.createElement('div', null, children),
   CardDescription: ({ children }) => React.createElement('div', null, children),
   CardHeader: ({ children }) => React.createElement('div', null, children),
-  CardTitle: ({ children }) => React.createElement('div', null, children),
+  CardTitle: ({ children, as = 'h3' }) => React.createElement(as, null, children),
 }));
 
 import ContactUs from './ContactUs';
@@ -83,6 +83,12 @@ afterEach(() => {
 });
 
 describe('ContactUs submission analytics', () => {
+  it('uses a second-level heading for the contact form section', () => {
+    renderContact();
+
+    expect(container.querySelector('h2')?.textContent).toBe('Send us a message');
+  });
+
   it('records a successful signed-in submission accurately', async () => {
     testState.user = { id: 'user-123' };
     global.fetch.mockResolvedValue({

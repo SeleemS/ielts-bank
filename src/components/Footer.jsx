@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Separator } from '../../components/ui/separator';
 import NewsletterSignup from './NewsletterSignup';
 
-// Pure Tailwind/shadcn Footer. NO Chakra imports — renders on every page,
+// Pure Tailwind/shadcn Footer. No Chakra imports — renders on every page,
 // including still-Chakra ones, so it must be self-contained.
 
 const PRACTICE_LINKS = [
@@ -35,7 +35,7 @@ const LEGAL_LINKS = [
 function FooterColumn({ title, links }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">{title}</h3>
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">{title}</h2>
       <ul className="mt-4 space-y-3">
         {links.map((link) => (
           <li key={link.label}>
@@ -72,9 +72,9 @@ export default function Footer() {
               with instant scoring, AI band feedback and high-band Writing model answers.
             </p>
             <div className="mt-6 max-w-sm">
-              <h3 className="text-sm font-semibold text-white">
+              <h2 className="text-sm font-semibold text-white">
                 Get new practice tests in your inbox
-              </h3>
+              </h2>
               <p className="mt-1 text-xs text-slate-400">
                 One useful email a week. No spam, unsubscribe anytime.
               </p>

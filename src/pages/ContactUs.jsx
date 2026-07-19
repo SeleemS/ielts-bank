@@ -119,7 +119,7 @@ const ContactUs = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
+              <CardTitle as="h2">Send us a message</CardTitle>
               <CardDescription>
                 We will get back to you as soon as possible.
               </CardDescription>
