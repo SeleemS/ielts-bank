@@ -1641,6 +1641,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   within the 390px viewport. No checkout button was activated and no Stripe or Supabase mutation
   occurred.
 
+## CA-074 — Checkout creation had no server-side abuse limit
+
+- Status: `FIXED`
+- Area: Billing API / Stripe Checkout / abuse prevention
+- Severity: High
+- Evidence: any authenticated free account could call `/api/billing/checkout` repeatedly and create
+  unlimited Stripe Checkout Sessions. The client disabled its buttons only while one request was
+  active, so direct or parallel API calls bypassed that UI-only protection and could create
+  provider-side resource and operational cost.
+- Fix: apply the shared atomic Supabase rate limiter per account immediately before Stripe work,
+  allowing at most 10 checkout attempts per 10-minute window. Verified exhaustion returns HTTP
+  429; limiter errors and rejections fail closed with HTTP 503.
+- Regression coverage: billing route tests require the exact limiter bucket, account identifier,
+  window, and maximum; prove verified exhaustion returns 429; and prove both resolved and rejected
+  limiter failures return 503. Every guarded failure is required to make zero Stripe calls.
+- Commit: `87fb65f` (`Rate limit Stripe checkout creation`)
+- Verification: all 32 billing-route tests, the complete current-worktree 68-file/405-test Vitest
+  suite, ESLint, the 150-file analytics audit, and the 528-page production build passed. Vercel
+  deployed the exact commit successfully. A fresh same-origin unauthenticated production POST
+  returned HTTP 401 before the account limiter or Stripe path. No Checkout Session, Stripe
+  customer, rate-limit row, or Supabase account mutation occurred during live verification.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
