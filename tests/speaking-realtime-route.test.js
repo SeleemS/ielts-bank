@@ -9,6 +9,9 @@ const state = {
   planRow: { plan: 'free', plan_status: 'inactive' },
   planError: null,
   planReject: null,
+  rateLimits: {},
+  rateLimitError: null,
+  rateLimitReject: null,
   rpcCalls: [],
 };
 
@@ -34,7 +37,13 @@ vi.mock('@supabase/supabase-js', () => ({
     }),
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
-      throw new Error('cost controls must not run before verified Premium');
+      if (state.rateLimitReject) throw state.rateLimitReject;
+      return {
+        data: Object.hasOwn(state.rateLimits, args.p_bucket)
+          ? state.rateLimits[args.p_bucket]
+          : true,
+        error: state.rateLimitError,
+      };
     },
   }),
 }));
@@ -85,6 +94,9 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.planRow = { plan: 'free', plan_status: 'inactive' };
     state.planError = null;
     state.planReject = null;
+    state.rateLimits = {};
+    state.rateLimitError = null;
+    state.rateLimitReject = null;
     state.rpcCalls = [];
     vi.restoreAllMocks();
   });
@@ -146,5 +158,50 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody.reason).toBeUndefined();
     expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('fails closed when a limiter returns an infrastructure error', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.rateLimitError = new Error('limiter unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls).toHaveLength(1);
+  });
+
+  it('fails closed when a limiter RPC rejects', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.rateLimitReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls).toHaveLength(1);
+  });
+
+  it('fails closed when global scoring capacity is exhausted', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.rateLimits['realtime-score-global'] = false;
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls).toHaveLength(1);
+  });
+
+  it('returns 429 only for a verified per-IP limit', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.rateLimits['realtime-score-ip'] = false;
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'realtime-score-global',
+      'realtime-score-ip',
+    ]);
   });
 });

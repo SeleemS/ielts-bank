@@ -52,6 +52,20 @@ function countWords(s) {
   return String(s || '').trim().split(/\s+/).filter(Boolean).length;
 }
 
+async function checkLimit(bucket, identifier, windowSeconds, max) {
+  try {
+    const { data, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: bucket,
+      p_identifier: identifier,
+      p_window_seconds: windowSeconds,
+      p_max: max,
+    });
+    return { allowed: data === true, error };
+  } catch (error) {
+    return { allowed: false, error };
+  }
+}
+
 function buildSystemPrompt() {
   return `You are a certified, experienced IELTS Speaking examiner. You mark strictly and consistently against the official IELTS Speaking public band descriptors. Marking is fair and evidence-based: for every judgement you cite concrete evidence quoted or paraphrased from the candidate's transcribed answers.
 
@@ -146,26 +160,28 @@ export default async function handler(req, res) {
   }
 
   const dayKey = new Date().toISOString().slice(0, 10);
-  const { data: globalWithinLimit, error: globalError } = await getAdmin().rpc('check_rate_limit', {
-    p_bucket: 'realtime-score-global',
-    p_identifier: dayKey,
-    p_window_seconds: GLOBAL_WINDOW_SECONDS,
-    p_max: GLOBAL_MAX,
-  });
-  if (globalError || globalWithinLimit !== true) {
-    if (globalError) console.error('global check_rate_limit error:', globalError.message);
+  const globalLimit = await checkLimit(
+    'realtime-score-global',
+    dayKey,
+    GLOBAL_WINDOW_SECONDS,
+    GLOBAL_MAX
+  );
+  if (globalLimit.error || !globalLimit.allowed) {
+    if (globalLimit.error) {
+      console.error('global check_rate_limit error:', globalLimit.error.message);
+    }
     return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
   }
 
-  const { data: withinLimit, error: rlError } = await getAdmin().rpc('check_rate_limit', {
-    p_bucket: 'realtime-score-ip',
-    p_identifier: clientIp(req),
-    p_window_seconds: PER_IP_WINDOW_SECONDS,
-    p_max: PER_IP_MAX,
-  });
-  if (rlError || withinLimit !== true) {
-    if (rlError) console.error('check_rate_limit error:', rlError.message);
-    if (rlError) {
+  const ipLimit = await checkLimit(
+    'realtime-score-ip',
+    clientIp(req),
+    PER_IP_WINDOW_SECONDS,
+    PER_IP_MAX
+  );
+  if (ipLimit.error || !ipLimit.allowed) {
+    if (ipLimit.error) {
+      console.error('check_rate_limit error:', ipLimit.error.message);
       return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
     }
     return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
