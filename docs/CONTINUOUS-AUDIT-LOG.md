@@ -488,6 +488,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   the ad-free pricing route, and exactly one clean loader after navigating back home. The original
   unsupported-tag warning did not recur.
 
+## CA-026 — Global Sign in controls opened the signup form
+
+- Status: `FIXED`
+- Area: Authentication / navbar / desktop and mobile navigation
+- Severity: Medium
+- Evidence: signed-out production browser QA showed that selecting the global `Sign in` control
+  opened a dialog titled `Create your free account`, with a `Create account` primary action and a
+  new-password field. Existing users had to discover and select a second sign-in switch.
+- Fix: preserve the caller's authentication intent in navbar state, open explicit sign-in controls
+  in sign-in mode, and keep question-page `Create account` controls in signup mode.
+- Regression coverage: `src/components/Navbar.test.jsx` exercises desktop and mobile sign-in
+  controls plus a question-page create-account control, asserting the exact initial dialog mode.
+  The navbar source now uses a `.jsx` extension so the component itself is parsed and exercised by
+  the existing Vitest/Vite setup; all application imports remain extensionless.
+- Commit: `Open the requested authentication mode`
+- Verification: focused 3-test component coverage, the complete current-worktree
+  46-file/247-test Vitest suite, ESLint, the 135-file analytics audit, and the 527-page production
+  build. The pushed commit's deployment status completed successfully. Fresh production browser
+  QA confirmed that the homepage `Sign in` control opens `Welcome back`, a current-password field,
+  and sign-in recovery options, while a live Reading question's `Create account` control still
+  opens the signup form with a new-password field.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
