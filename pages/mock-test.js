@@ -8,9 +8,14 @@ import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { listMockTests } from '../lib/supabase';
 import { MOCK_INDEX_SEO } from '../lib/mockSeo';
+import {
+  buildMockIndexJsonLd,
+  serializeJsonLd,
+} from '../lib/mockStructuredData';
 
 export default function MockTestIndex({ mocks = [] }) {
   const seo = MOCK_INDEX_SEO;
+  const jsonLd = buildMockIndexJsonLd(mocks, seo);
 
   return (
     <>
@@ -33,6 +38,10 @@ export default function MockTestIndex({ mocks = [] }) {
         <meta name="twitter:description" content={seo.description} />
         <meta name="twitter:image" content={seo.ogImage} />
         <meta name="twitter:image:alt" content={seo.imageAlt} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />

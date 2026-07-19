@@ -16,6 +16,10 @@ import { usePlan } from '../../src/lib/usePlan';
 import { track } from '../../src/lib/analytics';
 
 import { getMockSeo } from '../../lib/mockSeo';
+import {
+  buildMockTestJsonLd,
+  serializeJsonLd,
+} from '../../lib/mockStructuredData';
 const PASSAGE_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6';
 
@@ -114,6 +118,7 @@ export default function MockTestPage({ mock }) {
     ? combineGroups(resolvedMock.sections)
     : { groups: [], sectionMeta: [] };
   const seo = getMockSeo(mock);
+  const jsonLd = buildMockTestJsonLd(mock, seo);
 
   React.useEffect(() => {
     if (!user?.id || planLoading || !isPremium || fullMock || contentStatus === 'loading') return;
@@ -171,6 +176,10 @@ export default function MockTestPage({ mock }) {
         <meta name="twitter:description" content={seo.description} />
         <meta name="twitter:image" content={seo.ogImage} />
         <meta name="twitter:image:alt" content={seo.imageAlt} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />

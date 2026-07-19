@@ -387,6 +387,27 @@ False positives are kept in the investigation notes so they are not rediscovered
   167 canonical exercise URLs with zero failures; every resource and final breadcrumb matched the
   page canonical, every duration was valid, and every page returned HTTP 200.
 
+## CA-021 — Mock-test pages had no structured collection or resource data
+
+- Status: `FIXED`
+- Area: Mock tests / pricing clarity / structured data / SEO
+- Severity: Medium
+- Evidence: the mock-test hub and all five published mock pages had complete canonical/social
+  metadata but no JSON-LD. Search engines could not identify the hub as a collection or the tests
+  as timed IELTS learning resources, and the machine-readable metadata did not express that access
+  requires Premium.
+- Fix: publish a canonical `CollectionPage`/`ItemList` on the hub and a timed
+  `LearningResource`/`BreadcrumbList` graph on each mock. The resource contract accurately marks
+  the content as paid, names the Premium access condition, and includes duration and section count.
+- Regression coverage: `lib/mockStructuredData.test.js` verifies the collection items, paid-access
+  contract, duration/section data, canonical breadcrumb hierarchy, and safe script serialization.
+- Commit: `Add mock-test structured data`
+- Verification: focused 4-test schema coverage, the complete current-worktree 41-file/229-test
+  Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact generated HTML
+  inspection parsed and validated the five-item collection plus all five paid resource graphs,
+  durations, sections, access conditions, canonicals, and breadcrumbs. Live production verification
+  will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
