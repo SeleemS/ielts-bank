@@ -1168,6 +1168,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter, quota, storage, or OpenAI mutation occurred.
 
+## CA-053 — Rejected Speaking requests orphaned private voice uploads
+
+- Status: `FIXED`
+- Area: Speaking scoring / private storage / quota and limiter failure cleanup
+- Severity: High
+- Evidence: the client uploads an owned voice recording before calling `/api/score/speaking`.
+  After ownership validation, global/user limiter failures and quota failures returned before the
+  scorer's cleanup `finally`. The UI did not retain those rejected paths and uploaded a new file on
+  retry, leaving private audio orphaned until the 30-day cleanup cron.
+- Fix: remove the verified owned upload on limiter errors, verified rate-limit exhaustion, quota
+  RPC errors/rejections, and non-upgrade quota denials. Preserve the file only for the intentional
+  `premium_required` checkout handoff, where the client stores that exact path and resumes scoring
+  after purchase.
+- Regression coverage: the expanded Speaking suite requires cleanup for global/user limiter
+  failures and limits, quota resolution errors, quota promise rejection, and verified daily-cap
+  denial. A separate test proves `premium_required` preserves the upload, while the existing
+  provider-failure case continues to prove refund plus cleanup.
+- Commit: `2732e55` (`Clean rejected speaking uploads`)
+- Verification: focused 15-test Speaking route coverage, the complete current-worktree
+  63-file/347-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated request. Cleanup/preservation branches were verified with owned-path route tests
+  rather than deleting a real learner recording.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
