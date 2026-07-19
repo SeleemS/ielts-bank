@@ -737,6 +737,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   route integration test without creating another live subscription after CA-006's completed
   `E2EVERIFY100` payment run.
 
+## CA-036 — Successful billing pause left the one-time action active
+
+- Status: `FIXED`
+- Area: Billing management / subscription pause / client state
+- Severity: Medium
+- Evidence: after `/api/billing/pause` succeeded, the page displayed a success message but kept
+  rendering from the stale `usePlan` snapshot. `Pause once` therefore remained visible and
+  clickable even though the server had permanently set `billing_pause_used_at`; an immediate
+  second click could only fail with HTTP 409, and the status card still described the pre-pause
+  state.
+- Fix: retain the authoritative `resumesAt` response as a local billing-state override, mark the
+  one-time offer consumed immediately, render `Premium is paused` with its resume date, and remove
+  the pause action without waiting for a page reload. Rename the JSX-bearing route to `.jsx` so the
+  actual billing UI can be regression-tested.
+- Regression coverage: `tests/billing-manage-page.test.jsx` renders an active subscription,
+  completes the authenticated pause request, checks the access token and endpoint, and requires the
+  updated status, resume copy, analytics event, and absence of the one-time button. Existing API
+  tests continue to cover durable Stripe/Supabase mutation and repeat-pause rejection.
+- Commit: `Refresh billing state after pause`
+- Verification: focused 8-test billing page/API/status coverage, the complete current-worktree
+  58-file/279-test Vitest suite, ESLint, the 147-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production route QA confirmed the
+  billing title, page `h1`, signed-out boundary, and zero console logs; the Premium-only post-pause
+  state is verified by the rendered route test without consuming another live one-time pause.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
