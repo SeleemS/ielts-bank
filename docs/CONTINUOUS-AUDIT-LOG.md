@@ -1918,6 +1918,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   access. The valid-link and injected failure paths were verified in tests; no subscriber,
   lifecycle-email, provider, account, or consent state was created or changed in production.
 
+## CA-085 — Band Estimator shares rendered the generic OG category
+
+- Status: `FIXED`
+- Area: Band Estimator / Open Graph image / social sharing
+- Severity: Medium
+- Evidence: the Band Estimator metadata correctly requested `/api/og` with `type=estimator`, but
+  the image renderer's private allowlist had no `estimator` entry. It silently fell back to
+  `IELTS PRACTICE`; direct production image inspection confirmed that generic pill beside the
+  estimator-specific title and subtitle. The SEO test validated the emitted query parameter but
+  never connected it to renderer support.
+- Fix: centralize the OG category labels in a pure shared contract, add the dedicated
+  `Band Estimator` label, preserve an explicit generic fallback for unknown values, and make the
+  Edge renderer consume the shared resolver.
+- Regression coverage: the OG contract suite enumerates every supported category, requires the
+  estimator mapping, and covers normalization plus unknown/empty fallback behavior. The Band
+  Estimator SEO test now passes its emitted `type` through the real resolver and requires
+  `BAND ESTIMATOR`, preventing the metadata and renderer contracts from drifting independently.
+- Commit: `4eab3bc` (`Label Band Estimator OG cards`)
+- Verification: focused two-file/four-test estimator coverage, the 19-file/63-test SEO and social-
+  card cluster, the complete 74-file/438-test Vitest suite, ESLint, the strict 156-file analytics
+  audit covering 269 interactive controls, and the 528-page production build passed. Vercel
+  deployment `dpl_abW8sNjEmSjuXVLzjh1LkY8A3Deo` reached `READY` from exact Git SHA
+  `4eab3bc20eb14dccf2ccfc98cb34f4e77d2d5fdc`. Fresh production visual QA loaded the generated
+  1200×630 image and confirmed the visible `BAND ESTIMATOR` pill with the intended title and
+  subtitle. The live page retained matching canonical, title, description, OG image, Twitter
+  image, and Twitter image-alt metadata. No account, analytics preference, payment, or content
+  state was changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
