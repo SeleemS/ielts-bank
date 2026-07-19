@@ -1973,6 +1973,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   fragment secrets returned HTTP 204. Sanitized log shape and secret exclusion are asserted at the
   route boundary; no account, payment, consent, content, or provider state was created or changed.
 
+## CA-087 — The public CSP report sink allowed unbounded production-log flooding
+
+- Status: `FIXED`
+- Area: Security telemetry / CSP reporting / abuse prevention
+- Severity: High
+- Evidence: `/api/csp-report` is intentionally unauthenticated so browsers can deliver violation
+  reports, but every non-empty POST produced a production warning with no request ceiling. The
+  16-kilobyte body cap limited one request only; a direct or distributed caller could still create
+  unlimited log volume, cost, and noise capable of burying genuine security diagnostics. Malformed
+  bodies also produced empty warning entries.
+- Fix: discard empty or malformed reports before any database or logging work, then apply the shared
+  atomic Supabase limiter at 30 accepted reports per IP and 300 globally per 60-second window.
+  Verified exhaustion and limiter outages return the same neutral HTTP 204 without logging the
+  untrusted report. Limiter-error diagnostics contain no request data and are themselves throttled
+  to one per minute per warm function instance.
+- Regression coverage: the expanded ten-case route suite requires the exact `csp-report-ip` and
+  `csp-report-global` buckets, server-derived IP, 60-second window, and 30/300 ceilings. It proves
+  both denial branches, resolved and rejected limiter failures, malformed-report early exit, zero
+  report logs on every dropped path, POST-only handling, both CSP payload formats, URL redaction,
+  control-character removal, strict field limits, and one-per-minute limiter-error diagnostics.
+- Commits: `2488925` (`Rate limit CSP report logging`) and `56bf5d0`
+  (`Test CSP limiter error throttling`)
+- Verification: the focused ten-test route suite, the complete 75-file/448-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_4FEKGwJ758UVQqmx7nyApfTaevRm` reached `READY`
+  from exact Git SHA `2488925861b331760551916e19b134f446a95864`. Fresh production probes returned
+  HTTP 405 with `Allow: POST` for GET and HTTP 204 for both an empty payload and one valid synthetic
+  report. A read-only post-probe database query found exactly one check in each new limiter bucket;
+  the empty payload created none. Live schema inspection confirmed RLS, the atomic composite unique
+  index, the cleanup index, and service-role-only function execution with no `anon` or
+  `authenticated` access. The synthetic report changed only its two temporary limiter counters and
+  emitted one sanitized diagnostic; no account, payment, consent, content, or provider state
+  changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
