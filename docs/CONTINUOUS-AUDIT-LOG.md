@@ -1309,6 +1309,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No live quota or OpenAI mutation occurred.
 
+## CA-059 — Realtime Speaking schemas allowed invalid band values
+
+- Status: `FIXED`
+- Area: Realtime examiner / transcript scoring / Structured Outputs / IELTS correctness
+- Severity: High
+- Evidence: the strict realtime transcript-scoring schema declared its overall and three
+  transcript-assessed criterion bands as unconstrained numbers. A schema-conforming OpenAI result
+  could therefore contain negative, above-9, or non-half-band values that are not valid IELTS
+  scores.
+- Fix: extract the realtime Speaking schema into a testable module and constrain every overall and
+  criterion band with `minimum: 0`, `maximum: 9`, and `multipleOf: 0.5`, using the numeric
+  restrictions supported by current official OpenAI Structured Outputs documentation.
+- Regression coverage: the new schema suite requires strict mode, all three expected
+  transcript-assessed criteria, and the complete numeric constraint set on each band plus the
+  overall. Existing method, origin, auth, entitlement, and limiter route tests remain green.
+- Commit: `c38953c` (`Constrain realtime speaking band outputs`)
+- Verification: focused 11-test realtime route/schema coverage, the complete current-worktree
+  65-file/363-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter or OpenAI request was created.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
