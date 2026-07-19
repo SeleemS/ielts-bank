@@ -29,6 +29,7 @@ const TermsOfService = () => {
         <meta name="twitter:title" content={TERMS_SEO.title} />
         <meta name="twitter:description" content={TERMS_SEO.description} />
         <meta name="twitter:image" content={TERMS_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={TERMS_SEO.imageAlt} />
       </Head>
       <Navbar />
 

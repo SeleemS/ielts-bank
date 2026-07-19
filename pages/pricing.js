@@ -310,6 +310,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={PRICING_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={PRICING_SEO.imageAlt} />
       </Head>
       <Navbar />
       <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10">

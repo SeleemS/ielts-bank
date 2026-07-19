@@ -29,6 +29,7 @@ const PrivacyPolicy = () => {
         <meta name="twitter:title" content={PRIVACY_SEO.title} />
         <meta name="twitter:description" content={PRIVACY_SEO.description} />
         <meta name="twitter:image" content={PRIVACY_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={PRIVACY_SEO.imageAlt} />
       </Head>
       <Navbar />
 

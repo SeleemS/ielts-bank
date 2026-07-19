@@ -320,6 +320,26 @@ False positives are kept in the investigation notes so they are not rediscovered
   shared template shapes returned HTTP 200, complete large-card fields, and HTTP 200 `image/png`
   cards.
 
+## CA-018 — Social-card images were not described for Twitter/X users
+
+- Status: `FIXED`
+- Area: Sitewide SEO / social sharing / accessibility
+- Severity: Low
+- Evidence: after the practice-template fix, the generated-site audit found 46 remaining indexable
+  routes with a Twitter image but no `twitter:image:alt`. The affected routes covered the home
+  page, blog, mock tests, Reading hubs, acquisition tools, and trust/legal pages; dynamic pricing
+  had the same template omission.
+- Fix: reuse each page's controlled Open Graph image description as `twitter:image:alt` across all
+  14 affected templates.
+- Regression coverage: `lib/twitterImageAltMetadata.test.js` enumerates every affected shared
+  template and prevents any Twitter image from losing its accessible description.
+- Commit: `Describe Twitter share images`
+- Verification: focused 14-template regression coverage, the complete current-worktree
+  38-file/218-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact
+  generated-site inspection found zero missing title, description, canonical, Open Graph, Twitter
+  card, or Twitter image-alt fields across all 522 indexable static pages. Live production
+  verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

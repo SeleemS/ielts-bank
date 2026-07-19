@@ -84,6 +84,7 @@ export default function BlogPost({ post }) {
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={`IELTS-Bank Blog — ${post.title}`} />
 
         <script
           type="application/ld+json"

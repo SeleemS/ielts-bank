@@ -337,6 +337,7 @@ export default function WritingCheckerPage() {
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={WRITING_CHECKER_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={WRITING_CHECKER_SEO.imageAlt} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}

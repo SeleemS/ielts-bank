@@ -182,6 +182,10 @@ const HomePage = ({ counts = {} }) => {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={OG_IMAGE} />
+        <meta
+          name="twitter:image:alt"
+          content="IELTS-Bank — free IELTS Reading, Writing, Listening and Speaking practice"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c') }}

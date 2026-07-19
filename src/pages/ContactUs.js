@@ -81,6 +81,7 @@ const ContactUs = () => {
         <meta name="twitter:title" content={CONTACT_SEO.title} />
         <meta name="twitter:description" content={CONTACT_SEO.description} />
         <meta name="twitter:image" content={CONTACT_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={CONTACT_SEO.imageAlt} />
       </Head>
       <Navbar />
 

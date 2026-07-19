@@ -58,6 +58,10 @@ export default function BlogIndex({ posts }) {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={OG_IMAGE} />
+        <meta
+          name="twitter:image:alt"
+          content="IELTS-Bank Blog — strategies, tips and band score guides"
+        />
 
         <script
           type="application/ld+json"

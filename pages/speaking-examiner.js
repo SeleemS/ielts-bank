@@ -584,6 +584,7 @@ export default function SpeakingExaminerPage() {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={SPEAKING_EXAMINER_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={SPEAKING_EXAMINER_SEO.imageAlt} />
       </Head>
       <Navbar />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-10">

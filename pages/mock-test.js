@@ -32,6 +32,7 @@ export default function MockTestIndex({ mocks = [] }) {
         <meta name="twitter:title" content={seo.title} />
         <meta name="twitter:description" content={seo.description} />
         <meta name="twitter:image" content={seo.ogImage} />
+        <meta name="twitter:image:alt" content={seo.imageAlt} />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />

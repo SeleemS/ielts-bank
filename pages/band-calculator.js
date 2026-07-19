@@ -178,6 +178,7 @@ export default function BandCalculator() {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={BAND_CALCULATOR_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={BAND_CALCULATOR_SEO.imageAlt} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}

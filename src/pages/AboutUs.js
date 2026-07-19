@@ -29,6 +29,7 @@ const AboutUs = () => {
         <meta name="twitter:title" content={ABOUT_SEO.title} />
         <meta name="twitter:description" content={ABOUT_SEO.description} />
         <meta name="twitter:image" content={ABOUT_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={ABOUT_SEO.imageAlt} />
       </Head>
       <Navbar />
 

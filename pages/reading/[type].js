@@ -73,6 +73,7 @@ export default function ReadingTypeHub({ typeKey, items }) {
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={seo.ogImage} />
+        <meta name="twitter:image:alt" content={seo.imageAlt} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
