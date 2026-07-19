@@ -1,0 +1,128 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
+
+const testState = vi.hoisted(() => ({
+  profileSave: vi.fn(),
+  passwordSave: vi.fn(),
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...rest }) =>
+    React.createElement('a', { href, ...rest }, children),
+}));
+vi.mock('../../../lib/supabase', () => ({
+  getSupabase: () => ({
+    auth: {
+      updateUser: testState.passwordSave,
+    },
+    from: () => ({
+      update: () => ({
+        eq: () => ({
+          select: () => ({
+            maybeSingle: testState.profileSave,
+          }),
+        }),
+      }),
+    }),
+  }),
+}));
+vi.mock('../../lib/usePlan', () => ({
+  isPremiumActive: () => false,
+}));
+
+import AccountSettings from './AccountSettings';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+let container;
+let root;
+
+function setInput(id, value) {
+  const input = container.querySelector(id);
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    'value'
+  ).set;
+  act(() => {
+    setter.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
+async function submit(form) {
+  await act(async () => {
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  act(() => {
+    root.render(
+      <AccountSettings
+        user={{ id: 'user-1', email: 'audit@example.com' }}
+        profile={{
+          display_name: 'Audit Learner',
+          target_band: 7,
+          exam_date: null,
+          prefs: {},
+          plan: 'free',
+          plan_status: 'inactive',
+          plan_renews_at: null,
+          plan_expires_at: null,
+          billing_pause_until: null,
+        }}
+        onProfileChange={vi.fn()}
+        onSignOut={vi.fn()}
+      />
+    );
+  });
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  vi.clearAllMocks();
+});
+
+describe('AccountSettings network failures', () => {
+  it('recovers the profile form when the request rejects', async () => {
+    testState.profileSave.mockRejectedValue(new Error('offline'));
+    setInput('#dashboard-name', 'Updated Learner');
+
+    await submit(container.querySelectorAll('form')[0]);
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Could not save your profile. Please try again.'
+    );
+    expect(
+      [...container.querySelectorAll('button')].find(
+        (button) => button.textContent.includes('Save preferences')
+      ).disabled
+    ).toBe(false);
+  });
+
+  it('recovers the password form when the authentication request rejects', async () => {
+    testState.passwordSave.mockRejectedValue(new Error('offline'));
+    setInput('#dashboard-password', 'strong-password');
+    setInput('#dashboard-password-confirm', 'strong-password');
+
+    await submit(container.querySelectorAll('form')[1]);
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Could not update your password. Please try again.'
+    );
+    expect(
+      [...container.querySelectorAll('button')].find(
+        (button) => button.textContent.includes('Update password')
+      ).disabled
+    ).toBe(false);
+  });
+});

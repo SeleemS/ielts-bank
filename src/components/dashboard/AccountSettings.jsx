@@ -61,19 +61,24 @@ function ProfileSettings({ user, profile, onProfileChange }) {
       },
     };
     setBusy(true);
-    const { data, error } = await getSupabase()
-      .from('users')
-      .update(nextProfile)
-      .eq('id', user.id)
-      .select('display_name, target_band, exam_date, prefs')
-      .maybeSingle();
-    setBusy(false);
-    if (error || !data) {
-      setFeedback({ type: 'error', message: error?.message || 'Could not save your profile.' });
-      return;
+    try {
+      const { data, error } = await getSupabase()
+        .from('users')
+        .update(nextProfile)
+        .eq('id', user.id)
+        .select('display_name, target_band, exam_date, prefs')
+        .maybeSingle();
+      if (error || !data) {
+        setFeedback({ type: 'error', message: error?.message || 'Could not save your profile.' });
+        return;
+      }
+      onProfileChange(data);
+      setFeedback({ type: 'success', message: 'Your learning preferences are saved.' });
+    } catch {
+      setFeedback({ type: 'error', message: 'Could not save your profile. Please try again.' });
+    } finally {
+      setBusy(false);
     }
-    onProfileChange(data);
-    setFeedback({ type: 'success', message: 'Your learning preferences are saved.' });
   }
 
   return (
@@ -113,15 +118,20 @@ function PasswordSettings() {
       return;
     }
     setBusy(true);
-    const { error } = await getSupabase().auth.updateUser({ password });
-    setBusy(false);
-    if (error) {
-      setFeedback({ type: 'error', message: error.message || 'Could not update your password.' });
-      return;
+    try {
+      const { error } = await getSupabase().auth.updateUser({ password });
+      if (error) {
+        setFeedback({ type: 'error', message: error.message || 'Could not update your password.' });
+        return;
+      }
+      setPassword('');
+      setConfirm('');
+      setFeedback({ type: 'success', message: 'Password updated successfully.' });
+    } catch {
+      setFeedback({ type: 'error', message: 'Could not update your password. Please try again.' });
+    } finally {
+      setBusy(false);
     }
-    setPassword('');
-    setConfirm('');
-    setFeedback({ type: 'success', message: 'Password updated successfully.' });
   }
 
   return (
