@@ -1835,6 +1835,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   contract was exercised in component tests rather than creating a paid Realtime session; no
   payment, microphone, quota, or account mutation occurred.
 
+## CA-082 — Customer Portal session creation had no server-side abuse limit
+
+- Status: `FIXED`
+- Area: Billing API / Stripe Customer Portal / abuse prevention
+- Severity: High
+- Evidence: any authenticated account with a Stripe customer ID could call `/api/billing/portal`
+  repeatedly and create unlimited provider-side Customer Portal Sessions. The Billing page disabled
+  its button only while one browser request was active, so direct or parallel API calls bypassed
+  that UI-only protection.
+- Fix: apply the shared atomic Supabase rate limiter per verified account immediately before any
+  Stripe work, allowing at most 10 portal requests per 10-minute window. Verified exhaustion
+  returns HTTP 429; resolved and rejected limiter failures fail closed with HTTP 503.
+- Regression coverage: the portal route suite requires the exact `billing-portal` bucket, account
+  identifier, 600-second window, deployed `p_max` argument, and maximum of 10. It proves a verified
+  no-customer account does not consume the limiter, exhaustion returns 429, and both limiter error
+  forms return 503; every guarded outcome is required to make zero Stripe calls.
+- Commit: `ef0b896` (`Rate limit billing portal sessions`)
+- Verification: focused 12-test portal coverage, the five-file/70-test billing suite, the complete
+  72-file/425-test Vitest suite, ESLint, the strict 156-file analytics audit covering 269
+  interactive controls, and the 528-page production build passed. Vercel deployment
+  `dpl_9WZoCk17X1arn5FQZMLQqZkGtBiv` reached `READY` from exact Git SHA
+  `ef0b896f92004cd73a6be2563228fffdfc177d78` with all production aliases. Fresh production probes
+  returned HTTP 405 with `Allow: POST` for GET, HTTP 403 for a hostile-origin POST, and HTTP 401 for
+  a same-origin unauthenticated POST. No rate-limit row, Portal Session, Stripe customer, payment,
+  subscription, entitlement, or account state was created or changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
