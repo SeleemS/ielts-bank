@@ -25,6 +25,7 @@ const TYPE_LABELS = {
   blog: 'IELTS Blog',
   pricing: 'IELTS Premium',
   examiner: 'Speaking Examiner',
+  calculator: 'Band Calculator',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
 };

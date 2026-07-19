@@ -21,11 +21,10 @@ import { track } from '../src/lib/analytics';
 import NewsletterSignup from '../src/components/NewsletterSignup';
 import { useAuth } from '../src/lib/auth';
 
-import { SITE_URL } from '../lib/site';
-const PAGE_TITLE = 'IELTS Band Score Calculator – Listening, Reading & Overall Band';
-const PAGE_DESCRIPTION =
-  'Free IELTS band score calculator. Convert your Listening and Reading raw scores to band scores, add Writing and Speaking, and get your estimated overall band with the official rounding rule.';
-const CANONICAL = `${SITE_URL}/band-calculator`;
+import { BAND_CALCULATOR_SEO } from '../lib/bandCalculatorSeo';
+const PAGE_TITLE = BAND_CALCULATOR_SEO.title;
+const PAGE_DESCRIPTION = BAND_CALCULATOR_SEO.description;
+const CANONICAL = BAND_CALCULATOR_SEO.canonical;
 
 // Band select options: 0.0 .. 9.0 in 0.5 steps.
 const BAND_OPTIONS = Array.from({ length: 19 }, (_, i) => i * 0.5);
@@ -170,7 +169,15 @@ export default function BandCalculator() {
         <meta property="og:description" content={PAGE_DESCRIPTION} />
         <meta property="og:url" content={CANONICAL} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={BAND_CALCULATOR_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={BAND_CALCULATOR_SEO.imageAlt} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+        <meta name="twitter:image" content={BAND_CALCULATOR_SEO.ogImage} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}

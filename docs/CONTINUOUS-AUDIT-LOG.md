@@ -196,6 +196,21 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit, generated HTML inspection, and the 527-page production build. Live production returned
   every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
+## CA-011 — Band Calculator shares had no preview image
+
+- Status: `IN VERIFICATION`
+- Area: Band calculator / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: `/band-calculator` declared a Twitter large card and supplied OG text fields, but omitted
+  OG/Twitter images and Twitter title/description fields. The free acquisition tool therefore
+  produced an incomplete, text-only share preview.
+- Fix: centralize the calculator SEO contract and add a dedicated 1200×630 calculator card with
+  complete OG image fields and matching Twitter title, description, and image metadata.
+- Regression coverage: `lib/bandCalculatorSeo.test.js` verifies canonical content and every decoded
+  dynamic image parameter.
+- Commit: `Add Band Calculator share image`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
