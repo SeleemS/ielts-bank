@@ -1,4 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+process.env.SUPABASE_URL = 'https://example.supabase.co';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-dummy';
+
+const state = {
+  limitResponses: [],
+  limitRejects: [],
+  rpcCalls: [],
+};
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    rpc: async (name, args) => {
+      state.rpcCalls.push({ name, args });
+      const rejection = state.limitRejects.shift();
+      if (rejection) throw rejection;
+      return state.limitResponses.shift() || { data: true, error: null };
+    },
+  }),
+}));
+
 import handler from '../pages/api/csp-report';
 
 function makeRes() {
@@ -20,31 +41,46 @@ function makeRes() {
   };
 }
 
-function callRoute({ method = 'POST', body = {} } = {}) {
+async function callRoute({ method = 'POST', body = {}, headers = {} } = {}) {
   const res = makeRes();
-  handler({ method, body }, res);
+  await handler(
+    {
+      method,
+      body,
+      headers: {
+        'x-real-ip': '203.0.113.10',
+        ...headers,
+      },
+      socket: { remoteAddress: '127.0.0.1' },
+    },
+    res
+  );
   return res;
 }
 
 describe('POST /api/csp-report', () => {
   beforeEach(() => {
+    state.limitResponses = [];
+    state.limitRejects = [];
+    state.rpcCalls = [];
     vi.restoreAllMocks();
   });
 
-  it('allows only POST requests and advertises the supported method', () => {
+  it('allows only POST requests and advertises the supported method', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const res = callRoute({ method: 'GET' });
+    const res = await callRoute({ method: 'GET' });
 
     expect(res.statusCode).toBe(405);
     expect(res.headers.Allow).toBe('POST');
     expect(res.ended).toBe(true);
     expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toEqual([]);
   });
 
-  it('strips credentials, query strings, and fragments from legacy CSP URLs', () => {
+  it('strips credentials, query strings, and fragments from legacy CSP URLs', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const res = callRoute({
+    const res = await callRoute({
       body: {
         'csp-report': {
           'blocked-uri': 'https://cdn.example/script.js?api_key=secret#fragment',
@@ -68,9 +104,29 @@ describe('POST /api/csp-report', () => {
     expect(JSON.stringify(warning.mock.calls)).not.toContain('api_key');
     expect(JSON.stringify(warning.mock.calls)).not.toContain('password');
     expect(JSON.stringify(warning.mock.calls)).not.toContain('secret-policy-value');
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'csp-report-ip',
+          p_identifier: '203.0.113.10',
+          p_window_seconds: 60,
+          p_max: 30,
+        },
+      },
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'csp-report-global',
+          p_identifier: 'all',
+          p_window_seconds: 60,
+          p_max: 300,
+        },
+      },
+    ]);
   });
 
-  it('accepts buffered Reporting API arrays and keeps non-URL schemes opaque', () => {
+  it('accepts buffered Reporting API arrays and keeps non-URL schemes opaque', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const body = Buffer.from(
       JSON.stringify([
@@ -85,7 +141,7 @@ describe('POST /api/csp-report', () => {
       ])
     );
 
-    const res = callRoute({ body });
+    const res = await callRoute({ body });
 
     expect(res.statusCode).toBe(204);
     expect(warning).toHaveBeenCalledWith('csp-violation', {
@@ -98,25 +154,21 @@ describe('POST /api/csp-report', () => {
     expect(JSON.stringify(warning.mock.calls)).not.toContain('offer=secret');
   });
 
-  it('treats malformed JSON as an empty report without throwing', () => {
+  it('acknowledges malformed JSON without a limiter call or log entry', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const res = callRoute({ body: '{not-json' });
+    const res = await callRoute({ body: '{not-json' });
 
     expect(res.statusCode).toBe(204);
-    expect(warning).toHaveBeenCalledWith('csp-violation', {
-      blocked: '',
-      directive: '',
-      document: '',
-      disposition: '',
-    });
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toEqual([]);
   });
 
-  it('removes control characters and preserves strict field limits', () => {
+  it('removes control characters and preserves strict field limits', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const longPath = `https://www.ielts-bank.com/${'a'.repeat(600)}?token=secret`;
 
-    const res = callRoute({
+    const res = await callRoute({
       body: {
         blockedURL: longPath,
         effectiveDirective: `script\u0000src ${'d'.repeat(150)}`,
@@ -134,5 +186,68 @@ describe('POST /api/csp-report', () => {
     expect(safe.document).toBe('/auth/callback');
     expect(safe.disposition).toHaveLength(40);
     expect(safe.disposition).not.toContain('\n');
+  });
+
+  it('silently drops reports after a verified per-IP limiter denial', async () => {
+    state.limitResponses = [{ data: false, error: null }];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const res = await callRoute({
+      body: { 'csp-report': { 'document-uri': 'https://www.ielts-bank.com/' } },
+    });
+
+    expect(res.statusCode).toBe(204);
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toHaveLength(1);
+    expect(state.rpcCalls[0].args.p_bucket).toBe('csp-report-ip');
+  });
+
+  it('silently drops reports after a verified global limiter denial', async () => {
+    state.limitResponses = [
+      { data: true, error: null },
+      { data: false, error: null },
+    ];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const res = await callRoute({
+      body: { 'csp-report': { 'document-uri': 'https://www.ielts-bank.com/' } },
+    });
+
+    expect(res.statusCode).toBe(204);
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'csp-report-ip',
+      'csp-report-global',
+    ]);
+  });
+
+  it('fails closed without logging a report when the limiter resolves with an error', async () => {
+    state.limitResponses = [
+      { data: null, error: { message: 'database unavailable' } },
+    ];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute({
+      body: { 'csp-report': { 'document-uri': 'https://www.ielts-bank.com/' } },
+    });
+
+    expect(res.statusCode).toBe(204);
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toHaveLength(1);
+  });
+
+  it('fails closed without logging a report when the limiter rejects', async () => {
+    state.limitRejects = [new Error('network unavailable')];
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute({
+      body: { 'csp-report': { 'document-uri': 'https://www.ielts-bank.com/' } },
+    });
+
+    expect(res.statusCode).toBe(204);
+    expect(warning).not.toHaveBeenCalled();
+    expect(state.rpcCalls).toHaveLength(1);
   });
 });
