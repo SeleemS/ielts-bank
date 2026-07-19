@@ -7,6 +7,7 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 const state = {
   authUser: null,
   authReject: null,
+  rateLimitResponses: [],
   rpcCalls: [],
 };
 
@@ -22,7 +23,14 @@ vi.mock('@supabase/supabase-js', () => ({
     },
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
-      if (name === 'check_rate_limit') return { data: true, error: null };
+      if (name === 'check_rate_limit') {
+        const response = state.rateLimitResponses.shift() || {
+          data: true,
+          error: null,
+        };
+        if (response instanceof Error) throw response;
+        return response;
+      }
       if (name === 'consume_ai_score') {
         return {
           data: {
@@ -83,6 +91,7 @@ describe('POST /api/score/writing account and quota safety', () => {
   beforeEach(() => {
     state.authUser = null;
     state.authReject = null;
+    state.rateLimitResponses = [];
     state.rpcCalls = [];
     vi.restoreAllMocks();
   });
@@ -121,17 +130,112 @@ describe('POST /api/score/writing account and quota safety', () => {
     expect(state.rpcCalls).toEqual([]);
   });
 
-  it('refunds the exact consumed sample when the scoring provider fails', async () => {
-    state.authUser = {
-      id: 'linked-user',
-      email: 'learner@example.com',
-      is_anonymous: false,
-    };
-    const essay = Array.from({ length: 60 }, (_, index) => `word${index}`).join(' ');
+  it('returns a service error when the global limiter resolves with an error', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [
+      { data: null, error: { message: 'rate limiter unavailable' } },
+    ];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const { default: handler } = await import('../pages/api/score/writing');
     const res = makeRes();
 
-    await handler(makeReq({ body: { essay, task: 2 } }), res);
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.rpcCalls[0].args.p_bucket).toBe('writing-score-global');
+  });
+
+  it('returns a service error when the global limiter rejects', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [new Error('rate limiter network failure')];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+  });
+
+  it('returns a demand limit only after verified global exhaustion', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [{ data: false, error: null }];
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.rpcCalls[0].args.p_bucket).toBe('writing-score-global');
+  });
+
+  it('returns a service error when the per-IP limiter resolves with an error', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [
+      { data: true, error: null },
+      { data: null, error: { message: 'rate limiter unavailable' } },
+    ];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.rpcCalls[1].args.p_bucket).toBe('writing-score');
+  });
+
+  it('returns a service error when the per-IP limiter rejects', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [
+      { data: true, error: null },
+      new Error('rate limiter network failure'),
+    ];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+  });
+
+  it('returns a client limit only after verified per-IP exhaustion', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [
+      { data: true, error: null },
+      { data: false, error: null },
+    ];
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.rpcCalls[1].args.p_bucket).toBe('writing-score');
+  });
+
+  it('refunds the exact consumed sample when the scoring provider fails', async () => {
+    state.authUser = linkedUser();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
 
     expect(res.statusCode).toBe(502);
     expect(state.rpcCalls.map(({ name }) => name)).toEqual([
@@ -148,3 +252,18 @@ describe('POST /api/score/writing account and quota safety', () => {
     });
   });
 });
+
+function linkedUser() {
+  return {
+    id: 'linked-user',
+    email: 'learner@example.com',
+    is_anonymous: false,
+  };
+}
+
+function validBody() {
+  return {
+    essay: Array.from({ length: 60 }, (_, index) => `word${index}`).join(' '),
+    task: 2,
+  };
+}

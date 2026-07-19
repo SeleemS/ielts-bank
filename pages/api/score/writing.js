@@ -51,20 +51,26 @@ function getAdmin() {
   return _admin;
 }
 
-// Per-IP checks fail open for availability. The global cost circuit breaker
-// fails closed so an RPC outage cannot create unbounded OpenAI spend.
-async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = false) {
-  const { data, error } = await getAdmin().rpc('check_rate_limit', {
-    p_bucket: bucket,
-    p_identifier: identifier,
-    p_window_seconds: windowSeconds,
-    p_max: max,
-  });
-  if (error) {
-    console.error('check_rate_limit error:', error.message);
-    return !failClosed;
+// A limiter denial and a limiter outage require different responses. Both
+// checks fail closed on infrastructure errors so scoring cannot bypass cost
+// controls, while verified exhaustion retains its normal 429 response.
+async function checkLimit(bucket, identifier, windowSeconds, max) {
+  try {
+    const { data, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: bucket,
+      p_identifier: identifier,
+      p_window_seconds: windowSeconds,
+      p_max: max,
+    });
+    if (error) {
+      console.error('check_rate_limit error:', error.message);
+      return { allowed: false, error: true };
+    }
+    return { allowed: data === true, error: false };
+  } catch (error) {
+    console.error('check_rate_limit failed:', error.message);
+    return { allowed: false, error: true };
   }
-  return data === true;
 }
 
 async function consumeQuota(userId) {
@@ -351,27 +357,36 @@ export default async function handler(req, res) {
     const ip = clientIp(req);
 
     const dayKey = new Date().toISOString().slice(0, 10);
-    const globalOk = await withinLimit(
+    const globalLimit = await checkLimit(
       'writing-score-global',
       dayKey,
       GLOBAL_WINDOW_SECONDS,
-      GLOBAL_MAX,
-      true
+      GLOBAL_MAX
     );
-    if (!globalOk) {
+    if (globalLimit.error) {
+      return res
+        .status(503)
+        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    }
+    if (!globalLimit.allowed) {
       return res.status(429).json({
         error:
           'AI scoring is temporarily unavailable due to high demand. Please try again later.',
       });
     }
 
-    const ipOk = await withinLimit(
+    const ipLimit = await checkLimit(
       'writing-score',
       ip,
       PER_IP_WINDOW_SECONDS,
       PER_IP_MAX
     );
-    if (!ipOk) {
+    if (ipLimit.error) {
+      return res
+        .status(503)
+        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    }
+    if (!ipLimit.allowed) {
       return res.status(429).json({
         error: `You have reached the limit of ${PER_IP_MAX} scorings per hour. Please try again later.`,
       });
