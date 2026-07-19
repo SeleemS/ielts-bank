@@ -115,6 +115,7 @@ describe('realtimeExaminer lib', () => {
 // ---------------------------------------------------------------------------
 const state = {
   authUser: null,
+  authReject: null,
   meter: null,
   meterError: null,
   refundRpcError: null,
@@ -123,6 +124,8 @@ const state = {
   rateLimits: {},
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
   planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
+  planError: null,
+  planReject: null,
   updates: [],
   realtimeRefunds: [],
   speakingRows: [{ passage_id: 'p1', part: 1, part1_questions: { topic: 'T', questions: [] } }],
@@ -131,10 +134,12 @@ const state = {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     auth: {
-      getUser: async () =>
-        state.authUser
+      getUser: async () => {
+        if (state.authReject) throw state.authReject;
+        return state.authUser
           ? { data: { user: state.authUser }, error: null }
-          : { data: null, error: { message: 'bad token' } },
+          : { data: null, error: { message: 'bad token' } };
+      },
     },
     rpc: async (fn, args) => {
       if (fn === 'check_rate_limit') {
@@ -170,10 +175,13 @@ vi.mock('@supabase/supabase-js', () => ({
             error: null,
           }),
           single: async () => ({ data: state.quotaRow, error: null }),
-          maybeSingle: async () => ({
-            data: table === 'users' ? state.planRow : null,
-            error: null,
-          }),
+          maybeSingle: async () => {
+            if (table === 'users' && state.planReject) throw state.planReject;
+            return {
+              data: table === 'users' ? state.planRow : null,
+              error: table === 'users' ? state.planError : null,
+            };
+          },
         };
         return chain;
       },
@@ -213,6 +221,7 @@ describe('POST /api/realtime/session', () => {
   let fetchMock;
   beforeEach(() => {
     state.authUser = null;
+    state.authReject = null;
     state.meter = null;
     state.meterError = null;
     state.refundRpcError = null;
@@ -220,8 +229,11 @@ describe('POST /api/realtime/session', () => {
     state.rateLimitError = null;
     state.rateLimits = {};
     state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
+    state.planError = null;
+    state.planReject = null;
     state.updates = [];
     state.realtimeRefunds = [];
+    vi.restoreAllMocks();
     fetchMock = vi.fn(async () => ({
       ok: true,
       json: async () => ({ value: 'ek_test_secret', expires_at: 12345 }),
@@ -242,6 +254,16 @@ describe('POST /api/realtime/session', () => {
     expect(res.statusCode).toBe(401);
   });
 
+  it('fails safely when auth verification rejects', async () => {
+    state.authReject = new Error('auth service unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await call();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/temporarily unavailable/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rejects unknown modes', async () => {
     state.authUser = { id: 'u1' };
     const res = await call({ mode: 'karaoke' });
@@ -254,6 +276,29 @@ describe('POST /api/realtime/session', () => {
     const res = await call();
     expect(res.statusCode).toBe(402);
     expect(res.jsonBody.reason).toBe('not_premium');
+  });
+
+  it('does not misreport a resolved entitlement error as non-premium', async () => {
+    state.authUser = { id: 'u1' };
+    state.planRow = null;
+    state.planError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await call();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.reason).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('recovers when the entitlement query rejects', async () => {
+    state.authUser = { id: 'u1' };
+    state.planReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await call();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.reason).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('402s when minutes are exhausted, with reset info', async () => {
