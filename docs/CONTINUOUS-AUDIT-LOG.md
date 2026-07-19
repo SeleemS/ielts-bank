@@ -1399,6 +1399,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   HTTP 401 for a same-origin unauthenticated scoring request. No live limiter, OpenAI, or
   persistence mutation occurred.
 
+## CA-063 — Realtime scoring accepted unsupported session modes
+
+- Status: `FIXED`
+- Area: Realtime examiner / API contract / prompt integrity / persisted attempts
+- Severity: Medium
+- Evidence: the realtime session-mint endpoint validated `mock`, `part1`, `part2`, and `part3`
+  against the shared mode contract, but the scoring endpoint accepted any string. An unsupported
+  value could therefore enter the scoring prompt, consume the rate limiter, and be persisted as an
+  invalid attempt mode even though no matching session could be minted.
+- Fix: validate scoring requests against the same shared `MODES` registry immediately after
+  entitlement checks and before transcript processing, rate limiting, OpenAI calls, or
+  persistence. Unsupported modes now return HTTP 400 with `Unknown session mode.`
+- Regression coverage: the scoring route sends an unsupported `karaoke` mode, requires HTTP 400,
+  and asserts that neither rate-limit RPCs nor database-table calls occur. The focused realtime
+  mint/scoring suite continues to exercise every valid mode and the existing security boundaries.
+- Commit: `e92016e` (`Validate realtime scoring modes`)
+- Verification: focused 35-test realtime mint/scoring coverage, the complete current-worktree
+  66-file/379-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes against both the mint and scoring endpoints returned HTTP 405 for GET, HTTP 403 for a
+  cross-origin POST, and HTTP 401 for a same-origin unauthenticated POST. No live limiter, OpenAI,
+  or persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
