@@ -119,6 +119,10 @@ const mockState = {
   customerLinkReadback: null,
   customerLinkReadbackError: null,
   customerLinkReadbackReject: null,
+  rateLimit: true,
+  rateLimitError: null,
+  rateLimitReject: null,
+  rpcCalls: [],
   retrievedSession: null,
   reconciliationOutcome: 'activated user user-1 (active)',
   stripeCalls: {},
@@ -165,6 +169,14 @@ vi.mock('@supabase/supabase-js', () => ({
         },
       }),
     }),
+    rpc: async (name, args) => {
+      mockState.rpcCalls.push({ name, args });
+      if (mockState.rateLimitReject) throw mockState.rateLimitReject;
+      return {
+        data: mockState.rateLimit,
+        error: mockState.rateLimitError,
+      };
+    },
   }),
 }));
 
@@ -232,6 +244,10 @@ describe('POST /api/billing/checkout', () => {
     mockState.customerLinkReadback = null;
     mockState.customerLinkReadbackError = null;
     mockState.customerLinkReadbackReject = null;
+    mockState.rateLimit = true;
+    mockState.rateLimitError = null;
+    mockState.rateLimitReject = null;
+    mockState.rpcCalls = [];
     mockState.retrievedSession = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
@@ -329,6 +345,68 @@ describe('POST /api/billing/checkout', () => {
     };
     const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
     expect(res.statusCode).toBe(409);
+  });
+
+  it('rate-limits repeated checkout attempts before any Stripe call', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.rateLimit = false;
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(429);
+    expect(res.jsonBody.error).toMatch(/too many checkout attempts/i);
+    expect(mockState.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-checkout',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max_requests: 10,
+        },
+      },
+    ]);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
+  it('fails closed when the checkout limiter returns an error', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.rateLimitError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(503);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
+  it('fails closed when the checkout limiter rejects', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.rateLimitReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(503);
+    expect(mockState.stripeCalls).toEqual({});
   });
 
   it('creates a checkout session with the global price by default', async () => {

@@ -11,6 +11,9 @@ import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { getStripe, resolveLookupKey, isPppCountry, SKUS } from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
 
+const CHECKOUT_WINDOW_SECONDS = 10 * 60;
+const CHECKOUT_MAX_PER_WINDOW = 10;
+
 let _admin = null;
 function getAdmin() {
   if (_admin) return _admin;
@@ -130,6 +133,26 @@ export default async function handler(req, res) {
   }
   if (winBackEligible && !process.env.STRIPE_WINBACK_COUPON_ID) {
     return res.status(503).json({ error: 'The returning-subscriber offer is temporarily unavailable.' });
+  }
+
+  try {
+    const { data: allowed, error } = await admin.rpc('check_rate_limit', {
+      p_bucket: 'billing-checkout',
+      p_identifier: userRow.id,
+      p_window_seconds: CHECKOUT_WINDOW_SECONDS,
+      p_max_requests: CHECKOUT_MAX_PER_WINDOW,
+    });
+    if (error) throw error;
+    if (!allowed) {
+      return res.status(429).json({
+        error: 'Too many checkout attempts. Please wait a few minutes and try again.',
+      });
+    }
+  } catch (error) {
+    console.error('checkout rate-limit error:', error.message);
+    return res.status(503).json({
+      error: 'Could not start checkout. Please try again.',
+    });
   }
 
   const country = String(req.headers['x-vercel-ip-country'] || '').toUpperCase();
