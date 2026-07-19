@@ -617,6 +617,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   including the four original failures. After deployment, the same 23-template live sweep again
   returned zero violations.
 
+## CA-031 — Dialogs did not move, contain, or restore keyboard focus
+
+- Status: `FIXED`
+- Area: Accessibility / authentication dialog / mobile navigation sheet / keyboard interaction
+- Severity: Medium
+- Evidence: opening the production Sign in dialog left focus on the page-level Sign in trigger
+  outside the modal. The shared authentication dialog and mobile Sheet listened for Escape and
+  locked page scrolling, but neither established initial focus, trapped Tab/Shift+Tab inside the
+  active modal, nor restored focus to the invoking control after dismissal.
+- Fix: add one shared dialog-focus hook that captures the invoking element, moves focus to each
+  dialog step's logical first field, contains forward and reverse keyboard traversal, handles
+  Escape dismissal, and restores focus when the modal closes. Apply it to both the authentication
+  dialog and shared Sheet, and make each modal container programmatically focusable as a safe
+  fallback.
+- Regression coverage: `src/lib/dialogFocus.test.jsx` covers initial focus, both Tab boundary
+  directions, Escape, disabled controls, step changes, and restoration. `components/ui/sheet.test.jsx`
+  exercises the shared Sheet integration and focus return to its trigger.
+- Commit: `Trap and restore modal focus`
+- Verification: focused 4-test dialog/Sheet coverage, the complete current-worktree
+  54-file/271-test Vitest suite, ESLint, the 145-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production browser QA confirmed
+  that Sign in focuses `#signin-email` inside the `Welcome back` dialog, the dialog is safely
+  focusable with `tabindex="-1"`, Escape removes it, and focus returns to the exact Sign in button
+  that opened it. The shared Sheet behavior is verified by its DOM integration test because the
+  production browser audit viewport is desktop-sized.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
