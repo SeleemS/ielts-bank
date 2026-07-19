@@ -38,38 +38,42 @@ export default async function handler(req, res) {
 
   let removed = 0;
   try {
-    const { data: users, error: userError } = await admin
-      .from('users')
-      .select('id')
-      .limit(5000);
-    if (userError) throw userError;
-    for (const user of users || []) {
-      const bucket = admin.storage.from('speaking-uploads');
-      const old = [];
+    const bucket = admin.storage.from('speaking-uploads');
+    const pendingPrefixes = [''];
+    const seenPrefixes = new Set(pendingPrefixes);
+    const old = [];
+    for (let prefixIndex = 0; prefixIndex < pendingPrefixes.length; prefixIndex += 1) {
+      const prefix = pendingPrefixes[prefixIndex];
       for (let offset = 0; ; offset += STORAGE_PAGE_SIZE) {
-        const { data, error: listError } = await bucket.list(user.id, {
+        const { data, error: listError } = await bucket.list(prefix, {
           limit: STORAGE_PAGE_SIZE,
           offset,
           sortBy: { column: 'name', order: 'asc' },
         });
         if (listError) throw listError;
         const files = data || [];
-        old.push(
-          ...files
-            .filter(
-              (file) =>
-                Date.parse(file.created_at || file.updated_at || '') < audioCutoff
-            )
-            .map((file) => `${user.id}/${file.name}`)
-        );
+        for (const file of files) {
+          if (!file?.name) continue;
+          const path = prefix ? `${prefix}/${file.name}` : file.name;
+          if (file.id === null) {
+            if (!seenPrefixes.has(path)) {
+              seenPrefixes.add(path);
+              pendingPrefixes.push(path);
+            }
+          } else if (
+            Date.parse(file.created_at || file.updated_at || '') < audioCutoff
+          ) {
+            old.push(path);
+          }
+        }
         if (files.length < STORAGE_PAGE_SIZE) break;
       }
-      for (let index = 0; index < old.length; index += STORAGE_REMOVE_BATCH_SIZE) {
-        const batch = old.slice(index, index + STORAGE_REMOVE_BATCH_SIZE);
-        const { error } = await bucket.remove(batch);
-        if (error) throw error;
-        removed += batch.length;
-      }
+    }
+    for (let index = 0; index < old.length; index += STORAGE_REMOVE_BATCH_SIZE) {
+      const batch = old.slice(index, index + STORAGE_REMOVE_BATCH_SIZE);
+      const { error } = await bucket.remove(batch);
+      if (error) throw error;
+      removed += batch.length;
     }
   } catch (error) {
     console.error('upload cleanup failed:', error.message);

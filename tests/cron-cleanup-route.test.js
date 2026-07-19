@@ -17,10 +17,6 @@ const state = {
   rateError: null,
   rateReject: null,
   rateDeletes: [],
-  userError: null,
-  userReject: null,
-  users: [],
-  userQueries: [],
   listResponses: {},
   listRejects: {},
   listCalls: [],
@@ -43,17 +39,6 @@ vi.mock('@supabase/supabase-js', () => ({
                 state.rateDeletes.push({ column, cutoff });
                 if (state.rateReject) throw state.rateReject;
                 return { error: state.rateError };
-              },
-            }),
-          };
-        }
-        if (table === 'users') {
-          return {
-            select: (columns) => ({
-              limit: async (limit) => {
-                state.userQueries.push({ columns, limit });
-                if (state.userReject) throw state.userReject;
-                return { data: state.users, error: state.userError };
               },
             }),
           };
@@ -121,6 +106,10 @@ async function callRoute(options) {
   return res;
 }
 
+function folder(name) {
+  return { id: null, name };
+}
+
 describe('GET /api/cron/cleanup', () => {
   afterAll(() => {
     for (const key of ENV_KEYS) {
@@ -142,10 +131,6 @@ describe('GET /api/cron/cleanup', () => {
     state.rateError = null;
     state.rateReject = null;
     state.rateDeletes = [];
-    state.userError = null;
-    state.userReject = null;
-    state.users = [];
-    state.userQueries = [];
     state.listResponses = {};
     state.listRejects = {};
     state.listCalls = [];
@@ -200,7 +185,7 @@ describe('GET /api/cron/cleanup', () => {
 
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody).toEqual({ error: 'Rate-limit cleanup failed.' });
-    expect(state.userQueries).toEqual([]);
+    expect(state.fromCalls).toEqual(['rate_limits']);
     expect(state.listCalls).toEqual([]);
   });
 
@@ -211,33 +196,12 @@ describe('GET /api/cron/cleanup', () => {
 
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody).toEqual({ error: 'Rate-limit cleanup failed.' });
-    expect(state.userQueries).toEqual([]);
-  });
-
-  it('stops before storage work when the user query fails', async () => {
-    state.userError = { message: 'users unavailable' };
-
-    const res = await callRoute();
-
-    expect(res.statusCode).toBe(503);
-    expect(res.jsonBody).toEqual({ error: 'Upload cleanup failed.' });
-    expect(state.userQueries).toEqual([{ columns: 'id', limit: 5000 }]);
-    expect(state.listCalls).toEqual([]);
-  });
-
-  it('recovers when the user query rejects', async () => {
-    state.userReject = new Error('network unavailable');
-
-    const res = await callRoute();
-
-    expect(res.statusCode).toBe(503);
-    expect(res.jsonBody).toEqual({ error: 'Upload cleanup failed.' });
+    expect(state.fromCalls).toEqual(['rate_limits']);
     expect(state.listCalls).toEqual([]);
   });
 
   it('fails the run when a storage listing fails', async () => {
-    state.users = [{ id: 'user-1' }];
-    state.listResponses['user-1'] = {
+    state.listResponses[''] = {
       data: null,
       error: { message: 'storage unavailable' },
     };
@@ -250,8 +214,7 @@ describe('GET /api/cron/cleanup', () => {
   });
 
   it('recovers when a storage listing rejects', async () => {
-    state.users = [{ id: 'user-1' }];
-    state.listRejects['user-1'] = new Error('storage network unavailable');
+    state.listRejects[''] = new Error('storage network unavailable');
 
     const res = await callRoute();
 
@@ -261,7 +224,7 @@ describe('GET /api/cron/cleanup', () => {
   });
 
   it('does not partially delete a folder when a later storage page fails', async () => {
-    state.users = [{ id: 'user-1' }];
+    state.listResponses[''] = { data: [folder('user-1')], error: null };
     state.listResponses['user-1'] = [
       {
         data: Array.from({ length: 1000 }, (_, index) => ({
@@ -277,12 +240,12 @@ describe('GET /api/cron/cleanup', () => {
 
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody).toEqual({ error: 'Upload cleanup failed.' });
-    expect(state.listCalls).toHaveLength(2);
+    expect(state.listCalls).toHaveLength(3);
     expect(state.removeCalls).toEqual([]);
   });
 
   it('fails the run when removal of an expired recording fails', async () => {
-    state.users = [{ id: 'user-1' }];
+    state.listResponses[''] = { data: [folder('user-1')], error: null };
     state.listResponses['user-1'] = {
       data: [{ name: 'expired.webm', created_at: '2020-01-01T00:00:00.000Z' }],
       error: null,
@@ -301,7 +264,7 @@ describe('GET /api/cron/cleanup', () => {
   });
 
   it('recovers when removal of an expired recording rejects', async () => {
-    state.users = [{ id: 'user-1' }];
+    state.listResponses[''] = { data: [folder('user-1')], error: null };
     state.listResponses['user-1'] = {
       data: [{ name: 'expired.webm', created_at: '2020-01-01T00:00:00.000Z' }],
       error: null,
@@ -316,7 +279,10 @@ describe('GET /api/cron/cleanup', () => {
   });
 
   it('removes only expired recordings and reports the exact successful count', async () => {
-    state.users = [{ id: 'user-1' }, { id: 'user-2' }];
+    state.listResponses[''] = {
+      data: [folder('user-1'), folder('user-2')],
+      error: null,
+    };
     state.listResponses['user-1'] = {
       data: [
         { name: 'old-a.webm', created_at: '2020-01-01T00:00:00.000Z' },
@@ -339,6 +305,15 @@ describe('GET /api/cron/cleanup', () => {
     expect(state.listCalls).toEqual([
       {
         bucket: 'speaking-uploads',
+        prefix: '',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+      {
+        bucket: 'speaking-uploads',
         prefix: 'user-1',
         options: {
           limit: 1000,
@@ -357,13 +332,110 @@ describe('GET /api/cron/cleanup', () => {
       },
     ]);
     expect(state.removeCalls).toEqual([
-      { bucket: 'speaking-uploads', paths: ['user-1/old-a.webm'] },
-      { bucket: 'speaking-uploads', paths: ['user-2/old-b.webm'] },
+      {
+        bucket: 'speaking-uploads',
+        paths: ['user-1/old-a.webm', 'user-2/old-b.webm'],
+      },
+    ]);
+  });
+
+  it('enumerates every Storage owner folder without a profile-table cap', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) =>
+      folder(`owner-${String(index).padStart(4, '0')}`)
+    );
+    state.listResponses[''] = [
+      { data: firstPage, error: null },
+      { data: [folder('owner-1000')], error: null },
+    ];
+    state.listResponses['owner-1000'] = {
+      data: [{ name: 'expired.webm', created_at: '2020-01-01T00:00:00.000Z' }],
+      error: null,
+    };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 1 });
+    expect(state.fromCalls).toEqual(['rate_limits']);
+    expect(state.listCalls.filter(({ prefix }) => prefix === '')).toEqual([
+      {
+        bucket: 'speaking-uploads',
+        prefix: '',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+      {
+        bucket: 'speaking-uploads',
+        prefix: '',
+        options: {
+          limit: 1000,
+          offset: 1000,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
+    ]);
+    expect(state.listCalls.some(({ prefix }) => prefix === 'owner-1000')).toBe(true);
+    expect(state.removeCalls).toEqual([
+      { bucket: 'speaking-uploads', paths: ['owner-1000/expired.webm'] },
+    ]);
+  });
+
+  it('traverses nested folders and retains no expired root-level objects', async () => {
+    state.listResponses[''] = {
+      data: [
+        folder('user-1'),
+        {
+          id: 'root-file-id',
+          name: 'legacy.webm',
+          created_at: '2020-01-01T00:00:00.000Z',
+        },
+      ],
+      error: null,
+    };
+    state.listResponses['user-1'] = {
+      data: [
+        folder('nested'),
+        {
+          id: 'current-file-id',
+          name: 'current.webm',
+          created_at: '2099-01-01T00:00:00.000Z',
+        },
+      ],
+      error: null,
+    };
+    state.listResponses['user-1/nested'] = {
+      data: [
+        {
+          id: 'nested-file-id',
+          name: 'expired.webm',
+          updated_at: '2020-01-01T00:00:00.000Z',
+        },
+      ],
+      error: null,
+    };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 2 });
+    expect(state.listCalls.map(({ prefix }) => prefix)).toEqual([
+      '',
+      'user-1',
+      'user-1/nested',
+    ]);
+    expect(state.removeCalls).toEqual([
+      {
+        bucket: 'speaking-uploads',
+        paths: ['legacy.webm', 'user-1/nested/expired.webm'],
+      },
     ]);
   });
 
   it('lists every storage page and removes expired recordings in bounded batches', async () => {
-    state.users = [{ id: 'user-1' }];
+    state.listResponses[''] = { data: [folder('user-1')], error: null };
     const firstPage = Array.from({ length: 1000 }, (_, index) => ({
       name: `expired-${String(index).padStart(4, '0')}.webm`,
       created_at: '2020-01-01T00:00:00.000Z',
@@ -385,6 +457,15 @@ describe('GET /api/cron/cleanup', () => {
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 1002 });
     expect(state.listCalls).toEqual([
+      {
+        bucket: 'speaking-uploads',
+        prefix: '',
+        options: {
+          limit: 1000,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' },
+        },
+      },
       {
         bucket: 'speaking-uploads',
         prefix: 'user-1',
