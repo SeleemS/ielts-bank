@@ -410,6 +410,23 @@ False positives are kept in the investigation notes so they are not rediscovered
   and valid JSON-LD on all six routes: a five-item collection, three 60-minute/three-section Reading
   mocks, and two 40-minute/four-section Listening mocks, all accurately marked as paid.
 
+## CA-022 — Four API 405 responses omitted their allowed method
+
+- Status: `FIXED`
+- Area: API endpoints / HTTP contracts / cron / newsletter
+- Severity: Low
+- Evidence: a safe live wrong-method sweep of all 18 method-restricted API routes found that 14
+  returned HTTP 405 with an `Allow` header, while the three GET-only cron handlers and GET-only
+  newsletter unsubscribe route returned 405 without naming the supported method.
+- Fix: add `Allow: GET` to every affected method-rejection path, matching the established contract
+  used by the rest of the API.
+- Regression coverage: `lib/apiMethodContracts.test.js` invokes each affected handler with POST and
+  asserts the 405 status, `Allow: GET`, and completed response.
+- Commit: `Complete API method contracts`
+- Verification: focused 4-handler contract coverage, the complete current-worktree
+  42-file/233-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
+  production verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

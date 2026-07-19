@@ -4,7 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 import { validUnsubscribeToken } from '../../../lib/lifecycleEmail';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).end();
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).end();
+  }
   const email = typeof req.query.email === 'string' ? req.query.email.trim().toLowerCase() : '';
   const token = typeof req.query.token === 'string' ? req.query.token : '';
   if (!email || !validUnsubscribeToken(email, token)) {

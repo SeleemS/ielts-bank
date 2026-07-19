@@ -494,7 +494,10 @@ async function sendEmail(report, history) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).end();
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).end();
+  }
   const expected = process.env.CRON_SECRET;
   if (!expected || req.headers.authorization !== `Bearer ${expected}`) return res.status(401).end();
 
