@@ -181,7 +181,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-010 — Writing Checker shares had no preview image
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Writing checker / Open Graph / Twitter cards
 - Severity: Medium
 - Evidence: `/ielts-writing-checker` supplied OG title, description, URL, and a Twitter large-card
@@ -192,7 +192,9 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/writingCheckerSeo.test.js` verifies canonical content and every decoded
   dynamic image parameter.
 - Commit: `Add Writing Checker share image`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, full 29-file/178-test Vitest suite, ESLint, analytics
+  audit, generated HTML inspection, and the 527-page production build. Live production returned
+  every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
 ## Investigation notes
 
