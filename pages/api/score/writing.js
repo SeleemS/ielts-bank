@@ -17,6 +17,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { overallBand as calculateOverallBand } from '../../../lib/bandTables';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { WRITING_PROMPT_MAX_CHARS } from '../../../lib/writingLimits';
 import { buildWritingScoreSchema } from '../../../lib/writingScoreSchema';
@@ -416,6 +417,27 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
         error: 'The scoring service returned an invalid result. Please try again.',
       });
     }
+
+    const criteria = result?.criteria || {};
+    const firstCriterion =
+      task === 1 ? criteria.taskAchievement : criteria.taskResponse;
+    const overallBand = calculateOverallBand([
+      firstCriterion?.band,
+      criteria.coherenceCohesion?.band,
+      criteria.lexicalResource?.band,
+      criteria.grammaticalRange?.band,
+    ]);
+    if (overallBand === null) {
+      console.error(
+        'OpenAI returned invalid Writing bands',
+        JSON.stringify(criteria).slice(0, 500)
+      );
+      await refundQuota(userId, quota);
+      return res.status(502).json({
+        error: 'The scoring service returned an invalid result. Please try again.',
+      });
+    }
+    result = { ...result, overallBand };
 
     await saveWritingScore({
       userId,

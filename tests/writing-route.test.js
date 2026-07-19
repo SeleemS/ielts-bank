@@ -8,6 +8,7 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 const state = {
   authUser: null,
   authReject: null,
+  tableCalls: [],
   rateLimitResponses: [],
   rpcCalls: [],
 };
@@ -46,6 +47,22 @@ vi.mock('@supabase/supabase-js', () => ({
       if (name === 'refund_ai_score') return { data: true, error: null };
       return { data: null, error: { message: `unexpected RPC ${name}` } };
     },
+    from: (table) => ({
+      insert: (values) => {
+        state.tableCalls.push({ table, values });
+        if (table === 'attempts') {
+          return {
+            select: () => ({
+              single: async () => ({
+                data: { id: 'attempt-id' },
+                error: null,
+              }),
+            }),
+          };
+        }
+        return Promise.resolve({ data: null, error: null });
+      },
+    }),
   }),
 }));
 
@@ -92,6 +109,7 @@ describe('POST /api/score/writing account and quota safety', () => {
   beforeEach(() => {
     state.authUser = null;
     state.authReject = null;
+    state.tableCalls = [];
     state.rateLimitResponses = [];
     state.rpcCalls = [];
     vi.restoreAllMocks();
@@ -292,6 +310,104 @@ describe('POST /api/score/writing account and quota safety', () => {
       p_consumed_at: '2026-07-19T12:00:00.000Z',
     });
   });
+
+  it.each([
+    [1, 'taskAchievement'],
+    [2, 'taskResponse'],
+  ])(
+    'computes and persists the Task %i overall band from the four criteria',
+    async (task, firstCriterion) => {
+      state.authUser = linkedUser();
+      const { chatCompletionWithFallback } = await import('../lib/openaiChat');
+      chatCompletionWithFallback.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        model: 'gpt-test',
+        payload: {
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  overallBand: 3,
+                  criteria: {
+                    [firstCriterion]: criterion(6.5),
+                    coherenceCohesion: criterion(7),
+                    lexicalResource: criterion(7.5),
+                    grammaticalRange: criterion(8),
+                  },
+                  summary: 'A clear response.',
+                  improvements: ['Develop examples further.'],
+                  correctedExamples: [],
+                }),
+              },
+            },
+          ],
+        },
+      });
+      const { default: handler } = await import('../pages/api/score/writing');
+      const res = makeRes();
+
+      await handler(makeReq({ body: { ...validBody(), task } }), res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.jsonBody.overallBand).toBe(7.5);
+      expect(
+        state.tableCalls.find(({ table }) => table === 'attempts').values.band
+      ).toBe(7.5);
+      expect(
+        state.tableCalls.find(({ table }) => table === 'scores').values
+          .overall_band
+      ).toBe(7.5);
+      expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+        'check_rate_limit',
+        'check_rate_limit',
+        'consume_ai_score',
+      ]);
+    }
+  );
+
+  it('refunds quota when criterion bands cannot produce an overall score', async () => {
+    state.authUser = linkedUser();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { chatCompletionWithFallback } = await import('../lib/openaiChat');
+    chatCompletionWithFallback.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      model: 'gpt-test',
+      payload: {
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 7,
+                criteria: {
+                  taskResponse: criterion(6.5),
+                  coherenceCohesion: criterion(7),
+                  lexicalResource: criterion(7.5),
+                },
+                summary: 'Incomplete provider result.',
+                improvements: [],
+                correctedExamples: [],
+              }),
+            },
+          },
+        ],
+      },
+    });
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(502);
+    expect(state.tableCalls).toEqual([]);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+      'consume_ai_score',
+      'refund_ai_score',
+    ]);
+  });
 });
 
 function linkedUser() {
@@ -306,5 +422,13 @@ function validBody() {
   return {
     essay: Array.from({ length: 60 }, (_, index) => `word${index}`).join(' '),
     task: 2,
+  };
+}
+
+function criterion(band) {
+  return {
+    band,
+    strengths: ['Clear organization.'],
+    improvements: ['Add more detail.'],
   };
 }
