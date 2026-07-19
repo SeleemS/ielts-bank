@@ -174,6 +174,24 @@ function PlanSettings({ profile }) {
 }
 
 export default function AccountSettings({ user, profile, onProfileChange, onSignOut }) {
+  const [signingOut, setSigningOut] = React.useState(false);
+  const [signOutError, setSignOutError] = React.useState('');
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      const result = await onSignOut();
+      if (result?.error) {
+        setSignOutError(result.error.message || 'Could not sign out. Please try again.');
+      }
+    } catch {
+      setSignOutError('Could not sign out. Please try again.');
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-slate-950 px-5 py-7 text-white shadow-[0_25px_70px_-38px_rgba(5,150,105,0.85)] sm:px-8">
@@ -185,7 +203,11 @@ export default function AccountSettings({ user, profile, onProfileChange, onSign
           <PlanSettings profile={profile} />
           <section className="rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-6">
             <SectionHeader icon={LogOut} title="Session" description="Sign out safely on this device." />
-            <Button type="button" variant="outline" onClick={onSignOut} className="mt-6 w-full rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"><LogOut className="h-4 w-4" /> Sign out</Button>
+            <Button type="button" variant="outline" onClick={handleSignOut} disabled={signingOut} className="mt-6 w-full rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800">
+              {signingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </Button>
+            <Feedback type="error">{signOutError}</Feedback>
           </section>
         </div>
       </div>

@@ -13,7 +13,7 @@
 //     signInWithPassword(email, password): Promise<{error}>,
 //     verifyEmailOtp(email, token): Promise<{error}>,          // 6-digit signup code
 //     resendSignupEmail(email): Promise<{error}>,
-//     signOut(): Promise<void>,
+//     signOut(): Promise<{error}>,
 //   }
 // Successful account creation and sign-in always land on /dashboard.
 //
@@ -166,9 +166,21 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signOut = React.useCallback(async () => {
-    const supabase = getSupabase();
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signOut();
+      if (error) return { error };
+      setUser(null);
+      setAnalyticsUser(null, null);
+      return { error: null };
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error
+            ? error
+            : new Error('Could not sign out. Please try again.'),
+      };
+    }
   }, []);
 
   const value = React.useMemo(
@@ -216,7 +228,7 @@ export function useAuth() {
       resendSignupEmail: async () => ({ error: new Error('AuthProvider missing') }),
       requestPasswordReset: async () => ({ error: new Error('AuthProvider missing') }),
       updatePassword: async () => ({ error: new Error('AuthProvider missing') }),
-      signOut: async () => {},
+      signOut: async () => ({ error: new Error('AuthProvider missing') }),
     };
   }
   return ctx;

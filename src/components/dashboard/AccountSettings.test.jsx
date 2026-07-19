@@ -7,6 +7,7 @@ import { act } from 'react-dom/test-utils';
 const testState = vi.hoisted(() => ({
   profileSave: vi.fn(),
   passwordSave: vi.fn(),
+  signOut: vi.fn(),
 }));
 
 vi.mock('next/link', () => ({
@@ -80,7 +81,7 @@ beforeEach(() => {
           billing_pause_until: null,
         }}
         onProfileChange={vi.fn()}
-        onSignOut={vi.fn()}
+        onSignOut={testState.signOut}
       />
     );
   });
@@ -124,5 +125,25 @@ describe('AccountSettings network failures', () => {
         (button) => button.textContent.includes('Update password')
       ).disabled
     ).toBe(false);
+  });
+
+  it('shows a recoverable error when sign out cannot reach the authentication service', async () => {
+    testState.signOut.mockResolvedValue({
+      error: new Error('Could not reach the authentication service.'),
+    });
+    const button = [...container.querySelectorAll('button')].find(
+      (item) => item.textContent.trim() === 'Sign out'
+    );
+
+    await act(async () => {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Could not reach the authentication service.'
+    );
+    expect(button.disabled).toBe(false);
   });
 });
