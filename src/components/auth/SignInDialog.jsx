@@ -21,6 +21,7 @@ import { getSupabase } from '../../../lib/supabase';
 import { track } from '../../lib/analytics';
 import { POST_AUTH_PATH } from '../../lib/authPaths';
 import { inter } from '../../lib/fonts';
+import { useDialogFocus } from '../../lib/dialogFocus';
 
 // Auth + onboarding dialog. Keeps the historical SignInDialog prop contract
 // (open / onOpenChange / title / description / trigger) so every existing
@@ -108,6 +109,7 @@ export default function SignInDialog({
   const [errorMsg, setErrorMsg] = React.useState('');
   const [notice, setNotice] = React.useState('');
   const [resendIn, setResendIn] = React.useState(0);
+  const dialogRef = React.useRef(null);
 
   const finishStandardAuth = React.useCallback(() => {
     onOpenChange?.(false);
@@ -126,6 +128,13 @@ export default function SignInDialog({
     }
     onOpenChange?.(false);
   }, [step, finishStandardAuth, onOpenChange]);
+
+  useDialogFocus({
+    active: mounted && open,
+    containerRef: dialogRef,
+    onDismiss: closeDialog,
+    focusKey: `${step}:${mode}`,
+  });
 
   React.useEffect(() => setMounted(true), []);
 
@@ -147,20 +156,16 @@ export default function SignInDialog({
     }
   }, [open, trigger, initialMode]);
 
-  // Esc + scroll lock.
+  // Scroll lock while the dialog is active. Escape, focus containment, and
+  // trigger restoration are handled by useDialogFocus.
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') closeDialog();
-    };
-    document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, closeDialog]);
+  }, [open]);
 
   // Safety net: if a session appears in another tab while we sit on the
   // verify step (e.g. an old emailed link), supabase-js syncs it here —
@@ -420,6 +425,7 @@ export default function SignInDialog({
             <Label htmlFor="signin-otp">Verification code</Label>
             <Input
               id="signin-otp"
+              data-dialog-initial-focus
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
@@ -469,6 +475,7 @@ export default function SignInDialog({
             <Label htmlFor="signin-newpass">New password</Label>
             <Input
               id="signin-newpass"
+              data-dialog-initial-focus
               type="password"
               autoComplete="new-password"
               required
@@ -504,7 +511,13 @@ export default function SignInDialog({
             <p className="mb-2 text-sm font-semibold text-foreground">What are you preparing for?</p>
             <div className="grid grid-cols-2 gap-2">
               {GOALS.map(({ key, label, icon: Icon }) => (
-                <button key={key} type="button" onClick={() => setGoal(key)} className={chip(goal === key)}>
+                <button
+                  key={key}
+                  type="button"
+                  data-dialog-initial-focus={key === GOALS[0].key ? '' : undefined}
+                  onClick={() => setGoal(key)}
+                  className={chip(goal === key)}
+                >
                   <Icon className="h-4 w-4 shrink-0" />
                   {label}
                 </button>
@@ -584,6 +597,7 @@ export default function SignInDialog({
             <Label htmlFor="signin-email">Email</Label>
             <Input
               id="signin-email"
+              data-dialog-initial-focus
               type="email"
               autoComplete="email"
               required
@@ -682,9 +696,11 @@ export default function SignInDialog({
       />
       <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="signin-title"
+          tabIndex={-1}
           data-analytics-id="signin_dialog"
           data-analytics-surface="authentication"
           onClick={(e) => e.stopPropagation()}

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../src/lib/utils';
+import { useDialogFocus } from '../../src/lib/dialogFocus';
 
 /*
  * Lightweight Sheet (slide-over) primitive in the shadcn visual language,
@@ -11,6 +12,13 @@ import { cn } from '../../src/lib/utils';
 
 function Sheet({ open, onOpenChange, children }) {
   const [mounted, setMounted] = React.useState(false);
+  const portalRef = React.useRef(null);
+
+  useDialogFocus({
+    active: mounted && open,
+    containerRef: portalRef,
+    onDismiss: () => onOpenChange?.(false),
+  });
 
   React.useEffect(() => {
     setMounted(true);
@@ -18,22 +26,17 @@ function Sheet({ open, onOpenChange, children }) {
 
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onOpenChange?.(false);
-    };
-    document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onOpenChange]);
+  }, [open]);
 
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[2000]">{children}</div>,
+    <div ref={portalRef} className="fixed inset-0 z-[2000]">{children}</div>,
     document.body
   );
 }
@@ -61,6 +64,7 @@ const SheetContent = React.forwardRef(
         ref={ref}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
         className={cn(
           'fixed z-[2001] flex flex-col gap-6 overflow-y-auto bg-background p-6 shadow-2xl border-border pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]',
           'animate-in slide-in-from-right duration-300',
