@@ -13,12 +13,14 @@ import {
   CardTitle,
 } from '../../components/ui/card';
 import { track } from '../lib/analytics';
+import { useAuth } from '../lib/auth';
 import { CONTACT_SEO } from '../../lib/contactSeo';
 
 const fieldClasses =
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm';
 
 const ContactUs = () => {
+  const { user } = useAuth();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
@@ -48,13 +50,27 @@ const ContactUs = () => {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(body.error || 'Something went wrong. Please try again.');
+        track('contact_submit', {
+          outcome: 'error',
+          signed_in: Boolean(user?.id),
+          status: res.status,
+        });
         return;
       }
       form.reset();
       setSent(true);
-      track('contact_submit', { outcome: 'success', signed_in: false });
+      track('contact_submit', {
+        outcome: 'success',
+        signed_in: Boolean(user?.id),
+        status: res.status,
+      });
     } catch (err) {
       setError('We could not reach the server. Please check your connection and try again.');
+      track('contact_submit', {
+        outcome: 'network_error',
+        signed_in: Boolean(user?.id),
+        status: 0,
+      });
     } finally {
       setPending(false);
     }
