@@ -337,8 +337,11 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused 14-template regression coverage, the complete current-worktree
   38-file/218-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact
   generated-site inspection found zero missing title, description, canonical, Open Graph, Twitter
-  card, or Twitter image-alt fields across all 522 indexable static pages. Live production
-  verification will be recorded after deployment.
+  card, or Twitter image-alt fields across all 522 indexable static pages. The clean Vercel build
+  from the committed fix reached `Ready` with the production aliases. Live verification passed on
+  all 47 affected routes, including dynamic pricing; all Twitter descriptions matched their Open
+  Graph counterparts. Fourteen representative card images covered every template and returned HTTP
+  200 non-empty `image/png` responses.
 
 ## Investigation notes
 
