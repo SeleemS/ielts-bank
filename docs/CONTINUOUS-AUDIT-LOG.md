@@ -662,6 +662,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   build all passed. Vercel deployed the fix successfully. Fresh signed-out production QA found
   exactly one heading in the dashboard main content: `H1 Sign in to see your progress`.
 
+## CA-033 — Sign-in rejected valid existing passwords shorter than eight characters
+
+- Status: `FIXED`
+- Area: Authentication / password sign-in / legacy-account compatibility
+- Severity: High
+- Evidence: the shared auth dialog applied the new-account eight-character minimum to password
+  sign-in as well. In production, entering a non-empty six-character existing password left the
+  Sign in button disabled and the field carried `minlength="8"`, so the credential never reached
+  Supabase for authentication. [Supabase's current password guidance](https://supabase.com/docs/guides/auth/password-security)
+  distinguishes strengthened password policy from existing-user sign-in behavior; the identity
+  service, not a signup-only client rule, must decide whether an existing credential is accepted.
+- Fix: require eight characters only when creating a new account. Existing-account sign-in now
+  accepts any non-empty password and delegates credential validation to Supabase; new-password and
+  signup flows retain their eight-character client minimum.
+- Regression coverage: `src/components/auth/SignInDialog.test.jsx` renders both modes, proves a
+  six-character sign-in password has no signup-only minimum and reaches `signInWithPassword`, and
+  proves the same value remains blocked in signup until it reaches eight characters.
+- Commit: `Allow existing shorter passwords to sign in`
+- Verification: focused 2-test auth-dialog coverage, the complete current-worktree
+  56-file/274-test Vitest suite, ESLint, the 147-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production QA confirmed the
+  six-character sign-in value enables submission with no `minlength`, then switching to Create
+  account restores `minlength="8"` and disables the same value.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
