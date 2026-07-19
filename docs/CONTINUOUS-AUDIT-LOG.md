@@ -1216,6 +1216,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter, quota, or OpenAI mutation occurred.
 
+## CA-055 — Writing limiter errors bypassed or impersonated verified limits
+
+- Status: `FIXED`
+- Area: Writing scoring / global and per-IP rate limits / cost controls
+- Severity: High
+- Evidence: the shared Writing limiter returned an ambiguous boolean. A resolved Supabase error
+  on the per-IP check failed open and allowed scoring to continue, while the same error on the
+  global circuit breaker became an ordinary HTTP 429 high-demand response. Rejected promises
+  reached a separate HTTP 503 path, so equivalent dependency failures had inconsistent behavior.
+- Fix: return an explicit `{ allowed, error }` result from a rejection-safe limiter helper. Both
+  global and per-IP resolved errors or rejected promises now return HTTP 503 and stop before quota
+  consumption. Only positively verified global or per-IP exhaustion returns HTTP 429.
+- Regression coverage: the expanded Writing route suite covers resolved RPC errors, promise
+  rejections, and verified exhaustion at both limiter stages. It asserts exact check order and
+  bucket selection, proves the first failure stops subsequent RPCs, and retains the provider
+  failure test that verifies exact quota refund.
+- Commit: `09a9a5e` (`Fail closed on writing limiter errors`)
+- Verification: focused 10-test Writing route coverage, the complete current-worktree
+  63-file/355-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter, quota, or OpenAI mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
