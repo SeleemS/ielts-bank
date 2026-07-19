@@ -295,7 +295,9 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Complete Band Estimator share metadata`
 - Verification: focused 2-test SEO coverage, the complete current-worktree 36-file/198-test Vitest
   suite, ESLint, analytics audit, exact generated metadata inspection, and the 527-page production
-  build. Live production verification will be recorded after deployment.
+  build. The clean Vercel build from the committed fix reached `Ready` with the production aliases.
+  Live production returned every expected OG/Twitter field, matching OG/Twitter images, and an HTTP
+  200 non-empty `image/png` card.
 
 ## Investigation notes
 
