@@ -26,27 +26,59 @@ const STEPS = [
   },
 ];
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const ListeningIntroModal = ({ open, onClose }) => {
   const [dontShowAgain, setDontShowAgain] = React.useState(false);
   const closeButtonRef = React.useRef(null);
+  const dialogRef = React.useRef(null);
+  const previousFocusRef = React.useRef(null);
+  const onCloseRef = React.useRef(onClose);
+  const dontShowAgainRef = React.useRef(dontShowAgain);
+  onCloseRef.current = onClose;
+  dontShowAgainRef.current = dontShowAgain;
 
   const close = React.useCallback(() => {
-    onClose?.({ dontShowAgain });
-  }, [onClose, dontShowAgain]);
+    onCloseRef.current?.({ dontShowAgain: dontShowAgainRef.current });
+  }, []);
 
-  // Esc to close + scroll lock while open.
+  // Escape, focus containment/restoration, and scroll lock while open.
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') close();
+    previousFocusRef.current = document.activeElement;
+    const dialog = dialogRef.current;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab' || !dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll(FOCUSABLE));
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKeyDown);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    closeButtonRef.current?.focus();
+    (closeButtonRef.current || dialog)?.focus();
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus?.();
     };
   }, [open, close]);
 
@@ -54,10 +86,12 @@ const ListeningIntroModal = ({ open, onClose }) => {
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="listening-intro-title"
+      tabIndex={-1}
       data-analytics-id="listening_intro"
       data-analytics-surface="listening_practice"
     >
