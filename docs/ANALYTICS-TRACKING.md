@@ -48,6 +48,9 @@ Internal framework/API/Google-tag paths under `/api`, `/_next`, and `/gt` are
 discarded in both the client and ingestion endpoint. They are infrastructure,
 not user journeys.
 
+Text answers emit after an 800 ms pause or on change/blur. This captures
+abandonment without sending every keystroke or the answer itself.
+
 Explicit domain events remain the source of truth for outcomes and funnel
 milestones, including auth, attempts, AI scoring, estimator, audio,
 newsletter, paywall, checkout, purchase, subscription, and realtime-examiner

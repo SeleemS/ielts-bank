@@ -216,6 +216,7 @@ export default function InteractionTelemetry() {
 
   React.useEffect(() => {
     const activeDialogs = new Map();
+    const inputTimers = new Map();
     ensureGoogleAnalytics();
     window.__ieltsInteractionTelemetry = 'installed';
 
@@ -235,8 +236,35 @@ export default function InteractionTelemetry() {
         element.type === 'hidden' ||
         element.dataset?.analyticsSkip === 'true'
       ) return;
+      const pending = inputTimers.get(element);
+      if (pending) {
+        window.clearTimeout(pending);
+        inputTimers.delete(element);
+      }
       const item = fieldChangeEvent(element, signedInRef.current);
       track(item.name, item.params);
+    };
+
+    const onInput = (event) => {
+      const element = event.target?.closest?.('input, textarea');
+      if (
+        !element ||
+        element.disabled ||
+        element.type === 'password' ||
+        element.type === 'hidden' ||
+        element.dataset?.analyticsSkip === 'true' ||
+        !element.closest?.('[data-analytics-question-number]')
+      ) return;
+      const pending = inputTimers.get(element);
+      if (pending) window.clearTimeout(pending);
+      inputTimers.set(
+        element,
+        window.setTimeout(() => {
+          inputTimers.delete(element);
+          const item = fieldChangeEvent(element, signedInRef.current);
+          track(item.name, item.params);
+        }, 800)
+      );
     };
 
     const onSubmit = (event) => {
@@ -296,6 +324,7 @@ export default function InteractionTelemetry() {
 
     document.addEventListener('click', onClick);
     document.addEventListener('change', onChange);
+    document.addEventListener('input', onInput);
     document.addEventListener('submit', onSubmit);
     document.addEventListener('pointerup', onPointerUp);
     observer.observe(document.body, { childList: true, subtree: true });
@@ -305,9 +334,12 @@ export default function InteractionTelemetry() {
     return () => {
       document.removeEventListener('click', onClick);
       document.removeEventListener('change', onChange);
+      document.removeEventListener('input', onInput);
       document.removeEventListener('submit', onSubmit);
       document.removeEventListener('pointerup', onPointerUp);
       observer.disconnect();
+      for (const timer of inputTimers.values()) window.clearTimeout(timer);
+      inputTimers.clear();
       delete window.__ieltsInteractionTelemetry;
     };
   }, []);
