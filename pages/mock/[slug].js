@@ -15,7 +15,7 @@ import { useAuth } from '../../src/lib/auth';
 import { usePlan } from '../../src/lib/usePlan';
 import { track } from '../../src/lib/analytics';
 
-import { SITE_URL } from '../../lib/site';
+import { getMockSeo } from '../../lib/mockSeo';
 const PASSAGE_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6';
 
@@ -113,7 +113,7 @@ export default function MockTestPage({ mock }) {
   const { groups, sectionMeta } = hasContent
     ? combineGroups(resolvedMock.sections)
     : { groups: [], sectionMeta: [] };
-  const canonical = `${SITE_URL}/mock/${mock.slug}`;
+  const seo = getMockSeo(mock);
 
   React.useEffect(() => {
     if (!user?.id || planLoading || !isPremium || fullMock || contentStatus === 'loading') return;
@@ -153,9 +153,23 @@ export default function MockTestPage({ mock }) {
   return (
     <>
       <Head>
-        <title>{`${mock.title} | IELTS-Bank`}</title>
-        <meta name="description" content={mock.description} />
-        <link rel="canonical" href={canonical} />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={seo.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:url" content={seo.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={seo.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={seo.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo.title} />
+        <meta name="twitter:description" content={seo.description} />
+        <meta name="twitter:image" content={seo.ogImage} />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />

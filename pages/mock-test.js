@@ -7,16 +7,31 @@ import Footer from '../src/components/Footer';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { listMockTests } from '../lib/supabase';
-
-import { SITE_URL } from '../lib/site';
+import { MOCK_INDEX_SEO } from '../lib/mockSeo';
 
 export default function MockTestIndex({ mocks = [] }) {
+  const seo = MOCK_INDEX_SEO;
+
   return (
     <>
       <Head>
-        <title>IELTS Mock Tests | IELTS-Bank</title>
-        <meta name="description" content="Take a full-length IELTS Reading or Listening mock test with a real timer, instant scoring, a per-section breakdown and an estimated band. Included with Premium." />
-        <link rel="canonical" href={`${SITE_URL}/mock-test`} />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={seo.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:url" content={seo.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={seo.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={seo.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo.title} />
+        <meta name="twitter:description" content={seo.description} />
+        <meta name="twitter:image" content={seo.ogImage} />
       </Head>
       <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
@@ -63,4 +78,3 @@ export default function MockTestIndex({ mocks = [] }) {
 export async function getStaticProps() {
   return { props: { mocks: await listMockTests() }, revalidate: 3600 };
 }
-

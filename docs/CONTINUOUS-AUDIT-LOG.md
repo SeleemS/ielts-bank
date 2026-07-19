@@ -46,6 +46,22 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: targeted regression test, full Vitest suite, ESLint, production build, generated
   HTML metadata check, and live deployment check.
 
+## CA-003 — Mock-test pages had no social share cards
+
+- Status: `FIXED`
+- Area: Open Graph / Twitter cards / mock tests
+- Severity: Medium
+- Evidence: the generated mock-test hub and all five published mock pages had a title, description,
+  and canonical URL but no `og:title`, `og:description`, `og:url`, or `og:image`. Shared links
+  therefore had no controlled preview card.
+- Fix: added a shared mock SEO contract, complete Open Graph and Twitter large-card metadata on the
+  hub and detail routes, URL-safe dynamic image parameters, and a mock-specific OG image label.
+- Regression coverage: `lib/mockSeo.test.js` verifies complete hub metadata and safe dynamic route
+  and image encoding.
+- Commit: `Add mock test share metadata`
+- Verification: focused metadata tests, full Vitest suite, ESLint, production build, six generated
+  HTML metadata checks, OG image response check, and live deployment checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

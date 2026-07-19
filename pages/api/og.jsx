@@ -21,6 +21,7 @@ const TYPE_LABELS = {
   writing: 'Writing Practice',
   listening: 'Listening Practice',
   speaking: 'Speaking Practice',
+  mock: 'IELTS Mock Test',
   blog: 'IELTS Blog',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
