@@ -2068,6 +2068,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   injected dependencies to avoid generating a duplicate report or administrative email; no
   database, email, account, payment, consent, content, or provider state changed.
 
+## CA-090 — An optional retention RPC rejection aborted the entire daily report
+
+- Status: `FIXED`
+- Area: Analytics / scheduled daily report / Supabase RPC recovery
+- Severity: Medium
+- Evidence: `returning_visitor_stats` is explicitly optional because deployments can temporarily
+  lack the function, and a resolved Supabase error correctly produced `retention: null`. A
+  network-level rejection from the same RPC escaped the shared `Promise.all`, however, causing the
+  whole report to return HTTP 503 before otherwise healthy signup, activity, practice, and history
+  data could be persisted. The documented fail-soft contract therefore depended on the provider's
+  error transport rather than the feature's actual importance.
+- Fix: isolate the optional RPC behind a recovery helper that normalizes rejected calls to the same
+  `{data:null,error}` shape as resolved Supabase failures. The existing diagnostic remains, while
+  required source queries and system-of-record persistence continue to fail closed.
+- Regression coverage: the nine-case daily-report route suite now injects a rejected retention RPC,
+  requires HTTP 200 with `retention: null`, verifies the exact UTC query range and function name,
+  and proves that the degraded report is still written. All prior method, auth, configuration,
+  required-query, persistence-ordering, resolved-error, and rejected-upsert cases remain covered.
+- Commit: `1eaba77` (`Recover optional retention report failures`)
+- Verification: the focused nine-test daily-report suite, the complete 77-file/470-test Vitest
+  suite, ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the
+  528-page production build passed. Vercel deployment `dpl_FkJ8RSzWHekPau4xhQJ2dEhU2vAn`
+  reached `READY` from exact Git SHA `1eaba774a71e13366fbc712d42c34f466534aab0`. Fresh production
+  probes returned HTTP 405 for POST and HTTP 401 for an invalid bearer-secret GET, both before
+  report generation or mutation. The authorized degraded-RPC branch was verified with injected
+  dependencies rather than by disrupting the live function; no database, email, account, payment,
+  consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
