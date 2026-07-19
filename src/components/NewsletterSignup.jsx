@@ -48,16 +48,33 @@ export default function NewsletterSignup({
       }
       if (res.ok && data && data.ok) {
         setStatus('sent');
-        track('newsletter_subscribe', { source, signed_in: Boolean(user?.id) });
+        track('newsletter_subscribe', {
+          source,
+          outcome: 'success',
+          signed_in: Boolean(user?.id),
+          status: res.status,
+        });
       } else {
         setStatus('error');
         setErrorMsg(
           (data && data.error) || 'Something went wrong. Please try again.'
         );
+        track('newsletter_subscribe', {
+          source,
+          outcome: 'error',
+          signed_in: Boolean(user?.id),
+          status: res.status,
+        });
       }
     } catch {
       setStatus('error');
       setErrorMsg('A network error occurred. Please try again.');
+      track('newsletter_subscribe', {
+        source,
+        outcome: 'network_error',
+        signed_in: Boolean(user?.id),
+        status: 0,
+      });
     }
   };
 
