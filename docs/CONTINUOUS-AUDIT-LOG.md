@@ -1657,11 +1657,13 @@ False positives are kept in the investigation notes so they are not rediscovered
   window, and maximum; prove verified exhaustion returns 429; and prove both resolved and rejected
   limiter failures return 503. Every guarded failure is required to make zero Stripe calls.
 - Commit: `87fb65f` (`Rate limit Stripe checkout creation`)
+- Compatibility correction: `d25c684` (`Match billing limiter RPC signature`)
 - Verification: all 32 billing-route tests, the complete current-worktree 68-file/405-test Vitest
   suite, ESLint, the 150-file analytics audit, and the 528-page production build passed. Vercel
-  deployed the exact commit successfully. A fresh same-origin unauthenticated production POST
-  returned HTTP 401 before the account limiter or Stripe path. No Checkout Session, Stripe
-  customer, rate-limit row, or Supabase account mutation occurred during live verification.
+  deployed the corrected state successfully. A fresh same-origin unauthenticated production POST
+  returned HTTP 401 before the account limiter or Stripe path; the corrected production RPC
+  contract was then exercised and cleaned up as recorded in CA-076. No Checkout Session, Stripe
+  customer, payment, user, or entitlement was created or changed.
 
 ## CA-075 — Checkout reconciliation had no server-side abuse limit
 
@@ -1687,6 +1689,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   scoped production RPC probe returned `true` over HTTP 200 with the deployed `p_max` contract;
   its single rate-limit row was deleted and a follow-up read returned no rows. No Stripe Session,
   customer, payment, user, or entitlement was created or changed.
+
+## CA-076 — Billing limiters called a nonexistent RPC signature
+
+- Status: `FIXED`
+- Area: Billing API / Supabase integration / release regression
+- Severity: Critical
+- Evidence: the first CA-074 and CA-075 implementations passed `p_max_requests` to
+  `check_rate_limit`, but the deployed PostgreSQL function's fourth named argument is `p_max`.
+  Supabase named-argument resolution would therefore reject authenticated checkout creation and
+  reconciliation, and both fail-closed routes would return HTTP 503. The route mock accepted
+  arbitrary argument objects, so the initial focused and full unit suites did not expose the
+  database-contract mismatch.
+- Fix: change both billing RPC calls to the deployed `p_max` argument and update their exact
+  contract assertions. Repository-wide inspection confirms every established caller uses the same
+  `p_max` signature defined by migration `0008_rate_limits.sql`.
+- Regression coverage: checkout and reconciliation tests now assert `p_max` alongside the exact
+  bucket, identifier, window, and limit for both provider-facing routes, while retaining all
+  exhaustion and fail-closed cases.
+- Commit: `d25c684` (`Match billing limiter RPC signature`)
+- Verification: focused 2-file/41-test billing and checkout-return coverage, the complete
+  current-worktree 68-file/408-test Vitest suite, ESLint, the 150-file analytics audit, and the
+  528-page production build passed. Vercel deployed the exact corrective commit successfully. A
+  production service-role RPC call using `p_max` returned `true` over HTTP 200; its uniquely named
+  one-row rate-limit probe was deleted immediately, and a follow-up production read returned an
+  empty array. No Stripe or account mutation occurred.
 
 ## Investigation notes
 
