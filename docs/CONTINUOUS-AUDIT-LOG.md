@@ -1331,6 +1331,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter or OpenAI request was created.
 
+## CA-060 — Unscorable realtime transcripts consumed limiter allowance
+
+- Status: `FIXED`
+- Area: Realtime examiner / transcript validation / rate limits / availability
+- Severity: High
+- Evidence: the realtime scoring route called the global and per-IP `check_rate_limit` RPCs before
+  verifying that the transcript contained the 40 candidate words required to score. The RPC
+  atomically increments on every call, so empty or short HTTP 422 submissions consumed both
+  allowances and could unnecessarily reduce scoring availability.
+- Fix: authenticate and verify Premium entitlement, then normalize and validate the transcript
+  before mutating either limiter counter. Only a transcript that is actually eligible for scoring
+  reaches the global and per-IP checks.
+- Regression coverage: a new verified-Premium short-transcript case requires HTTP 422 and zero
+  limiter RPCs. Every limiter error, rejection, global-capacity, and per-IP exhaustion test now
+  supplies a valid 40-word candidate transcript so those branches remain genuinely exercised.
+- Commit: `adf6f69` (`Validate realtime transcripts before limiting`)
+- Verification: focused 12-test realtime route/schema coverage, the complete current-worktree
+  65-file/364-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No live limiter or OpenAI mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
