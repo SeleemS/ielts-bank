@@ -712,6 +712,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   legitimate $0 Checkout and entitlement path was already exercised end to end with
   `E2EVERIFY100` in CA-006.
 
+## CA-035 — Pricing sign-in discarded the selected checkout plan
+
+- Status: `FIXED`
+- Area: Pricing / authentication handoff / checkout conversion
+- Severity: High
+- Evidence: selecting a paid plan while signed out opened an auth dialog whose copy promised
+  `you’ll stay right on this page`, but Pricing omitted `redirectOnFinish={false}`. Successful auth
+  therefore used the shared dialog's dashboard-first default, navigating away from Pricing and
+  discarding the SKU the learner had selected.
+- Fix: keep pricing authentication in context, retain the pending SKU while the dialog is open, and
+  automatically resume the exact checkout request after authentication completes and the dialog
+  closes. A canceled dialog retains no automatic action until authentication actually succeeds.
+- Regression coverage: the pricing route test selects Monthly while signed out, requires the
+  no-redirect dialog contract, completes the simulated auth handoff, and asserts the resumed
+  authenticated `/api/billing/checkout` request contains `sku=monthly`, the access token, and no
+  substituted offer.
+- Commit: `Resume checkout after pricing sign in`
+- Verification: focused 4-test pricing-flow coverage, the complete current-worktree
+  57-file/278-test Vitest suite, ESLint, the 147-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production QA selected a plan
+  while signed out, stayed on `/pricing`, and received the in-context `Sign in to upgrade` dialog
+  with the matching stay-on-page explanation; the authenticated resume is verified by the rendered
+  route integration test without creating another live subscription after CA-006's completed
+  `E2EVERIFY100` payment run.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
