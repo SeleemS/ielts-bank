@@ -25,10 +25,9 @@ import {
   BandMeter,
 } from '../src/components/question/ScoreUI';
 
-import { SITE_URL } from '../lib/site';
-const PAGE_TITLE = 'Live AI IELTS Speaking Examiner – Real Mock Interview';
-const PAGE_DESCRIPTION =
-  'Take a live IELTS Speaking mock interview with an AI examiner: adaptive Part 1 questions, a timed Part 2 cue card, probing Part 3 follow-ups, and a band score with feedback at the end.';
+import { SPEAKING_EXAMINER_SEO } from '../lib/speakingExaminerSeo';
+const PAGE_TITLE = SPEAKING_EXAMINER_SEO.title;
+const PAGE_DESCRIPTION = SPEAKING_EXAMINER_SEO.description;
 
 const MODE_CARDS = [
   { mode: 'mock', title: 'Full mock interview', minutes: 14, blurb: 'Parts 1-3, exactly like the real test.' },
@@ -570,7 +569,21 @@ export default function SpeakingExaminerPage() {
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <link rel="canonical" href={`${SITE_URL}/speaking-examiner`} />
+        <link rel="canonical" href={SPEAKING_EXAMINER_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
+        <meta property="og:url" content={SPEAKING_EXAMINER_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={SPEAKING_EXAMINER_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={SPEAKING_EXAMINER_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+        <meta name="twitter:image" content={SPEAKING_EXAMINER_SEO.ogImage} />
       </Head>
       <Navbar />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-10">

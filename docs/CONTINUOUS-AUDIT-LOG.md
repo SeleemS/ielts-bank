@@ -161,6 +161,21 @@ False positives are kept in the investigation notes so they are not rediscovered
   OG/Twitter field, the OG and Twitter image URLs matched, and the card endpoint returned HTTP 200
   with a non-empty `image/png` response.
 
+## CA-009 — Live Speaking Examiner links had no social share metadata
+
+- Status: `IN VERIFICATION`
+- Area: Speaking examiner / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: the generated and production `/speaking-examiner` page had a title, description, and
+  canonical URL but supplied no Open Graph or Twitter metadata for the site's flagship Premium
+  feature.
+- Fix: add a shared examiner SEO contract, a dedicated Speaking Examiner card label, complete
+  1200×630 Open Graph metadata, and matching Twitter large-card fields.
+- Regression coverage: `lib/speakingExaminerSeo.test.js` verifies the canonical route, content
+  contract, and every decoded dynamic image parameter.
+- Commit: `Add examiner social share metadata`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

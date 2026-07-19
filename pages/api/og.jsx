@@ -24,6 +24,7 @@ const TYPE_LABELS = {
   mock: 'IELTS Mock Test',
   blog: 'IELTS Blog',
   pricing: 'IELTS Premium',
+  examiner: 'Speaking Examiner',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
 };
