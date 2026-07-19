@@ -9,6 +9,7 @@ import { useAuth } from '../../src/lib/auth';
 import { usePlan } from '../../src/lib/usePlan';
 import { getSupabase } from '../../lib/supabase';
 import { track } from '../../src/lib/analytics';
+import { billingStatusMessage, canOfferBillingPause } from '../../src/lib/billingStatus';
 
 async function authHeaders() {
   const { data } = await getSupabase().auth.getSession();
@@ -21,6 +22,7 @@ export default function ManageBillingPage() {
   const { user, loading: authLoading } = useAuth();
   const {
     isPremium,
+    planStatus,
     renewsAt,
     expiresAt,
     pauseUntil,
@@ -102,21 +104,25 @@ export default function ManageBillingPage() {
                   <div>
                     <h2 className="font-bold">Keep Premium active</h2>
                     <p className="mt-1 text-sm text-slate-600">
-                      {pauseUntil && new Date(pauseUntil).getTime() > Date.now()
-                        ? `Your current pause ends ${new Date(pauseUntil).toLocaleDateString()}.`
-                        : expiresAt
-                          ? `Your Exam Pass ends ${new Date(expiresAt).toLocaleDateString()}.`
-                          : renewsAt
-                            ? `Your next renewal is ${new Date(renewsAt).toLocaleDateString()}.`
-                            : isPremium
-                              ? 'Your Premium tools are active.'
-                              : 'Your subscription is not currently active.'}
+                      {billingStatusMessage({
+                        pauseUntil,
+                        expiresAt,
+                        planStatus,
+                        renewsAt,
+                        isPremium,
+                      })}
                     </p>
                   </div>
                 </div>
               </section>
 
-              {isPremium && renewsAt && !expiresAt && !pauseUsedAt ? (
+              {canOfferBillingPause({
+                isPremium,
+                planStatus,
+                renewsAt,
+                expiresAt,
+                pauseUsedAt,
+              }) ? (
                 <section className="rounded-2xl border bg-white p-6">
                   <div className="flex items-start gap-3">
                     <PauseCircle className="mt-1 h-5 w-5 text-amber-600" />

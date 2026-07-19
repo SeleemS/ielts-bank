@@ -128,4 +128,13 @@ describe('POST /api/billing/pause', () => {
     expect(res.statusCode).toBe(409);
     expect(state.stripeUpdates).toEqual([]);
   });
+
+  it('rejects a pause after cancellation is scheduled', async () => {
+    state.userRow.plan_status = 'canceled';
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.error).toMatch(/no active subscription/i);
+    expect(state.stripeUpdates).toEqual([]);
+  });
 });

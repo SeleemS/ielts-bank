@@ -262,7 +262,7 @@ OPENAI_API_KEY=...
 3. Handle events idempotently, keyed on `stripe_subscription_id` (state upserts, not increments):
    - `checkout.session.completed` → map `client_reference_id`/metadata → user; set `plan='premium'`, `plan_status='active'`, `plan_started_at`, `stripe_customer_id`, `stripe_subscription_id`, seed realtime minutes (§9).
    - one-time Exam Pass checkout → set a 28-day `plan_expires_at`, seed realtime minutes, and never create a renewing subscription.
-   - `customer.subscription.created`/`updated` → sync `plan_status` from Stripe status (`active`/`trialing` → premium-active; `past_due` → grace; `canceled`/`unpaid`/`incomplete_expired` → downgrade at period end), refresh `plan_renews_at` from `current_period_end`; `cancel_at_period_end=true` → `plan_status='canceled'` but **retain premium until `plan_renews_at`**.
+   - `customer.subscription.created`/`updated` → sync `plan_status` from Stripe status (`active`/`trialing` → premium-active; `past_due` → grace; `canceled`/`unpaid`/`incomplete_expired` → downgrade at period end), refresh `plan_renews_at` from `current_period_end`; either `cancel_at_period_end=true` or an explicit future `cancel_at` → `plan_status='canceled'` but **retain premium until `plan_renews_at`**. Stripe Customer Portal can use either cancellation representation, so both are required.
    - `customer.subscription.deleted` → `plan='free'`, `plan_status='canceled'`.
    - `invoice.paid` → resync entitlement and refill the Realtime allowance for the renewal period.
    - `invoice.payment_failed` → `plan_status='past_due'` (grace window; Stripe Smart Retries handle dunning).

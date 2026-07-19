@@ -34,7 +34,12 @@ export default async function handler(req, res) {
     .select('stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
     .eq('id', user.id)
     .maybeSingle();
-  if (error || !row?.stripe_subscription_id || !isPremiumRow(row)) {
+  if (
+    error
+    || !row?.stripe_subscription_id
+    || row.plan_status === 'canceled'
+    || !isPremiumRow(row)
+  ) {
     return res.status(409).json({ error: 'There is no active subscription to pause.' });
   }
   if (row.billing_pause_used_at) {
