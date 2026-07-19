@@ -1,8 +1,10 @@
+import { analyticsConsentGranted } from './consent';
+
 const ANON_ID_KEY = 'ielts-anon-id';
 const ATTRIBUTION_KEY = 'ielts-attribution';
 const SESSION_ID_KEY = 'ielts-analytics-session-id';
 const SEQUENCE_KEY = 'ielts-analytics-sequence';
-const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
+export const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 let analyticsAccessToken = null;
 let pageViewId = null;
 const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
@@ -71,6 +73,7 @@ function rotatePageViewId() {
 
 export function ensureGoogleAnalytics() {
   if (typeof window === 'undefined') return null;
+  if (!analyticsConsentGranted()) return null;
   window.dataLayer = window.dataLayer || [];
   if (typeof window.gtag !== 'function') {
     window.gtag = function gtag() {
@@ -78,22 +81,16 @@ export function ensureGoogleAnalytics() {
     };
   }
   if (!window.__ieltsConsentDefaulted) {
-    let saved = null;
-    try {
-      saved = window.localStorage.getItem('ib_consent_v1');
-    } catch {
-      saved = null;
-    }
-    const optional = saved === 'denied' ? 'denied' : 'granted';
     window.gtag('consent', 'default', {
-      analytics_storage: optional,
-      ad_storage: optional,
-      ad_user_data: optional,
-      ad_personalization: optional,
+      analytics_storage: 'granted',
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
       functionality_storage: 'granted',
       security_storage: 'granted',
       wait_for_update: 500,
     });
+    window.gtag('set', 'ads_data_redaction', true);
     window.__ieltsConsentDefaulted = true;
   }
   if (!window.__ieltsGaConfigured) {
@@ -150,6 +147,7 @@ export function getAttribution() {
 
 export function track(event, params = {}, options = {}) {
   if (typeof window === 'undefined' || !event) return;
+  if (!analyticsConsentGranted()) return;
   const currentPath = params.path || window.location.pathname;
   if (isInternalAnalyticsPath(currentPath)) return;
   const clientEventId = window.crypto?.randomUUID?.() || fallbackUuid();
@@ -203,12 +201,14 @@ export function track(event, params = {}, options = {}) {
 
 export function setAnalyticsUser(userId, accessToken = null) {
   analyticsAccessToken = accessToken || null;
+  if (!analyticsConsentGranted()) return;
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
   window.gtag('set', { user_id: userId || null });
 }
 
 export function trackPageView(url, signedIn = false) {
   if (typeof window === 'undefined') return;
+  if (!analyticsConsentGranted()) return;
   rotatePageViewId();
   track('page_view', {
     page_location: `${window.location.origin}${url}`,

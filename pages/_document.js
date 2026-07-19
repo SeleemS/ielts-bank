@@ -12,8 +12,8 @@ export default function Document() {
         {/* Allow large image previews in Google Search / Discover. */}
         <meta name="robots" content="max-image-preview:large" />
         {/* Google Consent Mode defaults — must run before gtag.js/AdSense load.
-            Opt-out model: analytics/ads storage is GRANTED by default and only
-            denied if the visitor explicitly opted out via ConsentManager. */}
+            Optional storage stays DENIED until the visitor explicitly grants
+            it through ConsentManager. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -23,12 +23,17 @@ export default function Document() {
               (function(){
                 var saved = null;
                 try { saved = localStorage.getItem('ib_consent_v1'); } catch (e) {}
-                var optional = saved === 'denied' ? 'denied' : 'granted';
+                var gpc = navigator.globalPrivacyControl === true;
+                window.__ieltsOptionalConsent =
+                  gpc ? 'denied' :
+                  (saved === 'granted' || saved === 'denied' ? saved : null);
+                var optional = saved === 'granted' && !gpc ? 'granted' : 'denied';
                 gtag('consent', 'default', {
                   analytics_storage: optional, ad_storage: optional, ad_user_data: optional,
                   ad_personalization: optional, functionality_storage: 'granted',
                   security_storage: 'granted', wait_for_update: 500
                 });
+                gtag('set', 'ads_data_redaction', true);
                 window.__ieltsConsentDefaulted = true;
               })();
             `,

@@ -9,8 +9,8 @@ import {
   trackPageView,
 } from './analytics';
 
-function storage() {
-  const values = new Map();
+function storage(initial = {}) {
+  const values = new Map(Object.entries(initial));
   return {
     getItem: vi.fn((key) => values.get(key) ?? null),
     setItem: vi.fn((key, value) => values.set(key, String(value))),
@@ -25,7 +25,7 @@ describe('dual analytics tracking', () => {
     uuid = vi.fn(() => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`);
     global.window = {
       crypto: { randomUUID: uuid },
-      localStorage: storage(),
+      localStorage: storage({ 'ib_consent_v1': 'granted' }),
       sessionStorage: storage(),
       location: {
         origin: 'https://ielts-bank.com',
@@ -37,6 +37,7 @@ describe('dual analytics tracking', () => {
       gtag: vi.fn(),
       __ieltsGaConfigured: true,
       __ieltsConsentDefaulted: true,
+      __ieltsOptionalConsent: 'granted',
     };
     global.document = {
       referrer: '',
@@ -87,7 +88,19 @@ describe('dual analytics tracking', () => {
     expect(typeof window.gtag).toBe('function');
     expect(window.__ieltsGaConfigured).toBe(true);
     expect(window.__ieltsConsentDefaulted).toBe(true);
-    expect(window.dataLayer.map((entry) => entry[0])).toEqual(['consent', 'js', 'config']);
+    expect(window.dataLayer.map((entry) => entry[0])).toEqual([
+      'consent',
+      'set',
+      'js',
+      'config',
+    ]);
+    expect(window.dataLayer[1]).toEqual(
+      expect.objectContaining({
+        0: 'set',
+        1: 'ads_data_redaction',
+        2: true,
+      })
+    );
   });
 
   it('rotates page-view IDs while retaining the session journey', () => {
@@ -124,5 +137,19 @@ describe('dual analytics tracking', () => {
     expect(window.fetch).not.toHaveBeenCalled();
     expect(isInternalAnalyticsPath('/gt/js?id=G-1KRYZZY68X')).toBe(true);
     expect(isInternalAnalyticsPath('/pricing?upgrade=writing')).toBe(false);
+  });
+
+  it('does not create identifiers or send analytics without an explicit grant', () => {
+    window.__ieltsOptionalConsent = null;
+    window.localStorage = storage();
+    window.sessionStorage = storage();
+
+    track('ui_interaction', { element_id: 'pricing_cta' });
+    trackPageView('/pricing');
+
+    expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
+    expect(window.gtag).not.toHaveBeenCalled();
+    expect(window.fetch).not.toHaveBeenCalled();
   });
 });

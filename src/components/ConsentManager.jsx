@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import NextLink from 'next/link';
+import {
+  readOptionalConsent,
+  writeOptionalConsent,
+} from '../lib/consent';
 
-// Cookie-consent banner mirroring the Google Consent Mode defaults set in
-// pages/_document.js (opt-out model: optional storage is granted unless the
-// visitor explicitly declines). Choice persists in localStorage and can be
-// reopened any time via the floating "Privacy choices" button.
-const KEY = 'ib_consent_v1';
+// Cookie-consent banner mirroring the denied-until-granted Google Consent Mode
+// defaults set in pages/_document.js. Choice persists in localStorage and can
+// be reopened any time via the floating "Privacy choices" button.
 
 function updateConsent(choice) {
   const gtag = window.gtag;
@@ -21,16 +23,16 @@ function updateConsent(choice) {
   });
 }
 
-export default function ConsentManager() {
+export default function ConsentManager({ onConsentChange }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    let saved = null;
-    try { saved = localStorage.getItem(KEY); } catch { /* storage blocked */ }
+    const saved = readOptionalConsent();
     if (saved) updateConsent(saved); else setOpen(true);
   }, []);
   const choose = (choice) => {
-    try { localStorage.setItem(KEY, choice); } catch { /* storage blocked */ }
-    updateConsent(choice);
+    const resolvedChoice = writeOptionalConsent(choice);
+    updateConsent(resolvedChoice);
+    onConsentChange?.(resolvedChoice);
     setOpen(false);
   };
   return (
