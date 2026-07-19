@@ -10,6 +10,28 @@ function parseBody(value) {
   }
 }
 
+function cleanReportText(value, max) {
+  return String(value || '')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+function safeReportUrl(value) {
+  const raw = cleanReportText(value, 2000);
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return `${parsed.origin}${parsed.pathname}`.slice(0, 500);
+    }
+    return parsed.protocol.slice(0, 500);
+  } catch {
+    return raw.replace(/[?#].*$/, '').slice(0, 500);
+  }
+}
+
 export default function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -19,10 +41,13 @@ export default function handler(req, res) {
   const envelope = Array.isArray(payload) ? payload[0] || {} : payload;
   const report = envelope['csp-report'] || envelope.body || envelope;
   const safe = {
-    blocked: String(report['blocked-uri'] || report.blockedURL || '').slice(0, 500),
-    directive: String(report['violated-directive'] || report.effectiveDirective || '').slice(0, 120),
-    document: String(report['document-uri'] || report.documentURL || '').slice(0, 500),
-    disposition: String(report.disposition || '').slice(0, 40),
+    blocked: safeReportUrl(report['blocked-uri'] || report.blockedURL),
+    directive: cleanReportText(
+      report['violated-directive'] || report.effectiveDirective,
+      120
+    ),
+    document: safeReportUrl(report['document-uri'] || report.documentURL),
+    disposition: cleanReportText(report.disposition, 40),
   };
   console.warn('csp-violation', safe);
   return res.status(204).end();
