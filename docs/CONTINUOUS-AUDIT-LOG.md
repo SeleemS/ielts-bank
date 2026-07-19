@@ -686,6 +686,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   six-character sign-in value enables submission with no `minlength`, then switching to Create
   account restores `minlength="8"` and disables the same value.
 
+## CA-034 — Forged checkout-return URLs claimed Premium activation
+
+- Status: `FIXED`
+- Area: Pricing / checkout reconciliation / conversion analytics / trust
+- Severity: High
+- Evidence: any visitor could open `/pricing?checkout=success&session_id=<anything>` and immediately
+  see `You're in. Do this first`, including signed-out visitors with a fabricated session ID. For a
+  signed-in visitor, the page also emitted `purchase_success` before the authenticated verification
+  endpoint confirmed session ownership or payment status, creating false conversion data.
+- Fix: show the activation checklist only after `/api/billing/verify-session` returns success and
+  emit the client purchase event at that same verified point. Signed-out returns request sign-in;
+  missing references and failed/delayed verification use neutral recovery copy that never claims a
+  payment occurred. Rename the JSX-bearing pricing route to `.jsx` so its actual return-state logic
+  can be regression-tested.
+- Regression coverage: `tests/pricing-checkout-return.test.jsx` covers a forged signed-out URL,
+  signed-in server rejection, and signed-in server success. It asserts the exact verification
+  request, Bearer token, session reference, UI state, and absence/presence of `purchase_success`.
+- Commit: `Verify checkout returns before claiming success`
+- Verification: focused 39-test pricing, billing-route, and metadata coverage, the complete
+  current-worktree 57-file/277-test Vitest suite, ESLint, the 147-file analytics audit, and the
+  528-page production build all passed. Vercel deployed the fix successfully. Fresh production QA
+  revisited a fabricated signed-out return URL and found no activation checklist or Premium claim,
+  only `Sign in with the account used at checkout to confirm Premium access.` The authenticated
+  legitimate $0 Checkout and entitlement path was already exercised end to end with
+  `E2EVERIFY100` in CA-006.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
