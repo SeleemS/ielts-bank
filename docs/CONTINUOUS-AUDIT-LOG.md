@@ -1024,6 +1024,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 401 without credentials, HTTP 405 for POST, and HTTP 401 for an invalid Bearer
   token. No protected mock content was fetched with a live user account.
 
+## CA-047 — Examiner entitlement outages appeared as upgrade requirements
+
+- Status: `FIXED`
+- Area: Realtime examiner / Premium entitlement / authentication / cost controls
+- Severity: High
+- Evidence: `/api/realtime/session` used the shared fail-closed boolean entitlement check, so a
+  Supabase plan error was indistinguishable from a verified Free account and returned the
+  Premium-plan 402 upsell. Auth promise rejections also escaped before the route's cost controls.
+  A paid learner could therefore be told to upgrade during an outage rather than receiving a
+  truthful temporary-unavailability response.
+- Fix: use the tri-state Premium result and explicit auth resolution. Rejected auth verification
+  plus resolved or rejected entitlement queries now return HTTP 503; HTTP 402 is reserved for a
+  successfully verified non-Premium account. Every failure occurs before rate limits, Realtime
+  quota consumption, content selection, or OpenAI client-secret minting.
+- Regression coverage: the Realtime suite injects auth rejection, resolved entitlement error, and
+  rejected entitlement query and proves each returns 503 without an OpenAI call. Verified Free,
+  invalid mode, exhausted minutes, mint success, atomic refund, legacy refund, ambiguous refund,
+  IP/global capacity, and rate-limit failure behavior remain covered alongside the shared
+  entitlement tests.
+- Commit: `b3a218a` (`Distinguish examiner entitlement outages`)
+- Verification: focused 28-test Premium/Realtime coverage, the complete current-worktree
+  62-file/322-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated session request. No quota was consumed and no OpenAI secret was minted.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
