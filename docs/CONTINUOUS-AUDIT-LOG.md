@@ -31,6 +31,21 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: targeted regression test, full Vitest suite, ESLint, production build, generated
   HTML metadata check, and live deployment check.
 
+## CA-002 — Server error page was indexable and unhelpful
+
+- Status: `FIXED`
+- Area: Error handling / SEO / metadata
+- Severity: Medium
+- Evidence: the generated and production `/500` page contained only
+  `robots=max-image-preview:large`, no title, and the framework's generic 500 response.
+- Fix: added a branded, dependency-light 500 page with a descriptive title,
+  `robots=noindex, nofollow`, a recovery link, and a support link.
+- Regression coverage: `tests/server-error-page.test.jsx` asserts the metadata, learner-facing
+  heading, and both recovery paths.
+- Commit: `Fix server error page indexability`
+- Verification: targeted regression test, full Vitest suite, ESLint, production build, generated
+  HTML metadata check, and live deployment check.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
