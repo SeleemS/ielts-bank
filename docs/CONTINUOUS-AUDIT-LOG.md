@@ -538,6 +538,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   cross-origin rejection also passed. All disposable newsletter and contact rows were deleted and
   verified absent.
 
+## CA-028 — Newsletter analytics omitted failed signup attempts
+
+- Status: `FIXED`
+- Area: Newsletter / analytics / acquisition funnel
+- Severity: Medium
+- Evidence: `newsletter_subscribe` was emitted only after a successful response. API rejections
+  and network failures displayed an error but produced no event, so the acquisition funnel could
+  not distinguish low interest from a broken or rate-limited signup path. Successful events also
+  lacked an explicit outcome and HTTP status.
+- Fix: emit privacy-safe `success`, `error`, and `network_error` outcomes with source, current auth
+  state, and bounded HTTP status only. Subscriber email addresses never enter analytics.
+- Regression coverage: `src/components/NewsletterSignup.test.jsx` submits the real widget through
+  signed-in success, compact-form API rejection, and network failure, asserts every exact event
+  payload, and explicitly rejects email leakage.
+- Commit: `Track newsletter submission outcomes`
+- Verification: focused 3-test widget coverage, the complete current-worktree 48-file/253-test
+  Vitest suite, ESLint, the 137-file analytics audit, and the 528-page production build. The
+  deployment completed successfully. Fresh production browser QA submitted a browser-valid
+  322-character address that the server correctly rejected, displayed the validation error, wrote
+  no subscriber row, and produced a live `newsletter_subscribe` event containing only the expected
+  `path=/`, `source=homepage`, `outcome=error`, `signed_in=false`, and `status=400` fields plus
+  standard anonymous session/acquisition metadata.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
