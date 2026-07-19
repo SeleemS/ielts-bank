@@ -215,7 +215,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-012 — About-page links had no controlled share preview
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: About / trust content / Open Graph / Twitter cards
 - Severity: Medium
 - Evidence: `/about` had canonical title and description metadata but no Open Graph or Twitter
@@ -225,7 +225,9 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/aboutSeo.test.js` verifies canonical content and every decoded dynamic
   image parameter.
 - Commit: `Add About page share metadata`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, full 31-file/182-test Vitest suite, ESLint, analytics
+  audit, generated HTML inspection, and the 527-page production build. Live production returned
+  every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
 ## Investigation notes
 
