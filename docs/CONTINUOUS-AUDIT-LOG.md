@@ -1262,6 +1262,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin unauthenticated POST.
   No authenticated scoring mutation occurred.
 
+## CA-057 — Writing score schemas allowed invalid band values
+
+- Status: `FIXED`
+- Area: Writing scoring / Structured Outputs / IELTS result correctness
+- Severity: High
+- Evidence: the strict OpenAI response schema described bands as 0–9 half-bands but declared
+  every criterion and the overall as an unconstrained JSON `number`. Schema-conforming output
+  could therefore contain a negative value, a value above 9, or a non-half increment even though
+  none is a valid IELTS band.
+- Fix: extract the Writing Structured Output schema into a testable module and constrain every
+  band with `minimum: 0`, `maximum: 9`, and `multipleOf: 0.5`. Current official OpenAI Structured
+  Outputs documentation confirms all three numeric constraints are supported for the configured
+  non-fine-tuned model families.
+- Regression coverage: the new schema suite builds both Task 1 and Task 2 variants, verifies strict
+  mode and the task-specific first criterion key, and requires the numeric constraints on the
+  overall plus all four criterion bands.
+- Commit: `5da9b9a` (`Constrain writing band outputs`)
+- Verification: focused 14-test Writing route/schema coverage, the complete current-worktree
+  64-file/359-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No quota or OpenAI request was created.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
