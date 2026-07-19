@@ -442,8 +442,10 @@ False positives are kept in the investigation notes so they are not rediscovered
   and rejects duplicate or private/system entries.
 - Commit: `Add acquisition pages to sitemap`
 - Verification: focused 2-test inventory coverage, the complete current-worktree
-  43-file/235-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
-  production verification will be recorded after deployment.
+  43-file/235-test Vitest suite, ESLint, analytics audit, and the 527-page production build. The
+  clean Vercel build from the committed fix reached `Ready` with the production aliases. The live
+  sitemap then contained exactly 473 unique locations, including both restored routes; a no-redirect
+  crawl of every URL found zero non-200 responses, duplicates, redirects, or canonical mismatches.
 
 ## Investigation notes
 
