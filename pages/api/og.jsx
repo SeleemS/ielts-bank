@@ -1,4 +1,5 @@
 import { ImageResponse } from '@vercel/og';
+import { ogTypeLabel } from '../../lib/ogCard';
 
 // Edge runtime is required by @vercel/og (Satori) for on-the-fly image rendering.
 export const config = { runtime: 'edge' };
@@ -14,24 +15,6 @@ const WHITE = '#FFFFFF';
 const SLATE = '#94A6BC'; // muted footer / wordmark tail
 
 const DEFAULT_TITLE = 'Master IELTS with real, auto-scored practice';
-
-// type -> human label shown in the emerald pill.
-const TYPE_LABELS = {
-  reading: 'Reading Practice',
-  writing: 'Writing Practice',
-  listening: 'Listening Practice',
-  speaking: 'Speaking Practice',
-  mock: 'IELTS Mock Test',
-  blog: 'IELTS Blog',
-  pricing: 'IELTS Premium',
-  examiner: 'Speaking Examiner',
-  calculator: 'Band Calculator',
-  about: 'About IELTS-Bank',
-  contact: 'Contact IELTS-Bank',
-  legal: 'IELTS-Bank Legal',
-  home: 'Free IELTS Practice',
-  default: 'IELTS Practice',
-};
 
 // Keep incoming user text sane: coerce to string, strip control chars, clamp
 // length so a hostile / absurd query param can never blow up rendering.
@@ -63,9 +46,8 @@ export default async function handler(req) {
 
   const title = clean(searchParams.get('title'), 120) || DEFAULT_TITLE;
   const rawType = clean(searchParams.get('type'), 20).toLowerCase();
-  const type = TYPE_LABELS[rawType] ? rawType : 'default';
   const subtitle = clean(searchParams.get('subtitle'), 40);
-  const pill = TYPE_LABELS[type].toUpperCase();
+  const pill = ogTypeLabel(rawType);
 
   const [interBold, interRegular] = await Promise.all([
     loadFont(
