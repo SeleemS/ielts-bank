@@ -1810,6 +1810,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   back to Close, Escape dismissal, and a 390px document width in the 390px viewport. No preference,
   answer, audio, authentication, or account state was changed.
 
+## CA-081 — Speaking Examiner intro had no keyboard-accessible dismissal
+
+- Status: `FIXED`
+- Area: Live Speaking Examiner / intro dialog / keyboard accessibility
+- Severity: High
+- Evidence: the Premium examiner explainer rendered as an `aria-modal` dialog but provided only a
+  mouse-clickable backdrop and `Start my interview`. It had no Close control, no Escape handler,
+  no focus containment or restoration, and no scroll lock. A keyboard user could neither dismiss
+  the explainer without starting a microphone session nor remain reliably inside the modal.
+- Fix: extract the intro into a dedicated component using the shared dialog-focus contract; add a
+  visible Close action, Escape dismissal, forward/reverse focus wrapping, opener restoration, and
+  scroll lock. Stable refs preserve the latest preference while keeping dismiss/start callbacks
+  deterministic, and the existing start path still closes before requesting a session.
+- Regression coverage: component tests verify Close and both Tab directions, Escape without
+  starting, opener restoration, the current `Don’t show again` value, exactly-once start, and
+  close-before-start ordering. Shared dialog-focus and examiner SEO coverage run alongside them.
+- Commit: `a2e7779` (`Make examiner intro keyboard dismissible`)
+- Verification: focused 3-file/8-test examiner, dialog-focus, and SEO coverage, the complete
+  current-worktree 72-file/422-test Vitest suite, ESLint, the 156-file analytics audit covering 269
+  interactive controls, and the 528-page production build passed. Vercel deployed the exact commit
+  successfully. Fresh 390×844 production QA confirmed the unchanged signed-out Premium gate,
+  matching title/canonical/description/OG metadata, and a 390px document width. The gated dialog
+  contract was exercised in component tests rather than creating a paid Realtime session; no
+  payment, microphone, quota, or account mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
