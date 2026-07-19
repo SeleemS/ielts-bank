@@ -247,7 +247,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-014 — Privacy Policy links had no controlled share preview
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Privacy / legal trust / Open Graph / Twitter cards
 - Severity: Low
 - Evidence: `/privacypolicy` exposed canonical title and description metadata but no Open Graph or
@@ -257,7 +257,9 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/privacySeo.test.js` verifies canonical content and every decoded dynamic
   image parameter.
 - Commit: `Add Privacy Policy share metadata`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, full 33-file/186-test Vitest suite, ESLint, analytics
+  audit, generated HTML inspection, and the 527-page production build. Live production returned
+  every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
 ## Investigation notes
 
