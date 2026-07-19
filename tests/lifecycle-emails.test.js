@@ -154,4 +154,78 @@ describe('lifecycle email delivery safety', () => {
       expect.objectContaining({ status: 'sent', provider_id: 'resend-1' })
     );
   });
+
+  it('records a rejected delivery immediately and continues the remaining batch', async () => {
+    const rows = [
+      {
+        id: 'email-4',
+        email_type: 'welcome_signup',
+        recipient_email: 'first@example.com',
+        attempts: 4,
+        idempotency_key: 'welcome_signup:user-4',
+      },
+      {
+        id: 'email-5',
+        email_type: 'welcome_signup',
+        recipient_email: 'second@example.com',
+        attempts: 0,
+        idempotency_key: 'welcome_signup:user-5',
+      },
+    ];
+    const lifecycleUpdates = [];
+    let dueReads = 0;
+    const admin = {
+      from(table) {
+        expect(table).toBe('lifecycle_emails');
+        return {
+          update(fields) {
+            lifecycleUpdates.push(fields);
+            if (fields.last_error === 'delivery-claim-expired') {
+              return resultQuery({ data: [], error: null });
+            }
+            if (fields.status === 'sending') {
+              return resultQuery({ data: { id: 'claimed' }, error: null });
+            }
+            return resultQuery({ data: null, error: null });
+          },
+          select() {
+            dueReads += 1;
+            return resultQuery({
+              data: dueReads === 1 ? rows : [],
+              error: null,
+            });
+          },
+        };
+      },
+    };
+    const send = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new Error('provider\nnetwork\u0000 unavailable')
+      )
+      .mockResolvedValueOnce({ sent: true, providerId: 'resend-2' });
+
+    await expect(deliverDue(admin, { send, now: NOW })).resolves.toMatchObject({
+      sent: 1,
+      failed: 1,
+      skipped: 0,
+      reclaimed: 0,
+    });
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(lifecycleUpdates).toContainEqual(
+      expect.objectContaining({ status: 'sending', attempts: 5 })
+    );
+    expect(lifecycleUpdates).toContainEqual(
+      expect.objectContaining({
+        status: 'failed',
+        last_error: 'delivery-error: provider network unavailable',
+      })
+    );
+    expect(lifecycleUpdates).toContainEqual(
+      expect.objectContaining({ status: 'sending', attempts: 1 })
+    );
+    expect(lifecycleUpdates).toContainEqual(
+      expect.objectContaining({ status: 'sent', provider_id: 'resend-2' })
+    );
+  });
 });

@@ -174,8 +174,18 @@ export async function deliverDue(admin, { send = sendLifecycleEmail, now = new D
       results.skipped += 1;
       continue;
     }
-    const sent = await send(row);
-    if (sent.sent) {
+    let sent;
+    try {
+      sent = await send(row);
+    } catch (error) {
+      const detail = String(error?.message || 'provider request failed')
+        .replace(/[\u0000-\u001F\u007F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 180);
+      sent = { sent: false, reason: `delivery-error: ${detail}` };
+    }
+    if (sent?.sent) {
       const { error: sentUpdateError } = await admin
         .from('lifecycle_emails')
         .update({
@@ -193,7 +203,7 @@ export async function deliverDue(admin, { send = sendLifecycleEmail, now = new D
         .from('lifecycle_emails')
         .update({
           status: 'failed',
-          last_error: sent.reason,
+          last_error: sent?.reason || 'delivery-failed',
           updated_at: now.toISOString(),
         })
         .eq('id', row.id);
