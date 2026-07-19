@@ -5,19 +5,18 @@
 import React from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { Mic, PhoneOff, Sparkles, Clock, CheckCircle2, Headphones, MessageSquare, Timer, Gauge } from 'lucide-react';
+import { Mic, PhoneOff, Sparkles, Clock, CheckCircle2, Headphones, MessageSquare, Gauge } from 'lucide-react';
 import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
 import { Card, CardContent } from '../components/ui/card';
 import SignInDialog from '../src/components/auth/SignInDialog';
+import ExaminerIntroModal from '../src/components/question/ExaminerIntroModal';
 import { useAuth } from '../src/lib/auth';
 import { usePlan } from '../src/lib/usePlan';
 import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../src/lib/prefs';
-import { Checkbox } from '../components/ui/checkbox';
-import { Button } from '../components/ui/button';
 import {
   ScoringProgress,
   CriterionFeedback,
@@ -46,66 +45,6 @@ function fmtTime(totalSeconds) {
 // scoring API enforces the same threshold server-side).
 const MIN_SCORABLE_WORDS = 40;
 const INTRO_PREF = 'examinerIntroDismissed';
-
-const INTRO_STEPS = [
-  {
-    icon: Headphones,
-    title: 'A real spoken interview',
-    body: 'Your examiner speaks and listens in real time, following the real 3-part IELTS format. Find a quiet spot and use headphones if you can.',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Just talk naturally',
-    body: 'Answer in full sentences and take your time — the examiner waits while you think. Longer, developed answers score better than one-liners.',
-  },
-  {
-    icon: Timer,
-    title: 'The cue card (Part 2)',
-    body: 'You get one minute to prepare, then speak for up to two minutes. Say “I’m ready” whenever you want to begin early.',
-  },
-  {
-    icon: Gauge,
-    title: 'Your band score at the end',
-    body: 'The interview ends automatically and your band is marked from the transcript. Speak for at least a couple of minutes so there is enough to assess.',
-  },
-];
-
-// One-time explainer shown before the first interview (mirrors the listening
-// intro modal: local pref for guests, users.prefs for signed-in users).
-function ExaminerIntroModal({ open, onClose, onStart }) {
-  const [dontShowAgain, setDontShowAgain] = React.useState(false);
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="examiner-intro-title" data-analytics-id="examiner_intro" data-analytics-surface="speaking_examiner">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => onClose({ dontShowAgain, start: false })} aria-hidden="true" data-analytics-id="examiner_intro_backdrop" />
-      <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl sm:p-7">
-        <h2 id="examiner-intro-title" className="pr-6 text-lg font-bold text-foreground">
-          How the live examiner works
-        </h2>
-        <ol className="mt-5 space-y-4">
-          {INTRO_STEPS.map(({ icon: Icon, title, body }) => (
-            <li key={title} className="flex gap-3">
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-                <Icon className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{title}</p>
-                <p className="mt-0.5 text-sm leading-6 text-muted-foreground">{body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-        <label className="mt-6 flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <Checkbox checked={dontShowAgain} onCheckedChange={setDontShowAgain} />
-          Don&rsquo;t show this again
-        </label>
-        <Button variant="accent" className="mt-4 w-full" onClick={() => { onClose({ dontShowAgain, start: true }); onStart(); }}>
-          <Mic className="h-4 w-4" /> Start my interview
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // Connection animation: concentric pulse rings around a mic orb with staged
 // status text — replaces the bare spinner.
