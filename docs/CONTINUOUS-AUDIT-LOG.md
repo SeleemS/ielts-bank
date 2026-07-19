@@ -343,6 +343,25 @@ False positives are kept in the investigation notes so they are not rediscovered
   Graph counterparts. Fourteen representative card images covered every template and returned HTTP
   200 non-empty `image/png` responses.
 
+## CA-019 — Speaking exercises had no structured learning-resource data
+
+- Status: `FIXED`
+- Area: Speaking / structured data / SEO
+- Severity: Medium
+- Evidence: all 80 generated Speaking exercise pages exposed canonical and social metadata but no
+  JSON-LD. Search engines could not identify the pages as free IELTS learning resources or infer
+  their Home → Speaking → Exercise hierarchy.
+- Fix: publish a canonical `LearningResource` and three-level `BreadcrumbList` graph on every
+  Speaking exercise, including part, difficulty, educational purpose, language, and skills taught.
+  Serialize the graph with HTML-significant characters escaped before embedding it in the page.
+- Regression coverage: `lib/speakingQuestionSeo.test.js` verifies the canonical learning-resource
+  contract, exact breadcrumb hierarchy, and safe serialization against a script-closing payload.
+- Commit: `Add Speaking exercise structured data`
+- Verification: focused 3-test schema coverage, the complete current-worktree 39-file/221-test
+  Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact generated HTML
+  inspection parsed and validated the canonical learning-resource and breadcrumb graph on all 80
+  Speaking exercise pages. Live production verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

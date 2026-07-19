@@ -29,6 +29,10 @@ import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 
 import { SITE_URL } from '../../lib/site';
+import {
+  buildSpeakingQuestionJsonLd,
+  serializeJsonLd,
+} from '../../lib/speakingQuestionSeo';
 const SCORE_API = '/api/score/speaking';
 const UPLOAD_BUCKET = 'speaking-uploads';
 // Premium gate: when a signed-in non-premium user submits a recording we
@@ -970,6 +974,14 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
     );
   }
 
+  const jsonLd = buildSpeakingQuestionJsonLd({
+    canonicalUrl,
+    topic,
+    description: metaDescription,
+    partLabel,
+    difficulty: item.difficulty,
+  });
+
   return (
     <>
       <Head>
@@ -992,6 +1004,10 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImage} />
         <meta name="twitter:image:alt" content={`IELTS Speaking ${partLabel} practice: ${topic}`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
       </Head>
 
       <div className="flex min-h-screen flex-col bg-background">
