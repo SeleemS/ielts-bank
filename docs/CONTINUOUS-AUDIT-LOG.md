@@ -1597,6 +1597,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated POST. No live Stripe customer, Checkout Session, or Supabase mutation occurred.
 
+## CA-072 — Mobile navigation dialog had no accessible name
+
+- Status: `FIXED`
+- Area: Shared navbar / mobile navigation / accessibility
+- Severity: Medium
+- Evidence: live testing at a 390×844 viewport opened the site menu as an unnamed modal. The
+  accessibility tree exposed only `dialog`, so screen-reader users received no announcement of the
+  panel's purpose despite its visible navigation content.
+- Fix: give the shared mobile `SheetContent` an explicit `aria-label="Site navigation"` while
+  preserving the existing focus trap, Escape dismissal, trigger restoration, and close control.
+- Regression coverage: the existing navbar authentication-intent tests are preserved and extended
+  to require the mobile sheet's accessible label; the separate sheet test continues to exercise
+  focus movement, Escape closure, and trigger restoration.
+- Commit: `8fafba9` (`Name the mobile navigation dialog`)
+- Verification: focused 5-test navbar/sheet coverage, the complete current-worktree
+  68-file/401-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh 390×844 production browser
+  QA opened the menu and the accessibility tree announced `dialog "Site navigation"` with all
+  seven navigation links, CTA, close button, and sign-in action. No application console error was
+  present; accumulated errors were the already documented Google-managed AdSense `unfilled`
+  rejection.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
