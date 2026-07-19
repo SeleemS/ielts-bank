@@ -450,6 +450,11 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
                     <Button
                       type="button"
                       variant={plan.hero ? 'accent' : 'outline'}
+                      aria-label={
+                        plan.pass
+                          ? 'Get the Exam Pass'
+                          : `Choose ${plan.name} plan`
+                      }
                       onClick={() => startCheckout(plan.sku)}
                       disabled={busySku !== null || planLoading || Boolean(planError)}
                       className="mt-auto w-full"

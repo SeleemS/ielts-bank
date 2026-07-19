@@ -197,6 +197,26 @@ describe('pricing checkout return verification', () => {
 });
 
 describe('pricing authentication handoff', () => {
+  it('gives every checkout action a plan-specific accessible name', async () => {
+    testState.router = {
+      isReady: true,
+      query: {},
+    };
+
+    await renderPage();
+
+    expect(
+      [...container.querySelectorAll('main button[aria-label]')].map(
+        (button) => button.getAttribute('aria-label')
+      )
+    ).toEqual([
+      'Choose Monthly plan',
+      'Choose 6 Months plan',
+      'Choose Annual plan',
+      'Get the Exam Pass',
+    ]);
+  });
+
   it('stays on pricing and resumes the plan selected before sign-in', async () => {
     testState.router = {
       isReady: true,
