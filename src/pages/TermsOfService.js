@@ -13,7 +13,7 @@ const TermsOfService = () => {
         <title>Terms of Service | IELTS-Bank</title>
         <meta
           name="description"
-          content="Read the IELTS-Bank terms of service outlining the rules for using our free IELTS practice website and resources."
+          content="Read the IELTS-Bank terms for free practice, Premium plans, the Exam Pass, cancellations, and the 14-day refund policy."
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.ielts-bank.com/termsofservice" />
@@ -74,10 +74,49 @@ const TermsOfService = () => {
                 </p>
               </div>
 
-              <div>
-                <h2 className="mb-1 text-base font-semibold text-foreground">6. Advertising and Payments</h2>
+              <div id="billing-refunds" className="scroll-mt-24">
+                <h2 className="mb-1 text-base font-semibold text-foreground">6. Advertising, Billing and Refunds</h2>
                 <p>
-                  The website is supported by third-party advertising (including Google AdSense) and an optional premium subscription. Ads are provided by third parties and IELTSBank is not responsible for the content of advertisements or the products and services they promote. Premium subscriptions are billed through Stripe and renew automatically until cancelled; you can cancel at any time and retain access until the end of the current billing period. See our Privacy Policy for how advertising and payment data are handled.
+                  The website is supported by third-party advertising (including Google AdSense)
+                  and optional paid access. Ads are provided by third parties and IELTSBank is not
+                  responsible for the content of advertisements or the products and services they
+                  promote. Payments are processed by Stripe; IELTSBank does not store full card
+                  details.
+                </p>
+                <ul className="mt-3 list-disc space-y-2 pl-6">
+                  <li>
+                    <strong className="font-semibold text-foreground">Subscriptions.</strong>{' '}
+                    Monthly, six-month and annual plans renew automatically at the price and
+                    interval shown at checkout until cancelled. Taxes may be added where required.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-foreground">Exam Pass.</strong>{' '}
+                    The Exam Pass is one payment for 28 days of Premium access. It does not renew
+                    automatically.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-foreground">Cancellation.</strong>{' '}
+                    You may cancel a subscription at any time from billing settings. Unless a
+                    refund is granted, access continues through the paid billing period and no
+                    further renewal is charged.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-foreground">14-day money-back guarantee.</strong>{' '}
+                    You may request a refund within 14 calendar days of your first paid purchase by
+                    contacting <a href="mailto:info@ielts-bank.com" className="text-primary underline-offset-2 hover:underline">info@ielts-bank.com</a>{' '}
+                    from the email on your account. The guarantee applies once per customer. We may
+                    refuse requests involving fraud, chargeback abuse, material violation of these
+                    terms, or substantially consumed live-examiner usage.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-foreground">Fair use.</strong>{' '}
+                    Paid AI tools have clearly disclosed abuse-prevention and usage limits. We may
+                    temporarily restrict automated, shared-account or excessive use that threatens
+                    service availability.
+                  </li>
+                </ul>
+                <p className="mt-3">
+                  See our Privacy Policy for how advertising and payment data are handled.
                 </p>
               </div>
 

@@ -17,7 +17,6 @@ import Footer from '../src/components/Footer';
 import NewsletterSignup from '../src/components/NewsletterSignup';
 import SignInDialog from '../src/components/auth/SignInDialog';
 import { useAuth } from '../src/lib/auth';
-import { usePlan } from '../src/lib/usePlan';
 import { saveAttemptToSupabase } from '../src/lib/progress';
 import { getSupabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
@@ -28,7 +27,8 @@ import { Progress } from '../components/ui/progress';
 import { cn } from '../src/lib/utils';
 import { getAnonId, track } from '../src/lib/analytics';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
-import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../src/components/question/ScoreUI';
+import { ScoringProgress } from '../src/components/question/ScoreUI';
+import WritingScoreReport from '../src/components/question/WritingScoreReport';
 
 import { SITE_URL } from '../lib/site';
 const SCORE_API = '/api/score/writing';
@@ -45,114 +45,6 @@ const TASK_TYPES = [
   { value: 'task1-general', label: 'Task 1 — General Training', apiTask: 1, minWords: 150 },
   { value: 'task2', label: 'Task 2 — Essay', apiTask: 2, minWords: 250 },
 ];
-
-const TASK2_CRITERIA = [
-  ['taskResponse', 'Task Response'],
-  ['coherenceCohesion', 'Coherence & Cohesion'],
-  ['lexicalResource', 'Lexical Resource'],
-  ['grammaticalRange', 'Grammatical Range & Accuracy'],
-];
-const TASK1_CRITERIA = [
-  ['taskAchievement', 'Task Achievement'],
-  ['coherenceCohesion', 'Coherence & Cohesion'],
-  ['lexicalResource', 'Lexical Resource'],
-  ['grammaticalRange', 'Grammatical Range & Accuracy'],
-];
-
-function formatBand(band) {
-  return typeof band === 'number' ? band.toFixed(1) : '—';
-}
-function bandTone(band) {
-  if (typeof band !== 'number') return 'bg-secondary text-secondary-foreground';
-  if (band >= 7) return 'bg-accent text-accent-foreground';
-  if (band >= 5.5) return 'bg-primary text-primary-foreground';
-  return 'bg-destructive text-destructive-foreground';
-}
-function BandPill({ band, className }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex min-w-[2.75rem] items-center justify-center rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums',
-        bandTone(band),
-        className
-      )}
-    >
-      {formatBand(band)}
-    </span>
-  );
-}
-
-// Mirrors the criterion-breakdown UI from the writing practice page
-// (src/pages/WritingQuestion.js -> ScoreReport).
-function ScoreReport({ apiTask, result }) {
-  const criteriaMeta = apiTask === 1 ? TASK1_CRITERIA : TASK2_CRITERIA;
-  const criteria = result.criteria || {};
-  const improvements = Array.isArray(result.improvements) ? result.improvements : [];
-  const corrected = Array.isArray(result.correctedExamples)
-    ? result.correctedExamples
-    : [];
-
-  return (
-    <div className="space-y-5">
-      <BandHero
-        band={result.overallBand}
-        subtitle={`Writing Task ${apiTask}${result.wordCount ? ` · ${result.wordCount} words` : ''}`}
-      />
-
-      <div className="space-y-3">
-        {criteriaMeta.map(([key, label]) => {
-          const c = criteria[key] || {};
-          return (
-            <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-bold text-foreground">{label}</h3>
-                <BandPill band={c.band} />
-              </div>
-              <div className="mb-3">
-                <BandMeter band={c.band} />
-              </div>
-              <CriterionFeedback criterion={c} />
-            </div>
-          );
-        })}
-      </div>
-
-      {result.summary && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-1.5 text-sm font-bold text-foreground">Examiner Summary</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
-        </div>
-      )}
-
-      {improvements.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-bold text-foreground">How to Improve</h3>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
-            {improvements.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {corrected.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-bold text-foreground">Corrected Examples</h3>
-          <div className="space-y-3">
-            {corrected.map((ex, i) => (
-              <div key={i} className="rounded-md border border-border/70 bg-secondary/30 p-3">
-                <p className="text-sm text-destructive line-through decoration-destructive/50">
-                  {ex.original}
-                </p>
-                <p className="mt-1 text-sm font-medium text-accent">{ex.suggestion}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 const HOW_IT_WORKS = [
   {
@@ -179,7 +71,7 @@ const FAQ = [
   },
   {
     q: 'Is it free?',
-    a: 'Writing your essay here and saving your draft is free. AI band scoring is a Premium feature — running a real examiner-grade model on every essay is expensive, so scoring requires a Premium subscription (with fair-use daily limits).',
+    a: 'Yes, your first AI Writing score is free after you create an account. It shows your overall band and one criterion in full. Premium unlocks the other three criteria, examiner summary, improvement plan, corrected examples, and continued scoring.',
   },
   {
     q: 'Do you store my essay?',
@@ -222,7 +114,6 @@ const SAMPLE_FEEDBACK = {
 
 export default function WritingCheckerPage() {
   const { user, loading } = useAuth();
-  const { isPremium, loading: planLoading } = usePlan();
   const router = useRouter();
 
   const [taskType, setTaskType] = useState('task2');
@@ -351,7 +242,7 @@ export default function WritingCheckerPage() {
         // (results show when result && !isLoading; onFinished flips loading).
         scored = true;
         setResult(data);
-        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, signed_in: Boolean(user) });
+        track('ai_score_result', { skill: 'writing', slug: 'writing-checker', outcome: 'ok', band: data.overallBand, task: apiTask, word_count: wordCount, free: data.free === true, signed_in: Boolean(user) });
       } else if (response.status === 401) {
         // No session (or it expired): sign in and the submission resumes when
         // the dialog closes.
@@ -382,17 +273,11 @@ export default function WritingCheckerPage() {
     }
   }, [active.label, apiTask, essay, goToPremium, isSufficient, minWords, prompt, user, wordCount]);
 
-  // Continue a submission: score for premium users, otherwise capture the
-  // essay and route to billing. When the plan is still loading we let the
-  // server decide (the 402 premium_required handler above catches it).
+  // The route owns the entitlement decision because a non-premium account may
+  // still have its one lifetime sample available.
   const continueSubmit = useCallback(() => {
-    if (!planLoading && !isPremium) {
-      track('premium_gate', { skill: 'writing', slug: CHECKER_SLUG, stage: 'upgrade' });
-      void goToPremium();
-      return;
-    }
     runScore();
-  }, [goToPremium, isPremium, planLoading, runScore]);
+  }, [runScore]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -428,9 +313,9 @@ export default function WritingCheckerPage() {
     })),
   };
 
-  const pageTitle = 'IELTS Writing Checker – Instant AI Band Score & Feedback';
+  const pageTitle = 'IELTS Writing Checker – Try Your First AI Band Score Free';
   const metaDescription =
-    'AI IELTS writing checker. Paste your Task 1 or Task 2 essay and get an instant estimated band score with feedback on Task Achievement, Coherence & Cohesion, Lexical Resource and Grammar.';
+    'Try your first AI IELTS Writing score free. See your estimated overall band and one criterion, then unlock the complete examiner-style feedback with Premium.';
 
   return (
     <>
@@ -466,10 +351,9 @@ export default function WritingCheckerPage() {
                 AI IELTS Writing Checker
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Paste your essay and get an instant estimated band score with detailed
-                feedback on all four IELTS criteria — Task Achievement / Response,
-                Coherence &amp; Cohesion, Lexical Resource, and Grammatical Range &amp;
-                Accuracy.
+                Create an account to try your first AI score free. See your overall band and
+                one criterion in full; Premium unlocks the remaining criteria, examiner
+                summary, improvement plan, and corrected examples.
               </p>
             </div>
           </section>
@@ -560,8 +444,8 @@ export default function WritingCheckerPage() {
                 <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" />
                 {!loading && !user && (
                   <p className="text-center text-xs text-muted-foreground">
-                    AI scoring is a Premium feature. Your draft is kept safe while you sign
-                    up and upgrade.
+                    Create a free account to get your first AI score. Your draft stays safe
+                    while you sign up.
                   </p>
                 )}
               </form>
@@ -583,7 +467,7 @@ export default function WritingCheckerPage() {
                 <h2 className="mb-4 text-lg font-bold tracking-tight text-foreground">
                   Your estimated score &amp; feedback
                 </h2>
-                <ScoreReport apiTask={apiTask} result={result} />
+                <WritingScoreReport task={apiTask} result={result} />
                 <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4">
                   <p className="text-sm font-semibold text-foreground">Put the feedback into practice</p>
                   <div className="mt-3 flex flex-wrap gap-3">
@@ -643,7 +527,7 @@ export default function WritingCheckerPage() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
-              <ScoreReport apiTask={2} result={SAMPLE_FEEDBACK} />
+              <WritingScoreReport task={2} result={SAMPLE_FEEDBACK} sample />
               <p className="mt-4 text-center text-xs text-muted-foreground">
                 Illustrative example. Your own feedback is generated from your essay.
               </p>
@@ -748,7 +632,7 @@ export default function WritingCheckerPage() {
         }}
         redirectOnFinish={false}
         title="Sign up to get your essay scored"
-        description="AI Writing scoring is a Premium feature. Create your account first — your draft is saved to it, so nothing you've written is lost."
+        description="Create a free account to get your first AI score. Your draft is saved, so nothing you’ve written is lost."
         trigger="writing_checker_score"
       />
     </>

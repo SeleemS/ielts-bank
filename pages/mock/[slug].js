@@ -10,7 +10,7 @@ import SignInDialog from '../../src/components/auth/SignInDialog';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { sanitizeHtml } from '../../lib/sanitize';
-import { getMockTest, listMockTests } from '../../lib/supabase';
+import { getMockTest, listMockTests, getSupabase as getBrowserSupabase } from '../../lib/supabase';
 import { useAuth } from '../../src/lib/auth';
 import { usePlan } from '../../src/lib/usePlan';
 import { track } from '../../src/lib/analytics';
@@ -77,7 +77,11 @@ function PremiumGate({ mock, signedIn, onSignIn }) {
         ))}
       </ul>
       <Button asChild variant="accent" size="lg" className="mt-7 w-full sm:w-auto sm:px-10">
-        <NextLink href="/pricing" className="no-underline">
+        <NextLink
+          href="/pricing"
+          onClick={() => track('paywall_upgrade_click', { source: 'mock', slug: mock.slug })}
+          className="no-underline"
+        >
           See Premium plans
         </NextLink>
       </Button>
@@ -101,13 +105,49 @@ export default function MockTestPage({ mock }) {
   const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
   const [signInOpen, setSignInOpen] = React.useState(false);
+  const [fullMock, setFullMock] = React.useState(null);
+  const [contentStatus, setContentStatus] = React.useState('idle');
 
-  if (!mock) return null;
-  const { groups, sectionMeta } = combineGroups(mock.sections);
+  const resolvedMock = fullMock || mock;
+  const hasContent = Array.isArray(resolvedMock.sections) && resolvedMock.sections.length > 0;
+  const { groups, sectionMeta } = hasContent
+    ? combineGroups(resolvedMock.sections)
+    : { groups: [], sectionMeta: [] };
   const canonical = `${SITE_URL}/mock/${mock.slug}`;
+
+  React.useEffect(() => {
+    if (!user?.id || planLoading || !isPremium || fullMock || contentStatus === 'loading') return;
+    let active = true;
+    setContentStatus('loading');
+    getBrowserSupabase()
+      .auth.getSession()
+      .then(({ data }) =>
+        fetch(`/api/mock/${encodeURIComponent(mock.slug)}`, {
+          headers: { Authorization: `Bearer ${data?.session?.access_token || ''}` },
+        })
+      )
+      .then(async (response) => {
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.error || 'Could not load this mock test.');
+        if (active) {
+          setFullMock(body.mock);
+          setContentStatus('ready');
+        }
+      })
+      .catch(() => {
+        if (active) setContentStatus('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, [contentStatus, fullMock, isPremium, mock.slug, planLoading, user?.id]);
+
   // Resolve to a definite state before rendering either branch — no flash of
   // paid content, no paywall flicker for premium users.
-  const checkingAccess = authLoading || planLoading;
+  const checkingAccess =
+    authLoading ||
+    planLoading ||
+    (isPremium && !hasContent && contentStatus !== 'error');
   const locked = !checkingAccess && !isPremium;
 
   return (
@@ -136,10 +176,14 @@ export default function MockTestPage({ mock }) {
             </div>
           ) : locked ? (
             <PremiumGate mock={mock} signedIn={Boolean(user)} onSignIn={() => setSignInOpen(true)} />
+          ) : contentStatus === 'error' ? (
+            <div className="mt-10 rounded-xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-800">
+              We could not load the protected mock content. Refresh the page and try again.
+            </div>
           ) : (
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
               <div className="space-y-5 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:self-start lg:pr-2">
-                {mock.sections.map((section, index) => (
+                {resolvedMock.sections.map((section, index) => (
                   <article key={section.id} className="rounded-lg border border-border bg-card shadow-sm">
                     <div className="border-b border-border px-5 py-3">
                       <h2 className="font-bold text-foreground">Section {index + 1}: {section.passage.title}</h2>
@@ -197,5 +241,15 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const mock = await getMockTest(params.slug);
   if (!mock || mock.sections.length === 0) return { notFound: true };
-  return { props: { mock }, revalidate: 3600 };
+  const publicMock = {
+    id: mock.id,
+    slug: mock.slug,
+    title: mock.title,
+    description: mock.description,
+    skill: mock.skill,
+    module: mock.module || null,
+    durationSeconds: mock.durationSeconds,
+    sectionCount: mock.sections.length,
+  };
+  return { props: { mock: publicMock }, revalidate: 3600 };
 }

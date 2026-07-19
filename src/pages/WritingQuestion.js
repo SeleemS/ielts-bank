@@ -12,10 +12,10 @@ import RelatedPractice from '../components/RelatedPractice';
 import Modal from '../components/AccessibleModal';
 import { getAnonId, track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
-import { usePlan } from '../lib/usePlan';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import SignInDialog from '../components/auth/SignInDialog';
-import { ScoringProgress, CriterionFeedback, BandHero, BandMeter } from '../components/question/ScoreUI';
+import { ScoringProgress } from '../components/question/ScoreUI';
+import WritingScoreReport from '../components/question/WritingScoreReport';
 import { syncLocalAttempts } from '../lib/progress';
 
 import { SITE_URL } from '../../lib/site';
@@ -41,123 +41,8 @@ function htmlToText(html) {
     .trim();
 }
 
-// Criterion metadata: key in the API response -> display label.
-const TASK2_CRITERIA = [
-  ['taskResponse', 'Task Response'],
-  ['coherenceCohesion', 'Coherence & Cohesion'],
-  ['lexicalResource', 'Lexical Resource'],
-  ['grammaticalRange', 'Grammatical Range & Accuracy'],
-];
-const TASK1_CRITERIA = [
-  ['taskAchievement', 'Task Achievement'],
-  ['coherenceCohesion', 'Coherence & Cohesion'],
-  ['lexicalResource', 'Lexical Resource'],
-  ['grammaticalRange', 'Grammatical Range & Accuracy'],
-];
-
-function formatBand(band) {
-  return typeof band === 'number' ? band.toFixed(1) : '—';
-}
-
-function bandTone(band) {
-  if (typeof band !== 'number') return 'bg-secondary text-secondary-foreground';
-  if (band >= 7) return 'bg-accent text-accent-foreground';
-  if (band >= 5.5) return 'bg-primary text-primary-foreground';
-  return 'bg-destructive text-destructive-foreground';
-}
-
-function BandPill({ band, className }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex min-w-[2.75rem] items-center justify-center rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums',
-        bandTone(band),
-        className
-      )}
-    >
-      {formatBand(band)}
-    </span>
-  );
-}
-
-function ScoreReport({ task, result }) {
-  const criteriaMeta = task === 1 ? TASK1_CRITERIA : TASK2_CRITERIA;
-  const criteria = result.criteria || {};
-  const improvements = Array.isArray(result.improvements) ? result.improvements : [];
-  const corrected = Array.isArray(result.correctedExamples)
-    ? result.correctedExamples
-    : [];
-
-  return (
-    <div className="space-y-5">
-      {/* Overall band */}
-      <BandHero
-        band={result.overallBand}
-        subtitle={`Writing Task ${task}${result.wordCount ? ` · ${result.wordCount} words` : ''}`}
-      />
-
-      {/* Per-criterion cards */}
-      <div className="space-y-3">
-        {criteriaMeta.map(([key, label]) => {
-          const c = criteria[key] || {};
-          return (
-            <div key={key} className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-bold text-foreground">{label}</h3>
-                <BandPill band={c.band} />
-              </div>
-              <div className="mb-3">
-                <BandMeter band={c.band} />
-              </div>
-              <CriterionFeedback criterion={c} />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Summary */}
-      {result.summary && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-1.5 text-sm font-bold text-foreground">Examiner Summary</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
-        </div>
-      )}
-
-      {/* Improvements */}
-      {improvements.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-bold text-foreground">How to Improve</h3>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
-            {improvements.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Corrected examples */}
-      {corrected.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-bold text-foreground">Corrected Examples</h3>
-          <div className="space-y-3">
-            {corrected.map((ex, i) => (
-              <div key={i} className="rounded-md border border-border/70 bg-secondary/30 p-3">
-                <p className="text-sm text-destructive line-through decoration-destructive/50">
-                  {ex.original}
-                </p>
-                <p className="mt-1 text-sm font-medium text-accent">{ex.suggestion}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const { user } = useAuth();
-  const { isPremium, loading: planLoading } = usePlan();
   const router = useRouter();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
   const title = passage?.title || '';
@@ -294,7 +179,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         // its remaining stages and opens the feedback via onFinished.
         scored = true;
         setResult(data);
-        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, signed_in: Boolean(user) });
+        track('ai_score_result', { skill: 'writing', slug: storageKey, outcome: 'ok', band: data.overallBand, task, word_count: wordCount, free: data.free === true, signed_in: Boolean(user) });
       } else if (response.status === 401) {
         // No session (or it expired): sign in and the submission resumes.
         pendingSubmitRef.current = true;
@@ -331,17 +216,11 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
     }
   }, [goToPremium, passage?.id, promptHtml, storageKey, task, user, userResponse, wordCount]);
 
-  // Continue a submission: score for premium users, otherwise capture the
-  // essay and route to billing. When the plan is still loading we let the
-  // server decide (the 402 premium_required handler above catches it).
+  // The server owns the entitlement decision: a free user may still have the
+  // one lifetime sample, while a used sample returns premium_required.
   const continueSubmit = useCallback(() => {
-    if (!planLoading && !isPremium) {
-      track('premium_gate', { skill: 'writing', slug: storageKey, stage: 'upgrade' });
-      void goToPremium();
-      return;
-    }
     runScore();
-  }, [goToPremium, isPremium, planLoading, runScore, storageKey]);
+  }, [runScore]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -354,10 +233,8 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       return;
     }
 
-    // Premium-only scoring: signed-out visitors sign up first (the draft is
-    // persisted on every keystroke and the essay is captured as a local
-    // attempt, so nothing is lost); the submission resumes when the dialog
-    // closes and routes to billing if they're not premium yet.
+    // Signed-out visitors sign up first; that account receives one lifetime
+    // free Writing score and the submission resumes when onboarding closes.
     if (!user) {
       captureAttemptLocally();
       pendingSubmitRef.current = true;
@@ -526,7 +403,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         }}
         redirectOnFinish={false}
         title="Sign up to get this response scored"
-        description="AI Writing scoring is a Premium feature. Create your account first — your essay is saved to it, so nothing you've written is lost."
+        description="Create a free account to get your first AI score. Your essay is saved, so nothing you’ve written is lost."
         trigger="writing_task_score"
       />
       <Modal
@@ -534,7 +411,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         onClose={() => setFeedbackOpen(false)}
         title="Your AI Feedback & Score"
       >
-        {result && <ScoreReport task={task} result={result} />}
+        {result && <WritingScoreReport task={task} result={result} />}
         {result ? (
           <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">
             This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you’re ready.

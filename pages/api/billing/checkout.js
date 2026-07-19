@@ -1,5 +1,5 @@
 // pages/api/billing/checkout.js
-// Creates a Stripe Checkout Session for a premium subscription.
+// Creates a Stripe Checkout Session for a subscription or 4-week Exam Pass.
 //   * signed-in, NON-anonymous users only (receipts + portal need an email);
 //   * price resolved server-side by lookup_key — PPP variant when the request
 //     geo (x-vercel-ip-country) is in the PPP list. Never client-chosen.
@@ -9,6 +9,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { getStripe, resolveLookupKey, isPppCountry, SKUS } from '../../../lib/billing';
+import { isPremiumRow } from '../../../lib/premium';
 
 let _admin = null;
 function getAdmin() {
@@ -51,11 +52,12 @@ export default async function handler(req, res) {
 
   const sku = typeof req.body?.sku === 'string' ? req.body.sku : 'monthly';
   if (!SKUS.includes(sku)) return res.status(400).json({ error: 'Unknown plan.' });
+  const offer = req.body?.offer === 'winback' ? 'winback' : null;
 
   const admin = getAdmin();
   const { data: userRow, error: userErr } = await admin
     .from('users')
-    .select('id, email, is_anonymous, plan, stripe_customer_id')
+    .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id')
     .eq('id', authUser.id)
     .single();
   if (userErr || !userRow) return res.status(401).json({ error: 'Account not found.' });
@@ -65,8 +67,19 @@ export default async function handler(req, res) {
       code: 'anonymous_user',
     });
   }
-  if (userRow.plan === 'premium') {
+  if (isPremiumRow(userRow)) {
     return res.status(409).json({ error: 'You already have Premium.', code: 'already_premium' });
+  }
+  const winBackEligible =
+    offer === 'winback' &&
+    sku === 'monthly' &&
+    userRow.canceled_at &&
+    new Date(userRow.canceled_at).getTime() <= Date.now() - 30 * 86400000;
+  if (offer === 'winback' && !winBackEligible) {
+    return res.status(403).json({ error: 'This returning-subscriber offer is not available for this account.' });
+  }
+  if (winBackEligible && !process.env.STRIPE_WINBACK_COUPON_ID) {
+    return res.status(503).json({ error: 'The returning-subscriber offer is temporarily unavailable.' });
   }
 
   const country = String(req.headers['x-vercel-ip-country'] || '').toUpperCase();
@@ -97,16 +110,26 @@ export default async function handler(req, res) {
     }
 
     const origin = siteOrigin(req);
+    const isExamPass = sku === 'exam_pass';
+    const metadata = {
+      user_id: userRow.id,
+      sku,
+      ppp: isPppCountry(country) ? '1' : '0',
+    };
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isExamPass ? 'payment' : 'subscription',
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
-      allow_promotion_codes: true,
+      allow_promotion_codes: !winBackEligible,
+      ...(winBackEligible
+        ? { discounts: [{ coupon: process.env.STRIPE_WINBACK_COUPON_ID }] }
+        : {}),
       payment_method_collection: 'if_required',
       client_reference_id: userRow.id,
-      subscription_data: {
-        metadata: { user_id: userRow.id, ppp: isPppCountry(country) ? '1' : '0' },
-      },
+      metadata,
+      ...(isExamPass
+        ? { payment_intent_data: { metadata } }
+        : { subscription_data: { metadata } }),
       ...(process.env.STRIPE_AUTOMATIC_TAX === '1' ? { automatic_tax: { enabled: true } } : {}),
       success_url: `${origin}/pricing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?checkout=canceled`,

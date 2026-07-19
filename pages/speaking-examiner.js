@@ -221,6 +221,16 @@ export default function SpeakingExaminerPage() {
     }
   }, [captions]);
 
+  React.useEffect(() => {
+    if (phase === 'idle' && !planLoading && !isPremium) {
+      track('premium_gate', {
+        source: 'speaking_examiner',
+        stage: 'impression',
+        signed_in: Boolean(user?.id),
+      });
+    }
+  }, [isPremium, phase, planLoading, user?.id]);
+
   React.useEffect(() => () => teardown(), []); // unmount cleanup
 
   function teardown() {

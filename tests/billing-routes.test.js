@@ -206,7 +206,13 @@ describe('POST /api/billing/checkout', () => {
 
   it('rejects users who already have premium', async () => {
     mockState.authUser = { id: 'user-1' };
-    mockState.userRow = { id: 'user-1', email: 'a@b.com', is_anonymous: false, plan: 'premium' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'premium',
+      plan_status: 'active',
+    };
     const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
     expect(res.statusCode).toBe(409);
   });

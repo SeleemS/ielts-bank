@@ -10,6 +10,7 @@ import {
   Globe2,
   Sparkles,
   KeyRound,
+  CalendarDays,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -29,8 +30,8 @@ import { inter } from '../../lib/fonts';
 //   1. account  — email + password; Create account (default) or Sign in.
 //   2. verify   — 6-digit emailed code (OTP only, no magic links; the
 //                 Supabase email templates must render {{ .Token }}).
-//   3. about    — two quick questions (goal + target band) saved to the
-//                 users row (target_band column + prefs jsonb). Skippable.
+//   3. about    — goal, target band, and optional exam date saved to the
+//                 users row. Skippable.
 // Existing users signing in with a password skip 2–3 entirely. Accounts from
 // the magic-link era (no password) sign in via an emailed one-time code. All
 // successful signup and sign-in paths finish on /dashboard, unless the caller
@@ -46,7 +47,7 @@ const BANDS = ['6.0', '6.5', '7.0', '7.5', '8.0+'];
 
 // Merge goal + target band into the signed-in user's row. Fails soft — the
 // worst outcome is an unanswered onboarding question.
-async function saveProfile(userId, { goal, band }) {
+async function saveProfile(userId, { goal, band, examDate }) {
   if (!userId) return;
   try {
     const supabase = getSupabase();
@@ -55,6 +56,10 @@ async function saveProfile(userId, { goal, band }) {
     if (goal) prefs.goal = goal;
     const patch = { prefs };
     if (band) patch.target_band = parseFloat(band); // '8.0+' -> 8
+    if (examDate) {
+      patch.exam_date = examDate;
+      prefs.examDate = examDate;
+    }
     await supabase.from('users').update(patch).eq('id', userId);
   } catch {
     /* non-fatal */
@@ -98,6 +103,7 @@ export default function SignInDialog({
   const [code, setCode] = React.useState('');
   const [goal, setGoal] = React.useState('');
   const [band, setBand] = React.useState('');
+  const [examDate, setExamDate] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState('');
   const [notice, setNotice] = React.useState('');
@@ -133,6 +139,7 @@ export default function SignInDialog({
       setCode('');
       setGoal('');
       setBand('');
+      setExamDate('');
       setBusy(false);
       setErrorMsg('');
       setNotice('');
@@ -357,12 +364,13 @@ export default function SignInDialog({
   const handleAboutSubmit = async (skipped) => {
     setBusy(true);
     try {
-      if (!skipped) await saveProfile(user?.id, { goal, band });
+      if (!skipped) await saveProfile(user?.id, { goal, band, examDate });
       track('onboarding_answered', {
         trigger,
         skipped: Boolean(skipped),
         goal: skipped ? null : goal || null,
         target_band: skipped ? null : band || null,
+        exam_date: skipped ? null : examDate || null,
       });
     } finally {
       setBusy(false);
@@ -488,8 +496,8 @@ export default function SignInDialog({
       <>
         {header(
           <Sparkles className="h-5 w-5 text-primary" />,
-          'Two quick questions',
-          'We’ll tailor your practice — takes five seconds.'
+          'A quick practice plan',
+          'Tell us your goal and deadline so we can shape the right next step.'
         )}
         <div className="flex flex-col gap-4">
           <div>
@@ -518,10 +526,31 @@ export default function SignInDialog({
               ))}
             </div>
           </div>
+          <div>
+            <Label htmlFor="onboarding-exam-date">When is your test?</Label>
+            <div className="relative mt-2">
+              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="onboarding-exam-date"
+                type="date"
+                value={examDate}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(event) => setExamDate(event.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setExamDate('')}
+              className="mt-2 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Not booked yet
+            </button>
+          </div>
           <Button
             variant="accent"
             className="w-full"
-            disabled={busy || (!goal && !band)}
+            disabled={busy || (!goal && !band && !examDate)}
             onClick={() => handleAboutSubmit(false)}
           >
             {busy ? 'Saving…' : 'Start practising'}

@@ -8,7 +8,9 @@ import * as React from 'react';
 import { getSupabase } from '../../lib/supabase';
 import { useAuth } from './auth';
 
-export function isPremiumActive(plan, planStatus, renewsAt) {
+export function isPremiumActive(plan, planStatus, renewsAt, expiresAt = null, pauseUntil = null) {
+  if (pauseUntil && new Date(pauseUntil).getTime() > Date.now()) return false;
+  if (expiresAt && new Date(expiresAt).getTime() > Date.now()) return true;
   if (plan !== 'premium') return false;
   if (['active', 'trialing', 'past_due'].includes(planStatus)) return true;
   if (planStatus === 'canceled') {
@@ -24,18 +26,20 @@ export function usePlan() {
     plan: 'free',
     planStatus: 'inactive',
     renewsAt: null,
+    expiresAt: null,
+    pauseUntil: null,
     hasBillingAccount: false,
   });
 
   React.useEffect(() => {
     if (!user?.id) {
-      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, hasBillingAccount: false });
+      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, hasBillingAccount: false });
       return undefined;
     }
     let active = true;
     getSupabase()
       .from('users')
-      .select('plan, plan_status, plan_renews_at, stripe_customer_id')
+      .select('plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, stripe_customer_id')
       .eq('id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -45,6 +49,8 @@ export function usePlan() {
           plan: data?.plan || 'free',
           planStatus: data?.plan_status || 'inactive',
           renewsAt: data?.plan_renews_at || null,
+          expiresAt: data?.plan_expires_at || null,
+          pauseUntil: data?.billing_pause_until || null,
           hasBillingAccount: Boolean(data?.stripe_customer_id),
         });
       })
@@ -58,6 +64,12 @@ export function usePlan() {
 
   return {
     ...state,
-    isPremium: isPremiumActive(state.plan, state.planStatus, state.renewsAt),
+    isPremium: isPremiumActive(
+      state.plan,
+      state.planStatus,
+      state.renewsAt,
+      state.expiresAt,
+      state.pauseUntil
+    ),
   };
 }

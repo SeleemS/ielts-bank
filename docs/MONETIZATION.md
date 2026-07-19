@@ -1,7 +1,7 @@
 # ielts-bank.com — Monetization Plan
 
-**Status:** Implementation-ready blueprint — **payments live on Stripe**
-**Last updated:** 2026-07-17
+**Status:** Implemented monetization system — **payments live on Stripe; July 19 migration pending production approval**
+**Last updated:** 2026-07-19
 **Owner:** Founder / eng
 **Scope:** How ielts-bank.com goes from free + AdSense to a paid, AI-scoring subscription business without breaking its SEO engine.
 
@@ -15,9 +15,9 @@
 
 - **Free forever:** all practice content (Reading/Listening passages, questions, auto-scoring, band conversion). This is the SEO engine and must never be paywalled.
 - **Gated (the product we sell):** AI scoring of Writing & Speaking (rubric-anchored, per-criterion feedback), "unlimited" scores under fair-use daily caps (§5.3), the Realtime AI speaking examiner (metered in minutes, §9), progress analytics, an ad-free experience, and mock-test / export features.
-- **Free metering:** anonymous = **1** free AI score (lifetime, to sample), signed-in free = **3** AI scores per rolling 30 days — enforced server-side by a transactional decrement of `user_quotas.ai_scores_remaining`, never trusted from the client.
+- **Free metering:** anonymous users sign up first; each signed-in free account receives **1 lifetime Writing score** on the mini model. The result reveals the overall band and first criterion, with the rest teased behind Premium. Speaking stays Premium-only.
 - **Premium limits (§5.3):** Writing 2 AI scores/day, async Speaking 1/day (marketed as unlimited; these are abuse caps), Realtime examiner **60 min/month** (30 on PPP plans). Worst-case COGS hard-capped ≈ $4.50/user/mo; typical ≈ $0.90 → ~80% blended gross margin at $4.20 ARPU.
-- **Prices (USD, global list):** **$9.99/mo**, **hero SKU $29.99 / 6 months (~$5/mo)**, **$44.99/year (~$3.75/mo)**. PPP tiers ~55% off for India/MENA/SEA (e.g. $3.99/mo, $14.99/6-mo).
+- **Prices (USD, global list):** **$9.99/mo**, **hero SKU $29.99 / 6 months (~$5/mo)**, **$44.99/year (~$3.75/mo)**, and a **$14.99 non-renewing 28-day Exam Pass**. Eligible PPP markets use separate server-selected prices; Gulf markets remain full price.
 - **Payments:** **Stripe** (see decision note above) — Checkout + Billing subscriptions, webhook → `users.plan`; PPP implemented as separate Stripe Prices selected server-side by request geo (`x-vercel-ip-country`). Stripe Tax enabled for calculation/collection; tax registrations are our responsibility as MoR.
 - **MVP paid launch:** Supabase Auth (anon → Google/email) → server-side metering → Writing scoring API → Stripe Checkout + webhook → `users.plan` gate. Everything else (analytics dashboards, speaking, exports) ships after money is flowing.
 
@@ -144,18 +144,20 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 | Monthly | **$9.99** | $9.99 | Anchor / impulse; most users see this first |
 | **6-month (HERO)** | **$29.99** | **~$5.00** | Default recommended plan — matches a real IELTS study cycle |
 | Annual | **$44.99** | ~$3.75 | Best value; maximizes cash upfront + retention |
+| Exam Pass | **$14.99** | n/a | One payment for 28 days; never renews |
 
 Rationale for the 6-month hero: IELTS prep is a **fixed-duration project**, not an indefinite service. Buyers think "I test in ~3–5 months," so a 6-month prepay converts better than monthly and dramatically reduces churn/refund exposure vs a rolling monthly plan. Price it as the visually-highlighted middle option.
 
-### 3.2 PPP-discounted tiers (India / MENA / SEA)
+### 3.2 PPP-discounted tiers (eligible lower-income markets)
 
-The majority of IELTS demand — and of this site's traffic — is India, Pakistan, Bangladesh, Nigeria, Egypt, Gulf, Philippines, Vietnam. PPP is implemented as separate Stripe Prices selected **server-side** from request geo (`x-vercel-ip-country`), set at **~55% off** in these markets:
+PPP is implemented as separate Stripe Prices selected **server-side** from trusted request geo (`x-vercel-ip-country`), set at **~55% off** in eligible markets. Saudi Arabia, UAE, Qatar, Kuwait, Bahrain, Oman, Syria, Iran, and Sudan are explicitly excluded from PPP selection.
 
 | SKU | Global | PPP (India/MENA/SEA) |
 |---|---|---|
 | Monthly | $9.99 | **$3.99** |
 | 6-month (hero) | $29.99 | **$14.99** |
 | Annual | $44.99 | **$19.99** |
+| Exam Pass | $14.99 | **$6.99** |
 
 PPP is not optional here: a $9.99 global price is a hard wall in ₹/₨ markets, and unauthorized-region full-price sales drive chargebacks. Server-side PPP price selection both lifts conversion and cuts fraud/refund rates. (Note: Stripe's UPI support is limited vs Paddle's — a known conversion loss for Indian traffic; monitor and revisit.)
 
@@ -195,6 +197,12 @@ The original plan chose Paddle as merchant-of-record because it remits VAT/GST i
   plan_status            text    not null default 'inactive',-- 'active'|'trialing'|'past_due'|'canceled'|'refunded'|'inactive'
   plan_renews_at         timestamptz,
   plan_started_at        timestamptz,
+  premium_since          timestamptz,
+  plan_sku               text,
+  plan_expires_at        timestamptz, -- one-time Exam Pass
+  exam_date              date,
+  canceled_at            timestamptz,
+  billing_pause_until    timestamptz,
   stripe_customer_id     text,     -- unique, indexed
   stripe_subscription_id text,     -- unique, indexed
 
@@ -206,6 +214,10 @@ The original plan chose Paddle as merchant-of-record because it remits VAT/GST i
   daily_counters_date        date         -- rollover marker
   realtime_seconds_remaining int          -- Realtime examiner meter (§9)
   realtime_period_resets_at  timestamptz
+  free_writing_score_used_at timestamptz  -- lifetime sample audit marker
+
+-- public.lifecycle_emails:
+  -- service-role-only outbox with idempotency, retries, suppression, and send state
 ```
 
 Unique indexes on `users.stripe_customer_id` and `users.stripe_subscription_id` for idempotent webhook upserts. All plan writes are **service-role only**: a `BEFORE UPDATE` trigger rejects changes to `plan*`/`stripe_*` columns unless the role is `service_role` (client keeps its `0005` update policy for profile fields only).
@@ -222,8 +234,16 @@ SUPABASE_SERVICE_ROLE_KEY=...        # server only — webhook + scoring route
 STRIPE_SECRET_KEY=sk_live_...        # server only
 STRIPE_WEBHOOK_SECRET=whsec_...      # server only — verify webhook signatures
 # Price IDs are resolved at runtime by lookup_key (premium_monthly, premium_6month,
-# premium_annual, premium_monthly_ppp, premium_6month_ppp, premium_annual_ppp),
-# so no per-price env vars are needed.
+# premium_annual, premium_exam_pass, plus each key's _ppp variant), so no
+# per-price env vars are needed.
+STRIPE_AUTOMATIC_TAX=1
+STRIPE_WINBACK_COUPON_ID=...        # optional: enables validated 40%-off monthly win-back
+STRIPE_PORTAL_CONFIGURATION_ID=... # optional: otherwise the server creates the managed config
+
+# Lifecycle email
+RESEND_API_KEY=...
+EMAIL_FROM="IELTS Bank <hello@ielts-bank.com>"
+EMAIL_UNSUBSCRIBE_SECRET=...        # optional; CRON_SECRET is the fallback
 
 # Scoring
 SCORING_MODEL_FREE=...               # cheaper model id for the free meter
@@ -233,15 +253,17 @@ OPENAI_API_KEY=...
 
 ### 4.4 Integration outline (this stack)
 
-**Checkout (server-created):** `POST /api/billing/checkout` — requires a signed-in, **non-anonymous** Supabase session. Creates/reuses the Stripe Customer (stored on `users.stripe_customer_id`), resolves the price by `lookup_key` (PPP variant if `x-vercel-ip-country` ∈ PPP list), and creates a subscription-mode Checkout Session with `client_reference_id = users.id` and `subscription_data.metadata.user_id`, `allow_promotion_codes: true`, `payment_method_collection: 'if_required'`, `automatic_tax: enabled`. Client redirects to the returned URL.
+**Checkout (server-created):** `POST /api/billing/checkout` — requires a signed-in, **non-anonymous** Supabase session. Creates/reuses the Stripe Customer, resolves the price by server-trusted geography, and creates either a subscription Checkout Session or a one-time Exam Pass payment. Client input never chooses PPP eligibility or arbitrary discounts. The 30-day win-back offer is revalidated from cancellation history on the server.
 
 **Webhook (server — `pages/api/webhooks/stripe.js`, bodyParser off for raw body):**
 1. Verify the `stripe-signature` header via `stripe.webhooks.constructEvent` with `STRIPE_WEBHOOK_SECRET`. Reject on mismatch.
 2. Use the Supabase **service role** client (never the anon key) to write.
 3. Handle events idempotently, keyed on `stripe_subscription_id` (state upserts, not increments):
    - `checkout.session.completed` → map `client_reference_id`/metadata → user; set `plan='premium'`, `plan_status='active'`, `plan_started_at`, `stripe_customer_id`, `stripe_subscription_id`, seed realtime minutes (§9).
+   - one-time Exam Pass checkout → set a 28-day `plan_expires_at`, seed realtime minutes, and never create a renewing subscription.
    - `customer.subscription.created`/`updated` → sync `plan_status` from Stripe status (`active`/`trialing` → premium-active; `past_due` → grace; `canceled`/`unpaid`/`incomplete_expired` → downgrade at period end), refresh `plan_renews_at` from `current_period_end`; `cancel_at_period_end=true` → `plan_status='canceled'` but **retain premium until `plan_renews_at`**.
    - `customer.subscription.deleted` → `plan='free'`, `plan_status='canceled'`.
+   - `invoice.paid` → resync entitlement and refill the Realtime allowance for the renewal period.
    - `invoice.payment_failed` → `plan_status='past_due'` (grace window; Stripe Smart Retries handle dunning).
    - `charge.refunded` / `charge.dispute.created` → `plan='free'`, `plan_status='refunded'` immediately.
 4. Return 200 fast; unrecognized events are acknowledged and ignored.
@@ -260,11 +282,11 @@ OPENAI_API_KEY=...
 
 | User type | Free AI scores | Reset cadence |
 |---|---|---|
-| Anonymous (`users.is_anonymous=true`) | **1** total (lifetime sample) | none — must sign in for more |
-| Signed-in free | **3** per rolling 30 days | `period_resets_at` refill |
-| Premium | unlimited | n/a (bypasses meter) |
+| Anonymous | **0** | Must create a free account |
+| Signed-in free | **1 Writing score** | Lifetime; Speaking remains Premium-only |
+| Premium | Writing 2/day; Speaking 1/day | Daily fair-use rollover |
 
-Rationale: anonymous 1-score is enough to taste the feedback quality (drives sign-in); signed-in 3/30-days matches the seeded `ai_scores_remaining=3` default and is generous enough to build trust, tight enough to convert serious users. Set `period_resets_at = now() + interval '30 days'` on first score if null.
+Rationale: signup is the abuse boundary and the sample reward. The free result reveals the overall band and first criterion; the remaining criteria and detailed corrections are visibly teased behind Premium. `free_writing_score_used_at` makes the lifetime use auditable and immune to subscription churn.
 
 ### 5.2 Server-side enforcement (never client-trusted)
 
@@ -272,20 +294,19 @@ The scoring route runs on Vercel with the **service role** key. The decrement an
 
 ```
 -- pseudo-logic of the RPC, executed transactionally:
--- 1. if user is premium+active -> allow, no decrement, return ok
--- 2. else: SELECT ai_scores_remaining, period_resets_at
---          FROM user_quotas WHERE user_id = :uid FOR UPDATE;   -- row lock
--- 3. if period_resets_at < now(): reset remaining to the tier cap, set new period
--- 4. if ai_scores_remaining <= 0 -> return 'quota_exceeded' (HTTP 402 upstream)
--- 5. UPDATE user_quotas SET ai_scores_remaining = ai_scores_remaining - 1 ...
--- 6. return 'ok'  (the route then calls the LLM and inserts attempts + scores)
+-- 1. validate auth.uid() = p_uid (or service_role) and lock user_quotas
+-- 2. compute active subscription / Exam Pass / billing-pause entitlement
+-- 3. free Writing with unused lifetime marker -> stamp marker and return free:true
+-- 4. all other free requests -> return premium_required
+-- 5. premium -> roll daily counters, enforce 2 Writing / 1 Speaking, increment
 ```
 
 Key rules:
 - `FOR UPDATE` row lock prevents the concurrency race.
 - The client never sends the remaining count; it only reads it for display via RLS (`user_quotas` is client-readable, service-write-only per `0004`/`0005`).
-- If the LLM call **fails after** decrement, refund the quota in a `catch` (compensating `+1`), or (cleaner) decrement only on successful score insert within the same transaction boundary.
-- Return **HTTP 402** on `quota_exceeded` so the front-end shows the paywall modal deterministically.
+- The free route selects `SCORING_MODEL_FREE`; paid scores select `SCORING_MODEL_PAID`.
+- If the LLM call fails after a meter increment, the route performs a compensating refund where applicable.
+- Return **HTTP 402** for `premium_required` or a fair-use cap so the front-end shows the contextual paywall deterministically.
 
 ### 5.3 Premium fair-use limits (decided 2026-07-17)
 
@@ -298,7 +319,7 @@ Premium is marketed as "unlimited AI scoring" but carries **abuse caps** sized s
 | Realtime AI examiner (§9, mini, ~3–5¢/min) | **60 min/mo** global / **30 min/mo** PPP | ~$2.40 | ~$0.50 |
 | **Total** | | **~$4.50 hard ceiling** | **~$0.90** |
 
-At $4.20 blended ARPU this holds **~80% blended gross margin**; the worst case is profitable on global monthly, ~breakeven on hero/PPP-monthly, and a bounded, rare loss (~-$3/mo) on PPP annual. Enforcement: same transactional RPC pattern as the free meter — `consume_ai_score(p_uid, p_skill)` rolls daily counters in `user_quotas`; Realtime minutes decrement via `consume_realtime_seconds` before a session token is minted. Free tier is unchanged (3 scores / 30 days, no Realtime).
+At $4.20 blended ARPU this holds **~80% blended gross margin**; the worst case is profitable on global monthly, ~breakeven on hero/PPP-monthly, and a bounded, rare loss (~-$3/mo) on PPP annual. Enforcement: `consume_ai_score(p_uid, p_skill)` grants one lifetime mini-model Writing sample to a signed-in free account, keeps Speaking Premium-only, and rolls premium daily counters; Realtime minutes decrement via `consume_realtime_seconds` before a session token is minted.
 
 ---
 
@@ -330,7 +351,7 @@ AdSense/Search can flag large sets of thin, templated pages (55→300 near-ident
 | Risk | Reality | Mitigation |
 |---|---|---|
 | **"IELTS" trademark** | IELTS is a registered trademark (British Council / IDP / Cambridge). Using it in the brand/domain (`ielts-bank.com`) and marketing carries real risk. | Add a clear **"not affiliated with or endorsed by the IELTS partners"** disclaimer in footer + about + checkout. Use "IELTS" descriptively ("practice for the IELTS exam"), never implying official status. Avoid official logos. Have a fallback brand name ready; keep the trademark-safe descriptive positioning. Consider IP counsel before scaling paid ads on the brand term. |
-| **Refunds / chargebacks** (exam-prep is high-dispute: buyers dispute after their test date or after "not enough time") | Chargebacks can carry fees and threaten processor standing. | **Chargeback liability is now ours (Stripe, we are MoR)** — Stripe Radar on, prepaid hero SKU favored. Favor the 6-month **prepaid** hero SKU over rolling monthly (fewer renewal disputes). Clear refund policy (e.g. pro-rated / 7-day). PPP pricing reduces the fraud-heavy "full price in a low-income region" cohort. Deliver value fast (instant first score) so disputes are rarer. |
+| **Refunds / chargebacks** (exam-prep is high-dispute: buyers dispute after their test date or after "not enough time") | Chargebacks can carry fees and threaten processor standing. | **Chargeback liability is now ours (Stripe, we are MoR)** — Stripe Radar on, prepaid hero SKU favored, clear 14-day money-back terms, and instant first-value delivery. |
 | **Seasonality** | IELTS demand spikes around intake/admissions cycles; summer/holiday lulls. | The 6-month/annual SKUs smooth cash across troughs. AdSense floor persists year-round. Plan content pushes ahead of known intake peaks. |
 | **AdSense policy** (low-value templated pages; invalid traffic) | Account suspension would zero the current revenue line. | §6.3 mitigations; editorial review queue gating; diversify to subscription revenue so AdSense isn't load-bearing. |
 | **LLM cost blow-out from abuse** | A scripted attacker could burn LLM spend via the scoring route. | Server-side metering (§5) caps free usage; auth required for scoring; rate-limit per IP/user; premium is bounded by human essay-writing speed. COGS at 0.3–1.3¢/score stays negligible. |
@@ -348,15 +369,15 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 
 ### Phase B — Metering (no revenue, builds the demo + the wall)
 3. **Writing scoring API route** (`pages/api/score/writing.js`, server/service-role): prompt + rubric → LLM → insert `attempts` + `scores` (per-criterion `criteria`, `model`, `rubric_id`, `feedback_html`).
-4. **Transactional meter RPC** (§5): `FOR UPDATE` decrement of `user_quotas.ai_scores_remaining` + reset logic; return 402 on exhaustion.
+4. **Transactional meter RPC** (§5): `FOR UPDATE` lifetime free-Writing marker plus premium daily fair-use counters; return 402 at the appropriate gate.
 5. **Paywall modal** triggered on HTTP 402.
 
 ### Phase C — Minimum Viable Paid Launch  ← **first money**
 6. **Add billing columns** to `users` (§4.2) + service-role-only write trigger; premium daily counters + realtime meter on `user_quotas`.
-7. **Stripe setup**: one Premium product, 6 prices by `lookup_key` (3 global + 3 PPP); promo-code support for launch discounts and E2E verification.
+7. **Stripe setup**: one Premium product, 8 prices by `lookup_key` (Monthly, 6-month, Annual, Exam Pass; global + PPP); promo-code support for launch discounts and E2E verification.
 8. **Checkout**: `POST /api/billing/checkout` → server-resolved price (geo → PPP) → Stripe Checkout redirect.
 9. **Webhook route** (`pages/api/webhooks/stripe.js`): signature verify + idempotent upsert of `plan`/`plan_status`/`plan_renews_at`/`stripe_*` (§4.4).
-10. **Gate in the scoring route**: premium bypasses the free meter into fair-use daily caps (§5.3); free uses the 3/30-day meter.
+10. **Gate in the scoring route**: signed-in free receives one lifetime Writing sample; premium enters fair-use daily caps (§5.3); Speaking stays Premium-only.
 11. **AdSense gate**: hide ads when `plan='premium'`.
 12. **/pricing page** + **Basic billing/account section** + link to Stripe Customer Portal for cancel/update.
 
@@ -367,7 +388,7 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 14. **Speaking scoring** (audio → transcript → `scores` with `skill='speaking'`).
 15. **PDF export** of band report (premium).
 16. **Full timed mock mode** (bundle 4 skills, combined band).
-17. **Annual-plan push + win-back** emails to reduce churn / lift ARPU.
+17. **Lifecycle email outbox** for signup/purchase/weekly sends plus a 30-day validated win-back.
 
 ---
 

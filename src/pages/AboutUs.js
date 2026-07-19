@@ -13,7 +13,7 @@ const AboutUs = () => {
         <title>About Us | IELTS-Bank</title>
         <meta
           name="description"
-          content="Learn about IELTS-Bank — a free IELTS practice platform with reading, writing, listening and speaking questions, AI-powered feedback, mock tests and study guides."
+          content="Learn about IELTS-Bank — free IELTS practice content plus optional Premium AI feedback, mock tests and study guides."
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.ielts-bank.com/about" />
@@ -39,8 +39,8 @@ const AboutUs = () => {
                 <p>
                   IELTS-Bank exists to make high-quality IELTS preparation accessible to everyone.
                   Test prep courses and coaching can cost hundreds of dollars — we believe learners
-                  everywhere deserve free, realistic practice material and instant feedback,
-                  whatever their budget.
+                  everywhere deserve free, realistic practice material and a low-risk way to
+                  sample useful AI feedback before choosing Premium.
                 </p>
               </div>
 
@@ -51,10 +51,10 @@ const AboutUs = () => {
                     <strong className="font-semibold text-foreground">Practice questions for every skill</strong> — Reading, Writing, Listening and Speaking exercises modeled on the real exam format, organized by question type.
                   </li>
                   <li>
-                    <strong className="font-semibold text-foreground">AI-powered feedback</strong> — our <NextLink href="/ielts-writing-checker" className="text-primary underline-offset-2 hover:underline">Writing Checker</NextLink> and Speaking Examiner give you an estimated band score with detailed, criteria-based feedback in seconds.
+                    <strong className="font-semibold text-foreground">AI-powered feedback</strong> — try one Writing score free; Premium unlocks the full criterion breakdown, continued Writing scoring and the Speaking Examiner.
                   </li>
                   <li>
-                    <strong className="font-semibold text-foreground">Full mock tests</strong> — timed, exam-style practice so you know exactly what to expect on test day.
+                    <strong className="font-semibold text-foreground">Full mock tests</strong> — Premium timed, exam-style practice assembled from our free question library.
                   </li>
                   <li>
                     <strong className="font-semibold text-foreground">Free tools and guides</strong> — a <NextLink href="/band-calculator" className="text-primary underline-offset-2 hover:underline">band score calculator</NextLink> and a regularly updated <NextLink href="/blog" className="text-primary underline-offset-2 hover:underline">blog</NextLink> covering strategies, vocabulary and common mistakes.
@@ -66,8 +66,8 @@ const AboutUs = () => {
                 <h2 className="mb-1 text-base font-semibold text-foreground">How We Keep It Free</h2>
                 <p>
                   Core practice content on IELTS-Bank is free to use, without an account. The site is
-                  supported by advertising and an optional premium subscription that unlocks higher
-                  AI-feedback limits. That model lets us keep publishing new questions and guides
+                  supported by advertising and an optional Premium plan that unlocks full AI
+                  feedback, continued scoring, the live Speaking Examiner and timed mock mode. That model lets us keep publishing new questions and guides
                   while staying free for the learners who need it most.
                 </p>
               </div>

@@ -14,21 +14,25 @@ import AccountSettings from '../src/components/dashboard/AccountSettings';
 import { LoadingState, SignedOutState, ErrorState } from '../src/components/dashboard/States';
 import { buildDashboardData, formatBand, getInitials, SKILL_META } from '../src/components/dashboard/utils';
 import LearningInsights from '../src/components/dashboard/LearningInsights';
+import { isPremiumActive } from '../src/lib/usePlan';
 
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
 const SCORES_SELECT =
   'id, skill, overall_band, criteria, created_at, attempts ( passage_id, started_at, submitted_at, passages ( title, slug, skill ) )';
 const PROFILE_SELECT =
-  'display_name, target_band, prefs, plan, plan_status, plan_renews_at, created_at';
+  'display_name, target_band, exam_date, prefs, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, created_at';
 
 const DEFAULT_PROFILE = {
   display_name: null,
   target_band: null,
+  exam_date: null,
   prefs: {},
   plan: 'free',
   plan_status: 'inactive',
   plan_renews_at: null,
+  plan_expires_at: null,
+  billing_pause_until: null,
   created_at: null,
 };
 
@@ -114,7 +118,7 @@ function daysUntil(dateValue) {
 function DashboardHero({ user, profile, data }) {
   const targetBand = profile.target_band == null ? null : Number(profile.target_band);
   const recommended = SKILL_META[data.recommendedSkill];
-  const examDays = daysUntil(profile.prefs?.examDate);
+  const examDays = daysUntil(profile.exam_date || profile.prefs?.examDate);
   const targetGap = targetBand !== null && data.overallBand !== null ? targetBand - data.overallBand : null;
 
   return (
@@ -135,7 +139,7 @@ function DashboardHero({ user, profile, data }) {
               ? `You are approximately ${targetGap.toFixed(1)} band points from your ${formatBand(targetBand)} target. Focus on ${recommended.label} next.`
               : data.overallBand !== null
                 ? `You are building a balanced score profile. Keep ${recommended.label} in this week's practice mix.`
-                : 'Set your baseline across all four skills and this dashboard will shape a personal practice plan.'}
+                : 'Set your first Reading, Listening, or Writing baseline and this dashboard will shape a personal practice plan.'}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <NextLink href={recommended.href} className="group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-bold text-white no-underline shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400">
@@ -183,9 +187,32 @@ function DashboardNav({ active, onChange }) {
 function EmptyNudge() {
   return (
     <div className="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-cyan-50 p-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-6">
-      <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm"><Target className="h-5 w-5" /></span><div><h2 className="text-base font-black text-slate-900">Build your four-skill baseline</h2><p className="mt-1 text-sm leading-6 text-slate-600">Complete one Reading, Listening, Writing, and Speaking activity to unlock meaningful comparisons.</p></div></div>
+      <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm"><Target className="h-5 w-5" /></span><div><h2 className="text-base font-black text-slate-900">Build your first baseline</h2><p className="mt-1 text-sm leading-6 text-slate-600">Start with Reading, Listening, or your free Writing score. Premium adds a Speaking baseline and full four-skill comparisons.</p></div></div>
       <NextLink href="/readingquestion" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white no-underline sm:mt-0">Start now <ArrowRight className="h-4 w-4" /></NextLink>
     </div>
+  );
+}
+
+function FreeUpgradeCard({ examDate }) {
+  const examDays = daysUntil(examDate);
+  return (
+    <section className="rounded-3xl bg-slate-950 p-5 text-white shadow-[0_24px_65px_-35px_rgba(2,6,23,0.85)] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
+      <div>
+        <div className="flex items-center gap-2 text-emerald-300">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-xs font-bold uppercase tracking-[0.18em]">Turn practice into a plan</span>
+        </div>
+        <h2 className="mt-3 text-xl font-black">Unlock full AI feedback and your Writing and Speaking trends</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+          {examDays == null
+            ? 'See all four scoring criteria, corrected examples, live examiner minutes, and full timed mocks.'
+            : `Your test is ${examDays === 0 ? 'today' : `in ${examDays} days`}. Use full feedback to focus the time you have left.`}
+        </p>
+      </div>
+      <NextLink href="/pricing" className="mt-5 inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white no-underline hover:bg-emerald-400 sm:mt-0">
+        See Premium options <ArrowRight className="h-4 w-4" />
+      </NextLink>
+    </section>
   );
 }
 
@@ -200,6 +227,13 @@ function DashboardBody({ user, signOut }) {
   const profile = { ...data.profile, ...(profileOverride || {}) };
   const targetBand = profile.target_band == null ? null : Number(profile.target_band);
   const weeklyGoal = Number(profile.prefs?.dashboardWeeklyGoal) || 3;
+  const isPremium = isPremiumActive(
+    profile.plan,
+    profile.plan_status,
+    profile.plan_renews_at,
+    profile.plan_expires_at,
+    profile.billing_pause_until
+  );
   const changeTab = (tab) => {
     setActiveTab(tab);
     window.requestAnimationFrame(() => document.getElementById('dashboard-content')?.focus({ preventScroll: true }));
@@ -213,8 +247,9 @@ function DashboardBody({ user, signOut }) {
         {activeTab === 'overview' && (
           <>
             {!data.hasData && <EmptyNudge />}
+            {!isPremium && <FreeUpgradeCard examDate={profile.exam_date || profile.prefs?.examDate} />}
             <StatsOverview data={data} weeklyGoal={weeklyGoal} />
-            <BandTrend skills={data.skills} targetBand={targetBand} />
+            <BandTrend skills={data.skills} targetBand={targetBand} isPremium={isPremium} />
             <LearningInsights data={data} targetBand={targetBand} />
             <RecentActivity items={data.items} onViewAll={() => changeTab('submissions')} />
           </>

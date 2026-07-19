@@ -1,4 +1,5 @@
 import * as React from 'react';
+import NextLink from 'next/link';
 import { ArrowDownRight, ArrowUpRight, Minus, Sparkles } from 'lucide-react';
 import { SKILL_META, SKILL_ORDER, bandDescriptor, formatBand } from './utils';
 
@@ -18,7 +19,7 @@ function chartPoints(series) {
   }));
 }
 
-function TrendChart({ skill, series, targetBand }) {
+function TrendChart({ skill, series, targetBand, isPremium }) {
   const meta = SKILL_META[skill];
   const points = chartPoints(series);
   const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ');
@@ -36,7 +37,19 @@ function TrendChart({ skill, series, targetBand }) {
           <Icon className="h-5 w-5" />
         </span>
         <p className="mt-4 text-sm font-semibold text-slate-800">No {meta.label.toLowerCase()} trend yet</p>
-        <p className="mt-1 max-w-xs text-xs leading-5 text-slate-500">Your score journey will appear after your first submission.</p>
+        <p className="mt-1 max-w-xs text-xs leading-5 text-slate-500">
+          {!isPremium && (skill === 'writing' || skill === 'speaking')
+            ? `Unlock AI scoring to see your ${meta.label} band trend.`
+            : 'Your score journey will appear after your first submission.'}
+        </p>
+        {!isPremium && (skill === 'writing' || skill === 'speaking') ? (
+          <NextLink
+            href={`/pricing?upgrade=${skill}`}
+            className="mt-3 text-xs font-bold text-emerald-700 underline-offset-4 hover:underline"
+          >
+            Unlock AI scoring →
+          </NextLink>
+        ) : null}
       </div>
     );
   }
@@ -94,7 +107,7 @@ function Delta({ value }) {
   );
 }
 
-export default function BandTrend({ skills, targetBand }) {
+export default function BandTrend({ skills, targetBand, isPremium = false }) {
   const firstWithData = SKILL_ORDER.find((key) => skills[key].series.length) || 'reading';
   const [selected, setSelected] = React.useState(firstWithData);
   const selectedStats = skills[selected];
@@ -124,7 +137,7 @@ export default function BandTrend({ skills, targetBand }) {
           </div>
         </div>
         <div className="mt-5">
-          <TrendChart skill={selected} series={selectedStats.series} targetBand={targetBand} />
+          <TrendChart skill={selected} series={selectedStats.series} targetBand={targetBand} isPremium={isPremium} />
         </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
           <div className="flex items-center gap-5">

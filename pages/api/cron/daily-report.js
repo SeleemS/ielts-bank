@@ -438,7 +438,7 @@ async function sendEmail(report, history) {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: process.env.REPORT_FROM || 'IELTS Bank <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || process.env.REPORT_FROM || 'IELTS Bank <hello@ielts-bank.com>',
       to: [to],
       subject: subjectLine(report, history),
       html: renderEmail(report, history),

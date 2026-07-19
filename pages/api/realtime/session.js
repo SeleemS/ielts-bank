@@ -7,6 +7,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { fetchIsPremium } from '../../../lib/premium';
 import {
   MODES,
   REALTIME_MODEL,
@@ -68,6 +69,12 @@ export default async function handler(req, res) {
 
   const mode = typeof req.body?.mode === 'string' ? req.body.mode : 'mock';
   if (!MODES[mode]) return res.status(400).json({ error: 'Unknown session mode.' });
+  if (!(await fetchIsPremium(getAdmin(), userId))) {
+    return res.status(402).json({
+      error: 'The live AI examiner requires an active Premium plan.',
+      reason: 'not_premium',
+    });
+  }
   const durationSeconds = MODES[mode].seconds;
 
   // Rate limits: per-IP fails open (availability), global fails closed (spend).
@@ -79,7 +86,8 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'The AI examiner is at capacity today. Please try again tomorrow.' });
   }
 
-  // Meter BEFORE minting: premium entitlement == seeded realtime quota.
+  // Meter BEFORE minting, after a separate entitlement check. Keeping the
+  // quota intact during a billing pause lets access resume automatically.
   let meter;
   try {
     const { data, error } = await getAdmin().rpc('consume_realtime_seconds', {

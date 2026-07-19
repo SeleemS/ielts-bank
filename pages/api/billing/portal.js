@@ -7,6 +7,7 @@ import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe } from '../../../lib/billing';
 
 let _admin = null;
+let _portalConfigurationId = null;
 function getAdmin() {
   if (_admin) return _admin;
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,6 +17,53 @@ function getAdmin() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return _admin;
+}
+
+async function portalConfiguration(stripe) {
+  if (process.env.STRIPE_PORTAL_CONFIGURATION_ID) {
+    return process.env.STRIPE_PORTAL_CONFIGURATION_ID;
+  }
+  if (_portalConfigurationId) return _portalConfigurationId;
+  const existing = await stripe.billingPortal.configurations.list({ active: true, limit: 100 });
+  const managed = existing.data.find(
+    (configuration) => configuration.metadata?.ielts_bank_managed === '1'
+  );
+  if (managed) {
+    _portalConfigurationId = managed.id;
+    return managed.id;
+  }
+  const created = await stripe.billingPortal.configurations.create({
+    business_profile: {
+      headline: 'Manage your IELTS Bank Premium plan',
+      privacy_policy_url: 'https://www.ielts-bank.com/privacypolicy',
+      terms_of_service_url: 'https://www.ielts-bank.com/termsofservice',
+    },
+    default_return_url: 'https://www.ielts-bank.com/billing/manage',
+    features: {
+      customer_update: { enabled: true, allowed_updates: ['email', 'tax_id'] },
+      invoice_history: { enabled: true },
+      payment_method_update: { enabled: true },
+      subscription_cancel: {
+        enabled: true,
+        mode: 'at_period_end',
+        cancellation_reason: {
+          enabled: true,
+          options: [
+            'too_expensive',
+            'missing_features',
+            'switched_service',
+            'unused',
+            'low_quality',
+            'other',
+          ],
+        },
+      },
+      subscription_update: { enabled: false },
+    },
+    metadata: { ielts_bank_managed: '1' },
+  });
+  _portalConfigurationId = created.id;
+  return created.id;
 }
 
 export default async function handler(req, res) {
@@ -47,9 +95,11 @@ export default async function handler(req, res) {
       req.headers.origin.startsWith('http://localhost')
         ? req.headers.origin
         : 'https://www.ielts-bank.com';
-    const session = await getStripe().billingPortal.sessions.create({
+    const stripe = getStripe();
+    const session = await stripe.billingPortal.sessions.create({
       customer: userRow.stripe_customer_id,
-      return_url: `${origin}/dashboard`,
+      configuration: await portalConfiguration(stripe),
+      return_url: `${origin}/billing/manage`,
     });
     return res.status(200).json({ url: session.url });
   } catch (e) {

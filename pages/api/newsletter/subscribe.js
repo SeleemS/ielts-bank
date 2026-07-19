@@ -103,7 +103,10 @@ export default async function handler(req, res) {
   try {
     const { error } = await getAdmin()
       .from('newsletter_subscribers')
-      .upsert({ email, source }, { onConflict: 'email', ignoreDuplicates: true });
+      .upsert(
+        { email, source, confirmed: true, unsubscribed_at: null },
+        { onConflict: 'email' }
+      );
 
     if (error) {
       console.error('newsletter insert failed:', error.message);

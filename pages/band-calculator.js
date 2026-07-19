@@ -305,6 +305,19 @@ export default function BandCalculator() {
                     {formatBand(overall)}
                   </div>
                 </div>
+                <div className="mt-4 flex flex-col items-start justify-between gap-3 rounded-xl bg-slate-950 px-5 py-4 text-white sm:flex-row sm:items-center">
+                  <div>
+                    <p className="font-bold">That overall estimate is only as good as your Writing band.</p>
+                    <p className="mt-1 text-sm text-slate-300">Get your real essay checked against all four Writing criteria.</p>
+                  </div>
+                  <NextLink
+                    href="/ielts-writing-checker?source=band-calculator"
+                    onClick={() => track('product_cta_click', { source: 'band_calculator_result', product: 'writing_checker' })}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white no-underline hover:bg-emerald-400"
+                  >
+                    Check my Writing <ArrowRight className="h-4 w-4" />
+                  </NextLink>
+                </div>
               </CardContent>
             </Card>
 

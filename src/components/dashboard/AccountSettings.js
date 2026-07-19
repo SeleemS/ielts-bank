@@ -31,7 +31,7 @@ function ProfileSettings({ user, profile, onProfileChange }) {
   const [displayName, setDisplayName] = React.useState(profile.display_name || '');
   const [targetBand, setTargetBand] = React.useState(profile.target_band == null ? '' : String(profile.target_band));
   const [weeklyGoal, setWeeklyGoal] = React.useState(String(profile.prefs?.dashboardWeeklyGoal || 3));
-  const [examDate, setExamDate] = React.useState(profile.prefs?.examDate || '');
+  const [examDate, setExamDate] = React.useState(profile.exam_date || profile.prefs?.examDate || '');
   const [busy, setBusy] = React.useState(false);
   const [feedback, setFeedback] = React.useState({ type: '', message: '' });
 
@@ -39,7 +39,7 @@ function ProfileSettings({ user, profile, onProfileChange }) {
     setDisplayName(profile.display_name || '');
     setTargetBand(profile.target_band == null ? '' : String(profile.target_band));
     setWeeklyGoal(String(profile.prefs?.dashboardWeeklyGoal || 3));
-    setExamDate(profile.prefs?.examDate || '');
+    setExamDate(profile.exam_date || profile.prefs?.examDate || '');
   }, [profile]);
 
   async function saveProfile(event) {
@@ -53,6 +53,7 @@ function ProfileSettings({ user, profile, onProfileChange }) {
     const nextProfile = {
       display_name: trimmed || null,
       target_band: targetBand === '' ? null : Number(targetBand),
+      exam_date: examDate || null,
       prefs: {
         ...(profile.prefs || {}),
         dashboardWeeklyGoal: Number(weeklyGoal),
@@ -64,7 +65,7 @@ function ProfileSettings({ user, profile, onProfileChange }) {
       .from('users')
       .update(nextProfile)
       .eq('id', user.id)
-      .select('display_name, target_band, prefs')
+      .select('display_name, target_band, exam_date, prefs')
       .maybeSingle();
     setBusy(false);
     if (error || !data) {
@@ -140,27 +141,13 @@ function PasswordSettings() {
 }
 
 function PlanSettings({ profile }) {
-  const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const isPremium = isPremiumActive(profile.plan, profile.plan_status, profile.plan_renews_at);
-
-  async function openPortal() {
-    setError('');
-    setBusy(true);
-    try {
-      const { data } = await getSupabase().auth.getSession();
-      const token = data?.session?.access_token;
-      if (!token) throw new Error('Please sign in again.');
-      const response = await fetch('/api/billing/portal', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok || !body.url) throw new Error(body.error || 'Could not open billing settings.');
-      window.location.assign(body.url);
-    } catch (portalError) {
-      setError(portalError.message || 'Could not open billing settings.');
-    } finally {
-      setBusy(false);
-    }
-  }
+  const isPremium = isPremiumActive(
+    profile.plan,
+    profile.plan_status,
+    profile.plan_renews_at,
+    profile.plan_expires_at,
+    profile.billing_pause_until
+  );
 
   return (
     <section className="overflow-hidden rounded-3xl bg-slate-950 p-5 text-white shadow-[0_24px_65px_-35px_rgba(2,6,23,0.9)] sm:p-7">
@@ -170,8 +157,7 @@ function PlanSettings({ profile }) {
       </div>
       {profile.plan_renews_at && <p className="mt-5 text-xs text-slate-400">{profile.plan_status === 'canceled' ? 'Access until' : 'Renews'} {new Date(profile.plan_renews_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
       <div className="mt-6">
-        {isPremium ? <Button type="button" onClick={openPortal} disabled={busy} variant="secondary" className="w-full rounded-xl">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Manage billing</Button> : <Button asChild variant="accent" className="w-full rounded-xl"><NextLink href="/pricing" className="no-underline"><Sparkles className="h-4 w-4" /> Explore Premium</NextLink></Button>}
-        <Feedback type="error">{error}</Feedback>
+        {isPremium ? <Button asChild variant="secondary" className="w-full rounded-xl"><NextLink href="/billing/manage" className="no-underline">Manage billing</NextLink></Button> : <Button asChild variant="accent" className="w-full rounded-xl"><NextLink href="/pricing" className="no-underline"><Sparkles className="h-4 w-4" /> Explore Premium</NextLink></Button>}
       </div>
     </section>
   );

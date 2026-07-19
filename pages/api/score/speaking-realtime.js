@@ -8,6 +8,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { fetchIsPremium } from '../../../lib/premium';
 
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const SCORING_MODEL =
@@ -17,6 +18,8 @@ const MIN_CANDIDATE_WORDS = 40;
 const MAX_TRANSCRIPT_CHARS = 60000;
 const PER_IP_WINDOW_SECONDS = 3600;
 const PER_IP_MAX = 8;
+const GLOBAL_WINDOW_SECONDS = 86400;
+const GLOBAL_MAX = 300;
 
 let _admin = null;
 function getAdmin() {
@@ -37,21 +40,6 @@ async function resolveUserId(req) {
   const { data, error } = await getAdmin().auth.getUser(match[1].trim());
   if (error || !data?.user) return null;
   return data.user.id;
-}
-
-async function isPremium(userId) {
-  const { data } = await getAdmin()
-    .from('users')
-    .select('plan, plan_status, plan_renews_at')
-    .eq('id', userId)
-    .single();
-  if (!data || data.plan !== 'premium') return false;
-  if (['active', 'trialing', 'past_due'].includes(data.plan_status)) return true;
-  return (
-    data.plan_status === 'canceled' &&
-    data.plan_renews_at &&
-    new Date(data.plan_renews_at).getTime() > Date.now()
-  );
 }
 
 function countWords(s) {
@@ -135,11 +123,23 @@ export default async function handler(req, res) {
   const userId = await resolveUserId(req);
   if (!userId) return res.status(401).json({ error: 'Please sign in.' });
 
-  if (!(await isPremium(userId))) {
+  if (!(await fetchIsPremium(getAdmin(), userId))) {
     return res.status(402).json({
       error: 'The live AI examiner is a Premium feature.',
       reason: 'not_premium',
     });
+  }
+
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const { data: globalWithinLimit, error: globalError } = await getAdmin().rpc('check_rate_limit', {
+    p_bucket: 'realtime-score-global',
+    p_identifier: dayKey,
+    p_window_seconds: GLOBAL_WINDOW_SECONDS,
+    p_max: GLOBAL_MAX,
+  });
+  if (globalError || globalWithinLimit !== true) {
+    if (globalError) console.error('global check_rate_limit error:', globalError.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
   }
 
   const { data: withinLimit, error: rlError } = await getAdmin().rpc('check_rate_limit', {
@@ -148,8 +148,11 @@ export default async function handler(req, res) {
     p_window_seconds: PER_IP_WINDOW_SECONDS,
     p_max: PER_IP_MAX,
   });
-  if (rlError) console.error('check_rate_limit error:', rlError.message);
-  if (withinLimit === false) {
+  if (rlError || withinLimit !== true) {
+    if (rlError) console.error('check_rate_limit error:', rlError.message);
+    if (rlError) {
+      return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+    }
     return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
   }
 

@@ -2,8 +2,8 @@
 // Server-side IELTS Writing scoring. Replaces the old unauthenticated AWS API
 // Gateway GPT endpoint that the browser called directly. This route:
 //   * runs only on the server (needs the secret OPENAI_API_KEY),
-//   * REQUIRES sign-in AND an active Premium plan (2026-07-18 product change:
-//     no free scores of any kind — enforced here AND in consume_ai_score),
+//   * REQUIRES sign-in; free users receive one lifetime Writing sample while
+//     Premium users use the daily fair-use meter in consume_ai_score,
 //   * rate-limits per client IP AND enforces a daily global circuit breaker via
 //     the Supabase check_rate_limit() RPC (service role),
 //   * checks Origin/Referer against an allow-list,
@@ -18,12 +18,11 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
-import { fetchIsPremium } from '../../../lib/premium';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-// Scoring is Premium-only, so every score uses the strong paid model.
+const FREE_MODEL = process.env.SCORING_MODEL_FREE || 'gpt-4.1-mini';
 const PAID_MODEL = process.env.SCORING_MODEL_PAID || process.env.OPENAI_WRITING_MODEL || 'gpt-5.1';
 
 const MIN_WORDS = 50; // below this it is not scorable
@@ -78,7 +77,7 @@ async function consumeQuota(userId) {
 }
 
 // ---------------------------------------------------------------------------
-// REQUIRED auth: scoring is a signed-in, Premium-only feature. A null here is
+// REQUIRED auth: the free sample is an account reward. A null here is
 // a 401 upstream.
 // ---------------------------------------------------------------------------
 async function resolveUserId(req) {
@@ -294,17 +293,6 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Please sign in to get your writing scored.' });
   }
 
-  // --- Premium gate BEFORE anything costly ---------------------------------
-  // consume_ai_score also refuses free users; this route-level check keeps the
-  // gate airtight regardless of DB migration rollout order.
-  if (!(await fetchIsPremium(getAdmin(), userId))) {
-    return res.status(402).json({
-      error: 'AI Writing scoring is a Premium feature. Upgrade to get your essay scored.',
-      reason: 'premium_required',
-      remaining: 0,
-    });
-  }
-
   // --- Validate body -------------------------------------------------------
   const body = req.body || {};
   const anonId =
@@ -390,7 +378,8 @@ export default async function handler(req, res) {
       resetsAt: quota?.resetsAt || null,
     });
   }
-  const scoringModel = PAID_MODEL;
+  const isFreeScore = quota.free === true;
+  const scoringModel = isFreeScore ? FREE_MODEL : PAID_MODEL;
 
   // --- Call OpenAI ---------------------------------------------------------
   if (!process.env.OPENAI_API_KEY) {
@@ -418,7 +407,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
 
     const ai = await chatCompletionWithFallback({
       model: scoringModel,
-      fallbackModel: PAID_MODEL,
+      fallbackModel: scoringModel,
       signal: controller.signal,
       messages: [
         { role: 'system', content: buildSystemPrompt(task) },
@@ -473,6 +462,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       wordCount: words,
       quotaRemaining: quota.remaining,
       plan: quota.plan,
+      free: isFreeScore,
       ...result,
     });
   } catch (e) {

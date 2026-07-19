@@ -2,11 +2,12 @@
 
 Source: `docs/AUDIT-ACTION-PLAN-2026-07.md`
 
-Last updated: 2026-07-16
+Last updated: 2026-07-19
 
 ## Status legend
 
 - `DONE` — implemented and verified against the task's acceptance criteria
+- `SUPERSEDED` — historical implementation replaced by a newer source of truth
 - `OWNER` — requires Seleem or an external account/dashboard decision
 - `GATED` — intentionally deferred by the product threshold in the plan
 
@@ -49,11 +50,11 @@ Last updated: 2026-07-16
 
 ## Phase 5 — Monetization
 
-- 5.1 `DONE` — locked, 30-day-reset `SECURITY DEFINER` quota RPC with empty `search_path`, authenticated/service-role-only execute ACL, premium bypass, three free scores, and free/paid model split. A rollback-only live test confirmed the fourth score is denied without consuming persistent quota state.
+- 5.1 `SUPERSEDED` — the July 19 monetization plan replaces the three-score meter with one lifetime signed-in Writing sample, a cheap-model/full-report tease, Premium-only Speaking, and Premium daily fair-use caps. See `docs/MONETIZATION-PROGRESS-2026-07-18.md`.
 - 5.2 `DONE` — shared quota panel on checker/Writing/Speaking and accessible waitlist modal for `402`/`429`.
 - 5.3 `DONE` — score-another, quota-remaining, waitlist and onward-practice CTAs after Writing and Speaking results.
-- 5.4 `DONE` — result cross-sell plus newsletter coverage on results, homepage, calculator, blog and scoring surfaces. ESP/send-pipeline selection is `OWNER`.
-- 5.5 `GATED` — Paddle billing and `/pricing`; the live gate is not met (0 premium-waitlist rows and 0 first-party pageviews in the prior 30 days at verification time). Build when the plan’s 100-waitlist or roughly 50k-monthly-visit threshold is reached; Paddle account setup is `OWNER`.
+- 5.4 `DONE` — result cross-sell plus newsletter coverage on results, homepage, calculator, blog and scoring surfaces; Resend-backed signup, purchase, weekly, and win-back lifecycle delivery is implemented.
+- 5.5 `DONE` — Stripe billing and `/pricing` now include server-selected PPP, Monthly/6-month/Annual subscriptions, a non-renewing Exam Pass, checkout reconciliation, idempotent activation telemetry, a pause/cancel interstitial, and the Customer Portal. The July 19 production migration still requires explicit deployment approval.
 - 5.6 `DONE` — explicit blog/section-list units, public-host-only AdSense loading, and exclusions for dashboard/auth/scoring/results/mock/question-detail surfaces. `OWNER` activation: set `NEXT_PUBLIC_ADSENSE_SLOT_IN_CONTENT` to render the explicit units and monitor AdSense thin-page reports.
 
 ## Phase 6 — Tech debt and hardening
@@ -66,7 +67,7 @@ Last updated: 2026-07-16
 ## Final verification record
 
 - `npm run lint`: pass, zero warnings/errors.
-- `npm test`: 3 files, 10 tests passed.
+- Latest monetization verification: 16 files, 158 tests passed; production build generated 525 static pages.
 - `npm audit`: 0 vulnerabilities across production and development dependencies.
 - `git diff --check`: pass.
 - `npm run build`: pass on Next 15.5.20; 521 static pages generated.
@@ -79,6 +80,6 @@ Last updated: 2026-07-16
 1. Complete canonical host task 1.2 in Vercel, then implement/approve the legacy-ID redirect map in 6.3(e).
 2. Rotate the exposed Supabase credentials in task 1.5 and update every deployment/GitHub secret that uses them.
 3. Register GA4 custom dimensions and confirm the sitemap in Google Search Console.
-4. Choose an ESP/send pipeline and configure the daily-blog workflow secrets.
+4. Verify the Resend sending domain and production lifecycle-email environment values.
 5. Add the explicit AdSense slot ID if desired now.
-6. Leave Paddle gated until its documented demand threshold is met.
+6. Verify all eight Stripe lookup-key prices, `invoice.paid` webhook delivery, Radar, Tax, and the win-back coupon.

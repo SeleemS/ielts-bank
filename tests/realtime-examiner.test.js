@@ -117,6 +117,7 @@ const state = {
   meterError: null,
   rateLimit: true,
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
+  planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
   updates: [],
   speakingRows: [{ passage_id: 'p1', part: 1, part1_questions: { topic: 'T', questions: [] } }],
 };
@@ -148,6 +149,10 @@ vi.mock('@supabase/supabase-js', () => ({
             error: null,
           }),
           single: async () => ({ data: state.quotaRow, error: null }),
+          maybeSingle: async () => ({
+            data: table === 'users' ? state.planRow : null,
+            error: null,
+          }),
         };
         return chain;
       },
@@ -190,6 +195,7 @@ describe('POST /api/realtime/session', () => {
     state.meter = null;
     state.meterError = null;
     state.rateLimit = true;
+    state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
     state.updates = [];
     fetchMock = vi.fn(async () => ({
       ok: true,
@@ -219,7 +225,7 @@ describe('POST /api/realtime/session', () => {
 
   it('402s a non-premium user with the upsell reason', async () => {
     state.authUser = { id: 'u1' };
-    state.meter = { allowed: false, remaining: 0, reason: 'not_premium' };
+    state.planRow = { plan: 'free', plan_status: 'inactive' };
     const res = await call();
     expect(res.statusCode).toBe(402);
     expect(res.jsonBody.reason).toBe('not_premium');

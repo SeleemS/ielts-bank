@@ -70,7 +70,7 @@ async function notifyByEmail({ name, email, message }) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
-      from: process.env.REPORT_FROM || 'IELTS Bank <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || process.env.REPORT_FROM || 'IELTS Bank <hello@ielts-bank.com>',
       to: [to],
       reply_to: email,
       subject: `Contact form: ${name}`,
