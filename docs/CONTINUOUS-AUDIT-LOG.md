@@ -1074,6 +1074,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated session request. No rate-limit bucket, quota, or OpenAI resource was mutated.
 
+## CA-049 — Transcript-scoring outages appeared as Premium upsells
+
+- Status: `FIXED`
+- Area: Realtime examiner / transcript scoring / Premium entitlement / authentication
+- Severity: High
+- Evidence: `/api/score/speaking-realtime` used the fail-closed boolean Premium helper and awaited
+  auth outside a rejection guard. A paid learner whose auth or entitlement dependency was
+  unavailable could therefore receive an uncontrolled failure or the same HTTP 402
+  `not_premium` upsell as a verified Free account.
+- Fix: use explicit auth and tri-state Premium results. Auth rejection plus resolved or rejected
+  entitlement queries now return HTTP 503; HTTP 402 is reserved for a successfully verified Free
+  account. All these paths stop before global/IP limiters, OpenAI scoring, or attempt persistence.
+- Regression coverage: the new dedicated route suite covers method, origin, missing auth, rejected
+  auth, verified Free, resolved plan error, and rejected plan query. Every error or non-Premium
+  case proves no rate-limit RPC was called. Shared Premium edge tests remain part of focused
+  coverage.
+- Commit: `18f4812` (`Distinguish realtime scoring entitlement outages`)
+- Verification: focused 14-test route/Premium coverage, the complete current-worktree
+  63-file/329-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter, OpenAI call, or score record was created.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
