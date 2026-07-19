@@ -115,6 +115,7 @@ const state = {
   authUser: null,
   meter: null,
   meterError: null,
+  refundRpcError: null,
   rateLimit: true,
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
   planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
@@ -140,7 +141,9 @@ vi.mock('@supabase/supabase-js', () => ({
       }
       if (fn === 'refund_realtime_seconds') {
         state.realtimeRefunds.push(args);
-        return { data: true, error: null };
+        return state.refundRpcError
+          ? { data: null, error: state.refundRpcError }
+          : { data: true, error: null };
       }
       return { data: null, error: { message: `unknown rpc ${fn}` } };
     },
@@ -199,6 +202,7 @@ describe('POST /api/realtime/session', () => {
     state.authUser = null;
     state.meter = null;
     state.meterError = null;
+    state.refundRpcError = null;
     state.rateLimit = true;
     state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
     state.updates = [];
@@ -272,6 +276,32 @@ describe('POST /api/realtime/session', () => {
     expect(state.realtimeRefunds[0].p_refund_key).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
     );
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it('uses the legacy refund only while the atomic RPC is not deployed', async () => {
+    state.authUser = { id: 'u1' };
+    state.meter = { allowed: true, remaining: 2760 };
+    state.refundRpcError = { code: 'PGRST202', message: 'function not found' };
+    fetchMock.mockResolvedValue({ ok: false, json: async () => ({ error: { message: 'nope' } }) });
+    const res = await call({ mode: 'part1' });
+    expect(res.statusCode).toBe(502);
+    expect(state.realtimeRefunds).toHaveLength(1);
+    expect(state.updates).toContainEqual({
+      table: 'user_quotas',
+      fields: { realtime_seconds_remaining: 300 },
+    });
+  });
+
+  it('does not risk a double refund after an ambiguous RPC error', async () => {
+    state.authUser = { id: 'u1' };
+    state.meter = { allowed: true, remaining: 2760 };
+    state.refundRpcError = { code: 'PGRST000', message: 'connection lost' };
+    fetchMock.mockResolvedValue({ ok: false, json: async () => ({ error: { message: 'nope' } }) });
+    const res = await call({ mode: 'part1' });
+    expect(res.statusCode).toBe(502);
+    expect(state.realtimeRefunds).toHaveLength(1);
+    expect(state.updates).toHaveLength(0);
   });
 
   it('fails closed when the global rate limit trips', async () => {

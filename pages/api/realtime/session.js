@@ -118,12 +118,35 @@ export default async function handler(req, res) {
   const refundKey = randomUUID();
   async function refundSeconds() {
     try {
-      const { error } = await getAdmin().rpc('refund_realtime_seconds', {
+      const admin = getAdmin();
+      const { error } = await admin.rpc('refund_realtime_seconds', {
         p_uid: userId,
         p_seconds: durationSeconds,
         p_refund_key: refundKey,
       });
-      if (error) throw error;
+      if (!error) return;
+      if (!['PGRST202', '42883'].includes(error.code)) throw error;
+
+      // Transitional compatibility while the production migration rolls out.
+      // Only a confirmed missing-function error may use the legacy path:
+      // falling back after an ambiguous RPC failure could double-refund.
+      const { data: quota, error: readError } = await admin
+        .from('user_quotas')
+        .select('realtime_seconds_remaining, realtime_seconds_quota')
+        .eq('user_id', userId)
+        .single();
+      if (readError) throw readError;
+      if (!quota) throw new Error('realtime quota row not found for refund');
+      const { error: updateError } = await admin
+        .from('user_quotas')
+        .update({
+          realtime_seconds_remaining: Math.min(
+            quota.realtime_seconds_quota,
+            quota.realtime_seconds_remaining + durationSeconds
+          ),
+        })
+        .eq('user_id', userId);
+      if (updateError) throw updateError;
     } catch (e) {
       console.error('realtime refund failed:', e.message);
     }
