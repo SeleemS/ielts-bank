@@ -1761,6 +1761,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   text, with a 390px document width inside the 390px viewport. No audio, microphone, authentication,
   storage, scoring, or quota action was triggered.
 
+## CA-079 — Question flag controls did not identify their questions
+
+- Status: `FIXED`
+- Area: Reading and Listening practice / question review / accessibility
+- Severity: Medium
+- Evidence: live 390×844 Listening QA exposed 12 separate review controls with the identical
+  accessible name `Flag`. A screen-reader control list could not associate an action with a
+  question, and the selected control's visible `Flagged` text did not describe the available
+  unflag action.
+- Fix: give the shared `QuestionItem` control a state-aware accessible name:
+  `Flag question N` when idle and `Unflag question N` when selected, while retaining
+  `aria-pressed` and the existing visual copy.
+- Regression coverage: a shared-question component test verifies both accessible names,
+  corresponding pressed states, and that activation passes the correct continuous question number
+  to the flag handler.
+- Commit: `661f1bb` (`Name question flag actions`)
+- Verification: focused 2-file/10-test QuestionItem and grading coverage, the complete
+  current-worktree 70-file/416-test Vitest suite, ESLint, the 153-file analytics audit, and the
+  528-page production build passed. Vercel deployed the exact commit successfully. Fresh 390×844
+  production QA exposed unique names for all 12 Listening controls, changed question 1 from
+  `Flag question 1` to `Unflag question 1`, then restored it to its original unflagged state. The
+  document remained 390px wide in the 390px viewport. No answer, submission, score, authentication,
+  or server mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
