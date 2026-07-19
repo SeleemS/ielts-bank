@@ -918,6 +918,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   unauthenticated Checkout request. Dependency failures are injected in route tests rather than by
   disrupting production, and no live Checkout session or charge was created.
 
+## CA-043 — Checkout-return auth outages escaped reconciliation recovery
+
+- Status: `FIXED`
+- Area: Billing API / checkout reconciliation / authentication failure recovery
+- Severity: High
+- Evidence: `/api/billing/verify-session` guarded Stripe retrieval and entitlement reconciliation,
+  but it awaited Supabase auth verification before entering that recovery block. A rejected auth
+  request could therefore escape the handler instead of returning the route's neutral
+  `Activation is still processing` response, leaving a legitimately paid learner with an
+  uncontrolled API failure on return from Checkout.
+- Fix: make auth resolution distinguish invalid credentials from a rejected dependency request.
+  Invalid or absent credentials remain HTTP 401; an auth infrastructure failure is logged
+  server-side and returns the existing retryable HTTP 503 activation-pending response without
+  retrieving or reconciling a Stripe session.
+- Regression coverage: the expanded billing route suite injects a rejected auth request, requires
+  HTTP 503 and the neutral processing message, and proves Stripe retrieval was never called. All
+  existing malformed-session, cross-account, incomplete-payment, and successful paid-session
+  reconciliation cases remain covered.
+- Commit: `29edcae` (`Recover checkout verification auth failures`)
+- Verification: focused 30-test reconciliation/Pricing coverage, the complete current-worktree
+  62-file/305-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 with `Allow: POST` for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for
+  a same-origin unauthenticated reconciliation request. No Stripe session was retrieved or
+  mutated by the production checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
