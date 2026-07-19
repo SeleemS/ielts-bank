@@ -520,7 +520,7 @@ export default async function handler(req, res) {
     const { error: upsertError } = await admin
       .from('daily_reports')
       .upsert({ report_date: reportDate, data: report }, { onConflict: 'report_date' });
-    if (upsertError) console.error('daily_reports upsert failed:', upsertError.message);
+    if (upsertError) throw upsertError;
     const email = await sendEmail(report, history);
     return res.status(200).json({ ok: true, email, report });
   } catch (error) {
