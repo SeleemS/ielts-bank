@@ -26,7 +26,7 @@ async function buildReport(admin, reportDate) {
   const start = `${reportDate}T00:00:00.000Z`;
   const end = new Date(Date.parse(start) + 864e5).toISOString();
 
-  const [signupsRes, totalUsersRes, eventsRes, attemptsRes] = await Promise.all([
+  const [signupsRes, totalUsersRes, eventsRes, attemptsRes, retentionRes] = await Promise.all([
     admin
       .from('users')
       .select('email, signup_country, signup_source, created_at')
@@ -46,10 +46,23 @@ async function buildReport(admin, reportDate) {
       .gte('created_at', start)
       .lt('created_at', end)
       .limit(10000),
+    // New-vs-returning; SQL-side because it needs a full-history look-back
+    // per visitor (see migration 20260719050000). Fail-soft: a missing RPC
+    // must not kill the report.
+    admin.rpc('returning_visitor_stats', { p_start: start, p_end: end }),
   ]);
   for (const res of [signupsRes, totalUsersRes, eventsRes, attemptsRes]) {
     if (res.error) throw res.error;
   }
+  if (retentionRes.error) console.error('returning_visitor_stats failed:', retentionRes.error.message);
+  const retentionRow = Array.isArray(retentionRes.data) ? retentionRes.data[0] : retentionRes.data;
+  const retention = !retentionRes.error && retentionRow
+    ? {
+        visitors: Number(retentionRow.visitors) || 0,
+        returning: Number(retentionRow.returning_visitors) || 0,
+        new: Math.max((Number(retentionRow.visitors) || 0) - (Number(retentionRow.returning_visitors) || 0), 0),
+      }
+    : null;
 
   const signups = signupsRes.data || [];
   const events = eventsRes.data || [];
@@ -98,6 +111,9 @@ async function buildReport(admin, reportDate) {
       // Session durations from per-tab session_id + heartbeats; see
       // lib/sessionStats.js for the definition and its biases.
       sessions: sessionStats(events),
+      // {visitors, returning, new} from full-history look-back, or null when
+      // the RPC is unavailable.
+      retention,
       logins: events.filter((e) => e.event === 'login').length,
       pageViews: events.filter((e) => e.event === 'page_view').length,
       visitorsByCountry: countBy([...visitorCountry.values()], (c) => c),
@@ -371,6 +387,20 @@ export function renderEmail(report, history = {}) {
     ),
     tile('Sessions', sessions?.count ?? 0, delta(sessions?.count ?? 0, prevSessions ? prevSessions.count : null)),
   ];
+  // New-vs-returning (null until the RPC/migration is live in a given env).
+  const retention = activity.retention || null;
+  const prevRetention = prev?.activity?.retention || null;
+  if (retention) {
+    kpiTiles.push(
+      tile(
+        'Returning visitors',
+        retention.returning,
+        delta(retention.returning, prevRetention ? prevRetention.returning : null),
+        retention.visitors ? `${Math.round((retention.returning / retention.visitors) * 100)}% of visitors` : ''
+      ),
+      tile('New visitors', retention.new, delta(retention.new, prevRetention ? prevRetention.new : null))
+    );
+  }
 
   const body = quiet
     ? card(`<div class="em-txt" style="font-size:15px;color:${C.text};line-height:1.5;">Quiet day &mdash; no visits, signups, or practice recorded.</div>`)
