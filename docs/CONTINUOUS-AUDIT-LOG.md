@@ -1193,6 +1193,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   unauthenticated request. Cleanup/preservation branches were verified with owned-path route tests
   rather than deleting a real learner recording.
 
+## CA-054 — Writing auth outages appeared as sign-in failures
+
+- Status: `FIXED`
+- Area: Writing scoring / authentication / Supabase failure recovery
+- Severity: High
+- Evidence: `/api/score/writing` caught every rejected Supabase auth lookup inside
+  `resolveUserId` and returned `null`. A signed-in learner therefore received the same HTTP 401
+  sign-in response during an auth dependency outage as a request with missing or invalid
+  credentials.
+- Fix: keep missing, invalid, and anonymous credentials on the intentional HTTP 401 path, but let
+  rejected auth lookups reach a guarded handler boundary. Dependency rejection now returns a
+  generic HTTP 503 response and stops before validation, rate limits, quota consumption, or OpenAI.
+- Regression coverage: the Writing route suite now distinguishes missing authentication, a valid
+  anonymous-auth identity, and a rejected auth lookup. It requires HTTP 503 for the dependency
+  failure and proves no rate-limit or quota RPC is called; the existing provider-failure test
+  continues to prove exact quota refund behavior.
+- Commit: `a5e5def` (`Recover writing auth dependency failures`)
+- Verification: focused 4-test Writing route coverage, the complete current-worktree
+  63-file/349-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter, quota, or OpenAI mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
