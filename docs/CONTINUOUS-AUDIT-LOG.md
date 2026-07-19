@@ -510,6 +510,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   and sign-in recovery options, while a live Reading question's `Create account` control still
   opens the signup form with a new-password field.
 
+## CA-027 — Contact analytics misclassified users and omitted failures
+
+- Status: `FIXED`
+- Area: Contact form / analytics / conversion diagnostics
+- Severity: Medium
+- Evidence: the contact form hard-coded every successful `contact_submit` event as
+  `signed_in: false`, even when an authenticated learner submitted it. API rejections and network
+  failures displayed an error to the visitor but emitted no outcome event, making failure rates
+  and signed-in usage impossible to measure accurately.
+- Fix: derive `signed_in` from the active auth user and emit bounded `success`, `error`, and
+  `network_error` outcomes with HTTP status only; no name, email, or message enters analytics.
+- Regression coverage: `src/pages/ContactUs.test.jsx` submits the actual component through
+  signed-in success, API-rejection, and network-failure paths and asserts the exact privacy-safe
+  event payloads. The page now uses a `.jsx` extension so Vitest/Vite can exercise the component
+  directly, and the existing Twitter-image metadata inventory follows the rename.
+- Commit: `Track contact submission outcomes accurately`
+- Verification: focused 17-test component/metadata coverage, the complete current-worktree
+  47-file/250-test Vitest suite, ESLint, the 136-file analytics audit, and the 528-page production
+  build. The deployment completed successfully. A fresh production browser submission deliberately
+  exceeded the 5,000-character server limit, displayed the correct rejection, wrote no contact
+  message, and produced a live `contact_submit` row containing only `path=/contactus`,
+  `outcome=error`, `signed_in=false`, and `status=400`.
+- Related live form QA: newsletter invalid-email blocking, successful signup, persistence,
+  duplicate non-enumeration, cross-origin rejection, and forged-unsubscribe-token rejection passed.
+  Contact native validation, successful submission/reset, persistence, API validation, and
+  cross-origin rejection also passed. All disposable newsletter and contact rows were deleted and
+  verified absent.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
@@ -527,3 +555,7 @@ False positives are kept in the investigation notes so they are not rediscovered
   script then emitted `Uncaught (in promise) undefined`. Because the loader tag is valid, the
   application unit rendered, and the rejection coincided with the external `unfilled` result, this
   remains recorded as third-party ad-serving behavior rather than a confirmed application defect.
+- The valid newsletter-unsubscribe path requires a production-signed link from a delivered email.
+  The local audit environment does not hold that signing secret and no test inbox is connected, so
+  the live forged-token rejection was verified but the delivered-link click remains an explicit
+  end-to-end verification gap.
