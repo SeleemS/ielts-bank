@@ -19,8 +19,7 @@ function weekKey(now = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
-async function queueWeeklyDigest(admin, force = false) {
-  const now = new Date();
+export async function queueWeeklyDigest(admin, force = false, now = new Date()) {
   if (!force && now.getUTCDay() !== 1) return 0;
   const { data: subscribers, error } = await admin
     .from('newsletter_subscribers')
@@ -60,16 +59,17 @@ async function queueWeeklyDigest(admin, force = false) {
       },
     };
   });
-  const { error: insertError } = await admin
+  const { data: inserted, error: insertError } = await admin
     .from('lifecycle_emails')
-    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true })
+    .select('id');
   if (insertError) throw insertError;
-  return rows.length;
+  return inserted?.length || 0;
 }
 
-async function queueWinBack(admin) {
+export async function queueWinBack(admin, now = new Date()) {
   if (!process.env.STRIPE_WINBACK_COUPON_ID) return 0;
-  const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
+  const cutoff = new Date(now.getTime() - 30 * 86400000).toISOString();
   const { data: users, error } = await admin
     .from('users')
     .select('id, email, canceled_at')
@@ -86,11 +86,12 @@ async function queueWinBack(admin) {
     payload: { canceled_at: user.canceled_at },
   }));
   if (!rows.length) return 0;
-  const { error: insertError } = await admin
+  const { data: inserted, error: insertError } = await admin
     .from('lifecycle_emails')
-    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true })
+    .select('id');
   if (insertError) throw insertError;
-  return rows.length;
+  return inserted?.length || 0;
 }
 
 const MARKETING_EMAIL_TYPES = new Set(['weekly_digest', 'win_back']);

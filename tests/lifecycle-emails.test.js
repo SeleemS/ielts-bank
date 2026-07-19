@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   deliverDue,
+  queueWeeklyDigest,
+  queueWinBack,
   recipientAllowsMarketing,
   reclaimStaleDeliveries,
 } from '../pages/api/cron/lifecycle-emails';
@@ -15,6 +17,7 @@ function resultQuery(result) {
     is: () => query,
     lt: () => query,
     lte: () => query,
+    not: () => query,
     order: () => query,
     limit: () => Promise.resolve(result),
     select: () => query,
@@ -25,6 +28,121 @@ function resultQuery(result) {
 }
 
 describe('lifecycle email delivery safety', () => {
+  it('reports only weekly digests actually inserted after idempotency conflicts', async () => {
+    const upsert = vi.fn(() => ({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    }));
+    const admin = {
+      from(table) {
+        if (table === 'newsletter_subscribers') {
+          return {
+            select: () =>
+              resultQuery({
+                data: [
+                  { email: 'First@Example.com' },
+                  { email: 'second@example.com' },
+                ],
+                error: null,
+              }),
+          };
+        }
+        if (table === 'users') {
+          return {
+            select: () =>
+              resultQuery({
+                data: [
+                  {
+                    id: 'user-1',
+                    email: 'first@example.com',
+                    plan: 'free',
+                    plan_status: 'inactive',
+                  },
+                ],
+                error: null,
+              }),
+          };
+        }
+        expect(table).toBe('lifecycle_emails');
+        return { upsert };
+      },
+    };
+
+    await expect(queueWeeklyDigest(admin, true, NOW)).resolves.toBe(0);
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          user_id: 'user-1',
+          recipient_email: 'first@example.com',
+          idempotency_key: 'weekly_digest:2026-07-13:first@example.com',
+        }),
+        expect.objectContaining({
+          user_id: null,
+          recipient_email: 'second@example.com',
+          idempotency_key: 'weekly_digest:2026-07-13:second@example.com',
+        }),
+      ],
+      { onConflict: 'idempotency_key', ignoreDuplicates: true }
+    );
+    expect(upsert.mock.results[0].value.select).toHaveBeenCalledWith('id');
+  });
+
+  it('reports only win-back rows actually inserted after idempotency conflicts', async () => {
+    const previousCoupon = process.env.STRIPE_WINBACK_COUPON_ID;
+    process.env.STRIPE_WINBACK_COUPON_ID = 'coupon-test';
+    const upsert = vi.fn(() => ({
+      select: vi.fn().mockResolvedValue({ data: [{ id: 'inserted-1' }], error: null }),
+    }));
+    const admin = {
+      from(table) {
+        if (table === 'users') {
+          return {
+            select: () =>
+              resultQuery({
+                data: [
+                  {
+                    id: 'user-1',
+                    email: 'First@Example.com',
+                    canceled_at: '2026-06-01T00:00:00.000Z',
+                  },
+                  {
+                    id: 'user-2',
+                    email: 'second@example.com',
+                    canceled_at: '2026-06-02T00:00:00.000Z',
+                  },
+                ],
+                error: null,
+              }),
+          };
+        }
+        expect(table).toBe('lifecycle_emails');
+        return { upsert };
+      },
+    };
+
+    try {
+      await expect(queueWinBack(admin, NOW)).resolves.toBe(1);
+    } finally {
+      if (previousCoupon === undefined) delete process.env.STRIPE_WINBACK_COUPON_ID;
+      else process.env.STRIPE_WINBACK_COUPON_ID = previousCoupon;
+    }
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          user_id: 'user-1',
+          recipient_email: 'first@example.com',
+          idempotency_key: 'win_back:user-1:2026-06-01',
+        }),
+        expect.objectContaining({
+          user_id: 'user-2',
+          recipient_email: 'second@example.com',
+          idempotency_key: 'win_back:user-2:2026-06-02',
+        }),
+      ],
+      { onConflict: 'idempotency_key', ignoreDuplicates: true }
+    );
+    expect(upsert.mock.results[0].value.select).toHaveBeenCalledWith('id');
+  });
+
   it('uses the dedicated unsubscribe secret when configured', () => {
     const previous = process.env.EMAIL_UNSUBSCRIBE_SECRET;
     process.env.EMAIL_UNSUBSCRIBE_SECRET = 'dedicated-test-secret';
