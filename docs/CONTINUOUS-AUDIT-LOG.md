@@ -447,6 +447,24 @@ False positives are kept in the investigation notes so they are not rediscovered
   sitemap then contained exactly 473 unique locations, including both restored routes; a no-redirect
   crawl of every URL found zero non-200 responses, duplicates, redirects, or canonical mismatches.
 
+## CA-024 — Named AI crawlers were allowed into protected paths
+
+- Status: `FIXED`
+- Area: robots.txt / crawl control / private and API routes
+- Severity: Medium
+- Evidence: live robots parsing showed that GPTBot, ClaudeBot, PerplexityBot, and Google-Extended
+  each matched a specific group containing only `Allow: /`. Specific user-agent groups do not
+  inherit the wildcard group's exclusions, so those bots were permitted to crawl `/dashboard`,
+  `/api/`, and `/auth/` despite the site's stated public-content-only intent.
+- Fix: consolidate the four named crawlers into one explicit group that welcomes public-content
+  crawling while repeating all protected-path exclusions.
+- Regression coverage: `lib/robotsPolicy.test.js` parses the actual robots file and verifies the
+  wildcard and every named crawler against all three exclusions plus the canonical sitemap.
+- Commit: `Protect private routes from named crawlers`
+- Verification: focused 6-test crawler-policy coverage, the complete current-worktree
+  44-file/241-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
+  production verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
