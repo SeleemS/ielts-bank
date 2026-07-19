@@ -198,7 +198,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-011 — Band Calculator shares had no preview image
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Band calculator / Open Graph / Twitter cards
 - Severity: Medium
 - Evidence: `/band-calculator` declared a Twitter large card and supplied OG text fields, but omitted
@@ -209,7 +209,9 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/bandCalculatorSeo.test.js` verifies canonical content and every decoded
   dynamic image parameter.
 - Commit: `Add Band Calculator share image`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, full 30-file/180-test Vitest suite, ESLint, analytics
+  audit, generated HTML inspection, and the 527-page production build. Live production returned
+  every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
 ## Investigation notes
 
