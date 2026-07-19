@@ -133,11 +133,15 @@ begin
   end if;
 
   v_premium := (
-    (v_plan in ('premium', 'pro', 'paid') and (
-      v_status in ('active', 'trialing', 'past_due')
-      or (v_status = 'canceled' and coalesce(v_renews, v_now) > v_now)
-    ))
-    or coalesce(v_expires, '-infinity'::timestamptz) > v_now
+    case
+      -- A non-null expiry identifies a one-time Exam Pass and is
+      -- authoritative even while the stored plan status remains active.
+      when v_expires is not null then v_expires > v_now
+      else v_plan in ('premium', 'pro', 'paid') and (
+        v_status in ('active', 'trialing', 'past_due')
+        or (v_status = 'canceled' and coalesce(v_renews, v_now) > v_now)
+      )
+    end
   ) and coalesce(v_pause_until, '-infinity'::timestamptz) <= v_now;
 
   insert into public.user_quotas (user_id, ai_scores_remaining, period_resets_at)

@@ -3,6 +3,7 @@ export const config = { runtime: 'nodejs', maxDuration: 60 };
 import { createClient } from '@supabase/supabase-js';
 import { posts } from '../../../lib/posts';
 import { sendLifecycleEmail } from '../../../lib/lifecycleEmail';
+import { isPremiumRow } from '../../../lib/premium';
 
 function getAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -32,7 +33,7 @@ async function queueWeeklyDigest(admin, force = false) {
 
   const { data: users, error: usersError } = await admin
     .from('users')
-    .select('id, email, plan, plan_status, plan_expires_at')
+    .select('id, email, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until')
     .not('email', 'is', null)
     .limit(50000);
   if (usersError) throw usersError;
@@ -41,9 +42,7 @@ async function queueWeeklyDigest(admin, force = false) {
   const key = weekKey(now);
   const rows = subscribers.map(({ email }) => {
     const user = usersByEmail.get(email.toLowerCase());
-    const premium =
-      user?.plan === 'premium' ||
-      (user?.plan_expires_at && new Date(user.plan_expires_at).getTime() > now.getTime());
+    const premium = isPremiumRow(user, now.getTime());
     return {
       user_id: user?.id || null,
       recipient_email: email.toLowerCase(),

@@ -6,17 +6,17 @@
 
 import * as React from 'react';
 import { getSupabase } from '../../lib/supabase';
+import { isPremiumRow } from '../../lib/premium';
 import { useAuth } from './auth';
 
 export function isPremiumActive(plan, planStatus, renewsAt, expiresAt = null, pauseUntil = null) {
-  if (pauseUntil && new Date(pauseUntil).getTime() > Date.now()) return false;
-  if (expiresAt && new Date(expiresAt).getTime() > Date.now()) return true;
-  if (plan !== 'premium') return false;
-  if (['active', 'trialing', 'past_due'].includes(planStatus)) return true;
-  if (planStatus === 'canceled') {
-    return renewsAt ? new Date(renewsAt).getTime() > Date.now() : false;
-  }
-  return false;
+  return isPremiumRow({
+    plan,
+    plan_status: planStatus,
+    plan_renews_at: renewsAt,
+    plan_expires_at: expiresAt,
+    billing_pause_until: pauseUntil,
+  });
 }
 
 export function usePlan() {
