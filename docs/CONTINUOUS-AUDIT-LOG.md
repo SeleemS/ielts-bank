@@ -365,6 +365,26 @@ False positives are kept in the investigation notes so they are not rediscovered
   failures; every resource and final breadcrumb matched the page canonical and every page returned
   HTTP 200.
 
+## CA-020 — Writing exercises had no structured learning-resource data
+
+- Status: `FIXED`
+- Area: Writing / structured data / SEO
+- Severity: Medium
+- Evidence: all 167 generated Writing exercise pages exposed canonical and social metadata but no
+  JSON-LD. Search engines could not identify each prompt as a free, timed IELTS learning resource
+  or infer its Home → Writing → Exercise hierarchy.
+- Fix: publish a canonical `LearningResource` and three-level `BreadcrumbList` graph on every
+  Writing exercise, including task number, expected 20/40-minute duration, difficulty, educational
+  purpose, language, and skills taught. Escape HTML-significant characters before embedding.
+- Regression coverage: `lib/writingQuestionSeo.test.js` verifies Task 1/2 timing, the canonical
+  learning-resource contract, exact breadcrumb hierarchy, and safe script serialization.
+- Commit: `Add Writing exercise structured data`
+- Verification: focused 4-test schema coverage, the complete current-worktree 40-file/225-test
+  Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact generated HTML
+  inspection parsed and validated the canonical learning-resource, 20/40-minute duration, and
+  breadcrumb graph on all 167 Writing exercise pages. Live production verification will be recorded
+  after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
