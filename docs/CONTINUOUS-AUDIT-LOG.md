@@ -1353,6 +1353,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No live limiter or OpenAI mutation occurred.
 
+## CA-061 — Recorded Speaking accepted invalid band increments
+
+- Status: `FIXED`
+- Area: Speaking scoring / Structured Outputs / runtime validation / IELTS correctness
+- Severity: High
+- Evidence: the recorded Speaking strict schema declared criterion and overall bands as
+  unconstrained numbers. Its server fallback validator checked only finite 0–9 range, so values
+  such as 6.25 were accepted even though IELTS scores use whole and half bands.
+- Fix: extract the recorded Speaking schema and validator into a testable module. Constrain every
+  schema band to 0–9 with `multipleOf: 0.5`, and require the server fallback validator to accept
+  only values whose doubled value is an integer.
+- Regression coverage: direct schema tests require the constraints on the overall and every
+  criterion. Validator cases cover valid boundary/whole/half bands and reject negative, above-9,
+  quarter-band, non-finite, and string values. Existing Speaking auth, entitlement, limiter,
+  quota, cleanup, and refund tests remain green.
+- Commit: `33a2f78` (`Validate recorded speaking band outputs`)
+- Verification: focused 27-test recorded Speaking route/schema coverage, the complete
+  current-worktree 66-file/376-test Vitest suite, ESLint, the 150-file analytics audit, and the
+  528-page production build all passed. Vercel deployed the commit successfully. Fresh
+  non-mutating production probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and
+  HTTP 401 for a same-origin unauthenticated scoring request. No live quota, storage, or OpenAI
+  mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
