@@ -1946,6 +1946,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   image, and Twitter image-alt metadata. No account, analytics preference, payment, or content
   state was changed.
 
+## CA-086 — CSP violation telemetry could leak URL secrets into production logs
+
+- Status: `FIXED`
+- Area: Security telemetry / CSP reporting / log privacy
+- Severity: High
+- Evidence: `/api/csp-report` bounded the reported document and blocked-resource fields but logged
+  each URL verbatim. OAuth callbacks, signed links, private object URLs, and third-party resources
+  can carry codes, tokens, email addresses, or credentials in their query strings, fragments, or
+  authority components, so a browser-generated CSP violation could copy those secrets into
+  production logs. Free-text fields also retained control characters that could corrupt log lines.
+- Fix: normalize all logged fields; strip credentials, query strings, and fragments from HTTP(S)
+  URLs; reduce opaque schemes such as `data:` to the scheme only; remove control characters; and
+  preserve strict per-field size limits. Malformed reports remain safely acknowledged without
+  throwing or echoing their body.
+- Regression coverage: a new five-case route suite proves POST-only behavior with `Allow: POST`,
+  legacy and Reporting API payload parsing, credential/query/fragment removal, opaque-scheme
+  handling, malformed-JSON recovery, control-character removal, strict limits, and exclusion of
+  unapproved fields such as the original policy.
+- Commit: `cedd6ce` (`Redact secrets from CSP reports`)
+- Verification: the focused five-test route suite, the complete 75-file/443-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_7tWKcs1xXeVqH535NQCw1THmg2sj` reached `READY`
+  from exact Git SHA `cedd6ce8f1d33a5195682564749fd2e6f7e48f1f`. A fresh production GET returned
+  HTTP 405 with `Allow: POST`, and a synthetic report containing deliberately fake query and
+  fragment secrets returned HTTP 204. Sanitized log shape and secret exclusion are asserted at the
+  route boundary; no account, payment, consent, content, or provider state was created or changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
