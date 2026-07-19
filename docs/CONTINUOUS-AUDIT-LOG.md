@@ -93,6 +93,43 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused policy tests, full Vitest suite, ESLint, analytics audit, production build,
   generated bundle inspection, and clean live pricing/billing console checks.
 
+## CA-006 — E2E payment promotion could not be reused
+
+- Status: `FIXED`
+- Area: Payments / Stripe / E2E operations
+- Severity: High
+- Evidence: the production Stripe Checkout rejected the configured `E2EVERIFY100` code as invalid.
+  Stripe API inspection confirmed that its 100%-off coupon was still valid and the promotion had
+  redemptions remaining, but the promotion itself was inactive. The catalog setup script reported
+  this state without repairing it.
+- Fix: make the explicit E2E setup mode reactivate a valid, redeemable test promotion, create a
+  replacement only when necessary, and add a separate explicit teardown mode that deactivates every
+  active matching promotion. Ordinary catalog setup still never changes the E2E promotion.
+- Regression coverage: `scripts/stripe-e2e-promo-policy.test.js` covers reusable inactive,
+  already-active, exhausted, expired, invalid-coupon, and teardown states.
+- Commit: `Make Stripe E2E promo reusable`
+- Verification: focused policy tests, full Vitest suite, ESLint, analytics audit, production build,
+  and an authenticated production Checkout using `E2EVERIFY100`. Checkout produced a paid $0 invoice,
+  activated the monthly Premium entitlement in Stripe and Supabase, exposed the Premium onboarding
+  state, and opened the authenticated Stripe Customer Portal. Teardown immediately canceled the
+  subscription, confirmed the webhook downgrade, deactivated every matching E2E promotion, deleted
+  the Stripe customer and disposable Supabase auth user, and confirmed no public user row remained.
+
+## CA-007 — Portal cancellation is not mapped as a non-renewing plan
+
+- Status: `CONFIRMED — OPEN`
+- Area: Billing / Stripe webhooks / entitlement messaging
+- Severity: High
+- Evidence: the production Stripe Customer Portal successfully scheduled cancellation and displayed
+  “Cancels Aug 19,” but the authoritative Subscription object used `cancel_at` with
+  `cancel_at_period_end=false`. The current subscription mapper checks only
+  `cancel_at_period_end`, so Supabase remained `premium/active` and retained renewal messaging even
+  though Stripe had a definite cancellation timestamp.
+- Required fix: treat a future subscription `cancel_at` as scheduled cancellation, persist the
+  access-end date, and cover both Stripe cancellation representations in mapper/webhook tests.
+- Investigation safety: the disposable E2E subscription was canceled immediately after capturing
+  the evidence, which correctly downgraded the test user before account cleanup.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

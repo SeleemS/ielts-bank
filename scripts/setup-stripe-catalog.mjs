@@ -7,12 +7,14 @@
 //   node scripts/setup-stripe-catalog.mjs                    # read-only audit
 //   node scripts/setup-stripe-catalog.mjs --apply            # create missing catalog entries
 //   node scripts/setup-stripe-catalog.mjs --apply --with-e2e-promo
+//   node scripts/setup-stripe-catalog.mjs --apply --deactivate-e2e-promo
 //
 // Reads STRIPE_SECRET_KEY from .env.local (same pattern as apply-rate-limits.mjs).
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { planE2EPromotionChange } from './stripe-e2e-promo-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -36,12 +38,17 @@ const env = loadEnvLocal();
 const KEY = env.STRIPE_SECRET_KEY;
 const APPLY = process.argv.includes('--apply');
 const WITH_E2E_PROMO = process.argv.includes('--with-e2e-promo');
+const DEACTIVATE_E2E_PROMO = process.argv.includes('--deactivate-e2e-promo');
 if (!KEY) {
   console.error('STRIPE_SECRET_KEY missing from .env.local');
   process.exit(1);
 }
-if (WITH_E2E_PROMO && !APPLY) {
-  console.error('--with-e2e-promo requires --apply');
+if (WITH_E2E_PROMO && DEACTIVATE_E2E_PROMO) {
+  console.error('--with-e2e-promo and --deactivate-e2e-promo are mutually exclusive');
+  process.exit(1);
+}
+if ((WITH_E2E_PROMO || DEACTIVATE_E2E_PROMO) && !APPLY) {
+  console.error('E2E promotion changes require --apply');
   process.exit(1);
 }
 
@@ -185,16 +192,44 @@ async function main() {
       console.log('created coupon', coupon.id);
     }
 
-    const promos = await stripeGet('/promotion_codes', { code: 'E2EVERIFY100', limit: 1 });
-    if (promos.data.length) {
-      console.log('promo code exists', promos.data[0].id, 'active:', promos.data[0].active);
-    } else {
+    if (!coupon.valid) {
+      throw new Error('E2E100 coupon exists but is no longer valid');
+    }
+
+    const promos = await stripeGet('/promotion_codes', { code: 'E2EVERIFY100', limit: 100 });
+    const change = planE2EPromotionChange(promos.data, {
+      mode: 'activate',
+      couponValid: coupon.valid,
+    });
+    if (change.type === 'activate') {
+      const promo = await stripe('POST', `/promotion_codes/${change.promotion.id}`, {
+        active: true,
+      });
+      console.log('activated promo code', promo.id, promo.code);
+    } else if (change.type === 'create') {
       const promo = await stripe('POST', '/promotion_codes', {
         promotion: { type: 'coupon', coupon: coupon.id },
         code: 'E2EVERIFY100',
         max_redemptions: 5,
       });
       console.log('created promo code', promo.id, promo.code);
+    } else {
+      console.log('promo code ready', change.promotion.id, change.promotion.code);
+    }
+  }
+
+  if (DEACTIVATE_E2E_PROMO) {
+    const promos = await stripeGet('/promotion_codes', { code: 'E2EVERIFY100', limit: 100 });
+    const change = planE2EPromotionChange(promos.data, { mode: 'deactivate' });
+    if (change.type === 'deactivate') {
+      for (const promotion of change.promotions) {
+        const promo = await stripe('POST', `/promotion_codes/${promotion.id}`, {
+          active: false,
+        });
+        console.log('deactivated promo code', promo.id, promo.code);
+      }
+    } else {
+      console.log('promo code already inactive');
     }
   }
 
