@@ -1861,6 +1861,35 @@ False positives are kept in the investigation notes so they are not rediscovered
   a same-origin unauthenticated POST. No rate-limit row, Portal Session, Stripe customer, payment,
   subscription, entitlement, or account state was created or changed.
 
+## CA-083 — Failed subscription-pause mutations could be retried without limit
+
+- Status: `FIXED`
+- Area: Billing API / one-time subscription pause / Stripe mutation / abuse prevention
+- Severity: Medium
+- Evidence: the pause route atomically reserved its one-time action before calling Stripe and
+  correctly released that exact reservation when Stripe rejected the update. That rollback made a
+  legitimate retry possible, but also let an authenticated eligible account repeatedly invoke the
+  provider mutation during a Stripe outage or stale-subscription failure with no request ceiling.
+  The route suite also lacked direct method, origin, and missing-auth boundary coverage.
+- Fix: apply the shared atomic Supabase limiter per verified eligible account before the one-time
+  claim, allowing five pause attempts per 10-minute window. Verified exhaustion returns HTTP 429;
+  resolved and rejected limiter failures fail closed with HTTP 503 before any database mutation or
+  Stripe request.
+- Regression coverage: the expanded pause suite asserts POST-only and same-origin enforcement,
+  missing-auth rejection, the exact `billing-pause` bucket, account identifier, 600-second window,
+  deployed `p_max` argument, and maximum of five. It covers exhaustion plus both limiter failure
+  forms and requires zero claims and zero Stripe calls on every guarded branch; all prior atomic
+  claim, concurrent request, exact rollback, reconciliation, expiry, and repeat-use cases remain.
+- Commit: `decd908` (`Rate limit subscription pause retries`)
+- Verification: focused 20-test pause coverage, the five-file/75-test billing suite, the complete
+  72-file/430-test Vitest suite, ESLint, the strict 156-file analytics audit covering 269
+  interactive controls, and the 528-page production build passed. Vercel deployment
+  `dpl_8GvmxSEkGFEWUaFMMjkPB53oJQuV` reached `READY` from exact Git SHA
+  `decd908614e474727e984ddd1ed829844a6c9d95`. Fresh production probes returned HTTP 405 for GET,
+  HTTP 403 for a hostile-origin POST, and HTTP 401 for a same-origin unauthenticated POST. No
+  rate-limit row, pause claim, Stripe subscription, payment, entitlement, or account state was
+  created or changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
