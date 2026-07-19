@@ -5,18 +5,30 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
+import { PRIVACY_SEO } from '../../lib/privacySeo';
 
 const PrivacyPolicy = () => {
   return (
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
-        <title>Privacy Policy | IELTS-Bank</title>
-        <meta
-          name="description"
-          content="Privacy Policy for IELTS-Bank.com — how we collect, use, and protect your data, including cookies, advertising, and your rights under GDPR and CCPA."
-        />
+        <title>{PRIVACY_SEO.title}</title>
+        <meta name="description" content={PRIVACY_SEO.description} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.ielts-bank.com/privacypolicy" />
+        <link rel="canonical" href={PRIVACY_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={PRIVACY_SEO.title} />
+        <meta property="og:description" content={PRIVACY_SEO.description} />
+        <meta property="og:url" content={PRIVACY_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={PRIVACY_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={PRIVACY_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PRIVACY_SEO.title} />
+        <meta name="twitter:description" content={PRIVACY_SEO.description} />
+        <meta name="twitter:image" content={PRIVACY_SEO.ogImage} />
       </Head>
       <Navbar />
 

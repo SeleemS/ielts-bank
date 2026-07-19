@@ -28,6 +28,7 @@ const TYPE_LABELS = {
   calculator: 'Band Calculator',
   about: 'About IELTS-Bank',
   contact: 'Contact IELTS-Bank',
+  legal: 'IELTS-Bank Legal',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
 };

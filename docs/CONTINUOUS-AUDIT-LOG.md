@@ -245,6 +245,20 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit, generated HTML inspection, and the 527-page production build. Live production returned
   every OG/Twitter field, matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
+## CA-014 — Privacy Policy links had no controlled share preview
+
+- Status: `IN VERIFICATION`
+- Area: Privacy / legal trust / Open Graph / Twitter cards
+- Severity: Low
+- Evidence: `/privacypolicy` exposed canonical title and description metadata but no Open Graph or
+  Twitter fields, leaving shared privacy/compliance links without a controlled preview.
+- Fix: add a shared Privacy SEO contract, a privacy-specific 1200×630 card, complete Open Graph
+  metadata, and matching Twitter large-card fields.
+- Regression coverage: `lib/privacySeo.test.js` verifies canonical content and every decoded dynamic
+  image parameter.
+- Commit: `Add Privacy Policy share metadata`
+- Verification: pending production deployment and live metadata/image checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
