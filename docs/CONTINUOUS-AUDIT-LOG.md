@@ -1619,6 +1619,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   present; accumulated errors were the already documented Google-managed AdSense `unfilled`
   rejection.
 
+## CA-073 — Pricing checkout actions had ambiguous accessible names
+
+- Status: `FIXED`
+- Area: Pricing / conversion / accessibility
+- Severity: Medium
+- Evidence: live mobile testing exposed the Monthly, 6 Months, and Annual checkout controls with
+  the identical accessible name `Choose this plan`. A screen-reader button list therefore could
+  not identify which subscription each action would purchase; only the Exam Pass action was
+  distinguishable.
+- Fix: give every checkout control a plan-specific accessible label while preserving the visible
+  CTA copy: `Choose Monthly plan`, `Choose 6 Months plan`, `Choose Annual plan`, and
+  `Get the Exam Pass`.
+- Regression coverage: the pricing checkout-return suite now renders every plan and requires the
+  four accessible names in plan order.
+- Commit: `71a04a4` (`Name every pricing plan action`)
+- Verification: focused 2-file/8-test pricing coverage, the complete current-worktree
+  68-file/402-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh 390×844 production
+  browser QA confirmed all four unique names in the accessibility tree and a 390px document width
+  within the 390px viewport. No checkout button was activated and no Stripe or Supabase mutation
+  occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
