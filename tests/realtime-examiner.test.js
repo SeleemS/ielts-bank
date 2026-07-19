@@ -121,6 +121,7 @@ const state = {
   refundRpcError: null,
   rateLimit: true,
   rateLimitError: null,
+  rateLimitReject: null,
   rateLimits: {},
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
   planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
@@ -143,6 +144,7 @@ vi.mock('@supabase/supabase-js', () => ({
     },
     rpc: async (fn, args) => {
       if (fn === 'check_rate_limit') {
+        if (state.rateLimitReject) throw state.rateLimitReject;
         return state.rateLimitError
           ? { data: null, error: state.rateLimitError }
           : {
@@ -227,6 +229,7 @@ describe('POST /api/realtime/session', () => {
     state.refundRpcError = null;
     state.rateLimit = true;
     state.rateLimitError = null;
+    state.rateLimitReject = null;
     state.rateLimits = {};
     state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
     state.planError = null;
@@ -383,5 +386,16 @@ describe('POST /api/realtime/session', () => {
     state.rateLimitError = { message: 'rate limiter unavailable' };
     const res = await call();
     expect(res.statusCode).toBe(503);
+  });
+
+  it('fails closed when the mint rate-limit RPC rejects', async () => {
+    state.authUser = { id: 'u1' };
+    state.rateLimitReject = new Error('rate limiter unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await call();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.realtimeRefunds).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

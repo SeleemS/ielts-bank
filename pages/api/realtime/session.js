@@ -36,17 +36,19 @@ function getAdmin() {
 }
 
 async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = false) {
-  const { data, error } = await getAdmin().rpc('check_rate_limit', {
-    p_bucket: bucket,
-    p_identifier: identifier,
-    p_window_seconds: windowSeconds,
-    p_max: max,
-  });
-  if (error) {
+  try {
+    const { data, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: bucket,
+      p_identifier: identifier,
+      p_window_seconds: windowSeconds,
+      p_max: max,
+    });
+    if (!error) return data === true;
     console.error('check_rate_limit error:', error.message);
-    return failClosed ? null : true;
+  } catch (error) {
+    console.error('check_rate_limit error:', error.message);
   }
-  return data === true;
+  return failClosed ? null : true;
 }
 
 async function resolveUserId(req) {
