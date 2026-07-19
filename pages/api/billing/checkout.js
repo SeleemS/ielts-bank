@@ -26,10 +26,14 @@ function getAdmin() {
 async function resolveUser(req) {
   const authz = req.headers.authorization || '';
   const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
-  if (!match) return null;
-  const { data, error } = await getAdmin().auth.getUser(match[1].trim());
-  if (error || !data?.user) return null;
-  return data.user;
+  if (!match) return { user: null, error: null };
+  try {
+    const { data, error } = await getAdmin().auth.getUser(match[1].trim());
+    if (error || !data?.user) return { user: null, error: null };
+    return { user: data.user, error: null };
+  } catch (error) {
+    return { user: null, error };
+  }
 }
 
 function siteOrigin(req) {
@@ -47,7 +51,13 @@ export default async function handler(req, res) {
   }
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
 
-  const authUser = await resolveUser(req);
+  const { user: authUser, error: authError } = await resolveUser(req);
+  if (authError) {
+    console.error('checkout auth lookup error:', authError.message);
+    return res.status(503).json({
+      error: 'Could not verify your account. Please try again.',
+    });
+  }
   if (!authUser) return res.status(401).json({ error: 'Sign in to upgrade.' });
 
   const sku = typeof req.body?.sku === 'string' ? req.body.sku : 'monthly';
@@ -55,12 +65,22 @@ export default async function handler(req, res) {
   const offer = req.body?.offer === 'winback' ? 'winback' : null;
 
   const admin = getAdmin();
-  const { data: userRow, error: userErr } = await admin
-    .from('users')
-    .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id')
-    .eq('id', authUser.id)
-    .single();
-  if (userErr || !userRow) return res.status(401).json({ error: 'Account not found.' });
+  let userRow;
+  try {
+    const { data, error } = await admin
+      .from('users')
+      .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id')
+      .eq('id', authUser.id)
+      .maybeSingle();
+    if (error) throw error;
+    userRow = data;
+  } catch (error) {
+    console.error('checkout account lookup error:', error.message);
+    return res.status(503).json({
+      error: 'Could not verify your account. Please try again.',
+    });
+  }
+  if (!userRow) return res.status(401).json({ error: 'Account not found.' });
   if (userRow.is_anonymous || !userRow.email) {
     return res.status(403).json({
       error: 'Link an email or Google account before upgrading.',

@@ -109,7 +109,11 @@ describe('POST /api/webhooks/stripe', () => {
 // ---------------------------------------------------------------------------
 const mockState = {
   authUser: null,
+  authError: null,
+  authReject: null,
   userRow: null,
+  userError: null,
+  userReject: null,
   retrievedSession: null,
   reconciliationOutcome: 'activated user user-1 (active)',
   stripeCalls: {},
@@ -118,18 +122,26 @@ const mockState = {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     auth: {
-      getUser: async () =>
-        mockState.authUser
-          ? { data: { user: mockState.authUser }, error: null }
-          : { data: null, error: { message: 'invalid token' } },
+      getUser: async () => {
+        if (mockState.authReject) throw mockState.authReject;
+        return mockState.authUser
+          ? { data: { user: mockState.authUser }, error: mockState.authError }
+          : {
+              data: null,
+              error: mockState.authError || { message: 'invalid token' },
+            };
+      },
     },
     from: () => ({
       select: () => ({
         eq: () => ({
-          single: async () =>
-            mockState.userRow
-              ? { data: mockState.userRow, error: null }
-              : { data: null, error: { message: 'not found' } },
+          maybeSingle: async () => {
+            if (mockState.userReject) throw mockState.userReject;
+            return {
+              data: mockState.userRow,
+              error: mockState.userError,
+            };
+          },
         }),
       }),
       update: () => ({ eq: async () => ({ error: null }) }),
@@ -187,10 +199,15 @@ vi.mock('../lib/billing', async (importOriginal) => {
 describe('POST /api/billing/checkout', () => {
   beforeEach(() => {
     mockState.authUser = null;
+    mockState.authError = null;
+    mockState.authReject = null;
     mockState.userRow = null;
+    mockState.userError = null;
+    mockState.userReject = null;
     mockState.retrievedSession = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
+    vi.restoreAllMocks();
     delete process.env.STRIPE_AUTOMATIC_TAX;
     delete process.env.STRIPE_WINBACK_COUPON_ID;
   });
@@ -205,6 +222,55 @@ describe('POST /api/billing/checkout', () => {
   it('rejects unauthenticated requests', async () => {
     const res = await callCheckout();
     expect(res.statusCode).toBe(401);
+  });
+
+  it('returns a retryable service error when auth verification rejects', async () => {
+    mockState.authReject = new Error('auth service unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
+  it('does not misreport a resolved account-query failure as a missing account', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/verify your account/i);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
+  it('recovers when the account query rejects', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
+  it('keeps a verified missing user row distinct from dependency failure', async () => {
+    mockState.authUser = { id: 'user-1' };
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+    });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.jsonBody.error).toMatch(/account not found/i);
+    expect(mockState.stripeCalls).toEqual({});
   });
 
   it('rejects unknown SKUs', async () => {
@@ -377,10 +443,15 @@ describe('POST /api/billing/checkout', () => {
 describe('POST /api/billing/verify-session', () => {
   beforeEach(() => {
     mockState.authUser = null;
+    mockState.authError = null;
+    mockState.authReject = null;
     mockState.userRow = null;
+    mockState.userError = null;
+    mockState.userReject = null;
     mockState.retrievedSession = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
+    vi.restoreAllMocks();
   });
 
   async function callVerify({ headers = {}, body = {} } = {}) {
