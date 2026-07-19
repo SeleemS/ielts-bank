@@ -762,6 +762,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   billing title, page `h1`, signed-out boundary, and zero console logs; the Premium-only post-pause
   state is verified by the rendered route test without consuming another live one-time pause.
 
+## CA-037 — Account forms hung when network requests rejected
+
+- Status: `FIXED`
+- Area: Dashboard settings / profile persistence / password security / error recovery
+- Severity: Medium
+- Evidence: profile saving and password updating handled resolved Supabase error objects but did
+  not catch rejected promises. A connection failure therefore escaped both submit handlers, left
+  `busy=true`, kept the button disabled indefinitely, and gave the learner no explanation or retry
+  path.
+- Fix: wrap both mutations in explicit `try/catch/finally` flows, preserve service-returned errors,
+  provide clear network-failure alerts, and always release the busy state. Successful updates keep
+  the existing state-reset and profile-refresh behavior. Rename the JSX-bearing component to
+  `.jsx` so its real forms can be regression-tested.
+- Regression coverage: `src/components/dashboard/AccountSettings.test.jsx` rejects the real profile
+  query chain and password auth call separately, then requires the correct alert and an enabled
+  retry button for each form.
+- Commit: `Recover account forms from network failures`
+- Verification: focused 2-test account-form coverage, the complete current-worktree
+  59-file/281-test Vitest suite, ESLint, the 148-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the fix successfully. Fresh production QA confirmed the
+  dashboard title, signed-out heading/boundary, and successful route rendering; the only accumulated
+  console entries were the previously documented Google-managed AdSense `unfilled` rejection, not
+  account code.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
