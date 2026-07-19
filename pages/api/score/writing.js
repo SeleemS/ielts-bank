@@ -128,8 +128,10 @@ async function resolveUserId(req) {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function saveWritingScore({ userId, passageId, task, essay, model, result, startedAt, anonId, wordCount }) {
+  let admin;
+  let attemptId;
   try {
-    const admin = getAdmin();
+    admin = getAdmin();
     const overall = typeof result.overallBand === 'number' ? result.overallBand : null;
 
     const { data: attempt, error: attemptErr } = await admin
@@ -150,6 +152,7 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
       console.error('writing attempt insert failed:', attemptErr?.message || 'no row');
       return;
     }
+    attemptId = attempt.id;
 
     const { error: scoreErr } = await admin.from('scores').insert({
       attempt_id: attempt.id,
@@ -159,7 +162,11 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
       criteria: result.criteria || {},
       model,
     });
-    if (scoreErr) console.error('writing score insert failed:', scoreErr.message);
+    if (scoreErr) {
+      console.error('writing score insert failed:', scoreErr.message);
+      await rollbackWritingAttempt(admin, attemptId);
+      return;
+    }
 
     if (UUID_RE.test(anonId || '')) {
       await admin.from('activity_events').insert({
@@ -172,8 +179,18 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
     }
   } catch (e) {
     console.error('saveWritingScore error:', e.message);
+    if (admin && attemptId) await rollbackWritingAttempt(admin, attemptId);
   }
 
+}
+
+async function rollbackWritingAttempt(admin, attemptId) {
+  try {
+    const { error } = await admin.from('attempts').delete().eq('id', attemptId);
+    if (error) throw error;
+  } catch (error) {
+    console.error('writing attempt rollback failed:', error.message);
+  }
 }
 
 function countWords(str) {

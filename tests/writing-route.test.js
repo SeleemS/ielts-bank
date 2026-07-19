@@ -11,6 +11,9 @@ const state = {
   tableCalls: [],
   rateLimitResponses: [],
   rpcCalls: [],
+  scoreError: null,
+  scoreReject: null,
+  deletedAttemptIds: [],
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -60,8 +63,22 @@ vi.mock('@supabase/supabase-js', () => ({
             }),
           };
         }
-        return Promise.resolve({ data: null, error: null });
+        if (table === 'scores' && state.scoreReject) {
+          return Promise.reject(state.scoreReject);
+        }
+        return Promise.resolve({
+          data: null,
+          error: table === 'scores' ? state.scoreError : null,
+        });
       },
+      delete: () => ({
+        eq: async (column, value) => {
+          if (table === 'attempts' && column === 'id') {
+            state.deletedAttemptIds.push(value);
+          }
+          return { data: null, error: null };
+        },
+      }),
     }),
   }),
 }));
@@ -112,6 +129,9 @@ describe('POST /api/score/writing account and quota safety', () => {
     state.tableCalls = [];
     state.rateLimitResponses = [];
     state.rpcCalls = [];
+    state.scoreError = null;
+    state.scoreReject = null;
+    state.deletedAttemptIds = [];
     vi.restoreAllMocks();
   });
 
@@ -408,6 +428,46 @@ describe('POST /api/score/writing account and quota safety', () => {
       'refund_ai_score',
     ]);
   });
+
+  it('rolls back the attempt and suppresses activity when score persistence fails', async () => {
+    state.authUser = linkedUser();
+    state.scoreError = new Error('score insert failed');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        body: {
+          ...validBody(),
+          anon_id: '123e4567-e89b-42d3-a456-426614174000',
+        },
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(state.tableCalls.map(({ table }) => table)).toEqual([
+      'attempts',
+      'scores',
+    ]);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+  });
+
+  it('rolls back the attempt when score persistence rejects', async () => {
+    state.authUser = linkedUser();
+    state.scoreReject = new Error('score network failure');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+  });
 });
 
 function linkedUser() {
@@ -431,4 +491,33 @@ function criterion(band) {
     strengths: ['Clear organization.'],
     improvements: ['Add more detail.'],
   };
+}
+
+async function mockSuccessfulWritingScore() {
+  const { chatCompletionWithFallback } = await import('../lib/openaiChat');
+  chatCompletionWithFallback.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    model: 'gpt-test',
+    payload: {
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              overallBand: 7,
+              criteria: {
+                taskResponse: criterion(6.5),
+                coherenceCohesion: criterion(7),
+                lexicalResource: criterion(7.5),
+                grammaticalRange: criterion(8),
+              },
+              summary: 'A clear response.',
+              improvements: ['Develop examples further.'],
+              correctedExamples: [],
+            }),
+          },
+        },
+      ],
+    },
+  });
 }
