@@ -23,7 +23,12 @@ vi.mock('../lib/auth', () => ({
 }));
 vi.mock('../../components/ui/sheet', () => ({
   Sheet: ({ children }) => React.createElement(React.Fragment, null, children),
-  SheetContent: ({ children }) => React.createElement('div', null, children),
+  SheetContent: ({ children, side: _side, onClose: _onClose, ...props }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'mobile-sheet', ...props },
+      children
+    ),
   SheetHeader: ({ children }) => React.createElement('div', null, children),
   SheetTitle: ({ children }) => React.createElement('div', null, children),
 }));
@@ -98,5 +103,15 @@ describe('Navbar authentication intent', () => {
     expect(
       container.querySelector('[data-testid="auth-dialog"]').getAttribute('data-initial-mode')
     ).toBe('signup');
+  });
+});
+
+describe('Navbar mobile navigation', () => {
+  it('gives the sheet an accessible purpose', () => {
+    expect(
+      container
+        .querySelector('[data-testid="mobile-sheet"]')
+        ?.getAttribute('aria-label')
+    ).toBe('Site navigation');
   });
 });

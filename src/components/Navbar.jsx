@@ -206,7 +206,11 @@ export default function Navbar() {
 
       {/* Mobile sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" onClose={() => setOpen(false)}>
+        <SheetContent
+          side="right"
+          onClose={() => setOpen(false)}
+          aria-label="Site navigation"
+        >
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               IELTS<span className="text-accent">-Bank</span>
