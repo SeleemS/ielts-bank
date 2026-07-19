@@ -8,6 +8,10 @@ const state = {
   userRow: null,
   userUpdates: [],
   stripeUpdates: [],
+  claimAvailable: true,
+  claimError: null,
+  detailError: null,
+  stripeError: null,
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -26,12 +30,42 @@ vi.mock('@supabase/supabase-js', () => ({
         };
         return chain;
       },
-      update: (fields) => ({
-        eq: async () => {
-          state.userUpdates.push({ table, fields });
-          return { error: null };
-        },
-      }),
+      update: (fields) => {
+        const filters = [];
+        const operation = { table, fields, filters };
+        state.userUpdates.push(operation);
+        const chain = {
+          eq: (field, value) => {
+            filters.push({ type: 'eq', field, value });
+            return chain;
+          },
+          is: (field, value) => {
+            filters.push({ type: 'is', field, value });
+            return chain;
+          },
+          select: () => chain,
+          maybeSingle: async () => {
+            const isClaim =
+              fields.billing_pause_used_at != null
+              && Object.keys(fields).length === 1;
+            const isDetail = fields.billing_pause_until != null;
+            if (isClaim) {
+              return {
+                data: state.claimAvailable ? { id: 'user-1' } : null,
+                error: state.claimError,
+              };
+            }
+            if (isDetail) {
+              return {
+                data: state.detailError ? null : { id: 'user-1' },
+                error: state.detailError,
+              };
+            }
+            return { data: { id: 'user-1' }, error: null };
+          },
+        };
+        return chain;
+      },
       insert: async () => ({ error: null }),
     }),
   }),
@@ -45,6 +79,7 @@ vi.mock('../lib/billing', async (importOriginal) => {
       subscriptions: {
         update: async (id, fields) => {
           state.stripeUpdates.push({ id, fields });
+          if (state.stripeError) throw state.stripeError;
           return { id };
         },
       },
@@ -100,6 +135,10 @@ describe('POST /api/billing/pause', () => {
     };
     state.userUpdates = [];
     state.stripeUpdates = [];
+    state.claimAvailable = true;
+    state.claimError = null;
+    state.detailError = null;
+    state.stripeError = null;
   });
 
   it('sets a 30-day Stripe pause and permanently records that the offer was used', async () => {
@@ -108,8 +147,9 @@ describe('POST /api/billing/pause', () => {
     expect(res.statusCode).toBe(200);
     expect(state.stripeUpdates).toHaveLength(1);
     expect(state.stripeUpdates[0].fields.pause_collection.behavior).toBe('void');
-    expect(state.userUpdates[0].fields.billing_pause_until).toBeTruthy();
     expect(state.userUpdates[0].fields.billing_pause_used_at).toBeTruthy();
+    expect(state.userUpdates[1].fields.billing_pause_until).toBeTruthy();
+    expect(res.jsonBody.reconciling).toBe(false);
   });
 
   it('rejects a second pause without calling Stripe', async () => {
@@ -119,6 +159,56 @@ describe('POST /api/billing/pause', () => {
     expect(res.statusCode).toBe(409);
     expect(res.jsonBody.error).toMatch(/already been used/i);
     expect(state.stripeUpdates).toEqual([]);
+  });
+
+  it('allows only one concurrent request to claim the one-time pause', async () => {
+    state.claimAvailable = false;
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.error).toMatch(/already been used/i);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.userUpdates[0].filters).toContainEqual({
+      type: 'is',
+      field: 'billing_pause_used_at',
+      value: null,
+    });
+  });
+
+  it('releases the exact claim when Stripe fails before changing the subscription', async () => {
+    state.stripeError = new Error('stripe unavailable');
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.userUpdates).toHaveLength(2);
+    expect(state.userUpdates[1].fields).toEqual({
+      billing_pause_used_at: null,
+    });
+    expect(state.userUpdates[1].filters).toEqual([
+      { type: 'eq', field: 'id', value: 'user-1' },
+      {
+        type: 'eq',
+        field: 'billing_pause_used_at',
+        value: state.userUpdates[0].fields.billing_pause_used_at,
+      },
+    ]);
+  });
+
+  it('keeps the one-time claim and reports reconciliation after Stripe succeeds', async () => {
+    state.detailError = new Error('database temporarily unavailable');
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      paused: true,
+      reconciling: true,
+    });
+    expect(state.stripeUpdates).toHaveLength(1);
+    expect(
+      state.userUpdates.some(
+        (update) => update.fields.billing_pause_used_at === null
+      )
+    ).toBe(false);
   });
 
   it('rejects an expired or otherwise inactive entitlement', async () => {
