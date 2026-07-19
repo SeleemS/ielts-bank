@@ -2007,6 +2007,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   emitted one sanitized diagnostic; no account, payment, consent, content, or provider state
   changed.
 
+## CA-088 — Recording cleanup reported success after Supabase Storage failures
+
+- Status: `FIXED`
+- Area: Scheduled maintenance / Supabase Storage / speaking-recording retention
+- Severity: High
+- Evidence: the daily cleanup cron checked failures while deleting old rate-limit rows and loading
+  users, but discarded the error returned by every Storage listing. It also ignored failed Storage
+  removals and simply omitted those files from `recordingsRemoved`. A provider outage or permission
+  regression could therefore leave recordings beyond the documented 30-day retention window while
+  the endpoint returned HTTP 200 with `{ok:true}`, preventing Vercel Cron from surfacing the failed
+  maintenance run.
+- Fix: treat admin-client construction, rate-limit deletion, user lookup, every Storage listing,
+  and every Storage removal as explicit failure boundaries. Both resolved provider errors and
+  rejected network calls now produce a controlled HTTP 503, log only the server-side operational
+  cause, stop the run, and never count a recording unless Storage confirmed its deletion.
+- Regression coverage: a new 13-case route suite proves method and bearer-secret gates, missing and
+  invalid admin configuration, resolved and rejected failures for the database cleanup, user query,
+  Storage listing, and Storage removal, zero downstream work after each guard, 30-day selection,
+  exact bucket/path/options contracts, exclusion of current recordings, and the precise successful
+  removal count.
+- Commit: `39489bf` (`Surface cleanup storage failures`)
+- Verification: the focused 13-test cleanup suite, the complete 76-file/461-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_2uwH8RzpF3hr5urQsdTrHviESM2W` reached `READY`
+  from exact Git SHA `39489bfda8de55637ffd177f3bf1cea903d669e0`. Fresh production probes returned
+  HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer secret, both before database
+  or Storage access. A separate read-only service-role Storage request confirmed the live
+  `speaking-uploads` bucket was reachable without exposing object names. The authorized deletion
+  path was deliberately verified with injected dependencies rather than run against customer
+  recordings; no database, recording, account, payment, consent, content, or provider state
+  changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
