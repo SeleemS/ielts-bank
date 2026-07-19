@@ -8,7 +8,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
-import { fetchIsPremium } from '../../../lib/premium';
+import { fetchPremiumStatus } from '../../../lib/premium';
 
 const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 const SCORING_MODEL =
@@ -36,10 +36,16 @@ function getAdmin() {
 async function resolveUserId(req) {
   const authz = req.headers.authorization || '';
   const match = /^Bearer\s+(.+)$/i.exec(String(authz).trim());
-  if (!match) return null;
-  const { data, error } = await getAdmin().auth.getUser(match[1].trim());
-  if (error || !data?.user) return null;
-  return data.user.id;
+  if (!match) return { userId: null, error: null };
+  try {
+    const { data, error } = await getAdmin().auth.getUser(match[1].trim());
+    return {
+      userId: error ? null : data?.user?.id || null,
+      error: null,
+    };
+  } catch (error) {
+    return { userId: null, error };
+  }
 }
 
 function countWords(s) {
@@ -120,10 +126,19 @@ export default async function handler(req, res) {
   }
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
 
-  const userId = await resolveUserId(req);
+  const { userId, error: authError } = await resolveUserId(req);
+  if (authError) {
+    console.error('realtime scoring auth failed:', authError.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+  }
   if (!userId) return res.status(401).json({ error: 'Please sign in.' });
 
-  if (!(await fetchIsPremium(getAdmin(), userId))) {
+  const premium = await fetchPremiumStatus(getAdmin(), userId);
+  if (premium.error) {
+    console.error('realtime scoring entitlement failed:', premium.error.message);
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+  }
+  if (!premium.isPremium) {
     return res.status(402).json({
       error: 'The live AI examiner is a Premium feature.',
       reason: 'not_premium',
