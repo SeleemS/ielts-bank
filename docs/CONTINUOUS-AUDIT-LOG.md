@@ -2246,6 +2246,39 @@ False positives are kept in the investigation notes so they are not rediscovered
   injected dependencies instead of deleting customer recordings; no database, recording, account,
   payment, consent, content, or provider state changed.
 
+## CA-096 — Recording retention derived owner folders from an incomplete, capped profile mirror
+
+- Status: `FIXED`
+- Area: Privacy / recording retention / Storage owner discovery
+- Severity: High
+- Evidence: cleanup discovered recording folders by selecting at most 5,000 IDs from
+  `public.users`. Growth past that hard ceiling would silently exclude every later owner, and the
+  profile table is not a reliable Storage index even below it. A read-only live integrity check
+  found 45 auth users but only 43 mirrored profile rows; one of those two unmatched users owns a
+  current recording, so the old job already omitted a real Storage folder on every run. The object
+  was not yet 30 days old, but it could never become eligible through that scan.
+- Fix: remove the profile-table dependency and enumerate the private bucket itself. Cleanup now
+  pages the root and every discovered folder in deterministic name order, traverses nested folders,
+  includes any legacy root-level objects, suppresses duplicate prefixes, and only starts bounded
+  removals after the complete Storage tree has been inspected. Database rate-limit cleanup remains
+  fail-closed and runs before recording work.
+- Regression coverage: the rewritten 15-case cleanup suite proves the route never queries
+  `public.users`; reaches an owner on the second root page after 1,000 folders; follows nested
+  folders; evaluates root-level files; excludes current recordings; preserves multi-page file and
+  1,000-object removal batching; and performs zero partial deletion when a later listing fails.
+  Method, authentication, configuration, rate-limit, Storage rejection, and removal-failure cases
+  remain active.
+- Commit: `2e7bb21` (`Scan every recording storage folder`)
+- Verification: the focused 15-test cleanup suite, the complete 77-file/484-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_2chwEgPudu54vmRzihvHpVi78mft` reached promoted
+  `READY` from exact Git SHA `2e7bb2187ff9c5ab775c32ffdec4d772dc9e0d75`. Fresh production
+  probes returned HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer-secret GET,
+  both before Storage access. The exact new traversal then ran read-only against live Storage and
+  inspected six folders, seven listing pages, and all seven objects; it found zero expired or
+  root-level objects. The authorized mutating cleanup was not invoked, so no database, recording,
+  account, payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
