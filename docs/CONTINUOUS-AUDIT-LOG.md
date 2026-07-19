@@ -810,6 +810,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   build all passed. Vercel deployed the fix successfully. Fresh production QA opened the shared
   `Welcome back` dialog, confirmed initial email focus, and found zero application console errors.
 
+## CA-039 — Billing pause could be consumed twice or partially persisted
+
+- Status: `FIXED`
+- Area: Billing API / Stripe-Supabase consistency / concurrency / one-time offers
+- Severity: High
+- Evidence: the endpoint read `billing_pause_used_at`, changed Stripe, and only then wrote the
+  one-time marker. Concurrent requests could both pass the initial read and mutate Stripe. If
+  Stripe succeeded but the Supabase update failed, the endpoint returned 503 even though billing
+  was already paused, invited a duplicate retry, and could leave the durable one-time marker unset.
+- Fix: atomically reserve the one-time action with a null-filtered Supabase update before touching
+  Stripe, using the [documented update-plus-select contract](https://supabase.com/docs/reference/javascript/update)
+  to distinguish the winning request. Reject concurrent losers, roll back the exact reservation
+  only when Stripe itself fails, and retain the claim after Stripe success. If the subsequent pause
+  detail write fails, return the truthful success plus `reconciling=true`; Stripe's subscription
+  webhook remains the authoritative detail-reconciliation path.
+- Regression coverage: the expanded billing API suite covers successful reservation/finalization,
+  an already-used row, a concurrent null-filter loser, Stripe failure with timestamp-guarded
+  rollback, and Stripe success followed by a Supabase detail failure that must not roll back or
+  invite retry.
+- Commit: `Make billing pause claims atomic`
+- Verification: focused 35-test billing page/API/webhook suite, the complete current-worktree
+  60-file/287-test Vitest suite, ESLint, the 149-file analytics audit, and the 528-page production
+  build all passed. The current Supabase changelog showed no relevant JavaScript update-contract
+  breaking change. Vercel deployed the fix successfully; fresh production probes returned HTTP 405
+  with `Allow: POST` for GET and HTTP 401 for an unauthenticated valid-origin POST. No live
+  subscription was mutated for this failure-path verification.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
