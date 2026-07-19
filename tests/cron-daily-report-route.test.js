@@ -296,4 +296,23 @@ describe('GET /api/cron/daily-report persistence', () => {
     expect(res.jsonBody.report.activity.retention).toBeNull();
     expect(state.upsertCalls[0].values.data.activity.retention).toBeNull();
   });
+
+  it('persists a report with null retention when the optional RPC rejects', async () => {
+    state.retentionReject = new Error('network unavailable');
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.report.activity.retention).toBeNull();
+    expect(state.upsertCalls[0].values.data.activity.retention).toBeNull();
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'returning_visitor_stats',
+        args: {
+          p_start: '2026-07-18T00:00:00.000Z',
+          p_end: '2026-07-19T00:00:00.000Z',
+        },
+      },
+    ]);
+  });
 });

@@ -22,6 +22,17 @@ function countBy(rows, pick) {
   return Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1]));
 }
 
+async function returningVisitorStats(admin, start, end) {
+  try {
+    return await admin.rpc('returning_visitor_stats', {
+      p_start: start,
+      p_end: end,
+    });
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
 async function buildReport(admin, reportDate) {
   const start = `${reportDate}T00:00:00.000Z`;
   const end = new Date(Date.parse(start) + 864e5).toISOString();
@@ -49,7 +60,7 @@ async function buildReport(admin, reportDate) {
     // New-vs-returning; SQL-side because it needs a full-history look-back
     // per visitor (see migration 20260719050000). Fail-soft: a missing RPC
     // must not kill the report.
-    admin.rpc('returning_visitor_stats', { p_start: start, p_end: end }),
+    returningVisitorStats(admin, start, end),
   ]);
   for (const res of [signupsRes, totalUsersRes, eventsRes, attemptsRes]) {
     if (res.error) throw res.error;
