@@ -1715,6 +1715,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   one-row rate-limit probe was deleted immediately, and a follow-up production read returned an
   empty array. No Stripe or account mutation occurred.
 
+## CA-077 — Recorded Speaking scored against missing or mismatched prompts
+
+- Status: `FIXED`
+- Area: Recorded Speaking / AI scoring integrity / provider cost
+- Severity: High
+- Evidence: the scoring route looked up `passageSlug` only after consuming daily quota and
+  transcribing the recording. A missing passage or failed database lookup silently became
+  `(question text unavailable)`, and a submitted part that conflicted with the stored prompt was
+  accepted. The model could therefore grade an answer without its real question, spend provider
+  resources, and persist misleading feedback.
+- Fix: resolve the authoritative Speaking passage after rate limiting but before quota or OpenAI
+  work. Missing prompts return HTTP 404, stored-part conflicts return HTTP 400, and database errors
+  or rejections return a retryable HTTP 503. Every rejected path removes the uploaded recording;
+  valid scoring now always uses a real passage ID and prompt context.
+- Regression coverage: recorded Speaking route tests inject a missing passage, part mismatch,
+  resolved lookup error, and rejected lookup. Each case must stop before `consume_ai_score` and
+  OpenAI, return the appropriate status, and clean the owner-scoped upload.
+- Commit: `3c20f21` (`Validate Speaking prompts before AI scoring`)
+- Verification: all 21 focused Speaking route tests, the complete current-worktree
+  68-file/412-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build passed. Vercel deployed the exact commit successfully. A fresh same-origin production POST
+  with a real passage slug but no credentials returned HTTP 401 before storage, limiter, quota, or
+  OpenAI work. No recording, score, attempt, quota, or account was created or changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
