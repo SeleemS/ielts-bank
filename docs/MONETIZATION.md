@@ -64,7 +64,7 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 
 ### Stage 0 — Today (baseline, live)
 
-- **Free:** everything. **Gated:** nothing.
+- **Historical baseline:** everything was free and nothing was gated. The current launch model is described in Stages 2–3 below.
 - **Revenue:** AdSense only. At $50k sessions/mo and a realistic edtech RPM of ~$3–6 (international traffic, mostly India/MENA/SEA which pays low CPMs), that is **~$150–300/mo**; at 200k sessions, **~$600–1,200/mo**. This is the floor we protect, not grow.
 - **Prereqs:** none. **Trigger to advance:** decision to wire auth (below).
 
@@ -76,7 +76,7 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 - **Free:** all content **plus** the ability to save attempts and see your own history.
 - **Gated:** nothing yet — this stage exists to create identity so metering and payments are possible.
 - **Schema mapping:**
-  - Anonymous sign-in on first visit → `auth.users` row (`is_anonymous=true`) → trigger `handle_new_user()` mirrors into `public.users` and seeds `public.user_quotas` (default `ai_scores_remaining=3`). Already built in `0006_auth_trigger.sql`.
+  - Anonymous sign-in on first visit → `auth.users` row (`is_anonymous=true`) → trigger `handle_new_user()` mirrors into `public.users` and seeds `public.user_quotas`. The legacy `ai_scores_remaining` column remains for migration compatibility; the current free Writing sample is enforced by `free_writing_score_used_at`.
   - Upgrade (link Google / magic-link) preserves `auth.users.id`, so all `attempts`/`scores` stay attached. Already handled by `handle_user_update()`.
 - **Prereqs:** Supabase Auth config (anonymous + Google OAuth + email OTP); front-end sign-in flow; RLS already defined in `0005`.
 - **Revenue math:** $0 direct. Value = it converts anonymous traffic into addressable users and makes the free meter enforceable per-identity.
@@ -86,12 +86,12 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 ### Stage 2 — Free AI-scoring meter (the demo)
 
 - **Trigger to advance:** Writing scoring API route live; `user_quotas` decrement path proven transactional.
-- **Free:** anonymous users get **1** AI Writing score (lifetime sample). Signed-in free users get **3** AI scores per rolling **30 days**.
-- **Gated:** the 2nd/4th score and beyond → upgrade prompt.
+- **Free:** anonymous visitors must create or link a free account; each signed-in, non-anonymous free account gets **1** AI Writing score as a lifetime sample. Speaking scoring remains Premium-only.
+- **Gated:** the second Writing score and all Speaking scores → contextual upgrade prompt.
 - **Schema mapping (exact):**
-  - `user_quotas.ai_scores_remaining` (int, default 3) = the meter.
-  - `user_quotas.period_resets_at` (timestamptz) = when the free allowance refills.
-  - Each score writes a `scores` row (`overall_band`, `criteria` JSON, `model`, `rubric_id`, `feedback_html`) tied to an `attempts` row (`skill='writing'`, `responses` = the essay). **The decrement and the insert happen in one server transaction** (§5).
+  - `user_quotas.free_writing_score_used_at` (timestamptz) = the lifetime sample marker.
+  - `consume_ai_score(uuid,text)` locks the quota row and stamps the marker transactionally before returning `{allowed:true, free:true}`.
+  - Each completed score writes a `scores` row (`overall_band`, `criteria` JSON, `model`, `rubric_id`, `feedback_html`) tied to an `attempts` row (`skill='writing'`, `responses` = the essay).
 - **Prereqs:** Stage 1; the scoring API route; a chosen scoring model; `rubrics` seeded for Writing.
 - **Revenue math:** still ad-only, but this is the conversion instrument. Every user who hits "0 remaining" is a warm paywall impression. Expect **8–15%** of users who complete their free scores to see the upgrade modal within their first session.
 
@@ -100,14 +100,14 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 ### Stage 3 — Paywall + Subscriptions (money on)
 
 - **Trigger to advance:** Stripe account live; webhook endpoint deployed; `users.plan` column live.
-- **Free:** content + auto-scoring + the metered free AI scores + basic own-history view + ads.
+- **Free:** content + one lifetime Writing sample score + basic own-history view + ads.
 - **Gated (Premium):** unlimited AI scores; progress analytics; ad-free; export; full mock mode; stronger scoring model.
 - **Schema mapping (exact):**
   - `users.plan` in (`free`,`premium`) — the gate the scoring route checks.
   - `users.plan_status` (`active`,`past_due`,`canceled`,`refunded`).
   - `users.plan_renews_at` (timestamptz).
   - `users.stripe_customer_id`, `users.stripe_subscription_id` — reconcile webhooks → user.
-  - Scoring route logic: if `plan='premium'` and `plan_status='active'` → skip the `user_quotas` decrement (unlimited); else run the metered path.
+  - Scoring route logic: resolve Premium/Exam Pass/pause entitlement server-side; Premium uses daily fair-use counters, while free accounts can consume the lifetime Writing marker once.
 - **Prereqs:** Stage 2; Stripe products/prices created; webhook handler (§4); billing UI.
 - **Revenue math:**
 
@@ -206,9 +206,9 @@ The original plan chose Paddle as merchant-of-record because it remits VAT/GST i
   stripe_customer_id     text,     -- unique, indexed
   stripe_subscription_id text,     -- unique, indexed
 
--- public.user_quotas  (free meter — exists; premium fair-use + realtime meters — added 2026-07-17):
-  ai_scores_remaining        int          -- free 30-day meter (exists)
-  period_resets_at           timestamptz  -- (exists)
+-- public.user_quotas  (lifetime sample + premium fair-use/realtime meters):
+  ai_scores_remaining        int          -- legacy compatibility; not the current free meter
+  period_resets_at           timestamptz  -- legacy compatibility
   writing_scores_today       int          -- premium daily counter
   speaking_scores_today      int          -- premium daily counter
   daily_counters_date        date         -- rollover marker
@@ -246,7 +246,7 @@ EMAIL_FROM="IELTS Bank <hello@ielts-bank.com>"
 EMAIL_UNSUBSCRIBE_SECRET=...        # optional; CRON_SECRET is the fallback
 
 # Scoring
-SCORING_MODEL_FREE=...               # cheaper model id for the free meter
+SCORING_MODEL_FREE=...               # cheaper model id for the lifetime sample
 SCORING_MODEL_PAID=...               # stronger model id for subscribers
 OPENAI_API_KEY=...
 ```
@@ -268,7 +268,7 @@ OPENAI_API_KEY=...
    - `charge.refunded` / `charge.dispute.created` → `plan='free'`, `plan_status='refunded'` immediately.
 4. Return 200 fast; unrecognized events are acknowledged and ignored.
 
-**Gating check (server — inside the scoring API route):** unchanged in spirit: the `consume_ai_score` RPC reads `users.plan`/`plan_status`; premium-active (incl. canceled-not-yet-expired) bypasses the free meter but hits the fair-use daily caps (§5.3). Never trust a client-sent "isPremium" flag.
+**Gating check (server — inside the scoring API route):** `consume_ai_score` reads the server-owned plan, expiry, and pause fields. Premium-active access (including a paid period after cancellation and an unexpired Exam Pass) uses fair-use daily caps (§5.3); a free account can consume its lifetime Writing marker once. Never trust a client-sent `isPremium` flag.
 
 **Upgrades / cancellations / refunds:**
 - SKU changes + cancellation → **Stripe Customer Portal** (`/api/billing/portal` creates a portal session); we consume the resulting `customer.subscription.updated`/`deleted` webhooks. Access persists to period end on cancel.

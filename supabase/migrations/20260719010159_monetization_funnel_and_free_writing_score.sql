@@ -260,6 +260,10 @@ create index if not exists lifecycle_emails_due_idx
 create index if not exists lifecycle_emails_user_type_idx
   on public.lifecycle_emails (user_id, email_type, created_at desc);
 
+create index if not exists lifecycle_emails_sending_updated_idx
+  on public.lifecycle_emails (updated_at)
+  where status = 'sending' and sent_at is null;
+
 create or replace function public.queue_signup_welcome_email()
 returns trigger
 language plpgsql

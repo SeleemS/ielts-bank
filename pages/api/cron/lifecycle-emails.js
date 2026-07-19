@@ -30,11 +30,12 @@ async function queueWeeklyDigest(admin, force = false) {
   if (error) throw error;
   if (!subscribers?.length) return 0;
 
-  const { data: users } = await admin
+  const { data: users, error: usersError } = await admin
     .from('users')
     .select('id, email, plan, plan_status, plan_expires_at')
     .not('email', 'is', null)
     .limit(50000);
+  if (usersError) throw usersError;
   const usersByEmail = new Map((users || []).map((user) => [user.email?.toLowerCase(), user]));
   const latest = posts[0];
   const key = weekKey(now);
@@ -93,53 +94,111 @@ async function queueWinBack(admin) {
   return rows.length;
 }
 
-async function deliverDue(admin) {
+const MARKETING_EMAIL_TYPES = new Set(['weekly_digest', 'win_back']);
+const STALE_CLAIM_MINUTES = 15;
+
+export async function recipientAllowsMarketing(admin, email) {
+  const { data, error } = await admin
+    .from('newsletter_subscribers')
+    .select('email')
+    .eq('email', String(email || '').trim().toLowerCase())
+    .eq('confirmed', true)
+    .is('unsubscribed_at', null)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function reclaimStaleDeliveries(admin, now = new Date()) {
+  const cutoff = new Date(now.getTime() - STALE_CLAIM_MINUTES * 60_000).toISOString();
+  const { data, error } = await admin
+    .from('lifecycle_emails')
+    .update({
+      status: 'failed',
+      last_error: 'delivery-claim-expired',
+      updated_at: now.toISOString(),
+    })
+    .eq('status', 'sending')
+    .is('sent_at', null)
+    .lt('updated_at', cutoff)
+    .lt('attempts', 5)
+    .select('id');
+  if (error) throw error;
+  return data?.length || 0;
+}
+
+export async function deliverDue(admin, { send = sendLifecycleEmail, now = new Date() } = {}) {
+  const reclaimed = await reclaimStaleDeliveries(admin, now);
   const { data: due, error } = await admin
     .from('lifecycle_emails')
     .select('*')
     .in('status', ['pending', 'failed'])
     .is('sent_at', null)
-    .lte('scheduled_for', new Date().toISOString())
+    .lte('scheduled_for', now.toISOString())
     .lt('attempts', 5)
     .order('scheduled_for')
     .limit(50);
   if (error) throw error;
 
-  const results = { sent: 0, failed: 0, skipped: 0 };
+  const results = { sent: 0, failed: 0, suppressed: 0, skipped: 0, reclaimed };
   for (const row of due || []) {
-    const { data: claimed } = await admin
+    if (
+      MARKETING_EMAIL_TYPES.has(row.email_type) &&
+      !(await recipientAllowsMarketing(admin, row.recipient_email))
+    ) {
+      const { data: suppressed, error: suppressError } = await admin
+        .from('lifecycle_emails')
+        .update({
+          status: 'suppressed',
+          last_error: 'recipient-not-subscribed',
+          updated_at: now.toISOString(),
+        })
+        .eq('id', row.id)
+        .in('status', ['pending', 'failed'])
+        .select('id')
+        .maybeSingle();
+      if (suppressError) throw suppressError;
+      if (suppressed) results.suppressed += 1;
+      else results.skipped += 1;
+      continue;
+    }
+
+    const { data: claimed, error: claimError } = await admin
       .from('lifecycle_emails')
-      .update({ status: 'sending', attempts: row.attempts + 1, updated_at: new Date().toISOString() })
+      .update({ status: 'sending', attempts: row.attempts + 1, updated_at: now.toISOString() })
       .eq('id', row.id)
       .in('status', ['pending', 'failed'])
       .select('id')
       .maybeSingle();
+    if (claimError) throw claimError;
     if (!claimed) {
       results.skipped += 1;
       continue;
     }
-    const sent = await sendLifecycleEmail(row);
+    const sent = await send(row);
     if (sent.sent) {
-      await admin
+      const { error: sentUpdateError } = await admin
         .from('lifecycle_emails')
         .update({
           status: 'sent',
-          sent_at: new Date().toISOString(),
+          sent_at: now.toISOString(),
           provider_id: sent.providerId,
           last_error: null,
-          updated_at: new Date().toISOString(),
+          updated_at: now.toISOString(),
         })
         .eq('id', row.id);
+      if (sentUpdateError) throw sentUpdateError;
       results.sent += 1;
     } else {
-      await admin
+      const { error: failedUpdateError } = await admin
         .from('lifecycle_emails')
         .update({
           status: 'failed',
           last_error: sent.reason,
-          updated_at: new Date().toISOString(),
+          updated_at: now.toISOString(),
         })
         .eq('id', row.id);
+      if (failedUpdateError) throw failedUpdateError;
       results.failed += 1;
     }
   }
