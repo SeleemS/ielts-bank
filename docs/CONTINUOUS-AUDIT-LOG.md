@@ -1785,6 +1785,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   document remained 390px wide in the 390px viewport. No answer, submission, score, authentication,
   or server mutation occurred.
 
+## CA-080 — Listening intro dialog did not contain or restore keyboard focus
+
+- Status: `FIXED`
+- Area: Listening practice / intro dialog / keyboard accessibility
+- Severity: High
+- Evidence: the one-time Listening explainer focused its close button and handled Escape, but it
+  did not trap forward or reverse Tab navigation and did not restore the previously focused
+  element when removed. Keyboard users could move into the obscured question page and lose their
+  place after closing the modal.
+- Fix: integrate the established shared dialog-focus contract for initial focus, outside-focus
+  recovery, forward and reverse wrapping, Escape dismissal, and opener restoration. Keep scroll
+  locking separate and use stable refs so changing `Don’t show this again` does not reset focus or
+  return stale preference state.
+- Regression coverage: Listening integration tests verify initial focus, both Tab wrap directions,
+  Escape, opener restoration, and the current checkbox preference after internal state changes;
+  the shared focus-hook tests retain their own containment and restoration coverage.
+- Commits: `c9df43f` (`Trap focus in Listening intro`) and `0564479`
+  (`Reuse shared Listening dialog focus`)
+- Verification: focused 2-file/6-test Listening and shared-dialog coverage, the complete
+  current-worktree 71-file/419-test Vitest suite, ESLint, the 154-file analytics audit, and the
+  528-page production build passed. Vercel deployed the exact final commit successfully. Fresh
+  390×844 production QA confirmed initial Close focus, reverse wrap to the final CTA, forward wrap
+  back to Close, Escape dismissal, and a 390px document width in the 390px viewport. No preference,
+  answer, audio, authentication, or account state was changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
