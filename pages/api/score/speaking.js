@@ -218,8 +218,10 @@ async function saveSpeakingScore({
   model,
   startedAt,
 }) {
+  let admin;
+  let attemptId;
   try {
-    const admin = getAdmin();
+    admin = getAdmin();
 
     const { data: attempt, error: attemptErr } = await admin
       .from('attempts')
@@ -239,6 +241,7 @@ async function saveSpeakingScore({
       console.error('speaking attempt insert failed:', attemptErr?.message || 'no row');
       return;
     }
+    attemptId = attempt.id;
 
     const { error: scoreErr } = await admin.from('scores').insert({
       attempt_id: attempt.id,
@@ -248,9 +251,22 @@ async function saveSpeakingScore({
       criteria,
       model,
     });
-    if (scoreErr) console.error('speaking score insert failed:', scoreErr.message);
+    if (scoreErr) {
+      console.error('speaking score insert failed:', scoreErr.message);
+      await rollbackSpeakingAttempt(admin, attemptId);
+    }
   } catch (e) {
     console.error('saveSpeakingScore error:', e.message);
+    if (admin && attemptId) await rollbackSpeakingAttempt(admin, attemptId);
+  }
+}
+
+async function rollbackSpeakingAttempt(admin, attemptId) {
+  try {
+    const { error } = await admin.from('attempts').delete().eq('id', attemptId);
+    if (error) throw error;
+  } catch (error) {
+    console.error('speaking attempt rollback failed:', error.message);
   }
 }
 

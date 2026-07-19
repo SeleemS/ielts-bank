@@ -28,7 +28,14 @@ const state = {
   quotaReject: null,
   rpcCalls: [],
   removedPaths: [],
+  tableCalls: [],
+  scoreError: null,
+  scoreReject: null,
+  deletedAttemptIds: [],
 };
+
+const chatCompletionWithFallback = vi.fn();
+vi.mock('../lib/openaiChat', () => ({ chatCompletionWithFallback }));
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -70,13 +77,50 @@ vi.mock('@supabase/supabase-js', () => ({
           maybeSingle: async () => {
             if (table === 'users' && state.planReject) throw state.planReject;
             return {
-              data: table === 'users' ? state.planRow : null,
+              data:
+                table === 'users'
+                  ? state.planRow
+                  : table === 'passages'
+                    ? {
+                        id: 'passage-id',
+                        title: 'A memorable journey',
+                        speaking_details: null,
+                      }
+                    : null,
               error: table === 'users' ? state.planError : null,
             };
           },
         };
         return chain;
       },
+      insert: (values) => {
+        state.tableCalls.push({ table, values });
+        if (table === 'attempts') {
+          return {
+            select: () => ({
+              single: async () => ({
+                data: { id: 'attempt-id' },
+                error: null,
+              }),
+            }),
+          };
+        }
+        if (table === 'scores' && state.scoreReject) {
+          return Promise.reject(state.scoreReject);
+        }
+        return Promise.resolve({
+          data: null,
+          error: table === 'scores' ? state.scoreError : null,
+        });
+      },
+      delete: () => ({
+        eq: async (column, value) => {
+          if (table === 'attempts' && column === 'id') {
+            state.deletedAttemptIds.push(value);
+          }
+          return { data: null, error: null };
+        },
+      }),
     }),
     storage: {
       from: () => ({
@@ -165,6 +209,11 @@ describe('POST /api/score/speaking quota safety', () => {
     state.quotaReject = null;
     state.rpcCalls = [];
     state.removedPaths = [];
+    state.tableCalls = [];
+    state.scoreError = null;
+    state.scoreReject = null;
+    state.deletedAttemptIds = [];
+    chatCompletionWithFallback.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -332,6 +381,121 @@ describe('POST /api/score/speaking quota safety', () => {
       p_free: false,
       p_consumed_at: '2026-07-19T12:00:00.000Z',
     });
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('removes the attempt when its score row cannot be persisted', async () => {
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    state.scoreError = new Error('score insert failed');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { 'content-type': 'audio/webm' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            text:
+              'I enjoy travelling because it teaches me about different people and cultures while helping me become more independent and adaptable.',
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }
+        )
+      );
+    chatCompletionWithFallback.mockResolvedValue({
+      ok: true,
+      status: 200,
+      model: 'gpt-5.1',
+      payload: {
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 2,
+                criteria: {
+                  fluencyCoherence: { band: 6.5, feedback: 'Clear progression.' },
+                  lexicalResource: { band: 7, feedback: 'Good range.' },
+                  grammaticalRange: { band: 7.5, feedback: 'Varied structures.' },
+                },
+                summary: 'A capable response.',
+                improvements: ['Develop examples further.'],
+              }),
+            },
+          },
+        ],
+      },
+      detail: '',
+    });
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.overallBand).toBe(7);
+    expect(state.tableCalls.map(({ table }) => table)).toEqual([
+      'attempts',
+      'scores',
+    ]);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('removes the attempt when score persistence rejects', async () => {
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    state.scoreReject = new Error('score network failure');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { 'content-type': 'audio/webm' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            text:
+              'I enjoy travelling because it teaches me about different people and cultures while helping me become more independent and adaptable.',
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }
+        )
+      );
+    chatCompletionWithFallback.mockResolvedValue({
+      ok: true,
+      status: 200,
+      model: 'gpt-5.1',
+      payload: {
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 7,
+                criteria: {
+                  fluencyCoherence: { band: 6.5, feedback: 'Clear progression.' },
+                  lexicalResource: { band: 7, feedback: 'Good range.' },
+                  grammaticalRange: { band: 7.5, feedback: 'Varied structures.' },
+                },
+                summary: 'A capable response.',
+                improvements: ['Develop examples further.'],
+              }),
+            },
+          },
+        ],
+      },
+      detail: '',
+    });
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 });
