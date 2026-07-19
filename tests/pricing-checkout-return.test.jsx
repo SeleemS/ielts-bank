@@ -1,0 +1,182 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { act } from 'react-dom/test-utils';
+
+const testState = vi.hoisted(() => ({
+  router: {
+    isReady: true,
+    query: {},
+  },
+  user: null,
+  authLoading: false,
+  accessToken: 'test-access-token',
+}));
+
+vi.mock('next/head', () => ({
+  default: ({ children }) => React.createElement(React.Fragment, null, children),
+}));
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...rest }) =>
+    React.createElement('a', { href, ...rest }, children),
+}));
+vi.mock('next/router', () => ({
+  useRouter: () => testState.router,
+}));
+vi.mock('../src/components/Navbar', () => ({
+  default: () => React.createElement('nav'),
+}));
+vi.mock('../src/components/Footer', () => ({
+  default: () => React.createElement('footer'),
+}));
+vi.mock('../src/components/auth/SignInDialog', () => ({
+  default: () => null,
+}));
+vi.mock('../src/components/question/WritingScoreReport', () => ({
+  default: () => React.createElement('div', null, 'Sample report'),
+}));
+vi.mock('../src/lib/auth', () => ({
+  useAuth: () => ({
+    user: testState.user,
+    loading: testState.authLoading,
+  }),
+}));
+vi.mock('../src/lib/usePlan', () => ({
+  usePlan: () => ({
+    isPremium: false,
+    planStatus: 'inactive',
+    renewsAt: null,
+    expiresAt: null,
+    hasBillingAccount: false,
+    loading: false,
+  }),
+}));
+vi.mock('../lib/supabase', () => ({
+  getSupabase: () => ({
+    auth: {
+      getSession: async () => ({
+        data: {
+          session: {
+            access_token: testState.accessToken,
+          },
+        },
+      }),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: null }),
+        }),
+      }),
+    }),
+  }),
+}));
+vi.mock('../lib/billing', () => ({
+  isPppCountry: () => false,
+}));
+vi.mock('../src/lib/analytics', () => ({
+  track: vi.fn(),
+}));
+vi.mock('../lib/pricingSeo', () => ({
+  PRICING_SEO: {
+    title: 'Pricing test',
+    description: 'Pricing description',
+    canonical: 'https://www.ielts-bank.com/pricing',
+    ogImage: 'https://www.ielts-bank.com/api/og?type=pricing',
+    imageAlt: 'Pricing',
+  },
+}));
+
+import PricingPage from '../pages/pricing';
+import { track } from '../src/lib/analytics';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+let container;
+let root;
+
+async function renderPage() {
+  await act(async () => {
+    root.render(<PricingPage />);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+beforeEach(() => {
+  testState.router = {
+    isReady: true,
+    query: {
+      checkout: 'success',
+      session_id: 'cs_test_checkout_return',
+    },
+  };
+  testState.user = null;
+  testState.authLoading = false;
+  testState.accessToken = 'test-access-token';
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  global.fetch = vi.fn();
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+  delete global.fetch;
+  vi.clearAllMocks();
+});
+
+describe('pricing checkout return verification', () => {
+  it('does not claim success for a signed-out forged checkout URL', async () => {
+    await renderPage();
+
+    expect(container.textContent).not.toContain("You're in. Do this first:");
+    expect(container.textContent).toContain(
+      'Sign in with the account used at checkout to confirm Premium access.'
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(track).not.toHaveBeenCalledWith(
+      'purchase_success',
+      expect.anything()
+    );
+  });
+
+  it('does not record or display a purchase when verification fails', async () => {
+    testState.user = { id: 'user-1' };
+    global.fetch.mockResolvedValue({ ok: false });
+
+    await renderPage();
+
+    expect(container.textContent).not.toContain("You're in. Do this first:");
+    expect(container.textContent).toContain(
+      'Premium access could not be confirmed yet.'
+    );
+    expect(track).not.toHaveBeenCalledWith(
+      'purchase_success',
+      expect.anything()
+    );
+  });
+
+  it('shows activation and tracks the purchase only after server verification', async () => {
+    testState.user = { id: 'user-1' };
+    global.fetch.mockResolvedValue({ ok: true });
+
+    await renderPage();
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/billing/verify-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer test-access-token',
+      },
+      body: JSON.stringify({ session_id: 'cs_test_checkout_return' }),
+    });
+    expect(container.textContent).toContain("You're in. Do this first:");
+    expect(track).toHaveBeenCalledWith('purchase_success', {
+      source: 'pricing',
+    });
+  });
+});

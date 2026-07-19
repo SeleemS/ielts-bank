@@ -183,7 +183,7 @@ function ActivationChecklist({ upgrade }) {
 
 export default function PricingPage({ regionalPricing = false, country = '' }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const {
     isPremium,
     planStatus,
@@ -231,7 +231,6 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     if (checkoutStatus !== 'success' || !sessionId || !user?.id) return;
     if (trackedRef.current.purchase === sessionId) return;
     trackedRef.current.purchase = sessionId;
-    track('purchase_success', { source: upgrade || 'pricing' });
     setActivation('checking');
     getSupabase()
       .auth.getSession()
@@ -246,7 +245,12 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         })
       )
       .then((response) => {
-        setActivation(response.ok ? 'active' : 'delayed');
+        if (response.ok) {
+          track('purchase_success', { source: upgrade || 'pricing' });
+          setActivation('active');
+        } else {
+          setActivation('delayed');
+        }
       })
       .catch(() => setActivation('delayed'));
   }, [checkoutStatus, sessionId, upgrade, user?.id]);
@@ -342,21 +346,27 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           ) : null}
         </header>
 
-        {checkoutStatus === 'success' ? (
-          <>
-            <ActivationChecklist upgrade={upgrade} />
-            {activation === 'checking' ? (
-              <p className="mt-3 text-center text-sm text-muted-foreground">
+        {checkoutStatus === 'success' && activation === 'active' ? (
+          <ActivationChecklist upgrade={upgrade} />
+        ) : null}
+        {checkoutStatus === 'success' && activation !== 'active' ? (
+          <div
+            role="status"
+            className="mx-auto mt-6 max-w-xl rounded-lg border bg-muted p-4 text-center text-sm text-muted-foreground"
+          >
+            {authLoading || (user?.id && sessionId && activation !== 'delayed') ? (
+              <>
                 <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
                 Confirming Premium access…
-              </p>
-            ) : null}
-            {activation === 'delayed' ? (
-              <p className="mt-3 text-center text-sm text-amber-700">
-                Payment succeeded and activation is still syncing. Your access will appear shortly.
-              </p>
-            ) : null}
-          </>
+              </>
+            ) : !sessionId ? (
+              'This checkout return is missing its verification reference. Open Pricing from your account and try again.'
+            ) : !user?.id ? (
+              'Sign in with the account used at checkout to confirm Premium access.'
+            ) : (
+              'Premium access could not be confirmed yet. If checkout completed, wait a moment and refresh while signed in to the purchasing account.'
+            )}
+          </div>
         ) : null}
         {checkoutStatus === 'canceled' ? (
           <div className="mx-auto mt-6 max-w-xl rounded-lg border bg-muted p-4 text-center text-sm text-muted-foreground">
