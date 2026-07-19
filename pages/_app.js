@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '../src/lib/auth';
 import { trackPageView } from '../src/lib/analytics';
 import ConsentManager from '../src/components/ConsentManager';
 import InteractionTelemetry from '../src/components/InteractionTelemetry';
+import { adsAllowedForPath } from '../src/lib/adPolicy';
 
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 const ADSENSE_CLIENT = 'ca-pub-5189362957619937';
@@ -35,7 +36,7 @@ function AppTelemetry({ router }) {
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [adsOnPublicHost, setAdsOnPublicHost] = React.useState(false);
-  const adsAllowed = !/^\/(?:dashboard|auth|band-estimator|ielts-writing-checker|mock(?:\/|$)|(?:reading|writing|listening|speaking)question\/)/.test(router.asPath);
+  const adsAllowed = adsAllowedForPath(router.asPath);
   React.useEffect(() => {
     setAdsOnPublicHost(/(^|\.)ielts-bank\.com$/i.test(window.location.hostname));
   }, []);

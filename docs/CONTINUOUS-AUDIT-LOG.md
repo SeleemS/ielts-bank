@@ -77,6 +77,22 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused metadata tests, full Vitest suite, ESLint, production build, all 13
   generated HTML metadata checks, OG image response check, and live deployment checks.
 
+## CA-005 — Pricing and billing routes loaded AdSense
+
+- Status: `FIXED`
+- Area: Pricing / payments / runtime quality
+- Severity: High
+- Evidence: live browser QA on `/pricing` loaded the AdSense runtime and recorded the third-party
+  warning `AdSense head tag doesn't support data-nscript attribute` plus an uncaught promise error.
+  Ads also added avoidable latency and distraction to checkout and post-checkout surfaces.
+- Fix: extracted the site ad-route policy and excluded `/pricing`, pricing success/cancel query
+  states, and all `/billing/*` routes from AdSense loading.
+- Regression coverage: `src/lib/adPolicy.test.js` checks every ad-free acquisition/account/payment
+  route and confirms editorial/list pages remain eligible.
+- Commit: `Keep payment routes ad free`
+- Verification: focused policy tests, full Vitest suite, ESLint, analytics audit, production build,
+  generated bundle inspection, and clean live pricing/billing console checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
