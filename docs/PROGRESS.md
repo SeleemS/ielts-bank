@@ -54,7 +54,7 @@ Last updated: 2026-07-19
 - 5.2 `DONE` — shared quota panel on checker/Writing/Speaking and accessible waitlist modal for `402`/`429`.
 - 5.3 `DONE` — score-another, quota-remaining, waitlist and onward-practice CTAs after Writing and Speaking results.
 - 5.4 `DONE` — result cross-sell plus newsletter coverage on results, homepage, calculator, blog and scoring surfaces; Resend-backed signup, purchase, weekly, and win-back lifecycle delivery is implemented.
-- 5.5 `DONE` — Stripe billing and `/pricing` now include server-selected PPP, Monthly/6-month/Annual subscriptions, a non-renewing Exam Pass, checkout reconciliation, idempotent activation telemetry, a pause/cancel interstitial, and the Customer Portal. The July 19 production migration still requires explicit deployment approval.
+- 5.5 `DONE` — Stripe billing and `/pricing` include server-selected PPP, Monthly/6-month/Annual subscriptions, a non-renewing Exam Pass, checkout reconciliation, idempotent activation telemetry, a pause/cancel interstitial, and the Customer Portal. Both July 19 production migrations are applied and advisor-verified.
 - 5.6 `DONE` — explicit blog/section-list units, public-host-only AdSense loading, and exclusions for dashboard/auth/scoring/results/mock/question-detail surfaces. `OWNER` activation: set `NEXT_PUBLIC_ADSENSE_SLOT_IN_CONTENT` to render the explicit units and monitor AdSense thin-page reports.
 
 ## Phase 6 — Tech debt and hardening
@@ -67,10 +67,10 @@ Last updated: 2026-07-19
 ## Final verification record
 
 - `npm run lint`: pass, zero warnings/errors.
-- Latest monetization verification: 16 files, 158 tests passed; production build generated 525 static pages.
+- Latest monetization verification: 17 test files / 139 tests passed; production build generated 527 static pages.
 - `npm audit`: 0 vulnerabilities across production and development dependencies.
 - `git diff --check`: pass.
-- `npm run build`: pass on Next 15.5.20; 521 static pages generated.
+- `npm run build`: pass on Next 15.5.20; 527 static pages generated.
 - Production HTTP: CSP enforced; spoofed scoring origin `403`; unsigned Writing `401`; invalid telemetry `400`; valid telemetry `202`; CSP report `204`.
 - Browser QA: mock answering and refresh resume, Reading explanations, Listening transcript, Writing model-answer reveal, updated privacy copy, four-skill homepage copy, and zero first-party console warnings/errors on the final production build.
 - Live database: 1,269 explanations; 45/45 transcripts; 144/144 model answers/rationales; 31/31 Academic Task 1 SVGs; five published mocks and all are exactly 40 questions; telemetry RLS enabled; quota function ACL/security configuration verified.
@@ -82,4 +82,4 @@ Last updated: 2026-07-19
 3. Register GA4 custom dimensions and confirm the sitemap in Google Search Console.
 4. Verify the Resend sending domain and production lifecycle-email environment values.
 5. Add the explicit AdSense slot ID if desired now.
-6. Verify all eight Stripe lookup-key prices, `invoice.paid` webhook delivery, Radar, Tax, and the win-back coupon.
+6. Monitor Stripe webhook delivery/Radar and finish Stripe Tax setup; all eight lookup-key prices, `invoice.paid`, the win-back coupon, and managed portal are configured.

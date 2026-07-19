@@ -1,6 +1,6 @@
 # ielts-bank.com — Monetization Plan
 
-**Status:** Implemented monetization system — **payments live on Stripe; July 19 migration pending production approval**
+**Status:** Implemented monetization system — **payments live on Stripe; July 19 production migrations applied and verified**
 **Last updated:** 2026-07-19
 **Owner:** Founder / eng
 **Scope:** How ielts-bank.com goes from free + AdSense to a paid, AI-scoring subscription business without breaking its SEO engine.
