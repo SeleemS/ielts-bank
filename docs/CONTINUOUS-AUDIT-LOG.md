@@ -1890,6 +1890,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   rate-limit row, pause claim, Stripe subscription, payment, entitlement, or account state was
   created or changed.
 
+## CA-084 — Newsletter unsubscribe network failures escaped the route contract
+
+- Status: `FIXED`
+- Area: Lifecycle email / newsletter unsubscribe / Supabase failure recovery
+- Severity: High
+- Evidence: after validating a signed unsubscribe link, the route awaited its Supabase update
+  without a rejection guard. A network-level failure or client-construction exception could escape
+  the handler as an uncontrolled server error instead of returning the route's intended temporary-
+  unavailability response. Only the generic wrong-method contract was tested; no route test proved
+  valid signed updates, forged-link rejection, missing configuration, or dependency failures.
+- Fix: guard both admin-client construction and the signed subscriber update, treat resolved and
+  rejected database failures identically, log the operational cause server-side, and always return
+  the neutral HTTP 503 response without exposing provider details.
+- Regression coverage: a new six-case route suite proves GET-only behavior with `Allow: GET`, forged
+  token rejection before admin-client creation, controlled missing-configuration handling, exact
+  normalized-email updates for a valid HMAC link, and HTTP 503 recovery for both resolved and
+  rejected Supabase failures. Existing lifecycle rendering, provider suppression, token-secret,
+  and shared API-method contracts run alongside it.
+- Commit: `8303eaf` (`Recover newsletter unsubscribe failures`)
+- Verification: focused three-file/15-test unsubscribe and lifecycle coverage, the complete
+  73-file/436-test Vitest suite, ESLint, the strict 156-file analytics audit covering 269
+  interactive controls, and the 528-page production build passed. Vercel deployment
+  `dpl_FN8CtaXQ2VnrSxQJGjbNch6GH5nW` reached `READY` from exact Git SHA
+  `8303eaf553ed909c8b5f21162ec08e2e3e1dec84`. Fresh production probes returned HTTP 405 with
+  `Allow: GET` for POST and HTTP 400 for a deliberately forged signed link, both before database
+  access. The valid-link and injected failure paths were verified in tests; no subscriber,
+  lifecycle-email, provider, account, or consent state was created or changed in production.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
