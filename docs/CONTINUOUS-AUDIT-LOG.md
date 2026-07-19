@@ -360,7 +360,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused 3-test schema coverage, the complete current-worktree 39-file/221-test
   Vitest suite, ESLint, analytics audit, and the 527-page production build. Exact generated HTML
   inspection parsed and validated the canonical learning-resource and breadcrumb graph on all 80
-  Speaking exercise pages. Live production verification will be recorded after deployment.
+  Speaking exercise pages. The clean Vercel build from the committed fix reached `Ready` with the
+  production aliases. Live production verification fetched and parsed all 80 pages with zero
+  failures; every resource and final breadcrumb matched the page canonical and every page returned
+  HTTP 200.
 
 ## Investigation notes
 
