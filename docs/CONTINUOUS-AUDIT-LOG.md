@@ -2096,6 +2096,35 @@ False positives are kept in the investigation notes so they are not rediscovered
   dependencies rather than by disrupting the live function; no database, email, account, payment,
   consent, content, or provider state changed.
 
+## CA-091 — A best-effort report email failure retried an already-persisted cron run
+
+- Status: `FIXED`
+- Area: Analytics / scheduled daily report / Resend delivery recovery
+- Severity: High
+- Evidence: report email is documented as best-effort after `daily_reports` persistence. Resend HTTP
+  failures returned a neutral `{sent:false}` result, but a rejected `fetch` escaped to the route's
+  outer catch and changed the completed run to HTTP 503. Vercel Cron could then retry an already-
+  persisted report; if Resend had accepted the first request before its response was lost, that
+  retry could deliver a duplicate administrative email.
+- Fix: contain the complete provider request inside the best-effort delivery boundary. Confirmed
+  HTTP failures and rejected network calls now log only an operational cause and return distinct
+  non-throwing reasons while preserving HTTP 200 for the durable report. Required report queries
+  and persistence still fail closed.
+- Regression coverage: the expanded 12-case daily-report suite proves a successful Resend request's
+  endpoint, bearer header, recipient, subject, and rendered HTML; preserves the report across a
+  provider HTTP 503; preserves it across a rejected network call; and requires exactly one durable
+  upsert in every delivery outcome. All persistence, optional-RPC, source, auth, method, and
+  configuration cases remain covered.
+- Commit: `9a43a97` (`Keep report email delivery fail-soft`)
+- Verification: the focused 12-test daily-report suite, the complete 77-file/473-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_Cfawr2i87pj53tJQb6nxnrRb8gAf` reached `READY`
+  from exact Git SHA `9a43a97a4246b95e3b6231b1abba8b760d7ed7b6`. Fresh production probes returned
+  HTTP 405 for POST and HTTP 401 for an invalid bearer-secret GET, both before persistence or email
+  delivery. Provider success, HTTP failure, and network rejection were verified with injected
+  `fetch` responses rather than by sending administrative email; no database, email, account,
+  payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
