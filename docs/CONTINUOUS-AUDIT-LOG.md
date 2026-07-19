@@ -1376,6 +1376,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   HTTP 401 for a same-origin unauthenticated scoring request. No live quota, storage, or OpenAI
   mutation occurred.
 
+## CA-062 — Realtime Speaking trusted model arithmetic for the overall band
+
+- Status: `FIXED`
+- Area: Realtime examiner / transcript scoring / IELTS band calculation / persistence
+- Severity: High
+- Evidence: realtime transcript scoring returned and persisted the model-provided overall without
+  validating the three criterion values or checking their arithmetic. A structurally parseable
+  response could therefore contradict its own criteria or persist an incomplete score.
+- Fix: validate Fluency and Coherence, Lexical Resource, and Grammatical Range as whole/half IELTS
+  bands; compute their mean with the shared nearest-half rounding helper; and override the model
+  overall before response and persistence. Malformed criterion results now return HTTP 502 without
+  creating an attempt or score.
+- Regression coverage: a successful route case deliberately supplies a model overall of 3.0 with
+  criterion bands 6.5, 7.5, and 8.0, then requires 7.5 in the response, attempt, and score. A
+  missing-criterion case requires HTTP 502 and zero persistence.
+- Commit: `593f3ca` (`Compute realtime speaking bands server-side`)
+- Verification: focused 26-test realtime/recorded Speaking route and schema coverage, the complete
+  current-worktree 66-file/378-test Vitest suite, ESLint, the 150-file analytics audit, and the
+  528-page production build all passed. Vercel deployed the commit successfully. Fresh
+  non-mutating production probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and
+  HTTP 401 for a same-origin unauthenticated scoring request. No live limiter, OpenAI, or
+  persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
