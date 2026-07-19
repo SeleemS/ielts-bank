@@ -512,6 +512,17 @@ async function sendEmail(report, history) {
   }
 }
 
+function isCompletedUtcDate(value, now = Date.now()) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+  const timestamp = Date.parse(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(timestamp)) return false;
+  const canonical = new Date(timestamp).toISOString().slice(0, 10);
+  const today = new Date(now).toISOString().slice(0, 10);
+  return canonical === value && value < today;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -520,16 +531,20 @@ export default async function handler(req, res) {
   const expected = process.env.CRON_SECRET;
   if (!expected || req.headers.authorization !== `Bearer ${expected}`) return res.status(401).end();
 
+  const override = req.query?.date;
+  if (override !== undefined && !isCompletedUtcDate(override)) {
+    return res
+      .status(400)
+      .json({ error: 'Date must be a completed UTC day in YYYY-MM-DD format.' });
+  }
+
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return res.status(503).json({ error: 'Report is not configured.' });
   const admin = createClient(url, key, { auth: { persistSession: false } });
 
   // Default: yesterday (UTC). ?date=YYYY-MM-DD overrides for backfills.
-  const override = typeof req.query.date === 'string' ? req.query.date : '';
-  const reportDate = /^\d{4}-\d{2}-\d{2}$/.test(override)
-    ? override
-    : new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  const reportDate = override || new Date(Date.now() - 864e5).toISOString().slice(0, 10);
 
   try {
     const [report, history] = await Promise.all([

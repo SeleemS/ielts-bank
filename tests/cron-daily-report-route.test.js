@@ -223,6 +223,61 @@ describe('GET /api/cron/daily-report persistence', () => {
     expect(state.clientCreations).toBe(0);
   });
 
+  it.each([
+    ['malformed', 'not-a-date'],
+    ['empty', ''],
+    ['impossible', '2026-02-31'],
+    ['non-scalar', ['2026-07-18', '2026-07-17']],
+    ['future', '2099-01-01'],
+  ])('rejects an explicit %s backfill date before database work', async (_case, date) => {
+    const res = await callRoute({ query: { date } });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody).toEqual({
+      error: 'Date must be a completed UTC day in YYYY-MM-DD format.',
+    });
+    expect(state.clientCreations).toBe(0);
+    expect(state.upsertCalls).toEqual([]);
+  });
+
+  it('rejects the current UTC day because it is not a completed report period', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(
+      Date.parse('2026-07-19T12:00:00.000Z')
+    );
+
+    const res = await callRoute({ query: { date: '2026-07-19' } });
+
+    expect(res.statusCode).toBe(400);
+    expect(state.clientCreations).toBe(0);
+  });
+
+  it('accepts a real leap-day backfill and preserves its exact UTC range', async () => {
+    const res = await callRoute({ query: { date: '2024-02-29' } });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.report.date).toBe('2024-02-29');
+    expect(state.rpcCalls[0]).toEqual({
+      name: 'returning_visitor_stats',
+      args: {
+        p_start: '2024-02-29T00:00:00.000Z',
+        p_end: '2024-03-01T00:00:00.000Z',
+      },
+    });
+    expect(state.upsertCalls[0].values.report_date).toBe('2024-02-29');
+  });
+
+  it('defaults to the previous completed UTC day when no override is supplied', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(
+      Date.parse('2026-07-19T12:00:00.000Z')
+    );
+
+    const res = await callRoute({ query: {} });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.report.date).toBe('2026-07-18');
+    expect(state.upsertCalls[0].values.report_date).toBe('2026-07-18');
+  });
+
   it('persists the generated report before returning success', async () => {
     state.totalUsers = 12;
     const fetch = vi.spyOn(globalThis, 'fetch');
