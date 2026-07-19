@@ -187,6 +187,16 @@ export async function getStaticProps() {
     );
   }
 
+  // A dropped index in selectGroups would silently shrink the set below the
+  // 10 questions the copy and band scaling assume — fail the build instead.
+  const countQuestions = (groups) => groups.reduce((n, g) => n + (g.questions?.length || 0), 0);
+  for (const [label, groups] of [['reading', readingGroups], ['listening', listeningGroups]]) {
+    const count = countQuestions(groups);
+    if (count !== 10) {
+      throw new Error(`Band estimator: ${label} set resolved ${count} questions, expected exactly 10.`);
+    }
+  }
+
   return {
     props: {
       readingGroups,

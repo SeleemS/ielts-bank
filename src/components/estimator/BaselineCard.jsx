@@ -2,6 +2,7 @@ import * as React from 'react';
 import NextLink from 'next/link';
 import { Gauge, ArrowRight } from 'lucide-react';
 import { formatBand } from './score';
+import { ESTIMATOR_VERSION } from '../../../lib/estimatorConfig';
 
 const RESULT_KEY = 'ielts-estimator-result';
 
@@ -16,7 +17,12 @@ export default function BaselineCard() {
     if (typeof window === 'undefined') return;
     try {
       const raw = window.localStorage.getItem(RESULT_KEY);
-      if (raw) setResult(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // A result from a rotated question set shouldn't render as a current
+        // baseline — the bands aren't comparable across set versions.
+        if (parsed && parsed.version === ESTIMATOR_VERSION) setResult(parsed);
+      }
     } catch {
       /* storage unavailable / bad JSON — show nothing */
     }

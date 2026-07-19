@@ -34,7 +34,7 @@ function AppTelemetry({ router }) {
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [adsOnPublicHost, setAdsOnPublicHost] = React.useState(false);
-  const adsAllowed = !/^\/(?:dashboard|auth|ielts-writing-checker|mock(?:\/|$)|(?:reading|writing|listening|speaking)question\/)/.test(router.asPath);
+  const adsAllowed = !/^\/(?:dashboard|auth|band-estimator|ielts-writing-checker|mock(?:\/|$)|(?:reading|writing|listening|speaking)question\/)/.test(router.asPath);
   React.useEffect(() => {
     setAdsOnPublicHost(/(^|\.)ielts-bank\.com$/i.test(window.location.hostname));
   }, []);
