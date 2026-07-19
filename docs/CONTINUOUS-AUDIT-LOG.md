@@ -1097,6 +1097,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter, OpenAI call, or score record was created.
 
+## CA-050 — Transcript-scoring limiter rejections escaped fail-closed handling
+
+- Status: `FIXED`
+- Area: Realtime examiner / transcript scoring / global and IP rate limits / cost controls
+- Severity: High
+- Evidence: the transcript-scoring route awaited both `check_rate_limit` RPCs directly. It handled
+  resolved Supabase errors but not rejected promises, so a network-level limiter failure escaped
+  instead of returning the route's controlled temporary-unavailable response.
+- Fix: route both global and per-IP checks through one rejection-safe helper. Resolved errors and
+  rejected RPCs return HTTP 503, verified global exhaustion remains fail-closed HTTP 503, and only
+  a successful global check followed by a verified per-IP denial returns HTTP 429. Scoring never
+  reaches transcript validation, OpenAI, or persistence on these paths.
+- Regression coverage: the dedicated route suite now covers resolved limiter error, rejected RPC,
+  global exhaustion, and per-IP denial in addition to its method, origin, auth, and entitlement
+  cases. It asserts the exact limiter order and confirms the first failure stops later checks.
+- Commit: `7656822` (`Fail closed on transcript limiter rejections`)
+- Verification: focused 10-test transcript-scoring route coverage, the complete current-worktree
+  63-file/333-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No limiter-backed scoring work or OpenAI call was initiated.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
