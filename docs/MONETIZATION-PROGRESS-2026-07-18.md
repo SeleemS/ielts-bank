@@ -52,7 +52,7 @@ Last updated: 2026-07-19
 2. `OWNER` — add `invoice.paid` to the enabled Stripe events. The exact live URL is correct and enabled; all other required event types are present.
 3. `OWNER` — finish Stripe Tax setup (`pending` in the live account), confirm Radar, and add `STRIPE_AUTOMATIC_TAX=1` to Vercel Production.
 4. `OWNER` — create a 40%-off Monthly coupon and set `STRIPE_WINBACK_COUPON_ID`.
-5. `OWNER` — verify the Resend sending domain and set `EMAIL_FROM`; `RESEND_API_KEY` is present in Vercel Production.
+5. `OWNER` — verify the Resend sending domain and set `EMAIL_FROM` if a dedicated sender is desired; `RESEND_API_KEY` and the working `REPORT_FROM` fallback are present in Vercel Production.
 6. `OWNER` — change the apex-to-www redirect from the verified current 307 to permanent 308 in Vercel.
 7. `OWNER` — verify Supabase OTP templates render `{{ .Token }}` and rotate the previously exposed service-role/database credentials.
 
@@ -67,7 +67,8 @@ Last updated: 2026-07-19
 - Checkpoint 7: activation/lifecycle review keyed purchase onboarding to each Checkout Session; Speaking now refunds its daily unit on every pre-result failure and immediately deletes uploaded voice data on transcription/validation failures.
 - Checkpoint 8: cancellation review made the advertised one-time pause durable, rejected stale/expired entitlements before Stripe mutation, and hid the pause offer after use.
 - Checkpoint 9: Realtime review replaced the read-then-write compensation path with a service-role-only, atomic, idempotent refund RPC; a missing-function-only compatibility path prevents lost minutes before the production migration lands without risking double-refunds after ambiguous failures. Focused route tests, ESLint, migration diff checks, and an isolated production dry-run pass.
-- Final local verification: `git diff --check`, ESLint, 17 test files / 137 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
+- Checkpoint 10: plan reconciliation made both Realtime mint limiters fail closed on infrastructure errors, removed an implied human-certification claim from the examiner prompt, replaced uncaveated “unlimited”/60-minute UI claims with the actual fair-use and regional allowances, aligned the monetization source-of-truth and environment template with the live model/configuration choices, and upgraded the Stripe catalog utility to audit/provision all eight lookup keys without creating test discounts by default.
+- Final local verification: `git diff --check`, ESLint, 17 test files / 139 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
 - Browser QA: 375px anonymous estimator flow reached a 6.0 result with skipped measured sections and completed W/S ranges; contextual Writing pricing rendered all four plans, trust content, guarantee, and comparison table; both pages had zero browser console warnings/errors.
 - API QA: unsigned Writing, Premium mock payload, and checkout reconciliation all reject with `401`; unauthorized lifecycle cron rejects with `401`; invalid unsubscribe token rejects with `400`; static mock HTML is metadata-only.
 - Production database migration: isolated dry-run contains exactly `20260719010159_monetization_funnel_and_free_writing_score.sql`; live schema probes confirm the monetization columns, free-Writing marker, billing event key, and lifecycle outbox are not present yet. Production apply is pending explicit live-schema approval.

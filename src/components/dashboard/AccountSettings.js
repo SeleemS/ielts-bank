@@ -152,7 +152,7 @@ function PlanSettings({ profile }) {
   return (
     <section className="overflow-hidden rounded-3xl bg-slate-950 p-5 text-white shadow-[0_24px_65px_-35px_rgba(2,6,23,0.9)] sm:p-7">
       <div className="flex items-start justify-between gap-4">
-        <div><div className="flex items-center gap-2 text-emerald-300"><Sparkles className="h-4 w-4" /><span className="text-xs font-bold uppercase tracking-[0.18em]">Membership</span></div><h2 className="mt-3 text-2xl font-black">{isPremium ? 'Premium plan' : 'Free plan'}</h2><p className="mt-2 text-sm leading-6 text-slate-300">{isPremium ? 'Your premium learning tools are active.' : 'Upgrade for unlimited AI feedback, full mock tests, and live examiner minutes.'}</p></div>
+        <div><div className="flex items-center gap-2 text-emerald-300"><Sparkles className="h-4 w-4" /><span className="text-xs font-bold uppercase tracking-[0.18em]">Membership</span></div><h2 className="mt-3 text-2xl font-black">{isPremium ? 'Premium plan' : 'Free plan'}</h2><p className="mt-2 text-sm leading-6 text-slate-300">{isPremium ? 'Your premium learning tools are active.' : 'Upgrade for daily fair-use AI feedback, full mock tests, and live examiner minutes.'}</p></div>
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-emerald-300"><CreditCard className="h-5 w-5" /></span>
       </div>
       {profile.plan_renews_at && <p className="mt-5 text-xs text-slate-400">{profile.plan_status === 'canceled' ? 'Access until' : 'Renews'} {new Date(profile.plan_renews_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>}

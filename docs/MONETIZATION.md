@@ -18,7 +18,7 @@
 - **Free metering:** anonymous users sign up first; each signed-in free account receives **1 lifetime Writing score** on the mini model. The result reveals the overall band and first criterion, with the rest teased behind Premium. Speaking stays Premium-only.
 - **Premium limits (§5.3):** Writing 2 AI scores/day, async Speaking 1/day (marketed as unlimited; these are abuse caps), Realtime examiner **60 min/month** (30 on PPP plans). Worst-case COGS hard-capped ≈ $4.50/user/mo; typical ≈ $0.90 → ~80% blended gross margin at $4.20 ARPU.
 - **Prices (USD, global list):** **$9.99/mo**, **hero SKU $29.99 / 6 months (~$5/mo)**, **$44.99/year (~$3.75/mo)**, and a **$14.99 non-renewing 28-day Exam Pass**. Eligible PPP markets use separate server-selected prices; Gulf markets remain full price.
-- **Payments:** **Stripe** (see decision note above) — Checkout + Billing subscriptions, webhook → `users.plan`; PPP implemented as separate Stripe Prices selected server-side by request geo (`x-vercel-ip-country`). Stripe Tax enabled for calculation/collection; tax registrations are our responsibility as MoR.
+- **Payments:** **Stripe** (see decision note above) — Checkout + Billing subscriptions, webhook → `users.plan`; PPP implemented as separate Stripe Prices selected server-side by request geo (`x-vercel-ip-country`). Stripe Tax support is implemented, but live activation remains pending account setup and `STRIPE_AUTOMATIC_TAX=1`; tax registrations are our responsibility as MoR.
 - **MVP paid launch:** Supabase Auth (anon → Google/email) → server-side metering → Writing scoring API → Stripe Checkout + webhook → `users.plan` gate. Everything else (analytics dashboards, speaking, exports) ships after money is flowing.
 
 ---
@@ -32,17 +32,17 @@
 | All Reading & Listening passages, questions, options, answer keys | These are the indexed, crawlable pages that rank. Content **is** the acquisition channel. Gating it kills the funnel. |
 | Auto-scoring for Reading/Listening (`answer_keys` compare, `band_tables` conversion) | Zero marginal cost (pure compute, no LLM). Auto-scoring is the hook that gets users to sign in and creates the "now try Writing" upgrade moment. |
 | Writing/Speaking **prompts** and cue cards | Same SEO logic — the prompt pages rank for "IELTS Task 2 sample question X". The scoring of a user's answer is the paid part, not the prompt. |
-| First AI scores (the free meter) | A prospect must feel the quality of the rubric-anchored feedback before paying. The free score is the demo. |
+| First AI Writing score (the lifetime sample) | A prospect must feel the quality of the rubric-anchored feedback before paying. The free Writing score is the demo; Speaking remains Premium-only. |
 
-**Principle:** *We never charge for content or for auto-scored skills. We charge for the marginal-cost, high-value thing: AI evaluation of a user's own Writing/Speaking, plus the retention layer (analytics, unlimited use, no ads).*
+**Principle:** *We never charge for content or for auto-scored skills. We use one Writing evaluation as the demo, then charge for continued Writing evaluation, all Speaking evaluation, and the retention layer (analytics, fair-use scoring, no ads).*
 
 ### 1.2 What is gate-able
 
-1. **AI Writing/Speaking scores beyond the free meter** — the core paid unit (real LLM cost, real value).
+1. **Writing scores after the lifetime sample, plus all Speaking scores** — the core paid unit (real LLM cost, real value).
 2. **Progress analytics** — trend of `scores.overall_band` and per-criterion `scores.criteria` over time, built from `attempts` + `scores`. Cheap to build, sticky, only meaningful once a user has history → natural subscriber perk.
 3. **Ad-free experience** — remove AdSense for subscribers (both a perk and an AdSense-policy hygiene win, §6).
 4. **Full mock tests / timed exam mode** — bundle 4 skills into one timed sitting with a combined band; a premium framing of existing content.
-5. **Model quality / turnaround** — free meter can use the cheaper model; paid can use the stronger scoring pass and priority queue.
+5. **Model quality / turnaround** — the lifetime Writing sample can use the cheaper model; paid scores use the stronger scoring pass and priority queue.
 6. **Exports** — PDF band report / feedback download (trivial to build, high perceived value for a study record).
 
 **Non-goals:** no gating of raw passage HTML, no login-wall on content pages (kills SEO + AdSense), no dark-pattern cancellation.
@@ -101,7 +101,7 @@ Funnel assumptions (industry-typical for free-content edtech): ~8% of sessions c
 
 - **Trigger to advance:** Stripe account live; webhook endpoint deployed; `users.plan` column live.
 - **Free:** content + one lifetime Writing sample score + basic own-history view + ads.
-- **Gated (Premium):** unlimited AI scores; progress analytics; ad-free; export; full mock mode; stronger scoring model.
+- **Gated (Premium):** continued Writing scoring and all Speaking scoring under the published fair-use caps; progress analytics; ad-free; export; full mock mode; stronger scoring model.
 - **Schema mapping (exact):**
   - `users.plan` in (`free`,`premium`) — the gate the scoring route checks.
   - `users.plan_status` (`active`,`past_due`,`canceled`,`refunded`).
@@ -407,9 +407,9 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 
 ### 9.2 Architecture (hybrid)
 
-- **Conduct** the interview on **`gpt-realtime-2.1-mini`** ($10/$20 per 1M audio tokens; ~$0.02–0.05/min with prompt caching — caching is mandatory: the API re-bills full conversation history each turn, ~98.75% discount cached). Client connects to OpenAI directly via WebRTC; our API route only mints short-lived ephemeral session tokens **after** the minutes-quota check, with hard session-duration caps.
+- **Conduct** the interview on the model selected by `OPENAI_REALTIME_MODEL`, defaulting to **`gpt-realtime-2.1`** after founder testing found the mini tier materially weaker. Client connects to OpenAI directly via WebRTC; our API route only mints short-lived ephemeral session tokens **after** the minutes-quota check, with hard session-duration caps.
 - **Score** afterwards with the existing `gpt-5.1` rubric-anchored pass over the captured transcript/audio (scoring trust stays in the strong text model — the voice model is the examiner, not the grader).
-- Flagship `gpt-realtime-2.1` ($32/$64) only if mini's examiner persona proves inadequate in testing — it consumes an entire PPP month's revenue in 3–4 mocks, so it is not the default.
+- Re-evaluate the mini tier only if its examiner quality improves enough to preserve the product experience; cost remains bounded by the monthly minute meter and hard session-duration caps.
 
 ### 9.3 Cost & metering
 

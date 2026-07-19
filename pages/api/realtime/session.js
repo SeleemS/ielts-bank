@@ -44,7 +44,7 @@ async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = 
   });
   if (error) {
     console.error('check_rate_limit error:', error.message);
-    return !failClosed;
+    return failClosed ? null : true;
   }
   return data === true;
 }
@@ -78,12 +78,33 @@ export default async function handler(req, res) {
   }
   const durationSeconds = MODES[mode].seconds;
 
-  // Rate limits: per-IP fails open (availability), global fails closed (spend).
+  // Both mint limits fail closed: an infrastructure outage must not create
+  // unbounded Realtime spend.
   const ip = clientIp(req);
-  if (!(await withinLimit('realtime-mint-ip', ip, PER_IP_WINDOW_SECONDS, PER_IP_MAX))) {
+  const ipWithinLimit = await withinLimit(
+    'realtime-mint-ip',
+    ip,
+    PER_IP_WINDOW_SECONDS,
+    PER_IP_MAX,
+    true
+  );
+  if (ipWithinLimit === null) {
+    return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
+  }
+  if (!ipWithinLimit) {
     return res.status(429).json({ error: 'Too many sessions started. Please wait a while.' });
   }
-  if (!(await withinLimit('realtime-mint-global', 'all', GLOBAL_WINDOW_SECONDS, GLOBAL_MAX, true))) {
+  const globalWithinLimit = await withinLimit(
+    'realtime-mint-global',
+    'all',
+    GLOBAL_WINDOW_SECONDS,
+    GLOBAL_MAX,
+    true
+  );
+  if (globalWithinLimit === null) {
+    return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
+  }
+  if (!globalWithinLimit) {
     return res.status(503).json({ error: 'The AI examiner is at capacity today. Please try again tomorrow.' });
   }
 

@@ -1,10 +1,12 @@
 // scripts/setup-stripe-catalog.mjs
 // Idempotently creates the Stripe catalog for docs/MONETIZATION.md §3:
 //   * one product: "IELTS Bank Premium"
-//   * six recurring USD prices, addressed by lookup_key (3 global + 3 PPP)
-//   * a 100%-off coupon + promotion code used ONLY for E2E flow verification
+//   * eight USD prices, addressed by lookup_key (4 global + 4 PPP)
+//   * optional 100%-off coupon + promotion code used ONLY for E2E verification
 //
-//   node scripts/setup-stripe-catalog.mjs
+//   node scripts/setup-stripe-catalog.mjs                    # read-only audit
+//   node scripts/setup-stripe-catalog.mjs --apply            # create missing catalog entries
+//   node scripts/setup-stripe-catalog.mjs --apply --with-e2e-promo
 //
 // Reads STRIPE_SECRET_KEY from .env.local (same pattern as apply-rate-limits.mjs).
 
@@ -32,8 +34,14 @@ function loadEnvLocal() {
 
 const env = loadEnvLocal();
 const KEY = env.STRIPE_SECRET_KEY;
+const APPLY = process.argv.includes('--apply');
+const WITH_E2E_PROMO = process.argv.includes('--with-e2e-promo');
 if (!KEY) {
   console.error('STRIPE_SECRET_KEY missing from .env.local');
+  process.exit(1);
+}
+if (WITH_E2E_PROMO && !APPLY) {
+  console.error('--with-e2e-promo requires --apply');
   process.exit(1);
 }
 
@@ -84,23 +92,32 @@ const PRICES = [
   { lookup_key: 'premium_monthly',     unit_amount: 999,  interval: 'month', interval_count: 1,  nickname: 'Premium Monthly (global)' },
   { lookup_key: 'premium_6month',      unit_amount: 2999, interval: 'month', interval_count: 6,  nickname: 'Premium 6-Month hero (global)' },
   { lookup_key: 'premium_annual',      unit_amount: 4499, interval: 'year',  interval_count: 1,  nickname: 'Premium Annual (global)' },
+  { lookup_key: 'premium_exam_pass',   unit_amount: 1499, nickname: 'Premium Exam Pass — 28 days (global)' },
   { lookup_key: 'premium_monthly_ppp', unit_amount: 399,  interval: 'month', interval_count: 1,  nickname: 'Premium Monthly (PPP)' },
   { lookup_key: 'premium_6month_ppp',  unit_amount: 1499, interval: 'month', interval_count: 6,  nickname: 'Premium 6-Month hero (PPP)' },
   { lookup_key: 'premium_annual_ppp',  unit_amount: 1999, interval: 'year',  interval_count: 1,  nickname: 'Premium Annual (PPP)' },
+  { lookup_key: 'premium_exam_pass_ppp', unit_amount: 699, nickname: 'Premium Exam Pass — 28 days (PPP)' },
 ];
 
 async function main() {
+  let missing = 0;
+
   // 1. Product (idempotent via metadata marker)
   const products = await stripeGet('/products', { limit: 100, active: true });
   let product = products.data.find((p) => p.metadata?.ieltsbank === 'premium');
   if (!product) {
-    product = await stripe('POST', '/products', {
-      name: 'IELTS Bank Premium',
-      description:
-        'Unlimited AI Writing & Speaking scoring (fair use), AI examiner minutes, progress analytics, ad-free.',
-      metadata: { ieltsbank: 'premium' },
-    });
-    console.log('created product', product.id);
+    missing += 1;
+    if (APPLY) {
+      product = await stripe('POST', '/products', {
+        name: 'IELTS Bank Premium',
+        description:
+          'Daily fair-use AI Writing and Speaking scoring, AI examiner minutes, progress analytics, and ad-free practice.',
+        metadata: { ieltsbank: 'premium' },
+      });
+      console.log('created product', product.id);
+    } else {
+      console.log('MISSING product IELTS Bank Premium');
+    }
   } else {
     console.log('product exists', product.id);
   }
@@ -113,9 +130,25 @@ async function main() {
   const byKey = new Map(existing.data.map((p) => [p.lookup_key, p]));
   for (const spec of PRICES) {
     if (byKey.has(spec.lookup_key)) {
-      console.log('price exists', spec.lookup_key, byKey.get(spec.lookup_key).id);
+      const current = byKey.get(spec.lookup_key);
+      const recurringMatches = spec.interval
+        ? current.type === 'recurring'
+          && current.recurring?.interval === spec.interval
+          && current.recurring?.interval_count === spec.interval_count
+        : current.type === 'one_time';
+      const amountMatches = current.currency === 'usd' && current.unit_amount === spec.unit_amount;
+      if (!recurringMatches || !amountMatches) {
+        throw new Error(`lookup key ${spec.lookup_key} exists with unexpected price or cadence`);
+      }
+      console.log('price exists', spec.lookup_key, current.id);
       continue;
     }
+    missing += 1;
+    if (!APPLY) {
+      console.log('MISSING price', spec.lookup_key);
+      continue;
+    }
+    if (!product) throw new Error('cannot create prices without a Premium product');
     const price = await stripe('POST', '/prices', {
       product: product.id,
       currency: 'usd',
@@ -123,40 +156,54 @@ async function main() {
       nickname: spec.nickname,
       lookup_key: spec.lookup_key,
       transfer_lookup_key: 'true',
-      recurring: { interval: spec.interval, interval_count: spec.interval_count },
-      metadata: { ieltsbank: 'premium', ppp: spec.lookup_key.endsWith('_ppp') ? '1' : '0' },
+      ...(spec.interval
+        ? { recurring: { interval: spec.interval, interval_count: spec.interval_count } }
+        : {}),
+      metadata: {
+        ieltsbank: 'premium',
+        billing_mode: spec.interval ? 'subscription' : 'payment',
+        ppp: spec.lookup_key.endsWith('_ppp') ? '1' : '0',
+      },
     });
     console.log('created price', spec.lookup_key, price.id);
   }
 
-  // 3. 100%-off coupon + promotion code (E2E verification only; deactivate after)
-  let coupon;
-  try {
-    coupon = await stripeGet('/coupons/E2E100');
-    console.log('coupon exists', coupon.id);
-  } catch {
-    coupon = await stripe('POST', '/coupons', {
-      id: 'E2E100',
-      percent_off: 100,
-      duration: 'forever',
-      name: 'E2E verification (100% off)',
-    });
-    console.log('created coupon', coupon.id);
+  // 3. Test promotions require an explicit second opt-in and are never part
+  // of the ordinary production catalog setup.
+  if (WITH_E2E_PROMO) {
+    let coupon;
+    try {
+      coupon = await stripeGet('/coupons/E2E100');
+      console.log('coupon exists', coupon.id);
+    } catch {
+      coupon = await stripe('POST', '/coupons', {
+        id: 'E2E100',
+        percent_off: 100,
+        duration: 'forever',
+        name: 'E2E verification (100% off)',
+      });
+      console.log('created coupon', coupon.id);
+    }
+
+    const promos = await stripeGet('/promotion_codes', { code: 'E2EVERIFY100', limit: 1 });
+    if (promos.data.length) {
+      console.log('promo code exists', promos.data[0].id, 'active:', promos.data[0].active);
+    } else {
+      const promo = await stripe('POST', '/promotion_codes', {
+        promotion: { type: 'coupon', coupon: coupon.id },
+        code: 'E2EVERIFY100',
+        max_redemptions: 5,
+      });
+      console.log('created promo code', promo.id, promo.code);
+    }
   }
 
-  const promos = await stripeGet('/promotion_codes', { code: 'E2EVERIFY100', limit: 1 });
-  if (promos.data.length) {
-    console.log('promo code exists', promos.data[0].id, 'active:', promos.data[0].active);
-  } else {
-    const promo = await stripe('POST', '/promotion_codes', {
-      promotion: { type: 'coupon', coupon: coupon.id },
-      code: 'E2EVERIFY100',
-      max_redemptions: 5,
-    });
-    console.log('created promo code', promo.id, promo.code);
+  if (!APPLY && missing) {
+    console.error(`catalog audit failed: ${missing} required object(s) missing`);
+    process.exitCode = 2;
+    return;
   }
-
-  console.log('catalog ready');
+  console.log(APPLY ? 'catalog ready' : 'catalog audit passed');
 }
 
 main().catch((e) => {

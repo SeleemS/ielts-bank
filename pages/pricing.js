@@ -70,7 +70,7 @@ const BASE_PLANS = [
 const PERKS = [
   'Full AI Writing reports with all four criteria and corrected examples',
   'AI Speaking scores from your recordings',
-  '60 live AI examiner minutes per month on global plans',
+  '30–60 live AI examiner minutes per month, depending on regional plan',
   'Full-length timed mock tests with section breakdowns',
   'Writing and Speaking band trends on your dashboard',
   'Stronger scoring model with priority processing',

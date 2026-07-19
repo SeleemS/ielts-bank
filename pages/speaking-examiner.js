@@ -598,8 +598,8 @@ export default function SpeakingExaminerPage() {
           <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
             <p className="text-lg font-semibold">This is a Premium feature</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Premium includes {user ? '60' : '60'} AI examiner minutes every month — about four
-              full mock interviews — plus unlimited Writing &amp; Speaking scoring.
+              Premium includes 30–60 AI examiner minutes every month, depending on regional plan,
+              plus daily fair-use Writing and Speaking scoring.
             </p>
             <NextLink
               href="/pricing"

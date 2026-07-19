@@ -41,6 +41,8 @@ describe('realtimeExaminer lib', () => {
 
   it('builds full-mock instructions containing all three parts and conduct rules', () => {
     const text = buildInstructions('mock', items, 840);
+    expect(text).toMatch(/^You are an AI system simulating an IELTS Speaking examiner/);
+    expect(text).toContain('Never claim to be human, certified, official');
     expect(text).toContain('PART 1');
     expect(text).toContain('PART 2');
     expect(text).toContain('PART 3');
@@ -117,6 +119,8 @@ const state = {
   meterError: null,
   refundRpcError: null,
   rateLimit: true,
+  rateLimitError: null,
+  rateLimits: {},
   quotaRow: { realtime_seconds_remaining: 0, realtime_seconds_quota: 3600 },
   planRow: { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null },
   updates: [],
@@ -133,7 +137,16 @@ vi.mock('@supabase/supabase-js', () => ({
           : { data: null, error: { message: 'bad token' } },
     },
     rpc: async (fn, args) => {
-      if (fn === 'check_rate_limit') return { data: state.rateLimit, error: null };
+      if (fn === 'check_rate_limit') {
+        return state.rateLimitError
+          ? { data: null, error: state.rateLimitError }
+          : {
+              data: Object.hasOwn(state.rateLimits, args.p_bucket)
+                ? state.rateLimits[args.p_bucket]
+                : state.rateLimit,
+              error: null,
+            };
+      }
       if (fn === 'consume_realtime_seconds') {
         return state.meterError
           ? { data: null, error: { message: state.meterError } }
@@ -204,6 +217,8 @@ describe('POST /api/realtime/session', () => {
     state.meterError = null;
     state.refundRpcError = null;
     state.rateLimit = true;
+    state.rateLimitError = null;
+    state.rateLimits = {};
     state.planRow = { plan: 'premium', plan_status: 'active', plan_renews_at: null, plan_expires_at: null, billing_pause_until: null };
     state.updates = [];
     state.realtimeRefunds = [];
@@ -304,10 +319,24 @@ describe('POST /api/realtime/session', () => {
     expect(state.updates).toHaveLength(0);
   });
 
-  it('fails closed when the global rate limit trips', async () => {
+  it('returns 429 when the per-IP mint limit trips', async () => {
     state.authUser = { id: 'u1' };
     state.rateLimit = false;
     const res = await call();
     expect(res.statusCode).toBe(429);
+  });
+
+  it('fails closed when the global mint limit trips', async () => {
+    state.authUser = { id: 'u1' };
+    state.rateLimits['realtime-mint-global'] = false;
+    const res = await call();
+    expect(res.statusCode).toBe(503);
+  });
+
+  it('fails closed when mint rate-limit infrastructure errors', async () => {
+    state.authUser = { id: 'u1' };
+    state.rateLimitError = { message: 'rate limiter unavailable' };
+    const res = await call();
+    expect(res.statusCode).toBe(503);
   });
 });
