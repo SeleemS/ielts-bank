@@ -1464,6 +1464,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated request. No live limiter, OpenAI, quota, or persistence mutation occurred.
 
+## CA-066 — Recorded Speaking could leave orphaned attempts
+
+- Status: `FIXED`
+- Area: Recorded Speaking / score persistence / data consistency
+- Severity: Medium
+- Evidence: recorded Speaking persisted an attempt and score in two sequential writes. If the
+  attempt succeeded but the score insert returned an error or rejected, the route logged the
+  failure and left the attempt permanently orphaned without a matching score.
+- Fix: retain the created attempt ID and perform a compensating delete whenever score persistence
+  returns an error or throws. Rollback failures remain fail-soft and are logged without hiding the
+  completed assessment from the learner.
+- Regression coverage: full route tests complete storage download, transcription, scoring,
+  server-side overall calculation, and cleanup, then force both a resolved score-insert error and a
+  rejected score write. Each case requires HTTP 200, deletion of the exact attempt ID, and removal
+  of the private recording.
+- Commit: `d689bad` (`Roll back orphaned speaking attempts`)
+- Verification: focused 29-test recorded-Speaking route/schema coverage, the complete
+  current-worktree 66-file/384-test Vitest suite, ESLint, the 150-file analytics audit, and the
+  528-page production build all passed. Vercel deployed the exact commit successfully. Fresh
+  non-mutating production probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and
+  HTTP 401 for a same-origin unauthenticated request. No live limiter, OpenAI, quota, storage, or
+  persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
