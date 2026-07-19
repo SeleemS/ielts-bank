@@ -19,6 +19,7 @@ import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { WRITING_PROMPT_MAX_CHARS } from '../../../lib/writingLimits';
+import { buildWritingScoreSchema } from '../../../lib/writingScoreSchema';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -218,84 +219,6 @@ FEEDBACK STYLE: Be specific, constructive and SCANNABLE. For each criterion give
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
 }
 
-function buildJsonSchema(task) {
-  const firstLabel = task === 1 ? 'taskAchievement' : 'taskResponse';
-  const criterion = {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      band: { type: 'number', description: 'Band 0-9, halves allowed' },
-      strengths: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          '1-3 bullets, each under 20 words, naming something the candidate did well on this criterion with brief quoted evidence',
-      },
-      improvements: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          '1-3 actionable bullets, each under 20 words, naming what would raise this band, citing the essay where possible',
-      },
-    },
-    required: ['band', 'strengths', 'improvements'],
-  };
-  return {
-    name: 'ielts_writing_assessment',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        overallBand: {
-          type: 'number',
-          description: 'Average of the four criteria, rounded to nearest 0.5',
-        },
-        criteria: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            [firstLabel]: criterion,
-            coherenceCohesion: criterion,
-            lexicalResource: criterion,
-            grammaticalRange: criterion,
-          },
-          required: [
-            firstLabel,
-            'coherenceCohesion',
-            'lexicalResource',
-            'grammaticalRange',
-          ],
-        },
-        summary: { type: 'string' },
-        improvements: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        correctedExamples: {
-          type: 'array',
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              original: { type: 'string' },
-              suggestion: { type: 'string' },
-            },
-            required: ['original', 'suggestion'],
-          },
-        },
-      },
-      required: [
-        'overallBand',
-        'criteria',
-        'summary',
-        'improvements',
-        'correctedExamples',
-      ],
-    },
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -461,7 +384,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       ],
       responseFormat: {
         type: 'json_schema',
-        json_schema: buildJsonSchema(task),
+        json_schema: buildWritingScoreSchema(task),
       },
     });
 
