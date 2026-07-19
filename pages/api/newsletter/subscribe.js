@@ -36,9 +36,9 @@ function getAdmin() {
   return _admin;
 }
 
-// Returns true if still within allowance, false if over the limit. On DB error
-// we FAIL OPEN for availability (a transient RPC error should not block a
-// legitimate subscribe); the unique constraint still prevents duplicates.
+// Returns true if still within allowance, false if over the limit. Limiter
+// infrastructure failures throw so the handler fails closed before allowing
+// unbounded public writes.
 async function withinLimit(bucket, identifier, windowSeconds, max) {
   const { data, error } = await getAdmin().rpc('check_rate_limit', {
     p_bucket: bucket,
@@ -47,8 +47,7 @@ async function withinLimit(bucket, identifier, windowSeconds, max) {
     p_max: max,
   });
   if (error) {
-    console.error('check_rate_limit error:', error.message);
-    return true;
+    throw error;
   }
   return data === true;
 }
