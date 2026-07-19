@@ -5,7 +5,11 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-dummy';
 
 const state = {
   authUser: { id: 'user-1' },
+  authError: null,
+  authReject: null,
   userRow: null,
+  userError: null,
+  userReject: null,
   userUpdates: [],
   stripeUpdates: [],
   claimAvailable: true,
@@ -17,16 +21,24 @@ const state = {
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     auth: {
-      getUser: async () =>
-        state.authUser
-          ? { data: { user: state.authUser }, error: null }
-          : { data: null, error: { message: 'invalid token' } },
+      getUser: async () => {
+        if (state.authReject) throw state.authReject;
+        return state.authUser
+          ? { data: { user: state.authUser }, error: state.authError }
+          : {
+              data: null,
+              error: state.authError || { message: 'invalid token' },
+            };
+      },
     },
     from: (table) => ({
       select: () => {
         const chain = {
           eq: () => chain,
-          maybeSingle: async () => ({ data: state.userRow, error: null }),
+          maybeSingle: async () => {
+            if (state.userReject) throw state.userReject;
+            return { data: state.userRow, error: state.userError };
+          },
         };
         return chain;
       },
@@ -124,6 +136,8 @@ async function callPause() {
 describe('POST /api/billing/pause', () => {
   beforeEach(() => {
     state.authUser = { id: 'user-1' };
+    state.authError = null;
+    state.authReject = null;
     state.userRow = {
       stripe_subscription_id: 'sub_123',
       plan: 'premium',
@@ -133,12 +147,59 @@ describe('POST /api/billing/pause', () => {
       billing_pause_until: null,
       billing_pause_used_at: null,
     };
+    state.userError = null;
+    state.userReject = null;
     state.userUpdates = [];
     state.stripeUpdates = [];
     state.claimAvailable = true;
     state.claimError = null;
     state.detailError = null;
     state.stripeError = null;
+    vi.restoreAllMocks();
+  });
+
+  it('returns a retryable service error when auth verification rejects', async () => {
+    state.authReject = new Error('auth service unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/verify your subscription/i);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
+  });
+
+  it('does not misreport a resolved subscription-query failure as inactive', async () => {
+    state.userRow = null;
+    state.userError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
+  });
+
+  it('recovers when the subscription query rejects', async () => {
+    state.userReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
+  });
+
+  it('keeps a verified missing subscription distinct from dependency failure', async () => {
+    state.userRow = null;
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.error).toMatch(/no active subscription/i);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.userUpdates).toEqual([]);
   });
 
   it('sets a 30-day Stripe pause and permanently records that the offer was used', async () => {

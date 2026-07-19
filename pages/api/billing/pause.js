@@ -14,9 +14,16 @@ function getAdmin() {
 
 async function resolveUser(admin, req) {
   const match = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || '').trim());
-  if (!match) return null;
-  const { data, error } = await admin.auth.getUser(match[1].trim());
-  return error ? null : data?.user || null;
+  if (!match) return { user: null, error: null };
+  try {
+    const { data, error } = await admin.auth.getUser(match[1].trim());
+    return {
+      user: error ? null : data?.user || null,
+      error: null,
+    };
+  } catch (error) {
+    return { user: null, error };
+  }
 }
 
 export default async function handler(req, res) {
@@ -27,16 +34,32 @@ export default async function handler(req, res) {
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
 
   const admin = getAdmin();
-  const user = await resolveUser(admin, req);
+  const { user, error: authError } = await resolveUser(admin, req);
+  if (authError) {
+    console.error('pause auth lookup error:', authError.message);
+    return res.status(503).json({
+      error: 'Could not verify your subscription. Please try again.',
+    });
+  }
   if (!user) return res.status(401).json({ error: 'Sign in first.' });
-  const { data: row, error } = await admin
-    .from('users')
-    .select('stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
-    .eq('id', user.id)
-    .maybeSingle();
+
+  let row;
+  try {
+    const { data, error } = await admin
+      .from('users')
+      .select('stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (error) throw error;
+    row = data;
+  } catch (error) {
+    console.error('pause subscription lookup error:', error.message);
+    return res.status(503).json({
+      error: 'Could not verify your subscription. Please try again.',
+    });
+  }
   if (
-    error
-    || !row?.stripe_subscription_id
+    !row?.stripe_subscription_id
     || row.plan_status === 'canceled'
     || !isPremiumRow(row)
   ) {
