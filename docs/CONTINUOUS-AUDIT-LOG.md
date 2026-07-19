@@ -2354,6 +2354,39 @@ False positives are kept in the investigation notes so they are not rediscovered
   and RLS checks were performed directly. No customer, payment, email, recording, entitlement,
   consent, content, or provider state changed.
 
+## CA-099 — Idempotent lifecycle reruns reported conflicted candidates as newly queued
+
+- Status: `FIXED`
+- Area: Lifecycle email / queue observability / idempotency
+- Severity: Medium
+- Evidence: weekly-digest and win-back builders upserted with
+  `ignoreDuplicates: true` but always returned the candidate array length. Repeating a weekly run
+  after the same idempotency keys already existed could therefore report every subscriber as newly
+  queued even though Supabase inserted zero rows. The HTTP response and cron logs could materially
+  overstate pending work, obscuring whether queue generation actually succeeded. A disposable live
+  provider-contract check confirmed that an ignore-duplicate upsert returns one row for the first
+  insert and zero for the conflict when inserted IDs are explicitly requested.
+- Fix: request `id` representations from both queue upserts and return only the number of rows the
+  database actually inserted. Candidate mapping, consent enforcement, idempotency keys, scheduling,
+  and delivery behavior are unchanged. The queue helpers also accept an injected clock so their
+  week and cancellation-cutoff contracts are deterministic in tests.
+- Regression coverage: the expanded eight-case lifecycle suite injects two weekly candidates with
+  zero inserted IDs and requires a queued count of zero, then injects two win-back candidates with
+  one inserted ID and requires a count of one. It verifies lowercase recipients, linked/unlinked
+  users, exact week and cancellation idempotency keys, ignore-conflict options, and the required
+  `select('id')`, while all consent, suppression, stale-claim, rejection, and batch-continuation
+  cases remain active.
+- Commit: `e9e6169` (`Report actual lifecycle queue inserts`)
+- Verification: the focused eight-test lifecycle suite, the complete 79-file/495-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_4gSWJiK9uTwnRiCEv7zdRC5VhrXD` reached promoted
+  `READY` from exact Git SHA `e9e61694852975c4d7bc684e76d3db4a64af51f3`. Fresh production
+  probes returned HTTP 405 with `Allow: GET` for POST and HTTP 401 for an invalid bearer-secret GET,
+  both before queue or provider work. The live Supabase contract check returned one inserted ID on
+  its first synthetic upsert and zero on the idempotency conflict; final read-only checks found zero
+  synthetic rows, zero active subscribers, and zero weekly or win-back rows. The authorized cron was
+  not invoked, so no customer, email, payment, account, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
