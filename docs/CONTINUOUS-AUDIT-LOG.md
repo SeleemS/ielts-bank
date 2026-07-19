@@ -970,6 +970,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated pause request. No subscription or one-time pause claim was changed.
 
+## CA-045 — Rejected pause-lifecycle promises could contradict Stripe
+
+- Status: `FIXED`
+- Area: Billing API / one-time pause / Stripe-Supabase consistency / failure recovery
+- Severity: High
+- Evidence: the pause endpoint handled resolved Supabase errors but not rejected promises while
+  claiming the one-time action, rolling it back, persisting the completed pause, or writing the
+  activity event. Most critically, a detail-persistence or event rejection after Stripe had
+  already paused billing could escape the route and present failure, inviting a duplicate retry
+  despite the successful external mutation.
+- Fix: contain every asynchronous claim and post-Stripe persistence operation. A rejected claim
+  fails safely before Stripe. Stripe failure still attempts the timestamp-guarded rollback; if
+  that rollback itself rejects, the response truthfully says the subscription was not paused but
+  the one-time action needs support rather than promising a safe retry. Once Stripe succeeds,
+  rejected detail persistence returns HTTP 200 with `reconciling=true`, and rejected fail-soft
+  activity logging cannot overwrite the truthful success response.
+- Regression coverage: the expanded pause suite injects rejected claim, rollback, pause-detail,
+  and activity promises. It requires no Stripe call before a claim, explicit stuck-claim guidance
+  after rollback failure, truthful success plus reconciliation after a completed Stripe pause,
+  and unaffected success when only analytics logging is unavailable.
+- Commit: `eedb2a5` (`Recover billing pause lifecycle rejections`)
+- Verification: focused 20-test billing pause/page/status coverage, the complete current-worktree
+  62-file/313-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated pause request. No live subscription, claim, or Stripe object was changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
