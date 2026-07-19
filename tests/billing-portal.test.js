@@ -11,6 +11,10 @@ const state = {
   userRow: { stripe_customer_id: 'cus_test' },
   userError: null,
   userReject: null,
+  rateLimit: true,
+  rateLimitError: null,
+  rateLimitReject: null,
+  rpcCalls: [],
   portalError: null,
   portalCalls: [],
 };
@@ -24,6 +28,11 @@ vi.mock('@supabase/supabase-js', () => ({
           ? { data: { user: state.authUser }, error: state.authError }
           : { data: null, error: state.authError || { message: 'invalid token' } };
       },
+    },
+    rpc: async (name, args) => {
+      state.rpcCalls.push({ name, args });
+      if (state.rateLimitReject) throw state.rateLimitReject;
+      return { data: state.rateLimit, error: state.rateLimitError };
     },
     from: () => ({
       select: () => ({
@@ -98,6 +107,10 @@ describe('POST /api/billing/portal', () => {
     state.userRow = { stripe_customer_id: 'cus_test' };
     state.userError = null;
     state.userReject = null;
+    state.rateLimit = true;
+    state.rateLimitError = null;
+    state.rateLimitReject = null;
+    state.rpcCalls = [];
     state.portalError = null;
     state.portalCalls = [];
     vi.restoreAllMocks();
@@ -165,6 +178,50 @@ describe('POST /api/billing/portal', () => {
 
     expect(res.statusCode).toBe(404);
     expect(res.jsonBody.error).toMatch(/no billing account/i);
+    expect(state.rpcCalls).toEqual([]);
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('rate-limits repeated portal requests before any Stripe call', async () => {
+    state.rateLimit = false;
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(429);
+    expect(res.jsonBody.error).toMatch(/too many billing portal requests/i);
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-portal',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max: 10,
+        },
+      },
+    ]);
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('fails closed when the portal limiter returns an error', async () => {
+    state.rateLimitError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('fails closed when the portal limiter rejects', async () => {
+    state.rateLimitReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
     expect(state.portalCalls).toEqual([]);
   });
 
@@ -173,6 +230,17 @@ describe('POST /api/billing/portal', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody.url).toBe('https://billing.stripe.com/p/session/test');
+    expect(state.rpcCalls).toEqual([
+      {
+        name: 'check_rate_limit',
+        args: {
+          p_bucket: 'billing-portal',
+          p_identifier: 'user-1',
+          p_window_seconds: 600,
+          p_max: 10,
+        },
+      },
+    ]);
     expect(state.portalCalls).toEqual([
       {
         customer: 'cus_test',

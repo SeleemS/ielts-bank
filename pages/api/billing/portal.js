@@ -6,6 +6,9 @@ import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe } from '../../../lib/billing';
 
+const PORTAL_WINDOW_SECONDS = 10 * 60;
+const PORTAL_MAX_PER_WINDOW = 10;
+
 let _admin = null;
 let _portalConfigurationId = null;
 function getAdmin() {
@@ -106,6 +109,26 @@ export default async function handler(req, res) {
   }
   if (!userRow?.stripe_customer_id) {
     return res.status(404).json({ error: 'No billing account yet.' });
+  }
+
+  try {
+    const { data: allowed, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: 'billing-portal',
+      p_identifier: user.id,
+      p_window_seconds: PORTAL_WINDOW_SECONDS,
+      p_max: PORTAL_MAX_PER_WINDOW,
+    });
+    if (error) throw error;
+    if (!allowed) {
+      return res.status(429).json({
+        error: 'Too many billing portal requests. Please wait a few minutes and try again.',
+      });
+    }
+  } catch (error) {
+    console.error('portal rate-limit error:', error.message);
+    return res.status(503).json({
+      error: 'Could not open the billing portal. Please try again.',
+    });
   }
 
   try {
