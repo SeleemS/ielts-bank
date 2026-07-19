@@ -429,8 +429,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   live wrong-method sweep then passed all 18 endpoints: every route returned HTTP 405 and its exact
   supported `Allow` value, with no endpoint action executed.
 
+## CA-023 — Sitemap omitted two indexable acquisition pages
+
+- Status: `FIXED`
+- Area: Sitemap / crawlability / pricing / Speaking examiner
+- Severity: Medium
+- Evidence: the live sitemap advertised 471 unique, healthy canonical URLs, but a comparison with
+  the indexable page inventory found that `/pricing` and `/speaking-examiner` were absent. Both are
+  public canonical acquisition pages and should be discoverable through the sitemap.
+- Fix: add both stable routes to the static sitemap inventory without changing any existing URL.
+- Regression coverage: `lib/sitemapRoutes.test.js` requires every major acquisition/conversion route
+  and rejects duplicate or private/system entries.
+- Commit: `Add acquisition pages to sitemap`
+- Verification: focused 2-test inventory coverage, the complete current-worktree
+  43-file/235-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
+  production verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
   Direct DOM text verification confirmed that the live page renders normal quotation marks; no
   defect or code change was recorded.
+- The pre-fix sitemap crawlability sweep fetched all 471 advertised URLs without following
+  redirects. Every URL returned HTTP 200, every rendered canonical matched the sitemap location,
+  and there were no duplicate locations. Generated legacy question aliases are intentionally
+  omitted in favor of their single canonical sitemap URL.

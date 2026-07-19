@@ -4,16 +4,18 @@ import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
 
 import { SITE_URL } from '../lib/site';
 
-const STATIC_ROUTES = [
+export const STATIC_ROUTES = [
   '/',
   '/about',
   '/contactus',
   '/privacypolicy',
   '/termsofservice',
   '/blog',
+  '/pricing',
   '/band-calculator',
   '/band-estimator',
   '/ielts-writing-checker',
+  '/speaking-examiner',
   '/readingquestion',
   '/writingquestion',
   '/listeningquestion',
