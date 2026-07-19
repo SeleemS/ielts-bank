@@ -145,7 +145,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-008 — Pricing links had no controlled social share card
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Pricing / Open Graph / Twitter cards
 - Severity: Medium
 - Evidence: production `/pricing` supplied a title, description, and canonical URL but no Open Graph
@@ -156,7 +156,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/pricingSeo.test.js` verifies the canonical contract, exact card URL, and
   URL-safe dynamic image parameters.
 - Commit: `Add pricing social share metadata`
-- Verification: pending production deployment and live metadata/image response checks.
+- Verification: focused SEO contract tests, full 27-file/174-test Vitest suite, ESLint, analytics
+  audit, and the 527-page production build. The live production HTML returned every expected
+  OG/Twitter field, the OG and Twitter image URLs matched, and the card endpoint returned HTTP 200
+  with a non-empty `image/png` response.
 
 ## Investigation notes
 
