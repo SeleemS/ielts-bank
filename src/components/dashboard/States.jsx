@@ -30,7 +30,7 @@ export function SignedOutState() {
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
             <LineChart className="h-6 w-6" />
           </span>
-          <CardTitle className="mt-4 text-xl">Sign in to see your progress</CardTitle>
+          <CardTitle as="h1" className="mt-4 text-xl">Sign in to see your progress</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
