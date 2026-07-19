@@ -1050,6 +1050,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated session request. No quota was consumed and no OpenAI secret was minted.
 
+## CA-048 — Rejected examiner rate-limit RPCs escaped cost controls
+
+- Status: `FIXED`
+- Area: Realtime examiner / rate limiting / cost controls / Supabase failure recovery
+- Severity: High
+- Evidence: the shared Realtime mint limiter handled a resolved Supabase RPC error and failed
+  closed, but the `await` itself was outside a rejection guard. A network-level RPC rejection
+  could therefore escape the endpoint instead of producing its controlled temporary-unavailable
+  response.
+- Fix: contain both resolved errors and rejected promises inside the limiter helper. The IP and
+  global mint limits continue to return an explicit unavailable sentinel in fail-closed mode, so
+  the route returns HTTP 503 before consuming Realtime seconds, selecting speaking content, or
+  requesting an OpenAI client secret.
+- Regression coverage: the expanded Realtime suite injects a rejected `check_rate_limit` RPC,
+  requires HTTP 503, and proves no refund or OpenAI request occurs because quota consumption never
+  begins. Existing resolved limiter-error, IP limit, global capacity, entitlement, mint, and refund
+  coverage remains green.
+- Commit: `6794464` (`Fail closed on examiner limiter rejections`)
+- Verification: focused 21-test Realtime coverage, the complete current-worktree
+  62-file/323-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated session request. No rate-limit bucket, quota, or OpenAI resource was mutated.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
