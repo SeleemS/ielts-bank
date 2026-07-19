@@ -1,9 +1,12 @@
-export const config = { runtime: 'nodejs', maxDuration: 60 };
+export const config = { runtime: 'nodejs', maxDuration: 300 };
 
 import { createClient } from '@supabase/supabase-js';
 import { posts } from '../../../lib/posts';
 import { sendLifecycleEmail } from '../../../lib/lifecycleEmail';
 import { isPremiumRow } from '../../../lib/premium';
+
+const AUDIENCE_PAGE_SIZE = 1000;
+const QUEUE_BATCH_SIZE = 1000;
 
 function getAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,24 +22,67 @@ function weekKey(now = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
+async function readAllByCursor(buildQuery, cursorFor) {
+  const rows = [];
+  let cursor = null;
+  for (;;) {
+    const { data, error } = await buildQuery(cursor);
+    if (error) throw error;
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < AUDIENCE_PAGE_SIZE) return rows;
+    const nextCursor = cursorFor(page[page.length - 1]);
+    if (!nextCursor || nextCursor === cursor) {
+      throw new Error('lifecycle audience cursor did not advance');
+    }
+    cursor = nextCursor;
+  }
+}
+
+async function insertQueueRows(admin, rows) {
+  let insertedCount = 0;
+  for (let index = 0; index < rows.length; index += QUEUE_BATCH_SIZE) {
+    const batch = rows.slice(index, index + QUEUE_BATCH_SIZE);
+    const { data: inserted, error } = await admin
+      .from('lifecycle_emails')
+      .upsert(batch, { onConflict: 'idempotency_key', ignoreDuplicates: true })
+      .select('id');
+    if (error) throw error;
+    insertedCount += inserted?.length || 0;
+  }
+  return insertedCount;
+}
+
 export async function queueWeeklyDigest(admin, force = false, now = new Date()) {
   if (!force && now.getUTCDay() !== 1) return 0;
-  const { data: subscribers, error } = await admin
-    .from('newsletter_subscribers')
-    .select('email')
-    .eq('confirmed', true)
-    .is('unsubscribed_at', null)
-    .limit(50000);
-  if (error) throw error;
-  if (!subscribers?.length) return 0;
+  const subscribers = await readAllByCursor(
+    (after) => {
+      let query = admin
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('confirmed', true)
+        .is('unsubscribed_at', null)
+        .order('email', { ascending: true });
+      if (after) query = query.gt('email', after);
+      return query.limit(AUDIENCE_PAGE_SIZE);
+    },
+    (subscriber) => subscriber.email
+  );
+  if (!subscribers.length) return 0;
 
-  const { data: users, error: usersError } = await admin
-    .from('users')
-    .select('id, email, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until')
-    .not('email', 'is', null)
-    .limit(50000);
-  if (usersError) throw usersError;
-  const usersByEmail = new Map((users || []).map((user) => [user.email?.toLowerCase(), user]));
+  const users = await readAllByCursor(
+    (after) => {
+      let query = admin
+        .from('users')
+        .select('id, email, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until')
+        .not('email', 'is', null)
+        .order('id', { ascending: true });
+      if (after) query = query.gt('id', after);
+      return query.limit(AUDIENCE_PAGE_SIZE);
+    },
+    (user) => user.id
+  );
+  const usersByEmail = new Map(users.map((user) => [user.email?.toLowerCase(), user]));
   const latest = posts[0];
   const key = weekKey(now);
   const rows = subscribers.map(({ email }) => {
@@ -59,26 +105,27 @@ export async function queueWeeklyDigest(admin, force = false, now = new Date()) 
       },
     };
   });
-  const { data: inserted, error: insertError } = await admin
-    .from('lifecycle_emails')
-    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true })
-    .select('id');
-  if (insertError) throw insertError;
-  return inserted?.length || 0;
+  return insertQueueRows(admin, rows);
 }
 
 export async function queueWinBack(admin, now = new Date()) {
   if (!process.env.STRIPE_WINBACK_COUPON_ID) return 0;
   const cutoff = new Date(now.getTime() - 30 * 86400000).toISOString();
-  const { data: users, error } = await admin
-    .from('users')
-    .select('id, email, canceled_at')
-    .eq('plan', 'free')
-    .not('email', 'is', null)
-    .lte('canceled_at', cutoff)
-    .limit(5000);
-  if (error) throw error;
-  const rows = (users || []).map((user) => ({
+  const users = await readAllByCursor(
+    (after) => {
+      let query = admin
+        .from('users')
+        .select('id, email, canceled_at')
+        .eq('plan', 'free')
+        .not('email', 'is', null)
+        .lte('canceled_at', cutoff)
+        .order('id', { ascending: true });
+      if (after) query = query.gt('id', after);
+      return query.limit(AUDIENCE_PAGE_SIZE);
+    },
+    (user) => user.id
+  );
+  const rows = users.map((user) => ({
     user_id: user.id,
     recipient_email: user.email.toLowerCase(),
     email_type: 'win_back',
@@ -86,12 +133,7 @@ export async function queueWinBack(admin, now = new Date()) {
     payload: { canceled_at: user.canceled_at },
   }));
   if (!rows.length) return 0;
-  const { data: inserted, error: insertError } = await admin
-    .from('lifecycle_emails')
-    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true })
-    .select('id');
-  if (insertError) throw insertError;
-  return inserted?.length || 0;
+  return insertQueueRows(admin, rows);
 }
 
 const MARKETING_EMAIL_TYPES = new Set(['weekly_digest', 'win_back']);
