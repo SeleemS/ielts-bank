@@ -10,12 +10,8 @@ import {
   LISTENING_SET,
   selectGroups,
 } from '../lib/estimatorConfig';
-import { SITE_URL } from '../lib/site';
+import { BAND_ESTIMATOR_SEO } from '../lib/bandEstimatorSeo';
 
-const PAGE_TITLE = 'Free IELTS Band Estimator — 15-Minute Level Test | IELTS-Bank';
-const PAGE_DESCRIPTION =
-  'Find out your IELTS band in about 15 minutes. Answer real Reading and Listening questions, self-check your Writing and Speaking, and get an honest band estimate with a clear next step. Free, no sign-up.';
-const CANONICAL = `${SITE_URL}/band-estimator`;
 const FAQ = [
   {
     q: 'Is this an official IELTS score?',
@@ -50,20 +46,25 @@ export default function BandEstimatorPage({
   return (
     <>
       <Head>
-        <title>{PAGE_TITLE}</title>
-        <meta name="description" content={PAGE_DESCRIPTION} />
+        <title>{BAND_ESTIMATOR_SEO.title}</title>
+        <meta name="description" content={BAND_ESTIMATOR_SEO.description} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={CANONICAL} />
+        <link rel="canonical" href={BAND_ESTIMATOR_SEO.canonical} />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content={PAGE_TITLE} />
-        <meta property="og:description" content={PAGE_DESCRIPTION} />
-        <meta property="og:url" content={CANONICAL} />
+        <meta property="og:title" content={BAND_ESTIMATOR_SEO.title} />
+        <meta property="og:description" content={BAND_ESTIMATOR_SEO.description} />
+        <meta property="og:url" content={BAND_ESTIMATOR_SEO.canonical} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={BAND_ESTIMATOR_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={BAND_ESTIMATOR_SEO.imageAlt} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          property="og:image"
-          content={`${SITE_URL}/api/og?title=${encodeURIComponent('What is your IELTS band?')}&type=estimator`}
-        />
+        <meta name="twitter:title" content={BAND_ESTIMATOR_SEO.title} />
+        <meta name="twitter:description" content={BAND_ESTIMATOR_SEO.description} />
+        <meta name="twitter:image" content={BAND_ESTIMATOR_SEO.ogImage} />
+        <meta name="twitter:image:alt" content={BAND_ESTIMATOR_SEO.imageAlt} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

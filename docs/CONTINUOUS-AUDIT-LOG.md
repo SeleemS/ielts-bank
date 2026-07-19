@@ -279,6 +279,24 @@ False positives are kept in the investigation notes so they are not rediscovered
   clean Vercel build from the committed fix. Live production returned every OG/Twitter field,
   matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
+## CA-016 — Band Estimator declared a large Twitter card without its fields
+
+- Status: `FIXED`
+- Area: Band estimator / acquisition / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: generated `/band-estimator` HTML declared `summary_large_image` but omitted
+  `twitter:title`, `twitter:description`, and `twitter:image`. Its Open Graph image also lacked
+  dimensions, MIME type, and accessible alt text.
+- Fix: centralize the Band Estimator SEO contract and publish a dedicated 1200×630 estimator card
+  with complete Open Graph image metadata plus matching Twitter title, description, image, and alt
+  fields.
+- Regression coverage: `lib/bandEstimatorSeo.test.js` verifies canonical content and every decoded
+  dynamic image parameter.
+- Commit: `Complete Band Estimator share metadata`
+- Verification: focused 2-test SEO coverage, the complete current-worktree 36-file/198-test Vitest
+  suite, ESLint, analytics audit, exact generated metadata inspection, and the 527-page production
+  build. Live production verification will be recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
