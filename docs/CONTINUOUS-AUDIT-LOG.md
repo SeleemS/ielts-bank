@@ -944,6 +944,32 @@ False positives are kept in the investigation notes so they are not rediscovered
   a same-origin unauthenticated reconciliation request. No Stripe session was retrieved or
   mutated by the production checks.
 
+## CA-044 — Billing-pause lookup failures looked like inactive subscriptions
+
+- Status: `FIXED`
+- Area: Billing API / one-time pause / authentication / subscription verification
+- Severity: High
+- Evidence: `/api/billing/pause` awaited auth and the initial subscription query without rejection
+  recovery, and grouped a resolved Supabase query error with the legitimate no-subscription state.
+  An infrastructure failure could therefore escape the route or tell an active paid learner
+  `There is no active subscription to pause.`
+- Fix: distinguish absent or invalid credentials, verified inactive subscriptions, and dependency
+  failures before any mutation. Rejected auth verification plus resolved or rejected subscription
+  queries now return a retryable HTTP 503, while real unauthenticated and no-subscription states
+  retain HTTP 401 and 409 respectively. No claim or Stripe operation begins until subscription
+  state is verified.
+- Regression coverage: the expanded pause suite injects an auth rejection, a resolved database
+  error, and a rejected database request, and requires each to leave both Stripe calls and
+  Supabase mutations empty. A successful empty query separately proves the genuine no-active-plan
+  response, alongside existing atomic-claim, concurrency, rollback, reconciliation, expiry, and
+  repeat-use coverage.
+- Commit: `2b13aa6` (`Recover billing pause lookup failures`)
+- Verification: focused 16-test billing pause/page/status coverage, the complete current-worktree
+  62-file/309-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated pause request. No subscription or one-time pause claim was changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
