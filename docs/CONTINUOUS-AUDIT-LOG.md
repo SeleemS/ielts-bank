@@ -997,6 +997,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated pause request. No live subscription, claim, or Stripe object was changed.
 
+## CA-046 — Protected mock outages appeared as authentication or upgrade failures
+
+- Status: `FIXED`
+- Area: Premium entitlement / protected mock tests / Supabase failure recovery
+- Severity: High
+- Evidence: the shared server entitlement helper intentionally returned `false` for both a
+  verified non-Premium account and any Supabase failure. `/api/mock/[slug]` therefore had no way to
+  distinguish a real Free learner from a paid learner whose plan could not be checked, and auth
+  promise rejections escaped entirely. During an outage, the route could show `Premium is
+  required` or fail uncontrolled rather than offering a truthful retry path.
+- Fix: add a tri-state server entitlement result containing `isPremium` and `error`, while keeping
+  the original boolean helper as a fail-closed compatibility wrapper. Protected mock access now
+  returns HTTP 503 for rejected auth or resolved/rejected entitlement failures, HTTP 402 only for a
+  verified non-Premium account, and never loads protected mock content unless access is positively
+  verified.
+- Regression coverage: shared helper tests cover active, trialing, past-due, canceled,
+  Exam-Pass, billing-pause, verified Premium, verified Free, resolved query error, rejected query,
+  and compatibility fail-closed behavior. The expanded protected-route suite proves auth and
+  entitlement outages never load content, while genuine Free, invalid slug, and successful
+  private/no-store Premium responses remain distinct.
+- Commit: `40fb7f9` (`Distinguish mock entitlement outages`)
+- Verification: focused 13-test helper/protected-route coverage, the complete current-worktree
+  62-file/319-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 401 without credentials, HTTP 405 for POST, and HTTP 401 for an invalid Bearer
+  token. No protected mock content was fetched with a live user account.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
