@@ -2320,6 +2320,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   changes were restoring the two missing profile and quota rows; no billing, payment, email,
   recording, attempt, entitlement, consent, or content state changed.
 
+## CA-098 — Four privileged database functions retained a mutable application search path
+
+- Status: `FIXED`
+- Area: Supabase / database function security / defense in depth
+- Severity: Low
+- Evidence: a live inventory of every public `SECURITY DEFINER` function found
+  `check_rate_limit`, `handle_new_user`, `handle_user_update`, and `record_login` configured with
+  `search_path=public`; every other privileged function already used an empty path. `anon`,
+  `authenticated`, and `service_role` cannot create objects in `public`, so no current API role
+  could exploit name shadowing, and the RLS inventory found no disabled public table or unexpected
+  client row policy. The mutable path nevertheless made trusted functions depend on ambient schema
+  resolution and weakened the boundary if schema grants ever drifted.
+- Fix: alter the four exact function signatures to `search_path=''` without replacing their audited
+  bodies or changing grants. Their application table references were already fully schema-qualified,
+  while PostgreSQL continues to resolve built-ins through `pg_catalog`, making the change behavior-
+  preserving and idempotent.
+- Regression coverage: a new five-case migration contract suite requires every exact overloaded
+  signature to receive the empty path, rejects body replacement, and rejects reintroduction of
+  `search_path=public`. The committed apply script verifies all four live identities plus the full
+  privileged-function inventory in one transaction and supports a guaranteed-rollback dry run; the
+  exact migration passed that dry run before publication.
+- Commit: `3d7d1fa` (`Harden database function search paths`)
+- Verification: the focused five-test migration suite, the complete 79-file/493-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_9NEoGFiWFFqGUBAX39pU92zZaAfU` reached promoted
+  `READY` from exact Git SHA `3d7d1fa8ac5230c1c2fc01dec2d7b38580664296`. The production
+  migration reported all four targets hardened and zero remaining privileged functions with
+  `search_path=public`. A disposable live Auth/database run then exercised signup mirroring, Auth
+  profile updates, login attribution, and rate limiting successfully under the empty paths and
+  confirmed zero residual Auth, profile, quota, lifecycle, or limiter rows. The Supabase advisor
+  connector remained permission-blocked, so equivalent live catalog, schema-grant, function-grant,
+  and RLS checks were performed directly. No customer, payment, email, recording, entitlement,
+  consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
