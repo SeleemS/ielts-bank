@@ -27,6 +27,7 @@ const TYPE_LABELS = {
   examiner: 'Speaking Examiner',
   calculator: 'Band Calculator',
   about: 'About IELTS-Bank',
+  contact: 'Contact IELTS-Bank',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
 };

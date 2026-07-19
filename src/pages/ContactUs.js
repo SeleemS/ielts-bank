@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from '../../components/ui/card';
 import { track } from '../lib/analytics';
+import { CONTACT_SEO } from '../../lib/contactSeo';
 
 const fieldClasses =
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm';
@@ -62,13 +63,24 @@ const ContactUs = () => {
   return (
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <Head>
-        <title>Contact Us | IELTS-Bank</title>
-        <meta
-          name="description"
-          content="Get in touch with the IELTS-Bank team. Email us at info@ielts-bank.com or use our contact form for questions about IELTS practice and preparation."
-        />
+        <title>{CONTACT_SEO.title}</title>
+        <meta name="description" content={CONTACT_SEO.description} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.ielts-bank.com/contactus" />
+        <link rel="canonical" href={CONTACT_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={CONTACT_SEO.title} />
+        <meta property="og:description" content={CONTACT_SEO.description} />
+        <meta property="og:url" content={CONTACT_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={CONTACT_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={CONTACT_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={CONTACT_SEO.title} />
+        <meta name="twitter:description" content={CONTACT_SEO.description} />
+        <meta name="twitter:image" content={CONTACT_SEO.ogImage} />
       </Head>
       <Navbar />
 
