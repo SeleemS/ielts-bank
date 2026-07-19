@@ -200,7 +200,7 @@ export default function SignInDialog({
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
     const trimmed = email.trim();
-    if (!trimmed || !password) return;
+    if (!trimmed || !password || (mode === 'signup' && password.length < 8)) return;
     setBusy(true);
     setErrorMsg('');
     setNotice('');
@@ -614,7 +614,7 @@ export default function SignInDialog({
               type="password"
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               required
-              minLength={8}
+              minLength={mode === 'signup' ? 8 : undefined}
               placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -630,7 +630,12 @@ export default function SignInDialog({
             type="submit"
             variant="accent"
             className="w-full"
-            disabled={busy || !email.trim() || password.length < 8}
+            disabled={
+              busy
+              || !email.trim()
+              || !password
+              || (mode === 'signup' && password.length < 8)
+            }
           >
             {busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Sign in'}
           </Button>
