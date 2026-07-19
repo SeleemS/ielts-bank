@@ -302,7 +302,10 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content={`IELTS Writing Task ${task} practice: ${title}`} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={`IELTS Writing Task ${task} practice: ${title}`} />
       </Head>
 
       <div className="min-h-screen bg-background">

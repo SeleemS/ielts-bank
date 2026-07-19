@@ -170,7 +170,10 @@ const SectionLanding = ({
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content={`${ogTitle} — IELTS-Bank`} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={`${ogTitle} — IELTS-Bank`} />
         {faqJsonLd ? (
           <script
             type="application/ld+json"

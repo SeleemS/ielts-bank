@@ -988,7 +988,10 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content={`IELTS Speaking ${partLabel} practice: ${topic}`} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={`IELTS Speaking ${partLabel} practice: ${topic}`} />
       </Head>
 
       <div className="flex min-h-screen flex-col bg-background">

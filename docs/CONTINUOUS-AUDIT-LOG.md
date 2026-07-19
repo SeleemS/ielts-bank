@@ -299,6 +299,25 @@ False positives are kept in the investigation notes so they are not rediscovered
   Live production returned every expected OG/Twitter field, matching OG/Twitter images, and an HTTP
   200 non-empty `image/png` card.
 
+## CA-017 — Practice-bank shares relied on incomplete Twitter fallback metadata
+
+- Status: `FIXED`
+- Area: Reading / Listening / Writing / Speaking / social sharing
+- Severity: Medium
+- Evidence: the generated-site audit found 475 practice-bank and section routes that declared
+  `summary_large_image` and a Twitter image but omitted explicit `twitter:title` and
+  `twitter:description`; image alt text was also absent. Open Graph fallback is not a complete,
+  consistently portable Twitter/X card contract.
+- Fix: add explicit title, description, image, and image-alt fields to all five shared practice
+  templates, covering every Reading, Listening, Writing, and Speaking landing/exercise route.
+- Regression coverage: `lib/practiceTwitterMetadata.test.js` checks the complete large-card contract
+  and correct dynamic title/description source in every affected template.
+- Commit: `Complete practice share metadata`
+- Verification: focused 6-template regression coverage, the complete current-worktree
+  37-file/204-test Vitest suite, ESLint, analytics audit, exact generated metadata inspection across
+  all 475 affected routes, and the 527-page production build. Live production verification will be
+  recorded after deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

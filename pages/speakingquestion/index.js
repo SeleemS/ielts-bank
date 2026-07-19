@@ -161,7 +161,10 @@ export default function SpeakingIndex({ items = [] }) {
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:alt" content="IELTS Speaking Practice — IELTS-Bank" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={OG_IMAGE} />
+        <meta name="twitter:image:alt" content="IELTS Speaking Practice — IELTS-Bank" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
