@@ -23,6 +23,7 @@ const TYPE_LABELS = {
   speaking: 'Speaking Practice',
   mock: 'IELTS Mock Test',
   blog: 'IELTS Blog',
+  pricing: 'IELTS Premium',
   home: 'Free IELTS Practice',
   default: 'IELTS Practice',
 };

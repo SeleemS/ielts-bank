@@ -24,11 +24,10 @@ import { usePlan } from '../src/lib/usePlan';
 import { getSupabase } from '../lib/supabase';
 import { isPppCountry } from '../lib/billing';
 import { track } from '../src/lib/analytics';
-import { SITE_URL } from '../lib/site';
+import { PRICING_SEO } from '../lib/pricingSeo';
 
-const PAGE_TITLE = 'IELTS Bank Premium – AI Feedback, Examiner & Mock Tests';
-const PAGE_DESCRIPTION =
-  'Choose IELTS Bank Premium or a 4-week Exam Pass for full AI Writing feedback, Speaking scoring, live examiner practice, and timed mock tests. Includes a 14-day money-back guarantee.';
+const PAGE_TITLE = PRICING_SEO.title;
+const PAGE_DESCRIPTION = PRICING_SEO.description;
 
 const BASE_PLANS = [
   {
@@ -296,7 +295,21 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <link rel="canonical" href={`${SITE_URL}/pricing`} />
+        <link rel="canonical" href={PRICING_SEO.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
+        <meta property="og:url" content={PRICING_SEO.canonical} />
+        <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={PRICING_SEO.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={PRICING_SEO.imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+        <meta name="twitter:image" content={PRICING_SEO.ogImage} />
       </Head>
       <Navbar />
       <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10">

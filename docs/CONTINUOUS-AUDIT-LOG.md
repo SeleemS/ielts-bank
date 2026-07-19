@@ -143,6 +143,21 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Investigation safety: the disposable E2E subscription was canceled immediately after capturing
   the evidence, which correctly downgraded the test user before account cleanup.
 
+## CA-008 — Pricing links had no controlled social share card
+
+- Status: `IN VERIFICATION`
+- Area: Pricing / Open Graph / Twitter cards
+- Severity: Medium
+- Evidence: production `/pricing` supplied a title, description, and canonical URL but no Open Graph
+  or Twitter metadata. Links to the core acquisition page therefore had no controlled image, title,
+  or description when shared.
+- Fix: add a shared pricing SEO contract, a pricing-specific dynamic card label, full 1200×630
+  Open Graph image metadata, and matching Twitter large-card fields.
+- Regression coverage: `lib/pricingSeo.test.js` verifies the canonical contract, exact card URL, and
+  URL-safe dynamic image parameters.
+- Commit: `Add pricing social share metadata`
+- Verification: pending production deployment and live metadata/image response checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
