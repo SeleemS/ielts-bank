@@ -315,4 +315,62 @@ describe('GET /api/cron/daily-report persistence', () => {
       },
     ]);
   });
+
+  it('returns success after a confirmed report email delivery', async () => {
+    process.env.RESEND_API_KEY = 'resend-test-key';
+    process.env.REPORT_EMAIL = 'owner@example.com';
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+    });
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.email).toEqual({ sent: true });
+    expect(state.upsertCalls).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.resend.com/emails',
+      expect.objectContaining({ method: 'POST' })
+    );
+    const request = fetch.mock.calls[0][1];
+    expect(request.headers.Authorization).toBe('Bearer resend-test-key');
+    expect(JSON.parse(request.body)).toMatchObject({
+      to: ['owner@example.com'],
+      subject: expect.stringContaining('IELTS Bank'),
+      html: expect.stringContaining('Daily report'),
+    });
+  });
+
+  it('keeps a persisted report successful when Resend returns an HTTP error', async () => {
+    process.env.RESEND_API_KEY = 'resend-test-key';
+    process.env.REPORT_EMAIL = 'owner@example.com';
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false, status: 503 });
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.ok).toBe(true);
+    expect(res.jsonBody.email).toEqual({ sent: false, reason: 'resend-503' });
+    expect(state.upsertCalls).toHaveLength(1);
+  });
+
+  it('keeps a persisted report successful when the Resend request rejects', async () => {
+    process.env.RESEND_API_KEY = 'resend-test-key';
+    process.env.REPORT_EMAIL = 'owner@example.com';
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+      new Error('network unavailable')
+    );
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.ok).toBe(true);
+    expect(res.jsonBody.email).toEqual({
+      sent: false,
+      reason: 'resend-request-failed',
+    });
+    expect(state.upsertCalls).toHaveLength(1);
+  });
 });

@@ -490,18 +490,26 @@ async function sendEmail(report, history) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.REPORT_EMAIL;
   if (!apiKey || !to) return { sent: false, reason: 'email-not-configured' };
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.EMAIL_FROM || process.env.REPORT_FROM || 'IELTS Bank <hello@ielts-bank.com>',
-      to: [to],
-      subject: subjectLine(report, history),
-      html: renderEmail(report, history),
-    }),
-  });
-  if (!response.ok) return { sent: false, reason: `resend-${response.status}` };
-  return { sent: true };
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || process.env.REPORT_FROM || 'IELTS Bank <hello@ielts-bank.com>',
+        to: [to],
+        subject: subjectLine(report, history),
+        html: renderEmail(report, history),
+      }),
+    });
+    if (!response.ok) {
+      console.error('daily report email failed:', `resend-${response.status}`);
+      return { sent: false, reason: `resend-${response.status}` };
+    }
+    return { sent: true };
+  } catch (error) {
+    console.error('daily report email failed:', error.message);
+    return { sent: false, reason: 'resend-request-failed' };
+  }
 }
 
 export default async function handler(req, res) {
