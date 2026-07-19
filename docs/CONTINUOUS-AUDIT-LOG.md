@@ -62,6 +62,21 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused metadata tests, full Vitest suite, ESLint, production build, six generated
   HTML metadata checks, OG image response check, and live deployment checks.
 
+## CA-004 — Reading strategy hubs had text-only social shares
+
+- Status: `FIXED`
+- Area: Open Graph / Twitter cards / Reading hubs
+- Severity: Medium
+- Evidence: all 13 generated `/reading/[type]` strategy pages had OG title, description, and URL
+  fields but no OG image or Twitter image metadata.
+- Fix: added a shared Reading-hub SEO contract and complete OG/Twitter image metadata to the
+  dynamic hub template, with a distinct card title and question-type subtitle per route.
+- Regression coverage: `lib/readingQuestionTypes.test.js` verifies complete, unique, URL-safe
+  metadata for every one of the 13 configured hubs and rejects unknown route keys.
+- Commit: `Add Reading hub share images`
+- Verification: focused metadata tests, full Vitest suite, ESLint, production build, all 13
+  generated HTML metadata checks, OG image response check, and live deployment checks.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

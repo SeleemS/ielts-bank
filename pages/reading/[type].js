@@ -7,6 +7,7 @@ import Footer from '../../src/components/Footer';
 import { Button } from '../../components/ui/button';
 import { SKILLS, listPassagesByQuestionType } from '../../lib/supabase';
 import {
+  getReadingTypeSeo,
   READING_QUESTION_TYPES,
   READING_QUESTION_TYPE_SLUGS,
 } from '../../lib/readingQuestionTypes';
@@ -36,7 +37,8 @@ function DifficultyBadge({ difficulty }) {
 export default function ReadingTypeHub({ typeKey, items }) {
   const config = READING_QUESTION_TYPES[typeKey];
   const { label, h1, title, description, guide } = config;
-  const canonical = `${SITE_URL}/reading/${typeKey}`;
+  const seo = getReadingTypeSeo(typeKey);
+  const { canonical } = seo;
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
@@ -62,7 +64,15 @@ export default function ReadingTypeHub({ typeKey, items }) {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:site_name" content="IELTS-Bank" />
+        <meta property="og:image" content={seo.ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content={seo.imageAlt} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={seo.ogImage} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
