@@ -140,8 +140,9 @@ async function resolveUserId(req) {
 }
 
 // Fetch the passage (+ speaking detail) by slug via the service role, so the
-// model knows what the candidate was actually asked. Returns { id, contextText }
-// or null. Never throws (scoring proceeds with minimal context on failure).
+// model knows what the candidate was actually asked. Missing prompts, part
+// mismatches, and dependency failures stay distinct so scoring never proceeds
+// against invented or incomplete context.
 async function fetchPassageContext(passageSlug, part) {
   try {
     const admin = getAdmin();
@@ -153,17 +154,31 @@ async function fetchPassageContext(passageSlug, part) {
       .eq('slug', passageSlug)
       .eq('skill', 'speaking')
       .maybeSingle();
-    if (error || !data) {
-      if (error) console.error('passage lookup failed:', error.message);
-      return null;
+    if (error) {
+      console.error('passage lookup failed:', error.message);
+      return { passage: null, error, partMismatch: false };
+    }
+    if (!data) {
+      return { passage: null, error: null, partMismatch: false };
     }
     const det = Array.isArray(data.speaking_details)
       ? data.speaking_details[0]
       : data.speaking_details;
-    return { id: data.id, contextText: buildPassageContextText(data.title, det, part) };
+    const storedPart = Number(det?.part);
+    if ([1, 2, 3].includes(storedPart) && storedPart !== part) {
+      return { passage: null, error: null, partMismatch: true };
+    }
+    return {
+      passage: {
+        id: data.id,
+        contextText: buildPassageContextText(data.title, det, part),
+      },
+      error: null,
+      partMismatch: false,
+    };
   } catch (e) {
     console.error('fetchPassageContext error:', e.message);
-    return null;
+    return { passage: null, error: e, partMismatch: false };
   }
 
 }
@@ -440,6 +455,27 @@ export default async function handler(req, res) {
     });
   }
 
+  const passageLookup = await fetchPassageContext(passageSlug, part);
+  if (passageLookup.error) {
+    await cleanupRecording(audioPath);
+    return res
+      .status(503)
+      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (passageLookup.partMismatch) {
+    await cleanupRecording(audioPath);
+    return res.status(400).json({
+      error: 'The speaking part does not match this practice question.',
+    });
+  }
+  if (!passageLookup.passage) {
+    await cleanupRecording(audioPath);
+    return res.status(404).json({
+      error: 'Speaking question not found. Please choose another question.',
+    });
+  }
+  const passage = passageLookup.passage;
+
   let quota;
   try {
     quota = await consumeQuota(userId);
@@ -600,10 +636,8 @@ export default async function handler(req, res) {
   }
 
   // --- 6. SCORE the transcript ---------------------------------------------
-  // Fetch what the candidate was asked (best-effort; also gives us passage_id).
-  const passage = await fetchPassageContext(passageSlug, part);
-  const passageId = passage?.id || null;
-  const contextText = passage?.contextText || '(question text unavailable)';
+  const passageId = passage.id;
+  const contextText = passage.contextText;
 
   try {
     const userContent = `IELTS SPEAKING — PART ${part}

@@ -29,6 +29,13 @@ const state = {
   rpcCalls: [],
   removedPaths: [],
   tableCalls: [],
+  passageRow: {
+    id: 'passage-id',
+    title: 'A memorable journey',
+    speaking_details: null,
+  },
+  passageError: null,
+  passageReject: null,
   scoreError: null,
   scoreReject: null,
   deletedAttemptIds: [],
@@ -76,18 +83,22 @@ vi.mock('@supabase/supabase-js', () => ({
           eq: () => chain,
           maybeSingle: async () => {
             if (table === 'users' && state.planReject) throw state.planReject;
+            if (table === 'passages' && state.passageReject) {
+              throw state.passageReject;
+            }
             return {
               data:
                 table === 'users'
                   ? state.planRow
                   : table === 'passages'
-                    ? {
-                        id: 'passage-id',
-                        title: 'A memorable journey',
-                        speaking_details: null,
-                      }
+                    ? state.passageRow
                     : null,
-              error: table === 'users' ? state.planError : null,
+              error:
+                table === 'users'
+                  ? state.planError
+                  : table === 'passages'
+                    ? state.passageError
+                    : null,
             };
           },
         };
@@ -210,6 +221,13 @@ describe('POST /api/score/speaking quota safety', () => {
     state.rpcCalls = [];
     state.removedPaths = [];
     state.tableCalls = [];
+    state.passageRow = {
+      id: 'passage-id',
+      title: 'A memorable journey',
+      speaking_details: null,
+    };
+    state.passageError = null;
+    state.passageReject = null;
     state.scoreError = null;
     state.scoreReject = null;
     state.deletedAttemptIds = [];
@@ -318,6 +336,65 @@ describe('POST /api/score/speaking quota safety', () => {
       'speaking-score',
     ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('rejects a missing practice question before quota or OpenAI work', async () => {
+    state.passageRow = null;
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(404);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+    expect(chatCompletionWithFallback).not.toHaveBeenCalled();
+  });
+
+  it('rejects a speaking-part mismatch before quota or OpenAI work', async () => {
+    state.passageRow.speaking_details = { part: 1 };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody.error).toMatch(/does not match/i);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+    expect(chatCompletionWithFallback).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when practice-question lookup returns an error', async () => {
+    state.passageError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+    expect(chatCompletionWithFallback).not.toHaveBeenCalled();
+  });
+
+  it('recovers when practice-question lookup rejects', async () => {
+    state.passageReject = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'check_rate_limit',
+      'check_rate_limit',
+    ]);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+    expect(chatCompletionWithFallback).not.toHaveBeenCalled();
   });
 
   it('cleans the upload when quota verification returns an error', async () => {
