@@ -143,16 +143,15 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
     setIsLoading(true);
     let scored = false;
     try {
-      // Attach the current session's access token (if signed in) so the scorer
-      // can persist the result server-side. Fail-soft: any error here just means
-      // we POST without auth and score normally.
+      // Attach the current linked account's access token. The server rejects
+      // missing and anonymous-auth tokens before consuming the lifetime sample.
       const headers = { 'Content-Type': 'application/json' };
       try {
         const { data } = await getSupabase().auth.getSession();
         const accessToken = data?.session?.access_token;
         if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
       } catch {
-        /* not signed in / auth unavailable — score anonymously */
+        /* not signed in / auth unavailable — the server returns 401 */
       }
 
       const response = await fetch(SCORE_API, {

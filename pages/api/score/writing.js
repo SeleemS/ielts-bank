@@ -76,6 +76,23 @@ async function consumeQuota(userId) {
   return data;
 }
 
+async function refundQuota(userId, quota) {
+  if (!quota?.allowed || !quota?.consumedAt) return;
+  try {
+    const { error } = await getAdmin().rpc('refund_ai_score', {
+      p_uid: userId,
+      p_skill: 'writing',
+      p_free: quota.free === true,
+      p_consumed_at: quota.consumedAt,
+    });
+    if (error) throw error;
+  } catch (error) {
+    // The scoring request still fails closed. Provider/API retries are safe,
+    // and the error is surfaced to operations without leaking learner data.
+    console.error('quota refund failed:', error.message);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // REQUIRED auth: the free sample is an account reward. A null here is
 // a 401 upstream.
@@ -89,6 +106,9 @@ async function resolveUserId(req) {
     if (!token) return null;
     const { data, error } = await getAdmin().auth.getUser(token);
     if (error || !data || !data.user) return null;
+    // Supabase anonymous-auth tokens are valid JWTs, but the lifetime sample
+    // is specifically the reward for linking an email/OAuth account.
+    if (data.user.is_anonymous === true || !data.user.email) return null;
     return data.user.id;
   } catch {
     return null;
@@ -384,6 +404,7 @@ export default async function handler(req, res) {
   // --- Call OpenAI ---------------------------------------------------------
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');
+    await refundQuota(userId, quota);
     return res
       .status(502)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
@@ -421,6 +442,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
 
     if (!ai.ok) {
       console.error('OpenAI error', ai.status, (ai.detail || '').slice(0, 500));
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service could not process your response. Please try again.',
       });
@@ -430,6 +452,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service returned an empty result. Please try again.',
       });
@@ -440,6 +463,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       result = JSON.parse(content);
     } catch (e) {
       console.error('Failed to parse OpenAI JSON:', e.message);
+      await refundQuota(userId, quota);
       return res.status(502).json({
         error: 'The scoring service returned an invalid result. Please try again.',
       });
@@ -466,6 +490,7 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
       ...result,
     });
   } catch (e) {
+    await refundQuota(userId, quota);
     if (e.name === 'AbortError') {
       console.error('OpenAI request timed out');
       return res.status(502).json({

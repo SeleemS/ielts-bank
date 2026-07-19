@@ -82,6 +82,7 @@ declare
   v_renews timestamptz;
   v_expires timestamptz;
   v_pause_until timestamptz;
+  v_is_anonymous boolean := false;
   v_premium boolean := false;
   v_cap int;
   v_used int;
@@ -101,7 +102,10 @@ begin
   end if;
 
   insert into public.users (id, email, is_anonymous)
-  select u.id, u.email, false
+  select
+    u.id,
+    u.email,
+    coalesce((u.raw_user_meta_data ->> 'is_anonymous')::boolean, u.email is null)
   from auth.users u
   where u.id = p_uid
   on conflict (id) do nothing;
@@ -111,10 +115,22 @@ begin
     coalesce(to_jsonb(u)->>'plan_status', 'inactive'),
     (to_jsonb(u)->>'plan_renews_at')::timestamptz,
     (to_jsonb(u)->>'plan_expires_at')::timestamptz,
-    (to_jsonb(u)->>'billing_pause_until')::timestamptz
-  into v_plan, v_status, v_renews, v_expires, v_pause_until
+    (to_jsonb(u)->>'billing_pause_until')::timestamptz,
+    u.is_anonymous
+  into v_plan, v_status, v_renews, v_expires, v_pause_until, v_is_anonymous
   from public.users u
   where u.id = p_uid;
+
+  if v_is_anonymous then
+    return jsonb_build_object(
+      'allowed', false,
+      'remaining', 0,
+      'resetsAt', null,
+      'plan', 'free',
+      'free', false,
+      'reason', 'account_required'
+    );
+  end if;
 
   v_premium := (
     (v_plan in ('premium', 'pro', 'paid') and (
@@ -155,7 +171,8 @@ begin
       'remaining', 0,
       'resetsAt', null,
       'plan', 'free',
-      'free', true
+      'free', true,
+      'consumedAt', v_now
     );
   end if;
 
@@ -200,7 +217,8 @@ begin
     'remaining', v_cap - v_used - 1,
     'resetsAt', v_tomorrow,
     'plan', 'premium',
-    'free', false
+    'free', false,
+    'consumedAt', v_now
   );
 end;
 $$;
@@ -210,6 +228,85 @@ grant execute on function public.consume_ai_score(uuid, text) to authenticated, 
 
 comment on function public.consume_ai_score(uuid, text) is
   'consume_ai_score v6: one lifetime free Writing score, no free Speaking, and premium per-skill daily fair-use caps.';
+
+-- Restore a consumed unit when the provider fails before a score is returned.
+-- The exact consumed timestamp makes retries idempotent and prevents an old
+-- refund from clearing a later sample or decrementing a new day's counter.
+create table if not exists public.ai_score_refunds (
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  skill       text not null check (skill in ('writing', 'speaking')),
+  consumed_at timestamptz not null,
+  free        boolean not null,
+  created_at  timestamptz not null default now(),
+  primary key (user_id, skill, consumed_at)
+);
+
+alter table public.ai_score_refunds enable row level security;
+revoke all on table public.ai_score_refunds from anon, authenticated;
+grant all on table public.ai_score_refunds to service_role;
+
+create or replace function public.refund_ai_score(
+  p_uid uuid,
+  p_skill text,
+  p_free boolean,
+  p_consumed_at timestamptz
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_affected int := 0;
+  v_consumed_day date := (p_consumed_at at time zone 'utc')::date;
+begin
+  if coalesce((select auth.jwt() ->> 'role'), '') <> 'service_role' then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+  if p_uid is null
+    or p_consumed_at is null
+    or p_free is null
+    or p_skill not in ('writing', 'speaking')
+    or (p_free and p_skill <> 'writing')
+  then
+    return false;
+  end if;
+
+  insert into public.ai_score_refunds (user_id, skill, consumed_at, free)
+  values (p_uid, p_skill, p_consumed_at, p_free)
+  on conflict (user_id, skill, consumed_at) do nothing;
+  get diagnostics v_affected = row_count;
+  if v_affected = 0 then return false; end if;
+
+  if p_free then
+    update public.user_quotas
+    set free_writing_score_used_at = null
+    where user_id = p_uid
+      and free_writing_score_used_at = p_consumed_at;
+  elsif p_skill = 'writing' then
+    update public.user_quotas
+    set writing_scores_today = greatest(writing_scores_today - 1, 0)
+    where user_id = p_uid
+      and daily_counters_date = v_consumed_day;
+  else
+    update public.user_quotas
+    set speaking_scores_today = greatest(speaking_scores_today - 1, 0)
+    where user_id = p_uid
+      and daily_counters_date = v_consumed_day;
+  end if;
+
+  get diagnostics v_affected = row_count;
+  if v_affected <> 1 then
+    raise exception 'consumed score not found for refund' using errcode = 'P0002';
+  end if;
+  return true;
+end;
+$$;
+
+revoke all on function public.refund_ai_score(uuid, text, boolean, timestamptz)
+  from public, anon, authenticated;
+grant execute on function public.refund_ai_score(uuid, text, boolean, timestamptz)
+  to service_role;
 
 -- Keep the legacy one-argument wrapper aligned with v6.
 create or replace function public.consume_ai_score(p_uid uuid)

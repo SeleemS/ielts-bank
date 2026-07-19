@@ -21,7 +21,7 @@ Last updated: 2026-07-19
 - QW7 `IMPLEMENTED` — Speaking examiner, quota modal, and mock-gate impression/click instrumentation.
 - QW8 `IMPLEMENTED` — onboarding captures an optional exam date in a first-class column with a prefs fallback; Dashboard shows the deadline.
 - QW9 `IMPLEMENTED` — Pricing uses the signed-in learner’s real exam date for honest plan framing.
-- Free Writing score `IMPLEMENTED` — `consume_ai_score` v6 grants one lifetime signed-in Writing sample, keeps Speaking Premium-only, routes the sample to `SCORING_MODEL_FREE`, returns `free:true`, and uses a shared result component that reveals the band plus first criterion while locking the rest behind a measured Premium CTA.
+- Free Writing score `IMPLEMENTED` — `consume_ai_score` v6 grants one lifetime linked-account Writing sample, rejects anonymous-auth bypasses, keeps Speaking Premium-only, routes the sample to `SCORING_MODEL_FREE`, returns `free:true`, and uses a shared result component that reveals the band plus first criterion while locking the rest behind a measured Premium CTA. Provider failures restore the consumed unit through an idempotent, service-role-only refund.
 
 ## Days 0–30
 
@@ -62,7 +62,8 @@ Last updated: 2026-07-19
 - Checkpoint 2: review fixed required `anon_id` values on billing telemetry and preserved realtime quota through a pause while enforcing entitlement separately.
 - Checkpoint 3: integrated and completed the linked Band Estimator plan; its 49 focused tests pass inside the full suite.
 - Checkpoint 4: lifecycle delivery review added stale-worker recovery, current-consent enforcement immediately before marketing sends, write-error handling, a dedicated stale-claim index, and five focused tests.
-- Final local verification: `git diff --check`, ESLint, 12 test files / 118 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
+- Checkpoint 5: free-sample review closed the anonymous-auth token bypass and added transactional, retry-safe quota compensation for model errors/timeouts; route tests prove rejection happens before metering and provider failure invokes the exact refund.
+- Final local verification: `git diff --check`, ESLint, 13 test files / 120 tests, `npm audit` with zero vulnerabilities, and a Next 15.5.20 production build with 527 static pages all pass.
 - Browser QA: 375px anonymous estimator flow reached a 6.0 result with skipped measured sections and completed W/S ranges; contextual Writing pricing rendered all four plans, trust content, guarantee, and comparison table; both pages had zero browser console warnings/errors.
 - API QA: unsigned Writing, Premium mock payload, and checkout reconciliation all reject with `401`; unauthorized lifecycle cron rejects with `401`; invalid unsubscribe token rejects with `400`; static mock HTML is metadata-only.
 - Production database migration: isolated dry-run contains exactly `20260719010159_monetization_funnel_and_free_writing_score.sql`; live schema probes confirm the monetization columns, free-Writing marker, billing event key, and lifecycle outbox are not present yet. Production apply is pending explicit live-schema approval.
