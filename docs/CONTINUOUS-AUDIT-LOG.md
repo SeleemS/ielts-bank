@@ -1663,6 +1663,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 401 before the account limiter or Stripe path. No Checkout Session, Stripe
   customer, rate-limit row, or Supabase account mutation occurred during live verification.
 
+## CA-075 — Checkout reconciliation had no server-side abuse limit
+
+- Status: `FIXED`
+- Area: Billing API / Stripe session reconciliation / abuse prevention
+- Severity: High
+- Evidence: after authentication and checkout-session syntax validation,
+  `/api/billing/verify-session` retrieved any supplied Stripe Session ID without an account-level
+  request limit. A single account could therefore loop valid-looking IDs into unbounded
+  provider-side reads before ownership was known.
+- Fix: apply the shared atomic Supabase rate limiter before Stripe retrieval, allowing 20
+  activation checks per account per 10-minute window so legitimate checkout-return retries remain
+  available. Verified exhaustion returns HTTP 429; limiter errors and rejections reuse the neutral
+  HTTP 503 activation-pending response.
+- Regression coverage: billing and checkout-return tests require the exact limiter bucket, account
+  identifier, window, and maximum; cover verified exhaustion plus resolved and rejected limiter
+  failures; and prove every guarded failure makes zero Stripe retrievals.
+- Commit: `ce569ff` (`Rate limit checkout reconciliation`)
+- Compatibility correction: `d25c684` (`Match billing limiter RPC signature`)
+- Verification: focused 2-file/41-test billing and checkout-return coverage, the complete
+  current-worktree 68-file/408-test Vitest suite, ESLint, the 150-file analytics audit, and the
+  528-page production build passed. Vercel deployed the corrected exact commit successfully. A
+  scoped production RPC probe returned `true` over HTTP 200 with the deployed `p_max` contract;
+  its single rate-limit row was deleted and a follow-up read returned no rows. No Stripe Session,
+  customer, payment, user, or entitlement was created or changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
