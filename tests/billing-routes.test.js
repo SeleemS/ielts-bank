@@ -368,7 +368,7 @@ describe('POST /api/billing/checkout', () => {
           p_bucket: 'billing-checkout',
           p_identifier: 'user-1',
           p_window_seconds: 600,
-          p_max_requests: 10,
+          p_max: 10,
         },
       },
     ]);
@@ -698,7 +698,7 @@ describe('POST /api/billing/verify-session', () => {
           p_bucket: 'billing-verify-session',
           p_identifier: 'user-1',
           p_window_seconds: 600,
-          p_max_requests: 20,
+          p_max: 20,
         },
       },
     ]);

@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       p_bucket: 'billing-verify-session',
       p_identifier: user.id,
       p_window_seconds: VERIFY_WINDOW_SECONDS,
-      p_max_requests: VERIFY_MAX_PER_WINDOW,
+      p_max: VERIFY_MAX_PER_WINDOW,
     });
     if (error) throw error;
     if (!allowed) {

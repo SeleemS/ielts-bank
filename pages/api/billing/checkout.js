@@ -140,7 +140,7 @@ export default async function handler(req, res) {
       p_bucket: 'billing-checkout',
       p_identifier: userRow.id,
       p_window_seconds: CHECKOUT_WINDOW_SECONDS,
-      p_max_requests: CHECKOUT_MAX_PER_WINDOW,
+      p_max: CHECKOUT_MAX_PER_WINDOW,
     });
     if (error) throw error;
     if (!allowed) {
