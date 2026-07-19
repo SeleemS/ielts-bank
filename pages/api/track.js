@@ -5,6 +5,7 @@ import { clientIp, originAllowed } from '../../lib/apiSecurity';
 
 const EVENT_RE = /^[a-z][a-z0-9_]{1,63}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
 const SKILLS = new Set(['reading', 'writing', 'listening', 'speaking']);
 
 let adminClient = null;
@@ -61,7 +62,7 @@ async function recordLogin(body, resolvedUserId, country) {
   const { error } = await admin().rpc('record_login', {
     p_user_id: resolvedUserId,
     p_country: country,
-    p_source: str('source', 200),
+    p_source: str('acquisition_source', 200) || str('source', 200),
     p_referrer: str('referrer', 300),
     p_landing: str('landing', 200),
     p_utm: Object.keys(utm).length ? utm : null,
@@ -88,6 +89,10 @@ export default async function handler(req, res) {
   const anonId = typeof body.anon_id === 'string' ? body.anon_id.trim() : '';
   if (!EVENT_RE.test(event) || !UUID_RE.test(anonId)) {
     return res.status(400).json({ error: 'Invalid telemetry payload.' });
+  }
+  const eventPath = typeof body.path === 'string' ? body.path.trim() : '';
+  if (INTERNAL_PATH_RE.test(eventPath.split(/[?#]/, 1)[0])) {
+    return res.status(202).json({ ok: true, ignored: true });
   }
 
   try {

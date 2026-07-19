@@ -44,6 +44,10 @@ The generic capture layer records:
 | `ui_feedback` | A non-empty user-facing error alert |
 | `page_view` | Initial load and SPA route completion |
 
+Internal framework/API/Google-tag paths under `/api`, `/_next`, and `/gt` are
+discarded in both the client and ingestion endpoint. They are infrastructure,
+not user journeys.
+
 Explicit domain events remain the source of truth for outcomes and funnel
 milestones, including auth, attempts, AI scoring, estimator, audio,
 newsletter, paywall, checkout, purchase, subscription, and realtime-examiner
@@ -64,6 +68,8 @@ events.
 - `event`, `skill`, `slug`, `country`, and privacy-filtered `props`.
 
 `props.event_sequence` provides stable client ordering within a session.
+`props.acquisition_source` is first-touch attribution; `props.source` is the
+in-product placement that emitted the event. They must not be combined.
 
 ## Privacy rules
 

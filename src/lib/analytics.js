@@ -5,6 +5,7 @@ const SEQUENCE_KEY = 'ielts-analytics-sequence';
 const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 let analyticsAccessToken = null;
 let pageViewId = null;
+const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
 
 function fallbackUuid() {
   const bytes = new Uint8Array(16);
@@ -107,6 +108,12 @@ export function ensureGoogleAnalytics() {
   return window.gtag;
 }
 
+export function isInternalAnalyticsPath(value) {
+  if (typeof value !== 'string') return false;
+  const path = value.split(/[?#]/, 1)[0];
+  return INTERNAL_PATH_RE.test(path);
+}
+
 // First-touch attribution: captured once, on the first track() call of the
 // user's first visit, then persisted. `source` resolves to utm_source, else
 // the external referrer host, else 'direct'.
@@ -143,12 +150,14 @@ export function getAttribution() {
 
 export function track(event, params = {}, options = {}) {
   if (typeof window === 'undefined' || !event) return;
+  const currentPath = params.path || window.location.pathname;
+  if (isInternalAnalyticsPath(currentPath)) return;
   const clientEventId = window.crypto?.randomUUID?.() || fallbackUuid();
   const sessionId = getSessionId();
   const currentPageViewId = getPageViewId();
   const payload = {
     ...params,
-    path: params.path || window.location.pathname,
+    path: currentPath,
     client_event_id: clientEventId,
     session_id: sessionId,
     page_view_id: currentPageViewId,
@@ -169,8 +178,12 @@ export function track(event, params = {}, options = {}) {
   // onto the user's row (first-write-wins server-side).
   const attribution = getAttribution();
   const extra = {};
-  if (attribution?.source) extra.source = attribution.source;
+  if (attribution?.source) extra.acquisition_source = attribution.source;
   if (event === 'login' && attribution) {
+    // Legacy login RPC input remains `source`; all event analysis should use
+    // `acquisition_source` so UI placement values such as "blog" or
+    // "quota_modal" can continue to use `source` without overwriting it.
+    extra.source = attribution.source;
     if (attribution.referrer) extra.referrer = attribution.referrer;
     if (attribution.landing) extra.landing = attribution.landing;
     if (attribution.utm_source) extra.utm_source = attribution.utm_source;

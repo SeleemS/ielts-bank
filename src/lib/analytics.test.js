@@ -3,6 +3,7 @@ import {
   getAnonId,
   getSessionId,
   ensureGoogleAnalytics,
+  isInternalAnalyticsPath,
   resetAnalyticsForTests,
   track,
   trackPageView,
@@ -99,5 +100,29 @@ describe('dual analytics tracking', () => {
     expect(bodies[2].page_view_id).not.toBe(bodies[1].page_view_id);
     expect(new Set(bodies.map((body) => body.session_id)).size).toBe(1);
     expect(bodies.map((body) => body.event_sequence)).toEqual([1, 2, 3]);
+  });
+
+  it('keeps acquisition attribution separate from UI placement', () => {
+    track('product_cta_click', { source: 'blog', product: 'writing_checker' });
+
+    const body = JSON.parse(window.fetch.mock.calls[0][1].body);
+    expect(body.acquisition_source).toBe('search');
+    expect(body.source).toBe('blog');
+  });
+
+  it('drops internal API, Next.js, and Google-tag iframe paths', () => {
+    for (const path of [
+      '/api/track',
+      '/_next/static/chunk.js',
+      '/gt/_/service_worker/iframe.html',
+    ]) {
+      window.location.pathname = path;
+      track('page_view');
+    }
+
+    expect(window.gtag).not.toHaveBeenCalled();
+    expect(window.fetch).not.toHaveBeenCalled();
+    expect(isInternalAnalyticsPath('/gt/js?id=G-1KRYZZY68X')).toBe(true);
+    expect(isInternalAnalyticsPath('/pricing?upgrade=writing')).toBe(false);
   });
 });
