@@ -1443,6 +1443,27 @@ False positives are kept in the investigation notes so they are not rediscovered
   probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated request. No live limiter, OpenAI, or persistence mutation occurred.
 
+## CA-065 — Writing feedback counts were descriptive rather than enforced
+
+- Status: `FIXED`
+- Area: Writing scorer / Structured Outputs / feedback completeness
+- Severity: Medium
+- Evidence: Writing promised 1–3 strengths and 1–3 improvements for each of four criteria and 3–5
+  priority actions, but its strict JSON schema allowed every feedback array to be empty or
+  unbounded. A schema-valid assessment could therefore omit the guidance the learner requested or
+  return an excessive list that broke the intended scannable format.
+- Fix: enforce `minItems: 1` and `maxItems: 3` for strengths and improvements on every Task 1 and
+  Task 2 criterion, and enforce `minItems: 3` and `maxItems: 5` for top-level priority actions.
+- Regression coverage: parameterized schema tests exercise both task-specific first criteria and
+  all shared criteria, plus the top-level action list; the complete Writing route suite continues
+  to verify that this strict schema is sent to OpenAI.
+- Commit: `1aeb6a0` (`Enforce writing feedback counts`)
+- Verification: focused 19-test Writing route/schema coverage, the complete current-worktree
+  66-file/382-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the exact commit successfully. Fresh non-mutating production
+  probes returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated request. No live limiter, OpenAI, quota, or persistence mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
