@@ -891,6 +891,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   paths are verified by the route tests without opening a live customer session or disrupting
   production services.
 
+## CA-042 — Checkout dependency failures were misreported as account problems
+
+- Status: `FIXED`
+- Area: Billing API / Checkout / authentication / Supabase failure recovery
+- Severity: High
+- Evidence: `/api/billing/checkout` performed auth verification and the user-row query outside its
+  guarded Stripe flow. An auth-service rejection could escape the handler, while both resolved and
+  rejected user-query failures were conflated with a genuine missing row and returned
+  `Account not found.` A learner could therefore be told their account did not exist during a
+  temporary backend outage.
+- Fix: make auth resolution explicitly distinguish an invalid credential from an infrastructure
+  failure, catch the latter as a retryable HTTP 503, and guard the account query separately. The
+  route now checks resolved Supabase errors, catches rejected queries, uses `maybeSingle()` for the
+  actual no-row case, and never contacts Stripe when account verification is unavailable.
+- Regression coverage: the expanded billing-route suite injects a rejected auth request, a
+  resolved database error, and a rejected database request; each must return HTTP 503 with no
+  Stripe calls. It separately proves that a successful empty query retains the existing
+  `Account not found` response, alongside all prior SKU, Premium, PPP, win-back, customer reuse,
+  Exam Pass, and checkout reconciliation coverage.
+- Commit: `0c14ec4` (`Recover checkout account lookup failures`)
+- Verification: focused 29-test Checkout/Pricing coverage, the complete current-worktree
+  62-file/304-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated Checkout request. Dependency failures are injected in route tests rather than by
+  disrupting production, and no live Checkout session or charge was created.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
