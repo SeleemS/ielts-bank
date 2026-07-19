@@ -2187,6 +2187,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   `sending` rows. Rejection and continuation paths used injected providers rather than live email;
   no queue, email, account, payment, consent, content, or provider state changed.
 
+## CA-094 — A process crash on lifecycle attempt five left the row permanently `sending`
+
+- Status: `FIXED`
+- Area: Lifecycle email / stale claims / terminal retry state
+- Severity: High
+- Evidence: the stale-claim reclaimer selected only `sending` rows with `attempts < 5`. If a
+  serverless process timed out or terminated after atomically claiming the fifth attempt but before
+  recording its provider result, the row had `attempts = 5` and could never match either the stale
+  reclaimer or the due-email query. It remained `sending` forever, hiding the terminal delivery
+  failure from queue counts and operations.
+- Fix: reclaim every unsent `sending` row older than 15 minutes into `failed`, regardless of attempt
+  count. The existing due query still requires `attempts < 5`, so attempts one through four return
+  to the retry queue while attempt five becomes a visible terminal failure with no sixth delivery.
+- Regression coverage: the lifecycle stale-claim test now returns both a retryable and terminal row,
+  requires both to be updated to `failed`, and records every query predicate. It explicitly proves
+  the reclaimer filters only `status = sending`, `sent_at is null`, and the 15-minute cutoff—never
+  attempt count—while the wider suite retains fifth-attempt rejection and batch-continuation
+  coverage.
+- Commit: `7e55edf` (`Recover terminal lifecycle claims`)
+- Verification: the focused six-test lifecycle suite, the complete 77-file/482-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_5iCdhfK8yAxhLaxFDLxG6DPiUFe6` reached `READY`
+  from exact Git SHA `7e55edf0aa68972bade1c775afde9e17fe6f372d`. Fresh production probes returned
+  HTTP 405 for POST and HTTP 401 for an invalid bearer-secret GET, both before queue work. A
+  read-only live query found zero stale `sending` rows and zero terminal stale claims, so no live
+  repair was required. Crash recovery was verified with injected queue results; no queue, email,
+  account, payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
