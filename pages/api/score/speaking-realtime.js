@@ -90,6 +90,15 @@ FEEDBACK STYLE: specific, constructive and SCANNABLE. For each criterion give 1-
 Return ONLY the structured JSON object requested — no prose, no markdown, no HTML.`;
 }
 
+async function rollbackRealtimeAttempt(admin, attemptId) {
+  try {
+    const { error } = await admin.from('attempts').delete().eq('id', attemptId);
+    if (error) throw error;
+  } catch (error) {
+    console.error('realtime attempt rollback failed:', error.message);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -240,9 +249,11 @@ export default async function handler(req, res) {
   result = { ...result, overallBand };
 
   // --- Persist (fail-soft) -------------------------------------------------
+  let persistenceAdmin;
+  let attemptId;
   try {
-    const admin = getAdmin();
-    const { data: attempt, error: attemptErr } = await admin
+    persistenceAdmin = getAdmin();
+    const { data: attempt, error: attemptErr } = await persistenceAdmin
       .from('attempts')
       .insert({
         user_id: userId,
@@ -254,7 +265,8 @@ export default async function handler(req, res) {
       .select('id')
       .single();
     if (!attemptErr && attempt) {
-      await admin.from('scores').insert({
+      attemptId = attempt.id;
+      const { error: scoreErr } = await persistenceAdmin.from('scores').insert({
         attempt_id: attempt.id,
         user_id: userId,
         skill: 'speaking',
@@ -262,11 +274,18 @@ export default async function handler(req, res) {
         criteria: result.criteria || {},
         model: SCORING_MODEL,
       });
+      if (scoreErr) {
+        console.error('realtime score insert failed:', scoreErr.message);
+        await rollbackRealtimeAttempt(persistenceAdmin, attemptId);
+      }
     } else if (attemptErr) {
       console.error('realtime attempt insert failed:', attemptErr.message);
     }
   } catch (e) {
     console.error('realtime score persist failed:', e.message);
+    if (persistenceAdmin && attemptId) {
+      await rollbackRealtimeAttempt(persistenceAdmin, attemptId);
+    }
   }
 
   return res.status(200).json({ mode, candidateWords, ...result });

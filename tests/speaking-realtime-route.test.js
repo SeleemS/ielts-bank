@@ -14,6 +14,9 @@ const state = {
   rateLimitReject: null,
   rpcCalls: [],
   tableCalls: [],
+  scoreError: null,
+  scoreReject: null,
+  deletedAttemptIds: [],
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -47,8 +50,22 @@ vi.mock('@supabase/supabase-js', () => ({
             }),
           };
         }
-        return Promise.resolve({ data: null, error: null });
+        if (table === 'scores' && state.scoreReject) {
+          return Promise.reject(state.scoreReject);
+        }
+        return Promise.resolve({
+          data: null,
+          error: table === 'scores' ? state.scoreError : null,
+        });
       },
+      delete: () => ({
+        eq: async (column, value) => {
+          if (table === 'attempts' && column === 'id') {
+            state.deletedAttemptIds.push(value);
+          }
+          return { data: null, error: null };
+        },
+      }),
     }),
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
@@ -115,6 +132,9 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.rateLimitReject = null;
     state.rpcCalls = [];
     state.tableCalls = [];
+    state.scoreError = null;
+    state.scoreReject = null;
+    state.deletedAttemptIds = [];
     delete process.env.OPENAI_API_KEY;
     vi.restoreAllMocks();
   });
@@ -324,6 +344,32 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     expect(res.statusCode).toBe(502);
     expect(state.tableCalls).toEqual([]);
   });
+
+  it('removes the attempt when score persistence returns an error', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.scoreError = new Error('score insert failed');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockSuccessfulRealtimeScore();
+
+    const res = await callRoute({ body: validTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+  });
+
+  it('removes the attempt when score persistence rejects', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.scoreReject = new Error('score network failure');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockSuccessfulRealtimeScore();
+
+    const res = await callRoute({ body: validTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+  });
 });
 
 function validTranscriptBody() {
@@ -347,4 +393,29 @@ function criterion(band) {
     strengths: ['Clear organization.'],
     improvements: ['Add more detail.'],
   };
+}
+
+function mockSuccessfulRealtimeScore() {
+  process.env.OPENAI_API_KEY = 'sk-test-dummy';
+  vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              overallBand: 7,
+              criteria: {
+                fluencyCoherence: criterion(6.5),
+                lexicalResource: criterion(7.5),
+                grammaticalRange: criterion(8),
+              },
+              summary: 'A clear interview.',
+              improvements: ['Develop longer answers.'],
+            }),
+          },
+        },
+      ],
+    }),
+  });
 }
