@@ -72,18 +72,18 @@ function supabaseUrl() {
   return process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 }
 
-async function withinLimit(bucket, identifier, windowSeconds, max, failClosed = false) {
-  const { data, error } = await getAdmin().rpc('check_rate_limit', {
-    p_bucket: bucket,
-    p_identifier: identifier,
-    p_window_seconds: windowSeconds,
-    p_max: max,
-  });
-  if (error) {
-    console.error('check_rate_limit error:', error.message);
-    return !failClosed;
+async function checkLimit(bucket, identifier, windowSeconds, max) {
+  try {
+    const { data, error } = await getAdmin().rpc('check_rate_limit', {
+      p_bucket: bucket,
+      p_identifier: identifier,
+      p_window_seconds: windowSeconds,
+      p_max: max,
+    });
+    return { allowed: data === true, error };
+  } catch (error) {
+    return { allowed: false, error };
   }
-  return data === true;
 }
 
 async function consumeQuota(userId) {
@@ -427,38 +427,42 @@ export default async function handler(req, res) {
   }
 
   // --- 3. Rate limit BEFORE any OpenAI spend -------------------------------
-  try {
-    const dayKey = new Date().toISOString().slice(0, 10);
-    const globalOk = await withinLimit(
-      'speaking-score-global',
-      dayKey,
-      GLOBAL_WINDOW_SECONDS,
-      GLOBAL_MAX,
-      true
-    );
-    if (!globalOk) {
-      return res.status(429).json({
-        error:
-          'AI scoring is temporarily unavailable due to high demand. Please try again later.',
-      });
-    }
-
-    const userOk = await withinLimit(
-      'speaking-score',
-      userId,
-      PER_USER_WINDOW_SECONDS,
-      PER_USER_MAX
-    );
-    if (!userOk) {
-      return res.status(429).json({
-        error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
-      });
-    }
-  } catch (e) {
-    console.error('rate-limit check failed:', e.message);
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const globalLimit = await checkLimit(
+    'speaking-score-global',
+    dayKey,
+    GLOBAL_WINDOW_SECONDS,
+    GLOBAL_MAX
+  );
+  if (globalLimit.error) {
+    console.error('rate-limit check failed:', globalLimit.error.message);
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!globalLimit.allowed) {
+    return res.status(429).json({
+      error:
+        'AI scoring is temporarily unavailable due to high demand. Please try again later.',
+    });
+  }
+
+  const userLimit = await checkLimit(
+    'speaking-score',
+    userId,
+    PER_USER_WINDOW_SECONDS,
+    PER_USER_MAX
+  );
+  if (userLimit.error) {
+    console.error('rate-limit check failed:', userLimit.error.message);
+    return res
+      .status(503)
+      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!userLimit.allowed) {
+    return res.status(429).json({
+      error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
+    });
   }
 
   let quota;

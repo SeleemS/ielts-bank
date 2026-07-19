@@ -15,6 +15,9 @@ const state = {
   },
   planError: null,
   planReject: null,
+  rateLimits: {},
+  rateLimitErrors: {},
+  rateLimitRejects: {},
   rpcCalls: [],
   removedPaths: [],
 };
@@ -31,7 +34,17 @@ vi.mock('@supabase/supabase-js', () => ({
     },
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
-      if (name === 'check_rate_limit') return { data: true, error: null };
+      if (name === 'check_rate_limit') {
+        if (state.rateLimitRejects[args.p_bucket]) {
+          throw state.rateLimitRejects[args.p_bucket];
+        }
+        return {
+          data: Object.hasOwn(state.rateLimits, args.p_bucket)
+            ? state.rateLimits[args.p_bucket]
+            : true,
+          error: state.rateLimitErrors[args.p_bucket] || null,
+        };
+      }
       if (name === 'consume_ai_score') {
         return {
           data: {
@@ -135,6 +148,9 @@ describe('POST /api/score/speaking quota safety', () => {
     };
     state.planError = null;
     state.planReject = null;
+    state.rateLimits = {};
+    state.rateLimitErrors = {};
+    state.rateLimitRejects = {};
     state.rpcCalls = [];
     state.removedPaths = [];
     vi.restoreAllMocks();
@@ -187,6 +203,55 @@ describe('POST /api/score/speaking quota safety', () => {
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody.reason).toBeUndefined();
     expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('fails closed when the global limiter returns an error', async () => {
+    state.rateLimitErrors['speaking-score-global'] = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+  });
+
+  it('fails closed when the global limiter rejects', async () => {
+    state.rateLimitRejects['speaking-score-global'] = new Error('network unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+  });
+
+  it('returns 429 only for verified global exhaustion', async () => {
+    state.rateLimits['speaking-score-global'] = false;
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+  });
+
+  it('fails closed instead of opening cost access on a per-user limiter error', async () => {
+    state.rateLimitErrors['speaking-score'] = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'speaking-score-global',
+      'speaking-score',
+    ]);
+  });
+
+  it('returns 429 for a verified per-user limit', async () => {
+    state.rateLimits['speaking-score'] = false;
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'speaking-score-global',
+      'speaking-score',
+    ]);
   });
 
   it('refunds the consumed daily unit when scoring cannot start', async () => {
