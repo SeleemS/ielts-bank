@@ -263,7 +263,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-015 — Terms links had no controlled share preview
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Terms / billing trust / Open Graph / Twitter cards
 - Severity: Low
 - Evidence: `/termsofservice` had canonical title and description metadata but no Open Graph or
@@ -274,7 +274,10 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: `lib/termsSeo.test.js` verifies canonical content and every decoded dynamic
   image parameter.
 - Commit: `Add Terms page share metadata`
-- Verification: pending production deployment and live metadata/image checks.
+- Verification: focused SEO contract tests, the complete current-worktree 35-file/196-test Vitest
+  suite, ESLint, analytics audit, generated HTML inspection, the 527-page production build, and the
+  clean Vercel build from the committed fix. Live production returned every OG/Twitter field,
+  matching OG/Twitter images, and an HTTP 200 non-empty `image/png` card.
 
 ## Investigation notes
 
