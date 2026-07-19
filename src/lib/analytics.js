@@ -165,7 +165,9 @@ export function track(event, params = {}, options = {}) {
     occurred_at: new Date().toISOString(),
   };
 
-  ensureGoogleAnalytics()?.('event', event, payload);
+  // firstPartyOnly: meter-style events (e.g. session_heartbeat) that belong in
+  // activity_events but would only add noise/volume to GA4.
+  if (!options.firstPartyOnly) ensureGoogleAnalytics()?.('event', event, payload);
 
   const anonId = getAnonId();
   if (!anonId || typeof window.fetch !== 'function') return;

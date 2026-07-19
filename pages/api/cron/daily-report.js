@@ -10,6 +10,7 @@ export const config = { runtime: 'nodejs' };
 // same bearer secret.
 
 import { createClient } from '@supabase/supabase-js';
+import { sessionStats, fmtDuration } from '../../../lib/sessionStats';
 
 function countBy(rows, pick) {
   const counts = {};
@@ -35,7 +36,7 @@ async function buildReport(admin, reportDate) {
     admin.from('users').select('id', { count: 'exact', head: true }),
     admin
       .from('activity_events')
-      .select('event, anon_id, user_id, country, skill, props')
+      .select('event, anon_id, user_id, country, skill, props, session_id, occurred_at, created_at')
       .gte('created_at', start)
       .lt('created_at', end)
       .limit(50000),
@@ -94,6 +95,9 @@ async function buildReport(admin, reportDate) {
       events: events.length,
       activeSignedIn: signedInIds.size,
       activeAnonymous: anonIds.size,
+      // Session durations from per-tab session_id + heartbeats; see
+      // lib/sessionStats.js for the definition and its biases.
+      sessions: sessionStats(events),
       logins: events.filter((e) => e.event === 'login').length,
       pageViews: events.filter((e) => e.event === 'page_view').length,
       visitorsByCountry: countBy([...visitorCountry.values()], (c) => c),
@@ -158,6 +162,7 @@ function esc(value) {
 }
 
 function fmt(n) {
+  if (typeof n === 'string') return n; // preformatted values (e.g. durations)
   return (n ?? 0).toLocaleString('en-US');
 }
 
@@ -350,11 +355,21 @@ export function renderEmail(report, history = {}) {
     tile('New signups', signups.count, delta(signups.count, prev ? prev.signups.count : null), `${fmt(signups.totalUsers)} users total`),
     tile('Visitors', visitors, delta(visitors, prevVisitors), `${fmt(activity.activeSignedIn)} signed in &middot; ${fmt(activity.activeAnonymous)} anonymous`),
   ];
+  // Older daily_reports rows predate session tracking — guard both sides.
+  const sessions = activity.sessions || null;
+  const prevSessions = prev?.activity?.sessions || null;
   const kpiTiles = [
     tile('Practice attempts', practice.attempts, delta(practice.attempts, prev ? prev.practice.attempts : null)),
     tile('Questions answered', practice.questionsAnswered, delta(practice.questionsAnswered, prev ? prev.practice.questionsAnswered : null)),
     tile('Page views', activity.pageViews, delta(activity.pageViews, prev ? prev.activity.pageViews : null)),
     tile('Logins', activity.logins, delta(activity.logins, prev ? prev.activity.logins : null)),
+    tile(
+      'Avg session / visitor',
+      fmtDuration(sessions?.perVisitorAvgSeconds),
+      delta(sessions?.perVisitorAvgSeconds ?? 0, prevSessions?.perVisitorAvgSeconds ?? null),
+      sessions?.count ? `median ${fmtDuration(sessions.medianSeconds)} per session` : 'no sessions recorded'
+    ),
+    tile('Sessions', sessions?.count ?? 0, delta(sessions?.count ?? 0, prevSessions ? prevSessions.count : null)),
   ];
 
   const body = quiet

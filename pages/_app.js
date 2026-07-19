@@ -9,6 +9,7 @@ import '../src/styles/globals.css';
 import { inter } from '../src/lib/fonts';
 import { AuthProvider, useAuth } from '../src/lib/auth';
 import { trackPageView } from '../src/lib/analytics';
+import { startSessionHeartbeat } from '../src/lib/sessionHeartbeat';
 import ConsentManager from '../src/components/ConsentManager';
 import InteractionTelemetry from '../src/components/InteractionTelemetry';
 import { adsAllowedForPath } from '../src/lib/adPolicy';
@@ -30,6 +31,8 @@ function AppTelemetry({ router }) {
     const timer = window.setTimeout(() => trackPageView(router.asPath, Boolean(user?.id)), 500);
     return () => window.clearTimeout(timer);
   }, [loading, router.asPath, router.isReady, user?.id]);
+  // Engaged-time meter for session-duration analytics (see lib/sessionStats.js).
+  React.useEffect(() => startSessionHeartbeat(), []);
   return null;
 }
 
