@@ -18,6 +18,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
+import { WRITING_PROMPT_MAX_CHARS } from '../../../lib/writingLimits';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -339,6 +340,11 @@ export default async function handler(req, res) {
     return res
       .status(400)
       .json({ error: 'Your response is too long to score.' });
+  }
+  if (prompt.length > WRITING_PROMPT_MAX_CHARS) {
+    return res
+      .status(400)
+      .json({ error: 'The task prompt is too long to score.' });
   }
   const words = countWords(essay);
   if (words < MIN_WORDS) {

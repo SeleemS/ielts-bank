@@ -31,6 +31,7 @@ import { ScoringProgress } from '../src/components/question/ScoreUI';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
 
 import { WRITING_CHECKER_SEO } from '../lib/writingCheckerSeo';
+import { WRITING_PROMPT_MAX_CHARS } from '../lib/writingLimits';
 const SCORE_API = '/api/score/writing';
 const CANONICAL = WRITING_CHECKER_SEO.canonical;
 const DRAFT_KEY = 'ielts-writing-checker-draft';
@@ -394,6 +395,7 @@ export default function WritingCheckerPage() {
                     id="prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
+                    maxLength={WRITING_PROMPT_MAX_CHARS}
                     placeholder="Paste the exact task question here for more accurate feedback…"
                     className="min-h-[80px] resize-y"
                   />

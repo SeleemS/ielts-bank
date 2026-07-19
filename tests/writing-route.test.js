@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { WRITING_PROMPT_MAX_CHARS } from '../lib/writingLimits';
 
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-dummy';
@@ -128,6 +129,46 @@ describe('POST /api/score/writing account and quota safety', () => {
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody.error).toMatch(/temporarily unavailable/i);
     expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('rejects an oversized task prompt before rate limits or quota', async () => {
+    state.authUser = linkedUser();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        body: {
+          ...validBody(),
+          prompt: 'p'.repeat(WRITING_PROMPT_MAX_CHARS + 1),
+        },
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody.error).toMatch(/prompt is too long/i);
+    expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('accepts a task prompt exactly at the documented character limit', async () => {
+    state.authUser = linkedUser();
+    state.rateLimitResponses = [{ data: false, error: null }];
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(
+      makeReq({
+        body: {
+          ...validBody(),
+          prompt: 'p'.repeat(WRITING_PROMPT_MAX_CHARS),
+        },
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
   });
 
   it('returns a service error when the global limiter resolves with an error', async () => {
