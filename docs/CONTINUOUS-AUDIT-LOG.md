@@ -2125,6 +2125,37 @@ False positives are kept in the investigation notes so they are not rediscovered
   `fetch` responses rather than by sending administrative email; no database, email, account,
   payment, consent, content, or provider state changed.
 
+## CA-092 — Invalid backfill dates could generate or email the wrong reporting day
+
+- Status: `FIXED`
+- Area: Analytics / scheduled daily report / manual backfill validation
+- Severity: Medium
+- Evidence: the documented `?date=YYYY-MM-DD` override was checked only with a shape regex. A typo
+  with the wrong shape, an empty value, or a repeated query parameter silently fell back to
+  yesterday, while impossible calendar dates passed through to later database parsing. Current or
+  future dates were also accepted even though their UTC reporting period was incomplete. An
+  authenticated operator mistake could therefore overwrite/email yesterday unexpectedly, fail as
+  a misleading database error, or persist an empty/partial report.
+- Fix: validate every explicit override before admin-client creation. Accepted values must be one
+  scalar canonical calendar date in `YYYY-MM-DD` form and strictly earlier than the current UTC
+  day; all other explicit values return HTTP 400. An omitted override retains the intended previous-
+  UTC-day default.
+- Regression coverage: the expanded 20-case daily-report suite rejects malformed, empty,
+  impossible, repeated, future, and current-day values before any database call; accepts a real leap
+  day; verifies its exact UTC start/end range and persisted key; and proves the omitted override
+  resolves to the previous completed UTC day. All auth, persistence, optional-RPC, and email cases
+  remain covered.
+- Commit: `49c56c1` (`Validate daily report backfill dates`)
+- Verification: the focused 20-test daily-report suite, the complete 77-file/481-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_AZ1kLVFzmYhbZnTrVKhKdGPpchGV` reached `READY`
+  from exact Git SHA `49c56c1387a3f32cca98087330233cb39d24fd20`. Fresh production probes returned
+  HTTP 405 for POST and HTTP 401 for an invalid bearer-secret request containing an impossible date,
+  proving both public gates remained ahead of protected work. The authenticated HTTP 400 and valid
+  backfill branches were verified with injected dependencies because running them live would
+  require the owner-only cron secret and could persist/email a report; no database, email, account,
+  payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
