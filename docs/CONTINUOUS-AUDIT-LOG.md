@@ -462,8 +462,10 @@ False positives are kept in the investigation notes so they are not rediscovered
   wildcard and every named crawler against all three exclusions plus the canonical sitemap.
 - Commit: `Protect private routes from named crawlers`
 - Verification: focused 6-test crawler-policy coverage, the complete current-worktree
-  44-file/241-test Vitest suite, ESLint, analytics audit, and the 527-page production build. Live
-  production verification will be recorded after deployment.
+  44-file/241-test Vitest suite, ESLint, analytics audit, and the 527-page production build. The
+  clean Vercel build from the committed fix reached `Ready` with the production aliases. Live
+  robots parsing confirmed HTTP 200 text output, public-content access plus all three exclusions for
+  every named crawler, matching wildcard exclusions, and the canonical sitemap declaration.
 
 ## Investigation notes
 
@@ -474,3 +476,7 @@ False positives are kept in the investigation notes so they are not rediscovered
   redirects. Every URL returned HTTP 200, every rendered canonical matched the sitemap location,
   and there were no duplicate locations. Generated legacy question aliases are intentionally
   omitted in favor of their single canonical sitemap URL.
+- A production security-header sweep across static HTML, dynamic pricing, the OG image API, and the
+  HTTP origin confirmed enforced CSP, HSTS, MIME sniffing protection, same-origin framing, strict
+  referrer policy, camera/geolocation denial, same-origin microphone access, CSP reporting, and an
+  HTTP→HTTPS 308 redirect. No defect was found.
