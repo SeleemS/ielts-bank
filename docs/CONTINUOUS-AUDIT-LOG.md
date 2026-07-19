@@ -2156,6 +2156,37 @@ False positives are kept in the investigation notes so they are not rediscovered
   require the owner-only cron secret and could persist/email a report; no database, email, account,
   payment, consent, content, or provider state changed.
 
+## CA-093 — A rejected lifecycle delivery stranded its claim and stopped the batch
+
+- Status: `FIXED`
+- Area: Lifecycle email / delivery queue / provider failure recovery
+- Severity: High
+- Evidence: `deliverDue` safely handled provider responses shaped as `{sent:false}`, but a rejected
+  delivery promise escaped the loop after the row had been atomically claimed as `sending`. The
+  remaining due emails were skipped until the next cron run, and the rejected row remained claimed
+  for at least 15 minutes. On its fifth attempt the stale reclaimer's `< 5` filter could leave that
+  row in `sending` indefinitely rather than recording a terminal failure.
+- Fix: contain each provider call inside its claimed row. A rejected call now becomes a normalized,
+  control-character-free, size-bounded failure reason, is persisted immediately as `failed`, and
+  allows the loop to continue. A missing or malformed provider result also receives a stable
+  `delivery-failed` reason; successful delivery behavior and the Resend idempotency key are
+  unchanged.
+- Regression coverage: the six-case lifecycle safety suite now runs a two-row batch whose first
+  fifth-attempt delivery rejects with control characters and whose second succeeds. It requires the
+  first row to move from `sending` attempt five to a sanitized terminal failure, the second row to
+  be claimed and marked sent, both provider calls to execute, and the aggregate sent/failed counts
+  to remain exact. Consent, suppression, stale reclaim, and successful marketing delivery coverage
+  remains active.
+- Commit: `fe45057` (`Recover rejected lifecycle deliveries`)
+- Verification: the focused six-test lifecycle suite, the complete 77-file/482-test Vitest suite,
+  ESLint, the strict 156-file analytics audit covering 269 interactive controls, and the 528-page
+  production build passed. Vercel deployment `dpl_9NrcnrvNYqrqpWpdHemXWD5D5FRv` reached `READY`
+  from exact Git SHA `fe45057b8adfec580d52ac1ef6054e98efd9e473`. Fresh production probes returned
+  HTTP 405 for POST and HTTP 401 for an invalid bearer-secret GET, both before queue or provider
+  work. A read-only live queue check found seven sent rows and zero stale or terminal-stale
+  `sending` rows. Rejection and continuation paths used injected providers rather than live email;
+  no queue, email, account, payment, consent, content, or provider state changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
