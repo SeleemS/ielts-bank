@@ -67,7 +67,7 @@ Last updated: 2026-07-19
 ## Final verification record
 
 - `npm run lint`: pass, zero warnings/errors.
-- Latest monetization verification: 17 test files / 139 tests passed; production build generated 527 static pages.
+- Latest monetization verification: 19 test files / 153 tests passed; production build generated 527 static pages.
 - `npm audit`: 0 vulnerabilities across production and development dependencies.
 - `git diff --check`: pass.
 - `npm run build`: pass on Next 15.5.20; 527 static pages generated.

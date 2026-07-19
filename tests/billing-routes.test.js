@@ -110,6 +110,8 @@ describe('POST /api/webhooks/stripe', () => {
 const mockState = {
   authUser: null,
   userRow: null,
+  retrievedSession: null,
+  reconciliationOutcome: 'activated user user-1 (active)',
   stripeCalls: {},
 };
 
@@ -162,9 +164,23 @@ vi.mock('../lib/billing', async (importOriginal) => {
             mockState.stripeCalls.sessionCreate = args;
             return { url: 'https://checkout.stripe.com/c/pay/mock' };
           },
+          retrieve: async (id, args) => {
+            mockState.stripeCalls.sessionRetrieve = { id, args };
+            return mockState.retrievedSession;
+          },
         },
       },
     }),
+    handleStripeEvent: async (event, deps) => {
+      if (
+        event.type === 'checkout.session.completed'
+        && String(event.id || '').startsWith('verify:')
+      ) {
+        mockState.stripeCalls.reconciliation = { event, deps };
+        return mockState.reconciliationOutcome;
+      }
+      return actual.handleStripeEvent(event, deps);
+    },
   };
 });
 
@@ -172,7 +188,11 @@ describe('POST /api/billing/checkout', () => {
   beforeEach(() => {
     mockState.authUser = null;
     mockState.userRow = null;
+    mockState.retrievedSession = null;
+    mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
+    delete process.env.STRIPE_AUTOMATIC_TAX;
+    delete process.env.STRIPE_WINBACK_COUPON_ID;
   });
 
   async function callCheckout({ headers = {}, body = { sku: 'monthly' } } = {}) {
@@ -230,6 +250,7 @@ describe('POST /api/billing/checkout', () => {
     expect(session.allow_promotion_codes).toBe(true);
     expect(session.payment_method_collection).toBe('if_required');
     expect(session.subscription_data.metadata.user_id).toBe('user-1');
+    expect(session.automatic_tax).toBeUndefined();
   });
 
   it('selects the PPP price from request geo, never from the client body', async () => {
@@ -256,5 +277,185 @@ describe('POST /api/billing/checkout', () => {
     await callCheckout({ headers: { authorization: 'Bearer tok' } });
     expect(mockState.stripeCalls.customerCreate).toBeUndefined();
     expect(mockState.stripeCalls.sessionCreate.customer).toBe('cus_existing');
+  });
+
+  it('creates a non-renewing PPP Exam Pass payment with payment metadata', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+      stripe_customer_id: 'cus_existing',
+    };
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok', 'x-vercel-ip-country': 'IN' },
+      body: { sku: 'exam_pass' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_exam_pass_ppp']);
+    const session = mockState.stripeCalls.sessionCreate;
+    expect(session.mode).toBe('payment');
+    expect(session.subscription_data).toBeUndefined();
+    expect(session.payment_intent_data.metadata).toEqual({
+      user_id: 'user-1',
+      sku: 'exam_pass',
+      ppp: '1',
+    });
+  });
+
+  it('rejects a win-back offer before the 30-day eligibility window', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+      canceled_at: new Date(Date.now() - 29 * 86400000).toISOString(),
+    };
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+      body: { sku: 'monthly', offer: 'winback' },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockState.stripeCalls.pricesList).toBeUndefined();
+  });
+
+  it('fails closed when an eligible win-back coupon is not configured', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+      canceled_at: new Date(Date.now() - 31 * 86400000).toISOString(),
+    };
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+      body: { sku: 'monthly', offer: 'winback' },
+    });
+    expect(res.statusCode).toBe(503);
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
+  });
+
+  it('applies only the configured coupon to an eligible monthly win-back checkout', async () => {
+    process.env.STRIPE_WINBACK_COUPON_ID = 'IELTSBANK_WINBACK40';
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+      canceled_at: new Date(Date.now() - 31 * 86400000).toISOString(),
+    };
+    const res = await callCheckout({
+      headers: { authorization: 'Bearer tok' },
+      body: { sku: 'monthly', offer: 'winback' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockState.stripeCalls.sessionCreate.allow_promotion_codes).toBe(false);
+    expect(mockState.stripeCalls.sessionCreate.discounts).toEqual([
+      { coupon: 'IELTSBANK_WINBACK40' },
+    ]);
+  });
+
+  it('enables automatic Tax only when the production setting is explicitly on', async () => {
+    process.env.STRIPE_AUTOMATIC_TAX = '1';
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+    expect(res.statusCode).toBe(200);
+    expect(mockState.stripeCalls.sessionCreate.automatic_tax).toEqual({ enabled: true });
+  });
+});
+
+describe('POST /api/billing/verify-session', () => {
+  beforeEach(() => {
+    mockState.authUser = null;
+    mockState.userRow = null;
+    mockState.retrievedSession = null;
+    mockState.reconciliationOutcome = 'activated user user-1 (active)';
+    mockState.stripeCalls = {};
+  });
+
+  async function callVerify({ headers = {}, body = {} } = {}) {
+    const { default: handler } = await import('../pages/api/billing/verify-session');
+    const res = makeRes();
+    await handler(makeReq({ headers, body }), res);
+    return res;
+  }
+
+  it('rejects unauthenticated and malformed reconciliation requests', async () => {
+    let res = await callVerify({ body: { session_id: 'cs_live_valid' } });
+    expect(res.statusCode).toBe(401);
+
+    mockState.authUser = { id: 'user-1' };
+    res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'not-a-checkout-session' },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(mockState.stripeCalls.sessionRetrieve).toBeUndefined();
+  });
+
+  it('rejects a completed checkout belonging to another account', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.retrievedSession = {
+      id: 'cs_live_other',
+      client_reference_id: 'user-2',
+      metadata: {},
+      status: 'complete',
+      payment_status: 'paid',
+    };
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_other' },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockState.stripeCalls.reconciliation).toBeUndefined();
+  });
+
+  it('waits rather than granting access for an incomplete payment', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.retrievedSession = {
+      id: 'cs_live_open',
+      client_reference_id: 'user-1',
+      metadata: {},
+      status: 'open',
+      payment_status: 'unpaid',
+    };
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_open' },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(mockState.stripeCalls.reconciliation).toBeUndefined();
+  });
+
+  it('reuses the webhook activation path for a paid owned checkout', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.retrievedSession = {
+      id: 'cs_live_paid',
+      client_reference_id: 'user-1',
+      metadata: { user_id: 'user-1' },
+      status: 'complete',
+      payment_status: 'paid',
+    };
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_paid' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.active).toBe(true);
+    expect(mockState.stripeCalls.sessionRetrieve).toEqual({
+      id: 'cs_live_paid',
+      args: { expand: ['subscription'] },
+    });
+    expect(mockState.stripeCalls.reconciliation.event.id).toBe('verify:cs_live_paid');
   });
 });
