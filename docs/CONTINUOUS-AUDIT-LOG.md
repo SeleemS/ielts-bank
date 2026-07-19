@@ -1239,6 +1239,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter, quota, or OpenAI mutation occurred.
 
+## CA-056 — Unbounded Writing prompts could inflate scoring requests
+
+- Status: `FIXED`
+- Area: Writing checker / request validation / AI cost controls / form UX
+- Severity: High
+- Evidence: the scoring route capped essay length but accepted the optional user-controlled task
+  prompt at any length allowed by the framework request body. It then included that prompt
+  verbatim in the OpenAI request, permitting unnecessary token spend and oversized processing.
+  The browser field had no corresponding input bound.
+- Fix: introduce one shared 8,000-character prompt limit, enforce it server-side before rate limits
+  or quota consumption, and expose the same `maxLength` on the Writing checker field. The limit is
+  deliberately generous for legitimate IELTS task text while bounding model input.
+- Regression coverage: the Writing route suite proves 8,001 characters returns HTTP 400 without
+  any limiter or quota RPC, while exactly 8,000 characters passes validation and reaches the
+  normal limiter path.
+- Commit: `cc05825` (`Bound writing prompt input`)
+- Verification: focused 12-test Writing route coverage, the complete current-worktree
+  63-file/357-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Production HTML rendered
+  `maxLength="8000"` on the prompt field, while fresh non-mutating API probes returned HTTP 405
+  for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin unauthenticated POST.
+  No authenticated scoring mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
