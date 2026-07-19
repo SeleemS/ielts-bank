@@ -117,7 +117,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-007 — Portal cancellation is not mapped as a non-renewing plan
 
-- Status: `IN VERIFICATION`
+- Status: `FIXED`
 - Area: Billing / Stripe webhooks / entitlement messaging
 - Severity: High
 - Evidence: the production Stripe Customer Portal successfully scheduled cancellation and displayed
@@ -132,6 +132,14 @@ False positives are kept in the investigation notes so they are not rediscovered
   preserve entitlement without resetting quota; billing display tests cover non-renewal wording and
   ensure canceled plans cannot be paused.
 - Commit: `Handle Stripe scheduled cancellations`
+- Verification: focused billing/webhook/API/display tests, full 26-file/172-test Vitest suite,
+  ESLint, analytics audit, and the 527-page production build. A second authenticated production
+  Checkout and Customer Portal cancellation reproduced Stripe's explicit `cancel_at` shape; Supabase
+  then stored `premium/canceled` with the matching access-end instant. Live pricing and billing pages
+  showed non-renewal copy, the pause offer was absent, and a direct authenticated pause request
+  returned HTTP 409. Teardown immediately canceled the subscription, confirmed the webhook downgrade,
+  deactivated the E2E promotion, deleted the Stripe customer and disposable auth user, and confirmed
+  no public user row remained.
 - Investigation safety: the disposable E2E subscription was canceled immediately after capturing
   the evidence, which correctly downgraded the test user before account cleanup.
 
