@@ -1119,6 +1119,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
   unauthenticated scoring request. No limiter-backed scoring work or OpenAI call was initiated.
 
+## CA-051 — Recorded Speaking outages appeared as sign-in or upgrade failures
+
+- Status: `FIXED`
+- Area: Speaking scoring / authentication / Premium entitlement / failure recovery
+- Severity: High
+- Evidence: `/api/score/speaking` swallowed rejected auth checks inside its helper and returned the
+  same HTTP 401 as missing credentials. It also used the boolean fail-closed entitlement helper,
+  so plan-query failures returned the HTTP 402 `premium_required` upsell. Paid learners could
+  therefore be told to sign in or upgrade during dependency outages.
+- Fix: let rejected auth verification reach the handler's existing HTTP 503 recovery path and use
+  the tri-state Premium result. Resolved or rejected plan errors now return HTTP 503; HTTP 401 is
+  reserved for missing/invalid credentials and HTTP 402 for a verified Free account. All failures
+  stop before rate limits, quota consumption, storage access, transcription, or scoring.
+- Regression coverage: the expanded Speaking route suite covers missing auth, rejected auth,
+  verified Free, resolved entitlement error, and rejected entitlement query, proving no quota RPC
+  or storage cleanup occurs. Its existing provider-unavailable case still proves the exact
+  consumed quota is refunded and the owned recording is removed.
+- Commit: `0319fab` (`Distinguish speaking entitlement outages`)
+- Verification: focused 14-test Speaking/Premium coverage, the complete current-worktree
+  63-file/338-test Vitest suite, ESLint, the 150-file analytics audit, and the 528-page production
+  build all passed. Vercel deployed the commit successfully. Fresh non-mutating production probes
+  returned HTTP 405 for GET, HTTP 403 for a cross-origin POST, and HTTP 401 for a same-origin
+  unauthenticated scoring request. No quota, storage object, or OpenAI request was created.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
