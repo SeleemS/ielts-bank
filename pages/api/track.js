@@ -22,13 +22,26 @@ function safeProps(body) {
   return Object.fromEntries(
     Object.entries(body)
       .filter(([key, value]) =>
-        !['event', 'anon_id', 'skill', 'slug'].includes(key) &&
+        !['event', 'anon_id', 'skill', 'slug', 'client_event_id', 'session_id', 'page_view_id', 'occurred_at'].includes(key) &&
         !blocked.test(key) &&
         (value == null || ['string', 'number', 'boolean'].includes(typeof value))
       )
       .slice(0, 30)
       .map(([key, value]) => [key.slice(0, 64), typeof value === 'string' ? value.slice(0, 500) : value])
   );
+}
+
+function optionalUuid(value) {
+  return typeof value === 'string' && UUID_RE.test(value.trim()) ? value.trim() : null;
+}
+
+function occurredAt(value) {
+  if (typeof value !== 'string') return null;
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) return null;
+  const now = Date.now();
+  if (parsed < now - 7 * 24 * 60 * 60 * 1000 || parsed > now + 5 * 60 * 1000) return null;
+  return new Date(parsed).toISOString();
 }
 
 // ISO 3166-1 alpha-2 country from Vercel's geo header (absent in local dev).
@@ -100,6 +113,10 @@ export default async function handler(req, res) {
       skill: SKILLS.has(body.skill) ? body.skill : null,
       slug: typeof body.slug === 'string' ? body.slug.slice(0, 200) : null,
       country,
+      client_event_id: optionalUuid(body.client_event_id),
+      session_id: optionalUuid(body.session_id),
+      page_view_id: optionalUuid(body.page_view_id),
+      occurred_at: occurredAt(body.occurred_at),
       props: safeProps(body),
     });
     if (error) throw error;

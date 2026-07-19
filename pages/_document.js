@@ -29,6 +29,7 @@ export default function Document() {
                   ad_personalization: optional, functionality_storage: 'granted',
                   security_storage: 'granted', wait_for_update: 500
                 });
+                window.__ieltsConsentDefaulted = true;
               })();
             `,
           }}

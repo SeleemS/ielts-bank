@@ -23,7 +23,12 @@ export default function SelfAssessmentStep({
   });
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div
+      className="mx-auto w-full max-w-2xl"
+      data-analytics-surface="band_estimator"
+      data-analytics-skill={config.skill}
+      data-analytics-slug="band-estimator"
+    >
       <div className="mb-5 flex items-center gap-2.5">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 text-accent">
           <Icon className="h-4.5 w-4.5" />
@@ -47,7 +52,11 @@ export default function SelfAssessmentStep({
         {(config.questions || []).map((q) => {
           const selected = answers?.[q.id];
           return (
-            <fieldset key={q.id}>
+            <fieldset
+              key={q.id}
+              data-analytics-question-number={q.id}
+              data-analytics-question-type="self_assessment"
+            >
               <legend className="mb-2.5 text-sm font-semibold text-foreground">{q.prompt}</legend>
               <div className="grid gap-2">
                 {(q.options || []).map((opt) => {

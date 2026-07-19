@@ -42,6 +42,7 @@ function SheetOverlay({ onClose }) {
   return (
     <div
       onClick={onClose}
+      data-analytics-id="sheet_backdrop"
       className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
     />
   );

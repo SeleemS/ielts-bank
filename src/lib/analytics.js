@@ -1,6 +1,10 @@
 const ANON_ID_KEY = 'ielts-anon-id';
 const ATTRIBUTION_KEY = 'ielts-attribution';
+const SESSION_ID_KEY = 'ielts-analytics-session-id';
+const SEQUENCE_KEY = 'ielts-analytics-sequence';
+const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
 let analyticsAccessToken = null;
+let pageViewId = null;
 
 function fallbackUuid() {
   const bytes = new Uint8Array(16);
@@ -24,6 +28,83 @@ export function getAnonId() {
   } catch {
     return null;
   }
+}
+
+export function getSessionId() {
+  if (typeof window === 'undefined') return null;
+  try {
+    let value = window.sessionStorage.getItem(SESSION_ID_KEY);
+    if (!value) {
+      value = window.crypto?.randomUUID?.() || fallbackUuid();
+      window.sessionStorage.setItem(SESSION_ID_KEY, value);
+    }
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function nextSequence() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const current = Number(window.sessionStorage.getItem(SEQUENCE_KEY) || 0);
+    const next = Number.isSafeInteger(current) && current >= 0 ? current + 1 : 1;
+    window.sessionStorage.setItem(SEQUENCE_KEY, String(next));
+    return next;
+  } catch {
+    return null;
+  }
+}
+
+function getPageViewId() {
+  if (typeof window === 'undefined') return null;
+  if (!pageViewId) pageViewId = window.crypto?.randomUUID?.() || fallbackUuid();
+  return pageViewId;
+}
+
+function rotatePageViewId() {
+  if (typeof window === 'undefined') return null;
+  pageViewId = window.crypto?.randomUUID?.() || fallbackUuid();
+  return pageViewId;
+}
+
+export function ensureGoogleAnalytics() {
+  if (typeof window === 'undefined') return null;
+  window.dataLayer = window.dataLayer || [];
+  if (typeof window.gtag !== 'function') {
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments);
+    };
+  }
+  if (!window.__ieltsConsentDefaulted) {
+    let saved = null;
+    try {
+      saved = window.localStorage.getItem('ib_consent_v1');
+    } catch {
+      saved = null;
+    }
+    const optional = saved === 'denied' ? 'denied' : 'granted';
+    window.gtag('consent', 'default', {
+      analytics_storage: optional,
+      ad_storage: optional,
+      ad_user_data: optional,
+      ad_personalization: optional,
+      functionality_storage: 'granted',
+      security_storage: 'granted',
+      wait_for_update: 500,
+    });
+    window.__ieltsConsentDefaulted = true;
+  }
+  if (!window.__ieltsGaConfigured) {
+    window.gtag('js', new Date());
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      transport_url: window.location.origin + '/gt',
+      first_party_collection: true,
+      send_page_view: false,
+    });
+    window.__ieltsGaConfigured = true;
+  }
+  return window.gtag;
 }
 
 // First-touch attribution: captured once, on the first track() call of the
@@ -62,14 +143,20 @@ export function getAttribution() {
 
 export function track(event, params = {}, options = {}) {
   if (typeof window === 'undefined' || !event) return;
+  const clientEventId = window.crypto?.randomUUID?.() || fallbackUuid();
+  const sessionId = getSessionId();
+  const currentPageViewId = getPageViewId();
   const payload = {
     ...params,
     path: params.path || window.location.pathname,
+    client_event_id: clientEventId,
+    session_id: sessionId,
+    page_view_id: currentPageViewId,
+    event_sequence: nextSequence(),
+    occurred_at: new Date().toISOString(),
   };
 
-  if (typeof window.gtag === 'function') {
-    window.gtag('event', event, payload);
-  }
+  ensureGoogleAnalytics()?.('event', event, payload);
 
   const anonId = getAnonId();
   if (!anonId || typeof window.fetch !== 'function') return;
@@ -107,10 +194,16 @@ export function setAnalyticsUser(userId, accessToken = null) {
 
 export function trackPageView(url, signedIn = false) {
   if (typeof window === 'undefined') return;
+  rotatePageViewId();
   track('page_view', {
     page_location: `${window.location.origin}${url}`,
     page_path: url,
     page_title: document.title,
     signed_in: signedIn,
   });
+}
+
+export function resetAnalyticsForTests() {
+  analyticsAccessToken = null;
+  pageViewId = null;
 }

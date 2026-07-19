@@ -269,7 +269,12 @@ export default function QuestionItem({
   const wordLimit = question.answerKey?.wordLimit;
 
   return (
-    <div id={`question-${n}`} className={cn('scroll-mt-40 rounded-lg border p-4', containerTone)}>
+    <div
+      id={`question-${n}`}
+      data-analytics-question-number={n}
+      data-analytics-question-type={group.questionType}
+      className={cn('scroll-mt-40 rounded-lg border p-4', containerTone)}
+    >
       <div className="mb-3 flex items-start gap-2.5">
         <NumberBadge n={n} state={state} />
         <div className="flex-1 text-sm font-medium leading-relaxed text-foreground">

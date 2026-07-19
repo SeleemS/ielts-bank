@@ -40,6 +40,8 @@ export default function ConsentManager() {
           className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-2xl border border-border bg-background p-5 shadow-2xl"
           aria-label="Cookie consent"
           data-nosnippet
+          data-analytics-popup="cookie_consent"
+          data-analytics-label="Cookie consent"
         >
           <h2 className="font-bold text-foreground">Your privacy choices</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -71,6 +73,7 @@ export default function ConsentManager() {
           onClick={() => setOpen(true)}
           className="fixed bottom-3 left-3 z-40 rounded-full border border-border bg-background px-3 py-2 text-xs text-muted-foreground shadow"
           data-nosnippet
+          data-analytics-id="privacy_choices_open"
         >
           Privacy choices
         </button>

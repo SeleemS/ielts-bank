@@ -677,6 +677,7 @@ export default function SignInDialog({
     <div className={cn('fixed inset-0 z-[2000]', inter.variable, 'font-sans')}>
       <div
         onClick={close}
+        data-analytics-id="signin_backdrop"
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
       />
       <div className="fixed inset-0 z-[2001] flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
@@ -684,6 +685,8 @@ export default function SignInDialog({
           role="dialog"
           aria-modal="true"
           aria-labelledby="signin-title"
+          data-analytics-id="signin_dialog"
+          data-analytics-surface="authentication"
           onClick={(e) => e.stopPropagation()}
           className={cn(
             'relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl',

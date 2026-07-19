@@ -353,7 +353,10 @@ export default function EstimatorResults({
 
       {/* Newsletter (last). onSubmit bubbles up from the inner form so we can
           attribute the estimator_cta_click without modifying NewsletterSignup. */}
-      <div onSubmit={() => emit('estimator_cta_click', { destination: 'newsletter' })}>
+      <div
+        onSubmit={() => emit('estimator_cta_click', { destination: 'newsletter' })}
+        data-analytics-id="estimator_newsletter"
+      >
         <NewsletterSignup source="band-estimator" />
       </div>
 

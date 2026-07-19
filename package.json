@@ -23,6 +23,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "audit:analytics": "node scripts/audit-analytics-coverage.mjs --strict",
     "lint": "eslint . --ext .js,.jsx",
     "test": "vitest run"
   },

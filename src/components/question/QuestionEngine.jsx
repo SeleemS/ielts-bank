@@ -438,7 +438,12 @@ export default function QuestionEngine({
   }, [durationSeconds]);
 
   return (
-    <div className={cn('', className)}>
+    <div
+      className={cn('', className)}
+      data-analytics-surface="practice"
+      data-analytics-skill={skill}
+      data-analytics-slug={storageKey}
+    >
       {submitted && results && (
         <>
           <ResultsSummary

@@ -9,6 +9,7 @@ export default function AccessibleModal({
   title,
   children,
   dismissible = true,
+  analyticsId,
 }) {
   const dialogRef = React.useRef(null);
   const previousFocusRef = React.useRef(null);
@@ -63,12 +64,14 @@ export default function AccessibleModal({
         aria-hidden="true"
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
         onMouseDown={dismissible ? onClose : undefined}
+        data-analytics-id={analyticsId ? `${analyticsId}_backdrop` : 'modal_backdrop'}
       />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        data-analytics-id={analyticsId}
         tabIndex={-1}
         className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl focus:outline-none supports-[height:100dvh]:max-h-[85dvh]"
       >

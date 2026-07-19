@@ -58,11 +58,14 @@ const ListeningIntroModal = ({ open, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="listening-intro-title"
+      data-analytics-id="listening_intro"
+      data-analytics-surface="listening_practice"
     >
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={close}
         aria-hidden="true"
+        data-analytics-id="listening_intro_backdrop"
       />
       <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl sm:p-7">
         <button

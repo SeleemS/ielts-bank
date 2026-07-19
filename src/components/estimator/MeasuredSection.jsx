@@ -85,7 +85,12 @@ export default function MeasuredSection({
   const Icon = isReading ? BookOpen : Headphones;
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div
+      className="mx-auto w-full max-w-5xl"
+      data-analytics-surface="band_estimator"
+      data-analytics-skill={skill}
+      data-analytics-slug="band-estimator"
+    >
       {/* Section header + progress */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">

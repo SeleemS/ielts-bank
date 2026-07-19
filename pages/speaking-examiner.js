@@ -77,8 +77,8 @@ function ExaminerIntroModal({ open, onClose, onStart }) {
   const [dontShowAgain, setDontShowAgain] = React.useState(false);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="examiner-intro-title">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => onClose({ dontShowAgain, start: false })} aria-hidden="true" />
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="examiner-intro-title" data-analytics-id="examiner_intro" data-analytics-surface="speaking_examiner">
+      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => onClose({ dontShowAgain, start: false })} aria-hidden="true" data-analytics-id="examiner_intro_backdrop" />
       <div className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl sm:p-7">
         <h2 id="examiner-intro-title" className="pr-6 text-lg font-bold text-foreground">
           How the live examiner works

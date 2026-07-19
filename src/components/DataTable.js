@@ -210,6 +210,10 @@ const DataTable = ({ items, skill, selectedOption }) => {
                     <tr
                       key={item.id}
                       onClick={onRowClick}
+                      data-analytics-id="practice_table_row"
+                      data-analytics-label={`Open ${skillLower} practice`}
+                      data-analytics-skill={skillLower}
+                      data-analytics-slug={String(item.legacyId || item.id)}
                       className="group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
                     >
                       <td className="hidden px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:table-cell sm:px-6">
