@@ -10,6 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { roundBandMean } from '../../../lib/bandTables';
 import { fetchPremiumStatus } from '../../../lib/premium';
+import { MODES } from '../../../lib/realtimeExaminer';
 import { buildSpeakingRealtimeScoreSchema } from '../../../lib/speakingRealtimeScoreSchema';
 import { isValidSpeakingBand } from '../../../lib/speakingScoreSchema';
 
@@ -118,6 +119,9 @@ export default async function handler(req, res) {
   // --- Validate transcript before mutating rate-limit counters -------------
   const body = req.body || {};
   const mode = typeof body.mode === 'string' ? body.mode : 'mock';
+  if (!MODES[mode]) {
+    return res.status(400).json({ error: 'Unknown session mode.' });
+  }
   const transcript = Array.isArray(body.transcript) ? body.transcript : [];
   const turns = transcript
     .filter(

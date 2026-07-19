@@ -237,6 +237,23 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     expect(state.rpcCalls).toEqual([]);
   });
 
+  it('rejects an unknown session mode before consuming limiter allowance', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+
+    const res = await callRoute({
+      body: {
+        ...validTranscriptBody(),
+        mode: 'karaoke',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody.error).toMatch(/unknown session mode/i);
+    expect(state.rpcCalls).toEqual([]);
+    expect(state.tableCalls).toEqual([]);
+  });
+
   it('computes and persists the overall from the three criterion bands', async () => {
     state.authUser = { id: 'user-1' };
     state.planRow = { plan: 'premium', plan_status: 'active' };
