@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { listPassages, getSupabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
+import { Select } from '../../components/ui/select';
 import { formatAverageUserBand } from '../../lib/averageUserBand';
 import { useAuth } from '../lib/auth';
 import { cn } from '../lib/utils';
@@ -109,7 +110,7 @@ function LoadingSkeleton() {
   );
 }
 
-const DataTable = ({ items, skill, selectedOption }) => {
+const DataTable = ({ items, skill, selectedOption, questionTypeOptions }) => {
   const router = useRouter();
   // Route prefix / fetch key. Accept either an explicit skill or the legacy
   // capitalized selectedOption prop.
@@ -122,6 +123,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
   const [loading, setLoading] = useState(!items);
   const [query, setQuery] = useState('');
   const [difficulty, setDifficulty] = useState('all');
+  const [questionType, setQuestionType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [completedSlugs, setCompletedSlugs] = useState(() => new Set());
 
@@ -194,18 +196,40 @@ const DataTable = ({ items, skill, selectedOption }) => {
     return DIFFICULTY_ORDER.filter((level) => seen.has(level));
   }, [data]);
 
+  // Question types actually present in this dataset, in the canonical order
+  // supplied by questionTypeOptions. Empty unless the list was fetched with
+  // embedded question types (Reading only), which hides the control elsewhere.
+  const availableTypeOptions = useMemo(() => {
+    if (!Array.isArray(questionTypeOptions) || questionTypeOptions.length === 0) return [];
+    const present = new Set();
+    for (const item of data) {
+      if (Array.isArray(item.questionTypes)) {
+        for (const t of item.questionTypes) present.add(t);
+      }
+    }
+    return questionTypeOptions.filter((opt) => present.has(opt.value));
+  }, [questionTypeOptions, data]);
+
   // A filter value stops matching if the dataset changes (e.g. client refetch)
-  // and no longer contains that difficulty — fall back to "all".
+  // and no longer contains that value — fall back to "all".
   useEffect(() => {
     if (difficulty !== 'all' && !difficultiesPresent.includes(difficulty)) {
       setDifficulty('all');
     }
   }, [difficulty, difficultiesPresent]);
 
-  // Reset to first page whenever the dataset, search, or difficulty changes.
+  useEffect(() => {
+    if (questionType !== 'all' && !availableTypeOptions.some((o) => o.value === questionType)) {
+      setQuestionType('all');
+    }
+  }, [questionType, availableTypeOptions]);
+
+  const isFiltering = Boolean(query.trim()) || difficulty !== 'all' || questionType !== 'all';
+
+  // Reset to first page whenever the dataset or any filter changes.
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, difficulty, skillLower, data]);
+  }, [query, difficulty, questionType, skillLower, data]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -217,9 +241,15 @@ const DataTable = ({ items, skill, selectedOption }) => {
       ) {
         return false;
       }
+      if (
+        questionType !== 'all'
+        && !(Array.isArray(item.questionTypes) && item.questionTypes.includes(questionType))
+      ) {
+        return false;
+      }
       return true;
     });
-  }, [data, query, difficulty]);
+  }, [data, query, difficulty, questionType]);
 
   // Completed count within the current (unfiltered) list, for the count line.
   const completedInList = useMemo(
@@ -249,9 +279,9 @@ const DataTable = ({ items, skill, selectedOption }) => {
 
   return (
     <div className="w-full font-sans">
-      {/* Toolbar: search + difficulty filter + result count */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+      {/* Toolbar: search + difficulty + question-type filters + result count */}
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="relative w-full sm:max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -292,11 +322,27 @@ const DataTable = ({ items, skill, selectedOption }) => {
               ))}
             </div>
           )}
+          {availableTypeOptions.length > 0 && (
+            <div className="w-full sm:w-56">
+              <Select
+                value={questionType}
+                onChange={(e) => setQuestionType(e.target.value)}
+                aria-label="Filter by question type"
+              >
+                <option value="all">All question types</option>
+                {availableTypeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
         </div>
         {!loading && (
           <p className="shrink-0 text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? itemNoun : `${itemNoun}s`}
-            {query.trim() || difficulty !== 'all' ? ' found' : ''}
+            {isFiltering ? ' found' : ''}
             {completedInList > 0 ? (
               <>
                 {' · '}
@@ -317,14 +363,12 @@ const DataTable = ({ items, skill, selectedOption }) => {
               <Inbox className="h-6 w-6" />
             </span>
             <p className="text-base font-semibold text-foreground">
-              {query.trim() || difficulty !== 'all' ? 'No matching questions' : 'No questions yet'}
+              {isFiltering ? 'No matching questions' : 'No questions yet'}
             </p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              {query.trim()
-                ? `Nothing matches “${query.trim()}”${difficulty !== 'all' ? ` at ${difficulty} level` : ''}. Try a different search or filter.`
-                : difficulty !== 'all'
-                  ? `No ${difficulty}-level ${itemNoun}s right now. Try another difficulty.`
-                  : 'No questions are available for this section yet. Please check back soon.'}
+              {isFiltering
+                ? `No ${itemNoun}s match your search and filters. Try clearing one.`
+                : 'No questions are available for this section yet. Please check back soon.'}
             </p>
           </div>
         ) : (

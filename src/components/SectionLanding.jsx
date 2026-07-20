@@ -140,6 +140,7 @@ const SectionLanding = ({
   title,
   description,
   items = [],
+  questionTypeOptions, // Reading only: [{ value, label }] for the type filter
 }) => {
   const canonical = `${SITE_URL}/${section}question`;
   const skillLabel = section
@@ -198,7 +199,7 @@ const SectionLanding = ({
               </p>
             </header>
 
-            <DataTable skill={section} items={items} />
+            <DataTable skill={section} items={items} questionTypeOptions={questionTypeOptions} />
 
             {/* Reading only: practise by question type. */}
             {section === 'reading' && (
