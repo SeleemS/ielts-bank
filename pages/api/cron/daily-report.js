@@ -11,6 +11,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { sessionStats, fmtDuration } from '../../../lib/sessionStats';
+import { isPremiumRow } from '../../../lib/premium';
 
 function countBy(rows, pick) {
   const counts = {};
@@ -33,11 +34,158 @@ async function returningVisitorStats(admin, start, end) {
   }
 }
 
+const BILLING_REPORT_EVENTS = [
+  'subscription_activated',
+  'subscription_payment_succeeded',
+  'payment_refunded',
+  'payment_disputed',
+  'subscription_plan_changed',
+  'subscription_canceled',
+];
+
+function summarizeRevenue(rows, available) {
+  const currencies = {};
+  let payments = 0;
+  let refunds = 0;
+  let disputes = 0;
+
+  for (const row of rows) {
+    const rawAmount = row.props?.amount_minor ?? row.props?.amount;
+    const amount = Number(rawAmount);
+    const kind =
+      row.event === 'subscription_activated' ||
+      row.event === 'subscription_payment_succeeded'
+        ? 'payment'
+        : row.event === 'payment_refunded'
+          ? 'refund'
+          : row.event === 'payment_disputed'
+            ? 'dispute'
+            : null;
+    if (!kind || rawAmount == null || !Number.isFinite(amount)) continue;
+    const currency = String(row.props?.currency || 'unknown').toLowerCase();
+    if (!currencies[currency]) {
+      currencies[currency] = {
+        grossMinor: 0,
+        refundsMinor: 0,
+        netMinor: 0,
+        disputedMinor: 0,
+        payments: 0,
+        refunds: 0,
+        disputes: 0,
+      };
+    }
+    const bucket = currencies[currency];
+    if (kind === 'payment') {
+      bucket.grossMinor += Math.max(amount, 0);
+      bucket.payments += 1;
+      payments += 1;
+    } else if (kind === 'refund') {
+      bucket.refundsMinor += Math.max(amount, 0);
+      bucket.refunds += 1;
+      refunds += 1;
+    } else {
+      bucket.disputedMinor += Math.max(amount, 0);
+      bucket.disputes += 1;
+      disputes += 1;
+    }
+  }
+
+  for (const bucket of Object.values(currencies)) {
+    bucket.netMinor = bucket.grossMinor - bucket.refundsMinor;
+  }
+
+  return {
+    available,
+    payments,
+    refunds,
+    disputes,
+    currencies: Object.fromEntries(
+      Object.entries(currencies).sort(([a], [b]) => a.localeCompare(b))
+    ),
+  };
+}
+
+function summarizeAiCosts(rows, available, paidCohortIds) {
+  const bySkill = {};
+  const byFeature = {};
+  let knownCostUsd = 0;
+  let paidKnownCostUsd = 0;
+  let unpricedRequests = 0;
+  let estimatedRequests = 0;
+
+  for (const row of rows) {
+    const skill = row.skill || 'unknown';
+    const feature = row.feature || 'unknown';
+    for (const [groups, key] of [
+      [bySkill, skill],
+      [byFeature, feature],
+    ]) {
+      if (!groups[key]) {
+        groups[key] = {
+          calls: 0,
+          knownCostUsd: 0,
+          unpricedRequests: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          audioSeconds: 0,
+        };
+      }
+    }
+    const cost = Number(row.cost_usd);
+    for (const bucket of [bySkill[skill], byFeature[feature]]) {
+      bucket.calls += 1;
+      bucket.inputTokens += Number(row.input_tokens) || 0;
+      bucket.outputTokens += Number(row.output_tokens) || 0;
+      bucket.audioSeconds += Number(row.audio_seconds) || 0;
+      if (row.pricing_known && Number.isFinite(cost)) {
+        bucket.knownCostUsd += cost;
+      } else {
+        bucket.unpricedRequests += 1;
+      }
+    }
+    if (row.pricing_known && Number.isFinite(cost)) {
+      knownCostUsd += cost;
+      if (paidCohortIds.has(row.user_id)) paidKnownCostUsd += cost;
+    } else {
+      unpricedRequests += 1;
+    }
+    if (row.estimated) estimatedRequests += 1;
+  }
+
+  const sortCostGroups = (groups) =>
+    Object.fromEntries(
+      Object.entries(groups).sort(
+        ([, a], [, b]) => b.knownCostUsd - a.knownCostUsd
+      )
+    );
+
+  return {
+    available,
+    calls: rows.length,
+    users: new Set(rows.map((row) => row.user_id).filter(Boolean)).size,
+    knownCostUsd,
+    paidKnownCostUsd,
+    unpricedRequests,
+    estimatedRequests,
+    bySkill: sortCostGroups(bySkill),
+    byFeature: sortCostGroups(byFeature),
+  };
+}
+
 async function buildReport(admin, reportDate) {
   const start = `${reportDate}T00:00:00.000Z`;
   const end = new Date(Date.parse(start) + 864e5).toISOString();
 
-  const [signupsRes, totalUsersRes, eventsRes, attemptsRes, retentionRes] = await Promise.all([
+  const [
+    signupsRes,
+    totalUsersRes,
+    eventsRes,
+    attemptsRes,
+    retentionRes,
+    paidUsersRes,
+    aiCostsRes,
+    billingEventsRes,
+  ] = await Promise.all([
     admin
       .from('users')
       .select('email, signup_country, signup_source, created_at')
@@ -61,11 +209,32 @@ async function buildReport(admin, reportDate) {
     // per visitor (see migration 20260719050000). Fail-soft: a missing RPC
     // must not kill the report.
     returningVisitorStats(admin, start, end),
+    admin
+      .from('users')
+      .select('id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until')
+      .eq('plan', 'premium')
+      .limit(10000),
+    admin
+      .from('ai_usage_costs')
+      .select('user_id, skill, feature, operation, model, input_tokens, output_tokens, audio_seconds, cost_usd, pricing_known, estimated')
+      .gte('occurred_at', start)
+      .lt('occurred_at', end)
+      .limit(20000),
+    admin
+      .from('activity_events')
+      .select('event, user_id, props, created_at')
+      .in('event', BILLING_REPORT_EVENTS)
+      .gte('created_at', start)
+      .lt('created_at', end)
+      .limit(10000),
   ]);
   for (const res of [signupsRes, totalUsersRes, eventsRes, attemptsRes]) {
     if (res.error) throw res.error;
   }
   if (retentionRes.error) console.error('returning_visitor_stats failed:', retentionRes.error.message);
+  if (paidUsersRes.error) console.error('paid users report query failed:', paidUsersRes.error.message);
+  if (aiCostsRes.error) console.error('AI cost report query failed:', aiCostsRes.error.message);
+  if (billingEventsRes.error) console.error('billing report query failed:', billingEventsRes.error.message);
   const retentionRow = Array.isArray(retentionRes.data) ? retentionRes.data[0] : retentionRes.data;
   const retention = !retentionRes.error && retentionRow
     ? {
@@ -78,9 +247,23 @@ async function buildReport(admin, reportDate) {
   const signups = signupsRes.data || [];
   const events = eventsRes.data || [];
   const attempts = attemptsRes.data || [];
+  const paidUsers = paidUsersRes.error ? [] : paidUsersRes.data || [];
+  const aiCosts = aiCostsRes.error ? [] : aiCostsRes.data || [];
+  const billingEvents = billingEventsRes.error ? [] : billingEventsRes.data || [];
 
   const signedInIds = new Set(events.filter((e) => e.user_id).map((e) => e.user_id));
   const anonIds = new Set(events.filter((e) => !e.user_id).map((e) => e.anon_id));
+  const paidUserIds = new Set(
+    paidUsers.filter((row) => isPremiumRow(row)).map((row) => row.id)
+  );
+  const paidCohortIds = new Set([
+    ...paidUserIds,
+    ...billingEvents.map((row) => row.user_id).filter(Boolean),
+  ]);
+  const practicingIds = new Set(attempts.map((row) => row.user_id).filter(Boolean));
+  const aiUserIds = new Set(aiCosts.map((row) => row.user_id).filter(Boolean));
+  const intersectSize = (left, right) =>
+    new Set([...left].filter((value) => right.has(value))).size;
 
   // One country/source per visitor (first seen), so these counts are
   // visitors, not raw event volume.
@@ -138,6 +321,33 @@ async function buildReport(admin, reportDate) {
       questionsAnswered,
       questionsByType: Object.fromEntries(Object.entries(questionsByType).sort((a, b) => b[1] - a[1])),
     },
+    paid: {
+      available:
+        !paidUsersRes.error && !billingEventsRes.error && !aiCostsRes.error,
+      entitledUsers: paidUserIds.size,
+      activeUsers: intersectSize(signedInIds, paidCohortIds),
+      practicingUsers: intersectSize(practicingIds, paidCohortIds),
+      aiUsers: intersectSize(aiUserIds, paidCohortIds),
+      newUsers: new Set(
+        billingEvents
+          .filter((row) => row.event === 'subscription_activated')
+          .map((row) => row.user_id)
+          .filter(Boolean)
+      ).size,
+      upgrades: billingEvents.filter(
+        (row) => row.event === 'subscription_plan_changed'
+      ).length,
+      cancellations: new Set(
+        billingEvents
+          .filter((row) => row.event === 'subscription_canceled')
+          .map((row) => row.user_id)
+          .filter(Boolean)
+      ).size,
+    },
+    economics: {
+      revenue: summarizeRevenue(billingEvents, !billingEventsRes.error),
+      ai: summarizeAiCosts(aiCosts, !aiCostsRes.error, paidCohortIds),
+    },
   };
 }
 
@@ -191,6 +401,28 @@ function esc(value) {
 function fmt(n) {
   if (typeof n === 'string') return n; // preformatted values (e.g. durations)
   return (n ?? 0).toLocaleString('en-US');
+}
+
+function fmtMoneyMinor(amountMinor, currency) {
+  const amount = (Number(amountMinor) || 0) / 100;
+  if (currency === 'unknown') return `${amount.toFixed(2)} (currency unknown)`;
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: String(currency || '').toUpperCase(),
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${String(currency || '').toUpperCase()}`;
+  }
+}
+
+function fmtUsd(amount, minimumFractionDigits = 2) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits,
+    maximumFractionDigits: 4,
+  }).format(Number(amount) || 0);
 }
 
 function prettyDate(isoDate) {
@@ -326,6 +558,92 @@ function funnelSection(report) {
   return card(`${sectionTitle('Funnel')}<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>`);
 }
 
+function economicsSection(report) {
+  const revenue = report.economics?.revenue;
+  const ai = report.economics?.ai;
+  if (!revenue && !ai) return '';
+
+  const currencyEntries = Object.entries(revenue?.currencies || {});
+  const usd = revenue?.currencies?.usd || null;
+  const netAfterAi =
+    usd && ai?.available ? usd.netMinor / 100 - ai.knownCostUsd : null;
+  const headlineTiles = [
+    tile(
+      'Net collected (USD)',
+      revenue?.available && usd ? fmtMoneyMinor(usd.netMinor, 'usd') : '&mdash;',
+      null,
+      usd ? `${fmt(usd.payments)} payments &middot; ${fmt(usd.refunds)} refunds` : 'no USD payments recorded'
+    ),
+    tile(
+      'AI spend',
+      ai?.available ? fmtUsd(ai.knownCostUsd, 4) : '&mdash;',
+      null,
+      ai?.available
+        ? `${fmt(ai.calls)} calls &middot; ${fmt(ai.users)} users &middot; ${esc(fmtUsd(ai.paidKnownCostUsd, 4))} paid cohort`
+        : 'cost query unavailable'
+    ),
+    tile(
+      'Collected less AI',
+      netAfterAi == null ? '&mdash;' : fmtUsd(netAfterAi),
+      null,
+      'not full profit; excludes Stripe and operating costs'
+    ),
+    tile(
+      'Unpriced AI calls',
+      ai?.available ? ai.unpricedRequests : '&mdash;',
+      null,
+      ai?.estimatedRequests ? `${fmt(ai.estimatedRequests)} calls use estimated usage` : ''
+    ),
+  ];
+
+  const currencyRows = currencyEntries.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+        ${currencyEntries
+          .map(([currency, values]) => `<tr>
+            <td class="em-txt" style="font-size:13px;color:${C.text};padding:5px 10px 5px 0;">${esc(currency.toUpperCase())}</td>
+            <td class="em-muted" style="font-size:12px;color:${C.muted};padding:5px 4px;">gross ${esc(fmtMoneyMinor(values.grossMinor, currency))}</td>
+            <td class="em-muted" style="font-size:12px;color:${C.muted};padding:5px 4px;">refunds ${esc(fmtMoneyMinor(values.refundsMinor, currency))}</td>
+            <td class="em-txt" style="font-size:13px;font-weight:700;color:${C.text};padding:5px 0;text-align:right;">net ${esc(fmtMoneyMinor(values.netMinor, currency))}${values.disputedMinor ? `<div class="em-muted" style="font-size:11px;font-weight:400;color:${C.muted};">disputed ${esc(fmtMoneyMinor(values.disputedMinor, currency))}</div>` : ''}</td>
+          </tr>`)
+          .join('')}
+      </table>`
+    : `<div class="em-muted" style="font-size:12px;color:${C.muted};padding-top:8px;">No payments or refunds recorded.</div>`;
+
+  const featureRows = Object.entries(ai?.byFeature || ai?.bySkill || {});
+  const aiRows = featureRows.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+        ${featureRows
+          .map(([feature, values]) => `<tr>
+            <td class="em-txt" style="font-size:13px;color:${C.text};padding:5px 10px 5px 0;">${esc(feature.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()))}</td>
+            <td class="em-muted" style="font-size:12px;color:${C.muted};padding:5px 4px;">${fmt(values.calls)} calls</td>
+            <td class="em-muted" style="font-size:12px;color:${C.muted};padding:5px 4px;">${fmt(values.inputTokens + values.outputTokens)} tokens</td>
+            <td class="em-txt" style="font-size:13px;font-weight:700;color:${C.text};padding:5px 0;text-align:right;">${esc(fmtUsd(values.knownCostUsd, 4))}</td>
+          </tr>`)
+          .join('')}
+      </table>`
+    : '';
+
+  return card(
+    `${sectionTitle('Revenue &amp; AI unit economics')}${tileGrid(headlineTiles)}${currencyRows}${aiRows}`
+  );
+}
+
+function paidActivitySection(report) {
+  const paid = report.paid;
+  if (!paid) return '';
+  const unavailable = !paid.available ? 'partial; one source query unavailable' : '';
+  return card(
+    `${sectionTitle('Paid user activity')}${tileGrid([
+      tile('Paid access now', paid.entitledUsers, null, unavailable),
+      tile('Active paid users', paid.activeUsers, null, 'recorded site activity'),
+      tile('Paid users practicing', paid.practicingUsers),
+      tile('Paid users using AI', paid.aiUsers),
+      tile('New paid users', paid.newUsers),
+      tile('Plan upgrades', paid.upgrades, null, `${fmt(paid.cancellations)} cancellations`),
+    ])}`
+  );
+}
+
 // Data-driven callouts so the report says "so what", not just counts.
 function buildInsights(report, prev) {
   const { signups, activity, practice } = report;
@@ -372,11 +690,21 @@ export function renderEmail(report, history = {}) {
   const prevDate = new Date(Date.parse(`${report.date}T00:00:00Z`) - 864e5).toISOString().slice(0, 10);
   const prev = history[prevDate] || null;
   const prevVisitors = visitorsOf(prev);
-  const quiet = !visitors && !signups.count && !practice.attempts;
+  const revenueEvents =
+    (report.economics?.revenue?.payments || 0) +
+    (report.economics?.revenue?.refunds || 0) +
+    (report.economics?.revenue?.disputes || 0);
+  const businessActivity =
+    revenueEvents +
+    (report.economics?.ai?.calls || 0) +
+    (report.paid?.newUsers || 0) +
+    (report.paid?.upgrades || 0) +
+    (report.paid?.cancellations || 0);
+  const quiet = !visitors && !signups.count && !practice.attempts && !businessActivity;
 
   const preheader = quiet
     ? 'Quiet day — no recorded activity.'
-    : `${fmt(signups.count)} signups · ${fmt(visitors)} visitors · ${fmt(practice.attempts)} practice attempts`;
+    : `${fmt(signups.count)} signups · ${fmt(visitors)} visitors · ${fmt(practice.attempts)} practice attempts · ${fmt(report.economics?.ai?.calls || 0)} AI calls`;
 
   const heroTiles = [
     tile('New signups', signups.count, delta(signups.count, prev ? prev.signups.count : null), `${fmt(signups.totalUsers)} users total`),
@@ -413,9 +741,12 @@ export function renderEmail(report, history = {}) {
     );
   }
 
-  const body = quiet
-    ? card(`<div class="em-txt" style="font-size:15px;color:${C.text};line-height:1.5;">Quiet day &mdash; no visits, signups, or practice recorded.</div>`)
-    : [
+  const body = [
+    economicsSection(report),
+    paidActivitySection(report),
+    quiet
+      ? card(`<div class="em-txt" style="font-size:15px;color:${C.text};line-height:1.5;">Quiet day &mdash; no visits, signups, practice, payments, or AI usage recorded.</div>`)
+      : [
         card(`${tileGrid(heroTiles)}${prev ? `<div class="em-muted" style="font-size:11px;color:${C.muted};padding-top:2px;">Changes vs ${prettyDate(prevDate)}</div>` : ''}`),
         insightsSection(buildInsights(report, prev)),
         card(tileGrid(kpiTiles)),
@@ -431,7 +762,8 @@ export function renderEmail(report, history = {}) {
               .map((email) => `<div class="em-txt" style="font-size:13px;color:${C.text};padding:3px 0;">${esc(email)}</div>`)
               .join('')}`)
           : '',
-      ].join('');
+      ].join(''),
+  ].join('');
 
   return `<!doctype html>
 <html lang="en">

@@ -20,10 +20,16 @@ const state = {
   signupsError: null,
   totalUsers: 0,
   totalUsersError: null,
+  paidUsers: [],
+  paidUsersError: null,
   events: [],
   eventsError: null,
+  billingEvents: [],
+  billingEventsError: null,
   attempts: [],
   attemptsError: null,
+  aiCosts: [],
+  aiCostsError: null,
   retentionResponse: {
     data: [{ visitors: 0, returning_visitors: 0 }],
     error: null,
@@ -41,6 +47,8 @@ function resultQuery(result) {
   const query = {
     gte: () => query,
     lt: () => query,
+    eq: () => query,
+    in: () => query,
     order: () => Promise.resolve(result),
     limit: () => Promise.resolve(result),
     then: (resolve, reject) => Promise.resolve(result).then(resolve, reject),
@@ -65,6 +73,12 @@ vi.mock('@supabase/supabase-js', () => ({
                   error: state.totalUsersError,
                 });
               }
+              if (columns.startsWith('id, plan,')) {
+                return resultQuery({
+                  data: state.paidUsers,
+                  error: state.paidUsersError,
+                });
+              }
               return resultQuery({ data: state.signups, error: state.signupsError });
             },
           };
@@ -73,7 +87,24 @@ vi.mock('@supabase/supabase-js', () => ({
           return {
             select(columns) {
               state.selectCalls.push({ table, columns });
+              if (columns === 'event, user_id, props, created_at') {
+                return resultQuery({
+                  data: state.billingEvents,
+                  error: state.billingEventsError,
+                });
+              }
               return resultQuery({ data: state.events, error: state.eventsError });
+            },
+          };
+        }
+        if (table === 'ai_usage_costs') {
+          return {
+            select(columns) {
+              state.selectCalls.push({ table, columns });
+              return resultQuery({
+                data: state.aiCosts,
+                error: state.aiCostsError,
+              });
             },
           };
         }
@@ -177,10 +208,16 @@ describe('GET /api/cron/daily-report persistence', () => {
     state.signupsError = null;
     state.totalUsers = 0;
     state.totalUsersError = null;
+    state.paidUsers = [];
+    state.paidUsersError = null;
     state.events = [];
     state.eventsError = null;
+    state.billingEvents = [];
+    state.billingEventsError = null;
     state.attempts = [];
     state.attemptsError = null;
+    state.aiCosts = [];
+    state.aiCostsError = null;
     state.retentionResponse = {
       data: [{ visitors: 0, returning_visitors: 0 }],
       error: null,
@@ -371,6 +408,142 @@ describe('GET /api/cron/daily-report persistence', () => {
     ]);
   });
 
+  it('tracks revenue, AI costs, and paid-user activity in the persisted report', async () => {
+    state.paidUsers = [
+      {
+        id: 'paid-1',
+        plan: 'premium',
+        plan_status: 'active',
+        plan_renews_at: '2026-08-18T00:00:00.000Z',
+        plan_expires_at: null,
+        billing_pause_until: null,
+      },
+      {
+        id: 'paused-1',
+        plan: 'premium',
+        plan_status: 'active',
+        plan_renews_at: '2026-08-18T00:00:00.000Z',
+        plan_expires_at: null,
+        billing_pause_until: '2099-01-01T00:00:00.000Z',
+      },
+    ];
+    state.events = [
+      {
+        event: 'page_view',
+        user_id: 'paid-1',
+        anon_id: 'billing:paid-1',
+        props: {},
+        created_at: '2026-07-18T10:00:00.000Z',
+      },
+    ];
+    state.attempts = [{ skill: 'writing', user_id: 'paid-1', per_question: {} }];
+    state.aiCosts = [
+      {
+        user_id: 'paid-1',
+        skill: 'writing',
+        feature: 'writing_score',
+        operation: 'score',
+        model: 'gpt-test',
+        input_tokens: 1000,
+        output_tokens: 250,
+        audio_seconds: 0,
+        cost_usd: '0.0125',
+        pricing_known: true,
+        estimated: false,
+      },
+      {
+        user_id: 'paid-1',
+        skill: 'speaking',
+        feature: 'speaking_score',
+        operation: 'score',
+        model: 'gpt-test',
+        input_tokens: 0,
+        output_tokens: 0,
+        audio_seconds: 60,
+        cost_usd: null,
+        pricing_known: false,
+        estimated: true,
+      },
+    ];
+    state.billingEvents = [
+      {
+        event: 'subscription_activated',
+        user_id: 'paid-1',
+        props: { amount_minor: 1500, currency: 'usd' },
+      },
+      {
+        event: 'subscription_payment_succeeded',
+        user_id: 'paid-2',
+        props: { amount_minor: 2000, currency: 'usd' },
+      },
+      {
+        event: 'payment_refunded',
+        user_id: 'paid-3',
+        props: { amount_minor: 500, currency: 'usd' },
+      },
+      {
+        event: 'subscription_plan_changed',
+        user_id: 'paid-1',
+        props: {},
+      },
+      {
+        event: 'subscription_canceled',
+        user_id: 'paid-3',
+        props: {},
+      },
+    ];
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.report.paid).toEqual({
+      available: true,
+      entitledUsers: 1,
+      activeUsers: 1,
+      practicingUsers: 1,
+      aiUsers: 1,
+      newUsers: 1,
+      upgrades: 1,
+      cancellations: 1,
+    });
+    expect(res.jsonBody.report.economics.revenue).toMatchObject({
+      available: true,
+      payments: 2,
+      refunds: 1,
+      disputes: 0,
+      currencies: {
+        usd: {
+          grossMinor: 3500,
+          refundsMinor: 500,
+          netMinor: 3000,
+        },
+      },
+    });
+    expect(res.jsonBody.report.economics.ai).toMatchObject({
+      available: true,
+      calls: 2,
+      users: 1,
+      knownCostUsd: 0.0125,
+      paidKnownCostUsd: 0.0125,
+      unpricedRequests: 1,
+      estimatedRequests: 1,
+    });
+    expect(state.upsertCalls[0].values.data.economics.ai.calls).toBe(2);
+  });
+
+  it('keeps the report available when optional paid or cost queries fail', async () => {
+    state.paidUsersError = { message: 'paid snapshot unavailable' };
+    state.aiCostsError = { message: 'cost ledger unavailable' };
+    state.billingEventsError = { message: 'billing metrics unavailable' };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.report.paid.available).toBe(false);
+    expect(res.jsonBody.report.economics.ai.available).toBe(false);
+    expect(res.jsonBody.report.economics.revenue.available).toBe(false);
+  });
+
   it('returns success after a confirmed report email delivery', async () => {
     process.env.RESEND_API_KEY = 'resend-test-key';
     process.env.REPORT_EMAIL = 'owner@example.com';
@@ -394,8 +567,9 @@ describe('GET /api/cron/daily-report persistence', () => {
     expect(JSON.parse(request.body)).toMatchObject({
       to: ['owner@example.com'],
       subject: expect.stringContaining('IELTS Bank'),
-      html: expect.stringContaining('Daily report'),
+      html: expect.stringContaining('Revenue &amp; AI unit economics'),
     });
+    expect(JSON.parse(request.body).html).toContain('Paid user activity');
   });
 
   it('keeps a persisted report successful when Resend returns an HTTP error', async () => {
