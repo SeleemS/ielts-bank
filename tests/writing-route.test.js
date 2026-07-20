@@ -420,7 +420,16 @@ describe('POST /api/score/writing account and quota safety', () => {
     await handler(makeReq({ body: validBody() }), res);
 
     expect(res.statusCode).toBe(502);
-    expect(state.tableCalls).toEqual([]);
+    expect(state.tableCalls).toHaveLength(1);
+    expect(state.tableCalls[0]).toMatchObject({
+      table: 'ai_usage_costs',
+      values: {
+        user_id: 'linked-user',
+        skill: 'writing',
+        feature: 'writing_score',
+        operation: 'rubric_score',
+      },
+    });
     expect(state.rpcCalls.map(({ name }) => name)).toEqual([
       'check_rate_limit',
       'check_rate_limit',
@@ -449,6 +458,7 @@ describe('POST /api/score/writing account and quota safety', () => {
 
     expect(res.statusCode).toBe(200);
     expect(state.tableCalls.map(({ table }) => table)).toEqual([
+      'ai_usage_costs',
       'attempts',
       'scores',
     ]);

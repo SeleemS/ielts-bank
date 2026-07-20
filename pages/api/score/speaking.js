@@ -25,6 +25,11 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
+import {
+  audioUsageRow,
+  chatUsageRow,
+  recordAiUsage,
+} from '../../../lib/aiCost';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { fetchPremiumStatus } from '../../../lib/premium';
 import {
@@ -55,6 +60,13 @@ const OPENAI_TIMEOUT_MS = 45000;
 const PRONUNCIATION_NOTE =
   "Pronunciation (phonemes, stress, intonation) can't be assessed from a transcript. " +
   'Focus here on fluency, vocabulary and grammar; consider a human/tutor check for pronunciation.';
+
+function quotaLimitMessage(quota) {
+  const period = quota?.limitPeriod || 'day';
+  const limit = quota?.limit || (period === 'day' ? 1 : null);
+  const label = limit ? `${limit} Speaking score${limit === 1 ? '' : 's'} per ${period}` : `${period}ly Speaking scores`;
+  return `You have reached your fair-use limit of ${label}.`;
+}
 
 // ---------------------------------------------------------------------------
 // Supabase service-role client (server-only; bypasses RLS for rate_limits,
@@ -493,7 +505,7 @@ export default async function handler(req, res) {
       error:
         quota?.reason === 'premium_required'
           ? 'AI Speaking scoring is a Premium feature. Upgrade to get your answer scored.'
-          : 'You have reached today’s fair-use limit of 1 Speaking score. It resets at midnight UTC.',
+          : quotaLimitMessage(quota),
       remaining: 0,
       reason: quota?.reason || 'quota_exceeded',
       resetsAt: quota?.resetsAt || null,
@@ -580,7 +592,7 @@ export default async function handler(req, res) {
     const filename = audioPath.split('/').pop() || 'recording.webm';
     const form = new FormData();
     form.append('model', WHISPER_MODEL);
-    form.append('response_format', 'json');
+    form.append('response_format', 'verbose_json');
     form.append(
       'file',
       new Blob([audioBuffer], { type: audioContentType }),
@@ -605,6 +617,19 @@ export default async function handler(req, res) {
       });
     }
     const wPayload = await wRes.json();
+    await recordAiUsage(
+      getAdmin(),
+      audioUsageRow({
+        userId,
+        skill: 'speaking',
+        feature: 'speaking_transcription',
+        operation: 'transcribe_recording',
+        model: WHISPER_MODEL,
+        durationSeconds: wPayload?.duration,
+        providerRequestId: wPayload?.id || null,
+        metadata: { part },
+      })
+    );
     transcript = typeof wPayload?.text === 'string' ? wPayload.text.trim() : '';
   } catch (e) {
     clearTimeout(timeout);
@@ -675,6 +700,18 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     }
 
     const payload = ai.payload;
+    await recordAiUsage(
+      getAdmin(),
+      chatUsageRow({
+        userId,
+        skill: 'speaking',
+        feature: 'speaking_score',
+        operation: 'rubric_score',
+        model: ai.model,
+        payload,
+        metadata: { part },
+      })
+    );
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));

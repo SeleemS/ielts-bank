@@ -552,7 +552,7 @@ export default function SpeakingExaminerPage() {
             <p className="text-lg font-semibold">This is a Premium feature</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Premium includes 30–60 AI examiner minutes every month, depending on regional plan,
-              plus daily fair-use Writing and Speaking scoring.
+              plus fair-use Writing and Speaking scoring.
             </p>
             <NextLink
               href="/pricing"

@@ -8,6 +8,7 @@ export const config = { runtime: 'nodejs' };
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { realtimeReservationRow, recordAiUsage } from '../../../lib/aiCost';
 import { fetchPremiumStatus } from '../../../lib/premium';
 import {
   MODES,
@@ -221,6 +222,15 @@ export default async function handler(req, res) {
       await refundSeconds();
       return res.status(502).json({ error: 'Could not start the examiner session. Please try again.' });
     }
+    await recordAiUsage(
+      admin,
+      realtimeReservationRow({
+        userId,
+        durationSeconds,
+        mode,
+        providerRequestId: payload.id || null,
+      })
+    );
 
     return res.status(200).json({
       clientSecret: payload.value,

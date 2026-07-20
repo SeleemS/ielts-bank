@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { CalendarClock, CreditCard, Loader2, PauseCircle, ShieldCheck } from 'lucide-react';
+import { ArrowUpCircle, CalendarClock, CreditCard, Loader2, PauseCircle, ShieldCheck } from 'lucide-react';
 import Navbar from '../../src/components/Navbar';
 import Footer from '../../src/components/Footer';
 import { Button } from '../../components/ui/button';
@@ -22,6 +22,7 @@ export default function ManageBillingPage() {
   const { user, loading: authLoading } = useAuth();
   const {
     isPremium,
+    planSku,
     planStatus,
     renewsAt,
     expiresAt,
@@ -76,12 +77,49 @@ export default function ManageBillingPage() {
     }
   }
 
+  async function upgradePlan(sku) {
+    setBusy(`upgrade:${sku}`);
+    setError('');
+    setMessage('');
+    try {
+      const response = await fetch('/api/billing/change-plan', {
+        method: 'POST',
+        headers: {
+          ...(await authHeaders()),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sku }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (body.url) {
+        window.location.assign(body.url);
+        return;
+      }
+      if (!response.ok) throw new Error(body.error || 'Could not upgrade the plan.');
+      track('subscription_plan_change', { from_sku: planSku, to_sku: sku });
+      setMessage(body.message || 'Your plan was upgraded.');
+    } catch (upgradeError) {
+      setError(upgradeError.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
   const pending = authLoading || loading;
   const effectivePauseUntil = pauseResult?.resumesAt || pauseUntil;
   const effectivePauseUsedAt = pauseResult?.usedAt || pauseUsedAt;
   const pauseActive =
     Boolean(effectivePauseUntil) &&
     new Date(effectivePauseUntil).getTime() > Date.now();
+  const upgrades =
+    planSku === 'monthly'
+      ? [
+          { sku: '6month', label: 'Upgrade to 6 months' },
+          { sku: 'annual', label: 'Upgrade to annual' },
+        ]
+      : planSku === '6month'
+        ? [{ sku: 'annual', label: 'Upgrade to annual' }]
+        : [];
   return (
     <>
       <Head>
@@ -132,6 +170,38 @@ export default function ManageBillingPage() {
                   </div>
                 </div>
               </section>
+
+              {isPremium && upgrades.length > 0 ? (
+                <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                  <div className="flex items-start gap-3">
+                    <ArrowUpCircle className="mt-1 h-5 w-5 text-emerald-700" />
+                    <div className="flex-1">
+                      <h2 className="font-bold text-emerald-950">Upgrade your plan</h2>
+                      <p className="mt-1 text-sm text-emerald-900/75">
+                        Stripe automatically credits unused time on your current plan. You pay only
+                        the prorated balance, and your new billing period starts today.
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {upgrades.map((upgrade) => (
+                          <Button
+                            key={upgrade.sku}
+                            type="button"
+                            disabled={Boolean(busy)}
+                            onClick={() => upgradePlan(upgrade.sku)}
+                          >
+                            {busy === `upgrade:${upgrade.sku}` ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <ArrowUpCircle className="h-4 w-4" />
+                            )}
+                            {upgrade.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              ) : null}
 
               {canOfferBillingPause({
                 isPremium,

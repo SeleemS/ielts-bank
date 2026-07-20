@@ -1,5 +1,11 @@
 import HomePage from '../src/pages/HomePage';
-import { SKILLS, countQuestions, listPassages, listSpeakingItems } from '../lib/supabase';
+import {
+  SKILLS,
+  countQuestions,
+  getPublicTrustStats,
+  listPassages,
+  listSpeakingItems,
+} from '../lib/supabase';
 
 export default HomePage;
 
@@ -14,6 +20,7 @@ export async function getStaticProps() {
     speaking: 0,
     total: 0,
     questions: 0,
+    questionsAnswered: 0,
   };
   try {
     const [reading, writing, listening, speaking, questions] = await Promise.all([
@@ -23,6 +30,16 @@ export async function getStaticProps() {
       listSpeakingItems(),
       countQuestions(),
     ]);
+    let questionsAnswered = 0;
+    try {
+      const trust = await getPublicTrustStats();
+      questionsAnswered = trust.questionsAnswered;
+    } catch (trustError) {
+      // Keep all content counts if the aggregate RPC is temporarily
+      // unavailable or the deployment is ahead of its database migration.
+      // eslint-disable-next-line no-console
+      console.warn('[HomePage] Trust stats unavailable:', trustError?.message || trustError);
+    }
     const counts = {
       reading: reading.length,
       writing: writing.length,
@@ -30,6 +47,7 @@ export async function getStaticProps() {
       speaking: speaking.length,
       total: reading.length + writing.length + listening.length + speaking.length,
       questions,
+      questionsAnswered,
     };
     return { props: { counts }, revalidate: 3600 };
   } catch (err) {

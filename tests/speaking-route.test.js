@@ -514,6 +514,8 @@ describe('POST /api/score/speaking quota safety', () => {
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody.overallBand).toBe(7);
     expect(state.tableCalls.map(({ table }) => table)).toEqual([
+      'ai_usage_costs',
+      'ai_usage_costs',
       'attempts',
       'scores',
     ]);

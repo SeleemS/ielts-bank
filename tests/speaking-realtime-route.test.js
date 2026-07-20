@@ -342,7 +342,17 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(502);
-    expect(state.tableCalls).toEqual([]);
+    expect(state.tableCalls).toHaveLength(1);
+    expect(state.tableCalls[0]).toMatchObject({
+      table: 'ai_usage_costs',
+      values: {
+        user_id: 'user-1',
+        skill: 'speaking',
+        feature: 'speaking_realtime_score',
+        operation: 'rubric_score',
+        pricing_known: false,
+      },
+    });
   });
 
   it('removes the attempt when score persistence returns an error', async () => {

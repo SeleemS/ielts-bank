@@ -16,7 +16,7 @@
 - **Free forever:** all practice content (Reading/Listening passages, questions, auto-scoring, band conversion). This is the SEO engine and must never be paywalled.
 - **Gated (the product we sell):** AI scoring of Writing & Speaking (rubric-anchored, per-criterion feedback), "unlimited" scores under fair-use daily caps (§5.3), the Realtime AI speaking examiner (metered in minutes, §9), progress analytics, an ad-free experience, and mock-test / export features.
 - **Free metering:** anonymous users sign up first; each signed-in free account receives **1 lifetime Writing score** on the mini model. The result reveals the overall band and first criterion, with the rest teased behind Premium. Speaking stays Premium-only.
-- **Premium limits (§5.3):** Writing 2 AI scores/day, async Speaking 1/day (marketed as unlimited; these are abuse caps), Realtime examiner **60 min/month** (30 on PPP plans). Worst-case COGS hard-capped ≈ $4.50/user/mo; typical ≈ $0.90 → ~80% blended gross margin at $4.20 ARPU.
+- **Premium limits (§5.3):** Writing 2/day, 10/week, 30/month; recorded Speaking 1/day, 5/week, 15/month; Realtime examiner **60 min/period** global (30 on PPP plans). Current unit economics and the service-role cost views are documented in `docs/AI-COST-CONTROLS.md`.
 - **Prices (USD, global list):** **$9.99/mo**, **hero SKU $29.99 / 6 months (~$5/mo)**, **$44.99/year (~$3.75/mo)**, and a **$14.99 non-renewing 28-day Exam Pass**. Eligible PPP markets use separate server-selected prices; Gulf markets remain full price.
 - **Payments:** **Stripe** (see decision note above) — Checkout + Billing subscriptions, webhook → `users.plan`; PPP implemented as separate Stripe Prices selected server-side by request geo (`x-vercel-ip-country`). Stripe Tax support is implemented, but live activation remains pending account setup and `STRIPE_AUTOMATIC_TAX=1`; tax registrations are our responsibility as MoR.
 - **MVP paid launch:** Supabase Auth (anon → Google/email) → server-side metering → Writing scoring API → Stripe Checkout + webhook → `users.plan` gate. Everything else (analytics dashboards, speaking, exports) ships after money is flowing.
@@ -213,6 +213,12 @@ The original plan chose Paddle as merchant-of-record because it remits VAT/GST i
   writing_scores_today       int          -- premium daily counter
   speaking_scores_today      int          -- premium daily counter
   daily_counters_date        date         -- rollover marker
+  writing_scores_week        int          -- premium ISO-week counter
+  speaking_scores_week       int          -- premium ISO-week counter
+  weekly_counters_start      date         -- Monday UTC rollover marker
+  writing_scores_month       int          -- premium calendar-month counter
+  speaking_scores_month      int          -- premium calendar-month counter
+  monthly_counters_start     date         -- UTC month rollover marker
   realtime_seconds_remaining int          -- Realtime examiner meter (§9)
   realtime_period_resets_at  timestamptz
   free_writing_score_used_at timestamptz  -- lifetime sample audit marker
@@ -285,7 +291,7 @@ OPENAI_API_KEY=...
 |---|---|---|
 | Anonymous | **0** | Must create a free account |
 | Signed-in free | **1 Writing score** | Lifetime; Speaking remains Premium-only |
-| Premium | Writing 2/day; Speaking 1/day | Daily fair-use rollover |
+| Premium | Writing 2/day, 10/week, 30/month; Speaking 1/day, 5/week, 15/month | UTC day/week/month rollover |
 
 Rationale: signup is the abuse boundary and the sample reward. The free result reveals the overall band and first criterion; the remaining criteria and detailed corrections are visibly teased behind Premium. `free_writing_score_used_at` makes the lifetime use auditable and immune to subscription churn.
 
@@ -299,7 +305,7 @@ The scoring route runs on Vercel with the **service role** key. The decrement an
 -- 2. compute active subscription / Exam Pass / billing-pause entitlement
 -- 3. free Writing with unused lifetime marker -> stamp marker and return free:true
 -- 4. all other free requests -> return premium_required
--- 5. premium -> roll daily counters, enforce 2 Writing / 1 Speaking, increment
+-- 5. premium -> roll day/week/month counters, enforce all three caps, increment
 ```
 
 Key rules:
@@ -315,12 +321,12 @@ Premium is marketed as "unlimited AI scoring" but carries **abuse caps** sized s
 
 | Feature | Premium limit | Worst-case COGS/mo | Typical COGS/mo |
 |---|---|---|---|
-| Writing AI scores (`gpt-5.1` pass, ~2¢ each) | **2/day** (~60/mo) | ~$1.20 | ~$0.25 |
-| Async Speaking scores (Whisper + `gpt-5.1`, ~3¢ each) | **1/day** (~30/mo) | ~$0.90 | ~$0.15 |
-| Realtime AI examiner (§9, mini, ~3–5¢/min) | **60 min/mo** global / **30 min/mo** PPP | ~$2.40 | ~$0.50 |
+| Writing AI scores (`gpt-5.1`) | **2/day, 10/week, 30/month** | ~$0.75 | ~$0.45 |
+| Recorded Speaking scores (Whisper + `gpt-5.1`) | **1/day, 5/week, 15/month** | ~$0.56 | ~$0.34 |
+| Realtime AI examiner (§9) | **60 min/period** global / **30 min/period** PPP | ~$3.60 reserved | measured after rollout |
 | **Total** | | **~$4.50 hard ceiling** | **~$0.90** |
 
-At $4.20 blended ARPU this holds **~80% blended gross margin**; the worst case is profitable on global monthly, ~breakeven on hero/PPP-monthly, and a bounded, rare loss (~-$3/mo) on PPP annual. Enforcement: `consume_ai_score(p_uid, p_skill)` grants one lifetime mini-model Writing sample to a signed-in free account, keeps Speaking Premium-only, and rolls premium daily counters; Realtime minutes decrement via `consume_realtime_seconds` before a session token is minted.
+The score caps reserve about **$1.31/month conservatively** at full utilization. Realtime is the dominant variable cost; the current 30-minute PPP allowance has thin worst-case margin and must be reviewed using `ai_usage_cost_daily` before it is raised. Enforcement: `consume_ai_score(p_uid, p_skill)` grants one lifetime mini-model Writing sample, keeps Speaking Premium-only, and rolls UTC day/week/month counters; Realtime seconds decrement before a session token is minted.
 
 ---
 

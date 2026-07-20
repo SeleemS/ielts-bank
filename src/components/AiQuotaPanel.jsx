@@ -7,7 +7,7 @@ import { track } from '../lib/analytics';
 
 // Limit modal for AI-scoring CTAs. Writing includes one lifetime free sample;
 // after that, this opens in two situations:
-//   * a premium user hit the per-skill daily fair-use cap (or an IP limit) —
+//   * a premium user hit a per-skill fair-use cap (or an IP limit) —
 //     tell them when it resets, no upsell;
 //   * a non-premium user hit a limit response we didn't route to /pricing —
 //     show the premium pitch.
@@ -37,14 +37,14 @@ export default function AiQuotaPanel({ open = false, onClose = () => {}, skill =
     <Modal
       open={open}
       onClose={onClose}
-      title={isPremium ? 'You’ve hit today’s fair-use limit' : `AI ${skillLabel} scoring is a Premium feature`}
+      title={isPremium ? 'You’ve hit a fair-use limit' : `AI ${skillLabel} scoring is a Premium feature`}
     >
       <div className="space-y-5">
         {isPremium ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            You’ve used today’s included AI {skillLabel} scores. Your allowance resets at
-            midnight UTC — come back tomorrow, or review your saved feedback on the
-            dashboard in the meantime.
+            You’ve used your included AI {skillLabel} scores for this period. Your
+            allowance resets automatically — review your saved feedback on the dashboard
+            in the meantime.
           </p>
         ) : (
           <>
@@ -54,7 +54,7 @@ export default function AiQuotaPanel({ open = false, onClose = () => {}, skill =
                 : 'AI Speaking scoring is part of Premium. Upgrade to unlock:'}
             </p>
             <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
-              <li>Writing and Speaking AI band scores (fair-use daily limits)</li>
+              <li>Writing and Speaking AI band scores with clear fair-use limits</li>
               <li>Criterion-by-criterion feedback and progress tracking</li>
               <li>Live AI examiner minutes and an ad-free experience</li>
             </ul>

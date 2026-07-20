@@ -17,6 +17,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { chatUsageRow, recordAiUsage } from '../../../lib/aiCost';
 import { overallBand as calculateOverallBand } from '../../../lib/bandTables';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { WRITING_PROMPT_MAX_CHARS } from '../../../lib/writingLimits';
@@ -38,6 +39,13 @@ const GLOBAL_WINDOW_SECONDS = 86400; // 1 day
 const GLOBAL_MAX = 500; // hard daily ceiling across all users (cost circuit breaker)
 
 const OPENAI_TIMEOUT_MS = 45000;
+
+function quotaLimitMessage(quota) {
+  const period = quota?.limitPeriod || 'day';
+  const limit = quota?.limit || (period === 'day' ? 2 : null);
+  const label = limit ? `${limit} Writing scores per ${period}` : `${period}ly Writing scores`;
+  return `You have reached your fair-use limit of ${label}.`;
+}
 
 // ---------------------------------------------------------------------------
 // Supabase service-role client (server-only; bypasses RLS for rate_limits)
@@ -358,7 +366,7 @@ export default async function handler(req, res) {
       error:
         quota?.reason === 'premium_required'
           ? 'AI Writing scoring is a Premium feature. Upgrade to get your essay scored.'
-          : 'You have reached today’s fair-use limit of 2 Writing scores. It resets at midnight UTC.',
+          : quotaLimitMessage(quota),
       remaining: 0,
       reason: quota?.reason || 'quota_exceeded',
       resetsAt: quota?.resetsAt || null,
@@ -415,6 +423,18 @@ Assess this essay as an IELTS examiner and return the structured JSON.`;
     }
 
     const payload = ai.payload;
+    await recordAiUsage(
+      getAdmin(),
+      chatUsageRow({
+        userId,
+        skill: 'writing',
+        feature: 'writing_score',
+        operation: 'rubric_score',
+        model: ai.model,
+        payload,
+        metadata: { task, free_sample: isFreeScore },
+      })
+    );
     const content = payload?.choices?.[0]?.message?.content;
     if (!content) {
       console.error('OpenAI returned no content', JSON.stringify(payload).slice(0, 500));

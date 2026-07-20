@@ -24,6 +24,7 @@ export function usePlan() {
   const [state, setState] = React.useState({
     loading: true,
     plan: 'free',
+    planSku: null,
     planStatus: 'inactive',
     renewsAt: null,
     expiresAt: null,
@@ -35,13 +36,13 @@ export function usePlan() {
 
   React.useEffect(() => {
     if (!user?.id) {
-      setState({ loading: false, plan: 'free', planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, pauseUsedAt: null, hasBillingAccount: false, error: null });
+      setState({ loading: false, plan: 'free', planSku: null, planStatus: 'inactive', renewsAt: null, expiresAt: null, pauseUntil: null, pauseUsedAt: null, hasBillingAccount: false, error: null });
       return undefined;
     }
     let active = true;
     getSupabase()
       .from('users')
-      .select('plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at, stripe_customer_id')
+      .select('plan, plan_sku, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at, stripe_customer_id')
       .eq('id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -57,6 +58,7 @@ export function usePlan() {
         setState({
           loading: false,
           plan: data?.plan || 'free',
+          planSku: data?.plan_sku || null,
           planStatus: data?.plan_status || 'inactive',
           renewsAt: data?.plan_renews_at || null,
           expiresAt: data?.plan_expires_at || null,

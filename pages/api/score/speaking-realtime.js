@@ -8,6 +8,7 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
+import { chatUsageRow, recordAiUsage } from '../../../lib/aiCost';
 import { roundBandMean } from '../../../lib/bandTables';
 import { fetchPremiumStatus } from '../../../lib/premium';
 import { MODES } from '../../../lib/realtimeExaminer';
@@ -222,6 +223,18 @@ export default async function handler(req, res) {
       console.error('scoring call failed:', r.status, payload?.error?.message);
       return res.status(502).json({ error: 'Scoring failed. Please try again.' });
     }
+    await recordAiUsage(
+      getAdmin(),
+      chatUsageRow({
+        userId,
+        skill: 'speaking',
+        feature: 'speaking_realtime_score',
+        operation: 'rubric_score',
+        model: SCORING_MODEL,
+        payload,
+        metadata: { mode },
+      })
+    );
     result = JSON.parse(payload.choices?.[0]?.message?.content || '{}');
   } catch (e) {
     console.error('scoring error:', e.message);

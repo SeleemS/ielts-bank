@@ -124,6 +124,9 @@ const mockState = {
   rateLimitReject: null,
   rpcCalls: [],
   retrievedSession: null,
+  retrievedSubscription: null,
+  updatedSubscription: null,
+  subscriptionUpdateError: null,
   reconciliationOutcome: 'activated user user-1 (active)',
   stripeCalls: {},
 };
@@ -168,6 +171,7 @@ vi.mock('@supabase/supabase-js', () => ({
           return { error: mockState.userUpdateError };
         },
       }),
+      insert: async () => ({ error: null }),
     }),
     rpc: async (name, args) => {
       mockState.rpcCalls.push({ name, args });
@@ -217,6 +221,17 @@ vi.mock('../lib/billing', async (importOriginal) => {
           },
         },
       },
+      subscriptions: {
+        retrieve: async (id, args) => {
+          mockState.stripeCalls.subscriptionRetrieve = { id, args };
+          return mockState.retrievedSubscription;
+        },
+        update: async (id, args, options) => {
+          mockState.stripeCalls.subscriptionUpdate = { id, args, options };
+          if (mockState.subscriptionUpdateError) throw mockState.subscriptionUpdateError;
+          return mockState.updatedSubscription;
+        },
+      },
     }),
     handleStripeEvent: async (event, deps) => {
       if (
@@ -249,6 +264,9 @@ describe('POST /api/billing/checkout', () => {
     mockState.rateLimitReject = null;
     mockState.rpcCalls = [];
     mockState.retrievedSession = null;
+    mockState.retrievedSubscription = null;
+    mockState.updatedSubscription = null;
+    mockState.subscriptionUpdateError = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
     mockState.stripeCalls = {};
     vi.restoreAllMocks();
@@ -789,5 +807,159 @@ describe('POST /api/billing/verify-session', () => {
       args: { expand: ['subscription'] },
     });
     expect(mockState.stripeCalls.reconciliation.event.id).toBe('verify:cs_live_paid');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// In-place subscription upgrades
+// ---------------------------------------------------------------------------
+describe('POST /api/billing/change-plan', () => {
+  beforeEach(() => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.authError = null;
+    mockState.authReject = null;
+    mockState.userError = null;
+    mockState.userReject = null;
+    mockState.userUpdateError = null;
+    mockState.userUpdateReject = null;
+    mockState.rateLimit = true;
+    mockState.rateLimitError = null;
+    mockState.rateLimitReject = null;
+    mockState.rpcCalls = [];
+    mockState.stripeCalls = {};
+    mockState.subscriptionUpdateError = null;
+    mockState.userRow = {
+      id: 'user-1',
+      plan: 'premium',
+      plan_status: 'active',
+      stripe_customer_id: 'cus_existing',
+      stripe_subscription_id: 'sub_existing',
+    };
+    mockState.retrievedSubscription = {
+      id: 'sub_existing',
+      customer: 'cus_existing',
+      status: 'active',
+      created: 1760000000,
+      metadata: { user_id: 'user-1', ppp: '0' },
+      pending_update: null,
+      items: {
+        data: [
+          {
+            id: 'si_current',
+            current_period_end: 1800000000,
+            price: { id: 'price_current', lookup_key: 'premium_monthly' },
+          },
+        ],
+      },
+    };
+    mockState.updatedSubscription = {
+      ...mockState.retrievedSubscription,
+      metadata: { user_id: 'user-1', sku: 'annual', ppp: '0' },
+      latest_invoice: { id: 'in_upgrade', hosted_invoice_url: null },
+      items: {
+        data: [
+          {
+            id: 'si_current',
+            current_period_end: 1800000000,
+            price: { id: 'price_mock_1', lookup_key: 'premium_annual' },
+          },
+        ],
+      },
+    };
+    vi.restoreAllMocks();
+  });
+
+  async function callChangePlan(body = { sku: 'annual' }) {
+    const { default: handler } = await import('../pages/api/billing/change-plan');
+    const res = makeRes();
+    await handler(
+      makeReq({ headers: { authorization: 'Bearer tok' }, body }),
+      res
+    );
+    return res;
+  }
+
+  it('replaces the current item and immediately invoices only the proration', async () => {
+    const res = await callChangePlan();
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.changed).toBe(true);
+    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_annual']);
+    expect(mockState.stripeCalls.subscriptionUpdate).toMatchObject({
+      id: 'sub_existing',
+      args: {
+        items: [{ id: 'si_current', price: 'price_mock_1', quantity: 1 }],
+        proration_behavior: 'always_invoice',
+        payment_behavior: 'pending_if_incomplete',
+        cancel_at_period_end: false,
+      },
+    });
+  });
+
+  it('preserves PPP pricing from Stripe instead of trusting request geography', async () => {
+    mockState.retrievedSubscription.metadata.ppp = '1';
+    mockState.retrievedSubscription.items.data[0].price.lookup_key =
+      'premium_monthly_ppp';
+    await callChangePlan({ sku: '6month' });
+    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual([
+      'premium_6month_ppp',
+    ]);
+  });
+
+  it('leaves the old plan active while an upgrade invoice needs payment', async () => {
+    mockState.updatedSubscription = {
+      ...mockState.updatedSubscription,
+      pending_update: { expires_at: 1800000000 },
+      latest_invoice: {
+        id: 'in_pending',
+        hosted_invoice_url: 'https://invoice.stripe.com/i/pending',
+      },
+    };
+    const res = await callChangePlan();
+    expect(res.statusCode).toBe(202);
+    expect(res.jsonBody).toMatchObject({
+      changed: false,
+      requiresPayment: true,
+      url: 'https://invoice.stripe.com/i/pending',
+      currentSku: 'monthly',
+      targetSku: 'annual',
+    });
+  });
+
+  it('rejects same-term and downgrade requests before modifying Stripe', async () => {
+    const same = await callChangePlan({ sku: 'monthly' });
+    expect(same.statusCode).toBe(400);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+
+    mockState.retrievedSubscription.items.data[0].price.lookup_key =
+      'premium_annual';
+    mockState.stripeCalls = {};
+    const downgrade = await callChangePlan({ sku: '6month' });
+    expect(downgrade.statusCode).toBe(409);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
+
+  it('reports a declined proration without claiming the plan changed', async () => {
+    mockState.subscriptionUpdateError = Object.assign(new Error('declined'), {
+      type: 'StripeCardError',
+      code: 'card_declined',
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callChangePlan();
+    expect(res.statusCode).toBe(402);
+    expect(res.jsonBody.error).toMatch(/unchanged/i);
+  });
+
+  it('does not misreport a confirmed Stripe upgrade when local sync is delayed', async () => {
+    mockState.userUpdateError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callChangePlan();
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      changed: true,
+      syncPending: true,
+      currentSku: 'monthly',
+      targetSku: 'annual',
+    });
+    expect(res.jsonBody.message).toMatch(/may take a moment/i);
   });
 });
