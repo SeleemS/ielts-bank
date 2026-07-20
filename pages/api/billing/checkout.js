@@ -193,6 +193,25 @@ export default async function handler(req, res) {
       sku,
       ppp: isPppCountry(country) ? '1' : '0',
     };
+    // Terms-of-service consent recorded by Stripe on the Checkout Session
+    // (session.consent.terms_of_service = 'accepted' + a timestamp). Stripe
+    // requires a Terms of Service URL in Dashboard -> Settings -> Public details
+    // for this; without it the session create is rejected. Gated behind an env
+    // flag so it is enabled deliberately once that URL is configured, and never
+    // breaks live checkout by default.
+    const tosConsent =
+      process.env.STRIPE_TOS_CONSENT === '1'
+        ? {
+            consent_collection: { terms_of_service: 'required' },
+            custom_text: {
+              terms_of_service_acceptance: {
+                message:
+                  'I agree to the [Terms of Service](https://www.ielts-bank.com/termsofservice) and [Privacy Policy](https://www.ielts-bank.com/privacypolicy).',
+              },
+            },
+          }
+        : {};
+
     const session = await stripe.checkout.sessions.create({
       mode: isExamPass ? 'payment' : 'subscription',
       customer: customerId,
@@ -204,6 +223,7 @@ export default async function handler(req, res) {
       payment_method_collection: 'if_required',
       client_reference_id: userRow.id,
       metadata,
+      ...tosConsent,
       ...(isExamPass
         ? { payment_intent_data: { metadata } }
         : { subscription_data: { metadata } }),

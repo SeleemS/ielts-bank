@@ -639,6 +639,27 @@ export default function SignInDialog({
           >
             {busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Sign in'}
           </Button>
+          <p className="text-center text-xs leading-relaxed text-muted-foreground">
+            By {mode === 'signup' ? 'creating an account' : 'continuing'}, you agree to our{' '}
+            <a
+              href="/termsofservice"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-4 hover:text-foreground"
+            >
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a
+              href="/privacypolicy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-4 hover:text-foreground"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p>
         </form>
         <div className="mt-4 flex flex-col gap-1.5 text-center text-sm text-muted-foreground">
           {mode === 'signup' ? (
