@@ -160,7 +160,7 @@ const HomePage = ({ counts = {} }) => {
         <meta name="description" content={PAGE_DESCRIPTION} />
         <meta
           name="keywords"
-          content="IELTS, IELTS Bank, ielts bank, ielts practice, ielts database, IELTS Reading, IELTS Writing, IELTS Listening, IELTS Practice Questions, IELTS Past Papers, IELTS Test Prep"
+          content="IELTS, IELTS Bank, ielts bank, ielts practice, IELTS Reading, IELTS Writing, IELTS Listening, IELTS Practice Questions, IELTS Test Prep"
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`${SITE_URL}/`} />

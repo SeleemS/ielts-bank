@@ -102,7 +102,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
         <meta name="description" content={metaDescription} />
         <meta
           name="keywords"
-          content="IELTS, IELTS Reading, IELTS Academic Reading, IELTS General Reading, IELTS Reading Questions, IELTS Practice, IELTS Test Prep, IELTS Past Papers"
+          content="IELTS, IELTS Reading, IELTS Academic Reading, IELTS General Reading, IELTS Reading Questions, IELTS Practice, IELTS Test Prep"
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={canonicalUrl} />

@@ -125,7 +125,7 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
         <meta name="description" content={metaDescription} />
         <meta
           name="keywords"
-          content="IELTS, IELTS Listening, IELTS Listening Questions, IELTS Listening Past Papers, IELTS Practice, IELTS Test Prep"
+          content="IELTS, IELTS Listening, IELTS Listening Questions, IELTS Practice, IELTS Test Prep"
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={canonicalUrl} />
