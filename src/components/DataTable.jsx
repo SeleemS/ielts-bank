@@ -59,11 +59,6 @@ function AverageUserBand({ item, className }) {
       aria-label={description}
       title={description}
     >
-      {estimated ? (
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Est.
-        </span>
-      ) : null}
       <span className="font-semibold text-foreground">{formatted}</span>
     </span>
   );

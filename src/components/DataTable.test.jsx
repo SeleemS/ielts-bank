@@ -61,9 +61,11 @@ describe('DataTable average user band', () => {
     });
 
     expect(container.querySelector('abbr[title="Average user band"]')).not.toBeNull();
-    expect(
-      container.querySelector('[aria-label^="Estimated average band 5.0"]')
-    ).not.toBeNull();
+    const estimatedBand = container.querySelector(
+      '[aria-label^="Estimated average band 5.0"]'
+    );
+    expect(estimatedBand).not.toBeNull();
+    expect(estimatedBand.textContent).toBe('5.0');
     expect(
       container.querySelector('[aria-label="Average user band 6.3 from 4 total submissions"]')
     ).not.toBeNull();
