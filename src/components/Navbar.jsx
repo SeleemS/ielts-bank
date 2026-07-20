@@ -31,7 +31,7 @@ const NAV_LINKS = [
   { label: 'Writing', href: '/writingquestion', icon: PenLine },
   { label: 'Listening', href: '/listeningquestion', icon: Headphones },
   { label: 'Speaking', href: '/speakingquestion', icon: Mic },
-  { label: 'Mock tests', href: '/mock-test', icon: ClipboardCheck },
+  { label: 'Mock Tests', href: '/mock-test', icon: ClipboardCheck },
   { label: 'Blog', href: '/blog', icon: Newspaper },
   { label: 'Premium', href: '/pricing', icon: Sparkles },
 ];

@@ -12,7 +12,7 @@ const PRACTICE_LINKS = [
   { label: 'Writing', href: '/writingquestion' },
   { label: 'Listening', href: '/listeningquestion' },
   { label: 'Speaking', href: '/speakingquestion' },
-  { label: 'Mock tests', href: '/mock-test' },
+  { label: 'Mock Tests', href: '/mock-test' },
 ];
 
 const TOOLS_LINKS = [
