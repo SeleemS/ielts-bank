@@ -16,6 +16,12 @@ module.exports = {
       },
     },
     extend: {
+      screens: {
+        // The full desktop navbar (7 links + CTA + account) needs ~1088px
+        // before the brand and "Mock tests" start wrapping. Below this the
+        // header falls back to the mobile sheet.
+        nav: '1120px',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

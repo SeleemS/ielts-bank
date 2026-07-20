@@ -133,7 +133,7 @@ export default function Navbar() {
   const router = useRouter();
 
   // On any practice surface (question detail pages, mock runner) a signed-out
-  // visitor is already practising — the CTA pivots from "Start practicing" to
+  // visitor is already practising — the CTA pivots from "Improve my IELTS band" to
   // creating an account (opens the signup dialog in place).
   const onQuestionPage = /^\/(reading|writing|listening|speaking)question\/\[|^\/mock\/\[/.test(
     router.pathname
@@ -154,7 +154,7 @@ export default function Navbar() {
         <BrandMark />
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 nav:flex">
           {NAV_LINKS.map((link) => (
             <NextLink
               key={link.href}
@@ -170,7 +170,7 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop CTA + account */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 nav:flex">
           {showCreateAccount ? (
             <Button variant="accent" className="shadow-sm" onClick={openSignUp}>
               Create account
@@ -179,7 +179,7 @@ export default function Navbar() {
           ) : (
             <Button asChild variant="accent" className="shadow-sm">
               <NextLink href="/readingquestion" className="no-underline">
-                Start practicing
+                Improve my IELTS band
                 <ArrowRight className="h-4 w-4" />
               </NextLink>
             </Button>
@@ -199,7 +199,7 @@ export default function Navbar() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground transition-colors hover:bg-secondary nav:hidden"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -242,7 +242,7 @@ export default function Navbar() {
           ) : (
             <Button asChild variant="accent" size="lg" className="mt-2 w-full">
               <NextLink href="/readingquestion" onClick={() => setOpen(false)} className="no-underline">
-                Start practicing
+                Improve my IELTS band
                 <ArrowRight className="h-4 w-4" />
               </NextLink>
             </Button>

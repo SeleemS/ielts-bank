@@ -60,7 +60,7 @@ export default function StudyingNowBadge() {
   return (
     <div
       aria-label={`${count} people studying now`}
-      className="pointer-events-none absolute right-14 top-3 z-10 animate-fade-in select-none sm:right-16 md:right-4 md:top-[calc(100%+0.875rem)]"
+      className="pointer-events-none absolute right-14 top-3 z-10 animate-fade-in select-none sm:right-16 nav:right-4 nav:top-[calc(100%+0.875rem)]"
       data-testid="studying-now-badge"
     >
       {/* Dark glass reads as "live" on the navy hero and on white pages alike,
