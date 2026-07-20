@@ -187,7 +187,7 @@ export default function EstimatorResults({
     (reading ? reading.total : 0) + (listening ? listening.total : 0);
   const heroCaption =
     measuredCount > 0
-      ? `Estimated from ${measuredCount} real test questions + your self-assessment. Not an official score.`
+      ? `Estimated from ${measuredCount} exam-style questions + your self-assessment. Not an official score.`
       : 'Estimated from your self-assessment. Not an official score.';
 
   const handleTarget = (label) => {
