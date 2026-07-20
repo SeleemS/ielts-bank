@@ -1,12 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import { Search, ArrowRight, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
-import { listPassages } from '../../lib/supabase';
+import {
+  Search,
+  ArrowRight,
+  Inbox,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+} from 'lucide-react';
+import { listPassages, getSupabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
 import { formatAverageUserBand } from '../../lib/averageUserBand';
+import { useAuth } from '../lib/auth';
 import { cn } from '../lib/utils';
 import AdUnit from './AdUnit';
+
+// Difficulty filter options rendered as a segmented control. "all" always
+// leads; the skill-specific difficulties are appended only when present in the
+// dataset (see difficultiesPresent below), so a list with no "hard" items never
+// shows a dead "Hard" tab.
+const DIFFICULTY_ORDER = ['easy', 'medium', 'hard'];
+
+// Completed marker shown on rows a signed-in learner has already attempted.
+function CompletedTag({ className }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent dark:bg-accent/20',
+        className
+      )}
+    >
+      <Check className="h-3 w-3" aria-hidden />
+      Done
+    </span>
+  );
+}
 
 // Pure Tailwind/shadcn question browser. NO Chakra imports.
 //
@@ -87,10 +116,14 @@ const DataTable = ({ items, skill, selectedOption }) => {
   const skillLower = String(skill || selectedOption || 'reading').toLowerCase();
   const itemNoun = skillLower === 'reading' ? 'passage' : skillLower === 'writing' ? 'task' : 'test';
 
+  const { user } = useAuth();
+
   const [data, setData] = useState(items || []);
   const [loading, setLoading] = useState(!items);
   const [query, setQuery] = useState('');
+  const [difficulty, setDifficulty] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [completedSlugs, setCompletedSlugs] = useState(() => new Set());
 
   useEffect(() => {
     // Prefetched list wins: no client fetch, no spinner.
@@ -120,16 +153,82 @@ const DataTable = ({ items, skill, selectedOption }) => {
     };
   }, [items, skillLower]);
 
-  // Reset to first page whenever the dataset or search changes.
+  // Which passages this learner has already attempted, keyed by slug (the same
+  // identifier the list rows use as item.id). The question lists are statically
+  // generated, so per-user state can't be baked in — it's fetched client-side
+  // once auth resolves. RLS scopes attempts to the signed-in user, and the
+  // embedded passages(slug) join bridges attempts.passage_id (a UUID) back to
+  // the slug the list is keyed on. Signed-out visitors get an empty set.
+  useEffect(() => {
+    if (!user?.id) {
+      setCompletedSlugs(new Set());
+      return undefined;
+    }
+    let active = true;
+    getSupabase()
+      .from('attempts')
+      .select('passage_id, passages(slug)')
+      .eq('skill', skillLower)
+      .not('passage_id', 'is', null)
+      .then(({ data: rows, error }) => {
+        if (!active || error || !Array.isArray(rows)) return;
+        const next = new Set();
+        for (const row of rows) {
+          const slug = row?.passages?.slug;
+          if (slug) next.add(slug);
+        }
+        setCompletedSlugs(next);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.id, skillLower]);
+
+  // Difficulties actually present in this dataset, in a stable easy→hard order.
+  // Drives the filter control and lets us hide it when there is nothing to
+  // filter (0 or 1 distinct difficulty).
+  const difficultiesPresent = useMemo(() => {
+    const seen = new Set(
+      data.map((item) => String(item.difficulty || '').toLowerCase()).filter(Boolean)
+    );
+    return DIFFICULTY_ORDER.filter((level) => seen.has(level));
+  }, [data]);
+
+  // A filter value stops matching if the dataset changes (e.g. client refetch)
+  // and no longer contains that difficulty — fall back to "all".
+  useEffect(() => {
+    if (difficulty !== 'all' && !difficultiesPresent.includes(difficulty)) {
+      setDifficulty('all');
+    }
+  }, [difficulty, difficultiesPresent]);
+
+  // Reset to first page whenever the dataset, search, or difficulty changes.
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, skillLower, data]);
+  }, [query, difficulty, skillLower, data]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return data;
-    return data.filter((item) => (item.title || '').toLowerCase().includes(q));
-  }, [data, query]);
+    return data.filter((item) => {
+      if (q && !(item.title || '').toLowerCase().includes(q)) return false;
+      if (
+        difficulty !== 'all'
+        && String(item.difficulty || '').toLowerCase() !== difficulty
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [data, query, difficulty]);
+
+  // Completed count within the current (unfiltered) list, for the count line.
+  const completedInList = useMemo(
+    () =>
+      completedSlugs.size
+        ? data.reduce((n, item) => (completedSlugs.has(item.id) ? n + 1 : n), 0)
+        : 0,
+    [data, completedSlugs]
+  );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / RESULTS_PER_PAGE));
   const page = Math.min(currentPage, totalPages);
@@ -150,27 +249,60 @@ const DataTable = ({ items, skill, selectedOption }) => {
 
   return (
     <div className="w-full font-sans">
-      {/* Toolbar: search + result count */}
+      {/* Toolbar: search + difficulty filter + result count */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title..."
-            aria-label={`Search ${itemNoun}s by title`}
-            className={cn(
-              'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground sm:text-sm',
-              'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
-              'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
-            )}
-          />
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title..."
+              aria-label={`Search ${itemNoun}s by title`}
+              className={cn(
+                'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground sm:text-sm',
+                'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
+                'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
+              )}
+            />
+          </div>
+          {difficultiesPresent.length > 1 && (
+            <div
+              role="group"
+              aria-label="Filter by difficulty"
+              className="inline-flex items-center gap-0.5 self-start rounded-lg border border-border bg-muted/50 p-0.5"
+            >
+              {['all', ...difficultiesPresent].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDifficulty(level)}
+                  aria-pressed={difficulty === level}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-xs font-semibold capitalize outline-none transition-colors',
+                    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+                    difficulty === level
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {level === 'all' ? 'All levels' : level}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {!loading && (
-          <p className="text-sm text-muted-foreground">
+          <p className="shrink-0 text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? itemNoun : `${itemNoun}s`}
-            {query.trim() ? ' found' : ''}
+            {query.trim() || difficulty !== 'all' ? ' found' : ''}
+            {completedInList > 0 ? (
+              <>
+                {' · '}
+                <span className="font-semibold text-accent">{completedInList} done</span>
+              </>
+            ) : null}
           </p>
         )}
       </div>
@@ -185,12 +317,14 @@ const DataTable = ({ items, skill, selectedOption }) => {
               <Inbox className="h-6 w-6" />
             </span>
             <p className="text-base font-semibold text-foreground">
-              {query.trim() ? 'No matching questions' : 'No questions yet'}
+              {query.trim() || difficulty !== 'all' ? 'No matching questions' : 'No questions yet'}
             </p>
             <p className="max-w-sm text-sm text-muted-foreground">
               {query.trim()
-                ? `Nothing matches “${query.trim()}”. Try a different search term.`
-                : 'No questions are available for this section yet. Please check back soon.'}
+                ? `Nothing matches “${query.trim()}”${difficulty !== 'all' ? ` at ${difficulty} level` : ''}. Try a different search or filter.`
+                : difficulty !== 'all'
+                  ? `No ${difficulty}-level ${itemNoun}s right now. Try another difficulty.`
+                  : 'No questions are available for this section yet. Please check back soon.'}
             </p>
           </div>
         ) : (
@@ -222,6 +356,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
               <tbody>
                 {pageItems.map((item, index) => {
                   const href = `/${skillLower}question/${item.legacyId || item.id}`;
+                  const isDone = completedSlugs.has(item.id);
                   // Whole row navigates. The inner links stay for keyboard
                   // access and middle-click; they stopPropagation so a click
                   // on them doesn't also fire the row handler.
@@ -241,19 +376,26 @@ const DataTable = ({ items, skill, selectedOption }) => {
                       data-analytics-label={`Open ${skillLower} practice`}
                       data-analytics-skill={skillLower}
                       data-analytics-slug={String(item.legacyId || item.id)}
-                      className="group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60"
+                      data-completed={isDone ? 'true' : undefined}
+                      className={cn(
+                        'group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-secondary/60',
+                        isDone && 'bg-accent/5'
+                      )}
                     >
                       <td className="hidden px-4 py-4 align-middle text-sm font-medium tabular-nums text-muted-foreground sm:table-cell sm:px-6">
                         {start + index + 1}
                       </td>
                       <td className="px-4 py-4 align-middle">
-                        <NextLink
-                          href={href}
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-sm font-semibold text-foreground no-underline transition-colors hover:text-accent"
-                        >
-                          {item.title}
-                        </NextLink>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <NextLink
+                            href={href}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm font-semibold text-foreground no-underline transition-colors hover:text-accent"
+                          >
+                            {item.title}
+                          </NextLink>
+                          {isDone ? <CompletedTag /> : null}
+                        </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2 md:hidden">
                           <span className="sm:hidden">
                             <DifficultyBadge difficulty={item.difficulty} />
