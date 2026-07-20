@@ -43,10 +43,20 @@ function BandPill({ band }) {
   );
 }
 
-function LockedSection({ children, locked }) {
+// A locked criterion/section for free users. Renders NO real feedback — the
+// paid content is withheld by the API (see reduceForFree in the writing route),
+// so there is nothing here to reveal via DevTools. This replaces the old blurred
+// overlay, which shipped the real text in the DOM.
+function LockedPlaceholder({ label, hint }) {
   return (
-    <div className={cn('relative', locked && 'select-none overflow-hidden')} aria-hidden={locked || undefined}>
-      <div className={cn(locked && 'pointer-events-none blur-[5px] opacity-55')}>{children}</div>
+    <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold text-foreground">{label}</h3>
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+          <Lock className="h-3 w-3" aria-hidden="true" /> Premium
+        </span>
+      </div>
+      {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
@@ -94,63 +104,66 @@ export default function WritingScoreReport({ task, result, sample = false }) {
 
       <div className="space-y-3">
         {criteriaMeta.map(([key, label], index) => {
+          if (isTeaser && index > 0) {
+            return <LockedPlaceholder key={key} label={label} />;
+          }
           const criterion = criteria[key] || {};
-          const locked = isTeaser && index > 0;
           return (
-            <LockedSection key={key} locked={locked}>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-bold text-foreground">{label}</h3>
-                  <BandPill band={criterion.band} />
-                </div>
-                <div className="mb-3">
-                  <BandMeter band={criterion.band} />
-                </div>
-                <CriterionFeedback criterion={criterion} />
+            <div key={key} className="rounded-lg border border-border bg-card p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-bold text-foreground">{label}</h3>
+                <BandPill band={criterion.band} />
               </div>
-            </LockedSection>
+              <div className="mb-3">
+                <BandMeter band={criterion.band} />
+              </div>
+              <CriterionFeedback criterion={criterion} />
+            </div>
           );
         })}
       </div>
 
-      {result.summary && (
-        <LockedSection locked={isTeaser}>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="mb-1.5 text-sm font-bold text-foreground">Examiner Summary</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
-          </div>
-        </LockedSection>
-      )}
-
-      {improvements.length > 0 && (
-        <LockedSection locked={isTeaser}>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="mb-2 text-sm font-bold text-foreground">How to Improve</h3>
-            <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
-              {improvements.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        </LockedSection>
-      )}
-
-      {corrected.length > 0 && (
-        <LockedSection locked={isTeaser}>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="mb-2 text-sm font-bold text-foreground">Corrected Examples</h3>
-            <div className="space-y-3">
-              {corrected.map((example, index) => (
-                <div key={index} className="rounded-md border border-border/70 bg-secondary/30 p-3">
-                  <p className="text-sm text-destructive line-through decoration-destructive/50">
-                    {example.original}
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-accent">{example.suggestion}</p>
-                </div>
-              ))}
+      {isTeaser ? (
+        <LockedPlaceholder
+          label="Examiner summary, improvement plan & corrected examples"
+          hint="Unlock Premium for the examiner summary, a prioritised plan to raise your band, and line-by-line corrected examples from your essay."
+        />
+      ) : (
+        <>
+          {result.summary && (
+            <div className="rounded-lg border border-border bg-card p-4">
+              <h3 className="mb-1.5 text-sm font-bold text-foreground">Examiner Summary</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
             </div>
-          </div>
-        </LockedSection>
+          )}
+
+          {improvements.length > 0 && (
+            <div className="rounded-lg border border-border bg-card p-4">
+              <h3 className="mb-2 text-sm font-bold text-foreground">How to Improve</h3>
+              <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+                {improvements.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {corrected.length > 0 && (
+            <div className="rounded-lg border border-border bg-card p-4">
+              <h3 className="mb-2 text-sm font-bold text-foreground">Corrected Examples</h3>
+              <div className="space-y-3">
+                {corrected.map((example, index) => (
+                  <div key={index} className="rounded-md border border-border/70 bg-secondary/30 p-3">
+                    <p className="text-sm text-destructive line-through decoration-destructive/50">
+                      {example.original}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-accent">{example.suggestion}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {isTeaser ? (
@@ -159,7 +172,8 @@ export default function WritingScoreReport({ task, result, sample = false }) {
             <Lock className="h-5 w-5" />
           </span>
           <h3 className="mt-3 text-base font-bold text-foreground">
-            Your Band {formatBand(result.overallBand)} essay has {issueCount(result)} fixable issues
+            Your Band {formatBand(result.overallBand)} essay has{' '}
+            {result.lockedIssueCount ?? issueCount(result)} fixable issues
           </h3>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
             You&apos;ve seen your overall band and first criterion. Unlock the other three criteria,

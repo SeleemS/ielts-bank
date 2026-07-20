@@ -70,15 +70,22 @@ afterEach(() => {
 });
 
 describe('WritingScoreReport free-score tease', () => {
-  it('shows the overall band and first criterion while locking the remaining report', () => {
+  it('shows the overall band and first criterion but WITHHOLDS the locked report content', () => {
     render(<WritingScoreReport task={2} result={result} />);
 
     const headings = [...container.querySelectorAll('h3')];
     const taskResponse = headings.find((node) => node.textContent === 'Task Response');
     const coherence = headings.find((node) => node.textContent === 'Coherence & Cohesion');
-    expect(taskResponse.closest('[aria-hidden="true"]')).toBeNull();
-    expect(coherence.closest('[aria-hidden="true"]')).not.toBeNull();
-    expect(container.querySelectorAll('div.relative[aria-hidden="true"]')).toHaveLength(6);
+    // First criterion is shown in full; the others appear only as locked labels.
+    expect(taskResponse).toBeTruthy();
+    expect(coherence).toBeTruthy();
+    expect(container.textContent).toContain('A clear position'); // task-response feedback shown
+    // The paid content must NOT be present in the DOM at all (no blur bypass).
+    expect(container.textContent).not.toContain('Logical paragraphs'); // coherence feedback
+    expect(container.textContent).not.toContain('Avoid repetition'); // lexical feedback
+    expect(container.textContent).not.toContain('A relevant response with several fixable'); // summary
+    expect(container.textContent).not.toContain('People are affected'); // corrected example
+    expect(container.textContent).toContain('Premium');
     expect(container.textContent).toContain('Your Band 6.0 essay has 6 fixable issues');
     expect(container.textContent).toContain('Unlock full feedback — Premium');
     expect(track).toHaveBeenCalledWith(
@@ -99,7 +106,11 @@ describe('WritingScoreReport free-score tease', () => {
 
   it('renders the complete report without a tease for a paid score', () => {
     render(<WritingScoreReport task={2} result={{ ...result, free: false }} />);
-    expect(container.querySelectorAll('div.relative[aria-hidden="true"]')).toHaveLength(0);
+    // All criteria feedback, the summary and corrected examples are shown.
+    expect(container.textContent).toContain('Logical paragraphs');
+    expect(container.textContent).toContain('Avoid repetition');
+    expect(container.textContent).toContain('A relevant response with several fixable');
+    expect(container.textContent).toContain('People are affected');
     expect(container.textContent).not.toContain('Unlock full feedback — Premium');
     expect(track).not.toHaveBeenCalled();
   });

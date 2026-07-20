@@ -25,6 +25,16 @@ import * as React from 'react';
 import { getSupabase } from '../../lib/supabase';
 import { setAnalyticsUser, track } from './analytics';
 import { buildAuthCallbackUrl } from './authPaths';
+import { syncLocalAttempts } from './progress';
+
+// Backfill any practice a user completed while logged out (localStorage) into
+// their account the moment a session is available — on fresh sign-in AND on a
+// restored session — so it works no matter which page they land on (the
+// dashboard, previously, never triggered the per-question-page sync). Idempotent
+// and fail-soft; a no-op when there is nothing local to migrate.
+function backfillLocalAttempts(userId) {
+  if (userId) syncLocalAttempts(userId).catch(() => {});
+}
 
 const AuthContext = React.createContext(null);
 
@@ -74,6 +84,7 @@ export function AuthProvider({ children }) {
         setUser(data?.session?.user ?? null);
         setAnalyticsUser(data?.session?.user?.id || null, data?.session?.access_token || null);
         setLoading(false);
+        backfillLocalAttempts(data?.session?.user?.id);
       })
       .catch(() => {
         if (!active) return;
@@ -88,6 +99,7 @@ export function AuthProvider({ children }) {
       setAnalyticsUser(session?.user?.id || null, session?.access_token || null);
       if (event === 'SIGNED_IN') {
         track('login', { method: 'email', signed_in: true }, { accessToken: session?.access_token });
+        backfillLocalAttempts(session?.user?.id);
       }
       setLoading(false);
     });

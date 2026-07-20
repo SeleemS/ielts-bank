@@ -121,7 +121,13 @@ export default function MockTestPage({ mock }) {
   const jsonLd = buildMockTestJsonLd(mock, seo);
 
   React.useEffect(() => {
-    if (!user?.id || planLoading || !isPremium || fullMock || contentStatus === 'loading') return;
+    // NOTE: `contentStatus` must NOT be a dependency, and must not gate this
+    // effect. Setting it to 'loading' below would otherwise re-run the effect,
+    // whose cleanup flips the in-flight request's `active` flag to false, so the
+    // resolved response is discarded and the mock is never shown (stuck skeleton
+    // for Premium users even though /api/mock returns 200). `fullMock` is the
+    // idempotency guard instead.
+    if (!user?.id || planLoading || !isPremium || fullMock) return;
     let active = true;
     setContentStatus('loading');
     getBrowserSupabase()
@@ -145,7 +151,7 @@ export default function MockTestPage({ mock }) {
     return () => {
       active = false;
     };
-  }, [contentStatus, fullMock, isPremium, mock.slug, planLoading, user?.id]);
+  }, [fullMock, isPremium, mock.slug, planLoading, user?.id]);
 
   // Resolve to a definite state before rendering either branch — no flash of
   // paid content, no paywall flicker for premium users.
