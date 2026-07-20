@@ -111,14 +111,14 @@ function BandDial({ play, reduced }) {
   return (
     <div className="relative h-[150px] w-[150px] shrink-0">
       <svg viewBox="0 0 150 150" className="h-full w-full" role="img" aria-label={`Overall band ${BAND_TARGET} out of ${BAND_MAX}`}>
-        <circle cx="75" cy="75" r={RING_R} fill="none" strokeWidth="13" className="stroke-secondary" />
+        <circle cx="75" cy="75" r={RING_R} fill="none" strokeWidth="12" className="stroke-secondary" />
         <circle
           cx="75"
           cy="75"
           r={RING_R}
           fill="none"
-          strokeWidth="13"
-          strokeLinecap="round"
+          strokeWidth="12"
+          strokeLinecap="butt"
           transform="rotate(-90 75 75)"
           className="stroke-accent"
           style={{
