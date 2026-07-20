@@ -288,7 +288,7 @@ export default function DashboardTeaser() {
                     setDialogOpen(true);
                   }}
                 >
-                  Create my free dashboard
+                  Improve my IELTS band
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               )}
