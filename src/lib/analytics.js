@@ -1,4 +1,5 @@
 import { analyticsConsentGranted } from './consent';
+import { recordPracticeActivity } from './practiceActivity';
 
 const ANON_ID_KEY = 'ielts-anon-id';
 const ATTRIBUTION_KEY = 'ielts-attribution';
@@ -147,6 +148,11 @@ export function getAttribution() {
 
 export function track(event, params = {}, options = {}) {
   if (typeof window === 'undefined' || !event) return;
+  // Product-feature counter for the Summer Sale reminder. Intentionally runs
+  // BEFORE the analytics-consent gate below: the reminder is not analytics, so
+  // a user who declined analytics must still get the offer nudge. No-ops for
+  // non-submit events.
+  recordPracticeActivity(event);
   if (!analyticsConsentGranted()) return;
   const currentPath = params.path || window.location.pathname;
   if (isInternalAnalyticsPath(currentPath)) return;

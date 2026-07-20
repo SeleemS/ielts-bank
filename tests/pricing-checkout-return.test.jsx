@@ -198,7 +198,7 @@ describe('pricing checkout return verification', () => {
 });
 
 describe('pricing authentication handoff', () => {
-  it('gives every checkout action a plan-specific accessible name', async () => {
+  it('gives the checkout action a plan-specific accessible name', async () => {
     testState.router = {
       isReady: true,
       query: {},
@@ -206,16 +206,12 @@ describe('pricing authentication handoff', () => {
 
     await renderPage();
 
+    // Single Pro plan; the toggle defaults to the 6-month (best value) cadence.
     expect(
       [...container.querySelectorAll('main button[aria-label]')].map(
         (button) => button.getAttribute('aria-label')
       )
-    ).toEqual([
-      'Choose Monthly plan',
-      'Choose 6 Months plan',
-      'Choose Annual plan',
-      'Get the Exam Pass',
-    ]);
+    ).toEqual(['Choose 6 months plan']);
   });
 
   it('stays on pricing and resumes the plan selected before sign-in', async () => {
@@ -229,11 +225,11 @@ describe('pricing authentication handoff', () => {
     });
     await renderPage();
 
-    const monthly = [...container.querySelectorAll('button')].find(
+    const proButton = [...container.querySelectorAll('button')].find(
       (button) => button.textContent.trim() === 'Choose this plan'
     );
     act(() => {
-      monthly.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      proButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
     const dialog = container.querySelector('[data-testid="pricing-auth-dialog"]');
@@ -254,7 +250,7 @@ describe('pricing authentication handoff', () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-access-token',
       },
-      body: JSON.stringify({ sku: 'monthly', offer: '' }),
+      body: JSON.stringify({ sku: '6month', offer: '' }),
     });
   });
 
@@ -272,11 +268,9 @@ describe('pricing authentication handoff', () => {
       'Checkout is temporarily disabled'
     );
     const checkoutButtons = [...container.querySelectorAll('button')].filter(
-      (button) =>
-        button.textContent.includes('Choose this plan')
-        || button.textContent.includes('Get the Exam Pass')
+      (button) => button.textContent.includes('Choose this plan')
     );
-    expect(checkoutButtons).toHaveLength(4);
+    expect(checkoutButtons).toHaveLength(1);
     expect(checkoutButtons.every((button) => button.disabled)).toBe(true);
   });
 });

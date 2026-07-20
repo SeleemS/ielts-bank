@@ -15,6 +15,7 @@ import {
 import { startSessionHeartbeat } from '../src/lib/sessionHeartbeat';
 import ConsentManager from '../src/components/ConsentManager';
 import InteractionTelemetry from '../src/components/InteractionTelemetry';
+import OfferReminderModal from '../src/components/OfferReminderModal';
 import { adsAllowedForPath } from '../src/lib/adPolicy';
 import { syncAdSenseScript } from '../src/lib/adsenseLoader';
 import {
@@ -111,6 +112,9 @@ function MyApp({ Component, pageProps }) {
       )}
 
         <Component {...pageProps} />
+        {/* Global Summer Sale reminder — self-gates to signed-in, non-premium
+            users and only fires every few graded submits (see the component). */}
+        <OfferReminderModal />
         <ConsentManager onConsentChange={setOptionalConsent} />
         {analyticsEnabled && <Analytics beforeSend={consentAwareVercelEvent} />}
       </div>

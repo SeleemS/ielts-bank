@@ -31,45 +31,36 @@ import { isPppCountry } from '../lib/billing';
 import { track } from '../src/lib/analytics';
 import { PRICING_SEO } from '../lib/pricingSeo';
 import { cn } from '../src/lib/utils';
+import SaleCountdown from '../src/components/SaleCountdown';
+import {
+  SALE,
+  isSaleLive,
+  saleEndsAtMs,
+  planPricing,
+  money,
+  maxSavings,
+  maxPercentOff,
+} from '../src/lib/saleConfig';
 
 const PAGE_TITLE = PRICING_SEO.title;
 const PAGE_DESCRIPTION = PRICING_SEO.description;
 
-const BASE_PLANS = [
-  {
-    sku: 'monthly',
-    name: 'Monthly',
-    globalPrice: '$9.99',
-    pppPrice: '$3.99',
-    cadence: 'per month',
-    note: 'Flexible — cancel anytime',
-  },
-  {
-    sku: '6month',
-    name: '6 Months',
-    globalPrice: '$29.99',
-    pppPrice: '$14.99',
-    cadence: 'every 6 months',
-    note: '≈ $5.00/mo — covers a complete preparation cycle',
-    hero: true,
-  },
-  {
-    sku: 'annual',
-    name: 'Annual',
-    globalPrice: '$44.99',
-    pppPrice: '$19.99',
-    cadence: 'per year',
-    note: 'Covers preparation and a retake cycle',
-  },
-  {
-    sku: 'exam_pass',
-    name: 'Exam Pass',
-    globalPrice: '$14.99',
-    pppPrice: '$6.99',
-    cadence: 'one payment · 4 weeks',
-    note: 'No subscription and no automatic renewal',
-    pass: true,
-  },
+// Everything Pro unlocks — shown on the Pro card and the "Everything included"
+// grid. The single Pro plan is billed monthly or every 6 months; prices and the
+// Summer Sale live in src/lib/saleConfig.js (the single source of truth).
+const FREE_INCLUDES = [
+  'Full Reading & Listening question bank',
+  'Instant marking with answer keys',
+  'One lifetime Writing sample score',
+];
+
+const PRO_INCLUDES = [
+  'Full AI Writing reports on all four criteria',
+  'AI Speaking scoring from your recordings',
+  'Live AI examiner minutes every month',
+  'Full-length timed mock tests',
+  'Writing & Speaking band trends',
+  'Priority processing, completely ad-free',
 ];
 
 const PERKS = [
@@ -95,7 +86,7 @@ const COMPARISON = [
 // Genuine, verifiable trust signals shown near the plans. Every claim here maps
 // to real behaviour: Stripe handles checkout (pages/api/billing/checkout.js),
 // the refund window is in the Terms, scores are anchored to the public band
-// descriptors, and the Exam Pass never renews.
+// descriptors, and subscriptions can be cancelled from the account at any time.
 const TRUST_BAND = [
   {
     icon: BadgeCheck,
@@ -115,7 +106,7 @@ const TRUST_BAND = [
   {
     icon: RefreshCw,
     title: 'Cancel in one click',
-    body: 'Manage or cancel anytime from your account. The Exam Pass is one-time and never auto-renews.',
+    body: 'Manage or cancel anytime from your account. You keep access until the end of the period you have already paid for.',
   },
 ];
 
@@ -134,7 +125,7 @@ const PRICING_FAQS = [
   },
   {
     q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel a subscription whenever you like and you keep access until the end of the period you have already paid for. The Exam Pass is a one-time purchase that never renews automatically.',
+    a: 'Yes. Cancel whenever you like from your account and you keep Premium access until the end of the period you have already paid for. There are no cancellation fees.',
   },
   {
     q: 'What is free, and what needs Premium?',
@@ -304,6 +295,12 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const [examDate, setExamDate] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
   const [answeredCount, setAnsweredCount] = React.useState(0);
+  // Pro billing cadence selected by the toggle; 6-month leads (best value).
+  const [cadence, setCadence] = React.useState('6month');
+  // Whether the Summer Sale chrome renders. Defaults to SALE.active for a
+  // matching SSR/first paint, then refined on the client (and flipped off by
+  // the countdown's onExpire) to avoid any Date-based hydration mismatch.
+  const [saleLive, setSaleLive] = React.useState(SALE.active);
   const trackedRef = React.useRef({ paywall: '', purchase: '' });
 
   const checkoutStatus = typeof router.query.checkout === 'string' ? router.query.checkout : '';
@@ -318,6 +315,25 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const examWeeks = examDays == null ? null : Math.max(1, Math.ceil(examDays / 7));
 
   const pricingFaqJsonLd = React.useMemo(() => faqJsonLdFor(PRICING_FAQS), []);
+
+  // Resolve the region's numbers for both cadences (sale price = real price;
+  // regular = struck anchor). PPP keeps the lower regional prices.
+  const monthlyPricing = planPricing('monthly', regionalPricing);
+  const sixMonthPricing = planPricing('6month', regionalPricing);
+  const proPricing = cadence === 'monthly' ? monthlyPricing : sixMonthPricing;
+  // Savings from paying every 6 months vs month-to-month (billing-frequency
+  // discount shown on the toggle), independent of the sale.
+  const sixVsMonthlyPct =
+    monthlyPricing && sixMonthPricing
+      ? Math.round((1 - sixMonthPricing.sale / (monthlyPricing.sale * 6)) * 100)
+      : 0;
+  const saleBestPercentOff = maxPercentOff(regionalPricing);
+  const saleBestSavings = maxSavings(regionalPricing);
+
+  React.useEffect(() => {
+    // Refine the sale state on the client so an expired sale hides its chrome.
+    setSaleLive(isSaleLive());
+  }, []);
 
   React.useEffect(() => {
     if (!router.isReady || !upgrade || trackedRef.current.paywall === upgrade) return;
@@ -558,71 +574,182 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             ) : null}
           </div>
         ) : (
-          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {BASE_PLANS.map((plan) => {
-              const price = regionalPricing ? plan.pppPrice : plan.globalPrice;
-              return (
-                <Card
-                  key={plan.sku}
-                  id={plan.sku === 'exam_pass' ? 'exam-pass' : undefined}
+          <div className="mt-10">
+            {/* Summer Sale banner + live countdown. Hidden once the sale ends
+                (the sale price then simply becomes the plain Pro price). */}
+            {saleLive ? (
+              <div className="mx-auto mb-9 max-w-4xl overflow-hidden rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 shadow-sm dark:border-amber-500/30 dark:from-amber-500/10 dark:via-orange-500/10 dark:to-amber-500/10">
+                <div className="flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:justify-between sm:p-6 sm:text-left">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
+                      <Sparkles className="h-3.5 w-3.5" /> {SALE.name}
+                    </span>
+                    <p className="mt-2.5 text-lg font-extrabold tracking-tight text-amber-950 dark:text-amber-50 sm:text-xl">
+                      Up to {saleBestPercentOff}% off Premium — save up to {money(saleBestSavings)}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-amber-900/80 dark:text-amber-100/80">
+                      {SALE.tagline}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-center">
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-900/70 dark:text-amber-100/70">
+                      Ends in
+                    </p>
+                    <SaleCountdown targetMs={saleEndsAtMs()} onExpire={() => setSaleLive(false)} />
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Billing cadence toggle — 6 months leads (best value). */}
+            <div className="flex justify-center">
+              <div
+                role="tablist"
+                aria-label="Billing period"
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted p-1"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={cadence === 'monthly'}
+                  onClick={() => setCadence('monthly')}
                   className={cn(
-                    'relative flex flex-col',
-                    plan.hero
-                      ? 'border-2 border-accent bg-accent/[0.03] shadow-xl ring-1 ring-accent/10'
-                      : 'border-border shadow-sm'
+                    'rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+                    cadence === 'monthly'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  {plan.hero ? (
-                    <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
-                      Best value
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={cadence === '6month'}
+                  onClick={() => setCadence('6month')}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+                    cadence === '6month'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  6 months
+                  {sixVsMonthlyPct > 0 ? (
+                    <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent">
+                      Save {sixVsMonthlyPct}%
                     </span>
                   ) : null}
-                  {plan.pass ? (
-                    <Badge variant="secondary" className="absolute right-4 top-4 uppercase tracking-wide">
-                      No renewal
-                    </Badge>
-                  ) : null}
-                  <CardContent className="flex h-full flex-col p-6 pt-7">
-                    <h2 className="text-base font-semibold text-foreground">{plan.name}</h2>
-                    <div className="mt-3 flex items-baseline gap-1.5">
-                      <span className="text-4xl font-extrabold tracking-tight text-foreground">{price}</span>
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-muted-foreground">{plan.cadence}</p>
-                    <p className="mt-3 min-h-[2.5rem] text-xs leading-5 text-muted-foreground">{plan.note}</p>
-                    {plan.hero && examWeeks ? (
-                      <p className="mt-3 rounded-lg bg-accent/10 p-2 text-xs font-semibold text-accent">
-                        Your test is in {examWeeks} {examWeeks === 1 ? 'week' : 'weeks'} — this plan
-                        covers your prep{examDays > 120 ? ' and a retake cycle' : ''}.
-                      </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Free vs Pro — the core comparison. */}
+            <div className="mx-auto mt-8 grid max-w-4xl items-stretch gap-5 md:grid-cols-2">
+              <Card className="flex flex-col border-border shadow-sm">
+                <CardContent className="flex h-full flex-col p-6">
+                  <h2 className="text-base font-bold text-foreground">Free</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Practise the question bank, forever.</p>
+                  <div className="mt-4 flex items-baseline gap-1.5">
+                    <span className="text-4xl font-extrabold tracking-tight text-foreground">$0</span>
+                    <span className="text-sm font-medium text-muted-foreground">/ forever</span>
+                  </div>
+                  <ul className="mt-6 flex flex-1 flex-col gap-2.5">
+                    {FREE_INCLUDES.map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-sm">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        <span className="text-foreground">{item}</span>
+                      </li>
+                    ))}
+                    <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                      <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
+                      <span>No AI Writing / Speaking feedback, examiner, or mocks</span>
+                    </li>
+                  </ul>
+                  <Button asChild variant="outline" className="mt-6 w-full">
+                    <NextLink href="/reading" className="no-underline">Keep practising free</NextLink>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="relative flex flex-col border-2 border-accent bg-accent/[0.03] shadow-xl ring-1 ring-accent/10">
+                <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
+                  Most popular
+                </span>
+                <CardContent className="flex h-full flex-col p-6 pt-7">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-base font-bold text-foreground">Pro</h2>
+                    {saleLive ? (
+                      <Badge variant="secondary" className="bg-amber-500 uppercase tracking-wide text-white">
+                        {SALE.name}
+                      </Badge>
                     ) : null}
-                    <Button
-                      type="button"
-                      variant={plan.hero ? 'accent' : 'outline'}
-                      aria-label={
-                        plan.pass
-                          ? 'Get the Exam Pass'
-                          : `Choose ${plan.name} plan`
-                      }
-                      onClick={() => startCheckout(plan.sku)}
-                      disabled={busySku !== null || planLoading || Boolean(planError)}
-                      className="mt-auto w-full"
-                    >
-                      {busySku === plan.sku ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : plan.hero ? (
-                        <Sparkles className="h-4 w-4" />
-                      ) : null}
-                      {plan.pass ? 'Get the Exam Pass' : 'Choose this plan'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">Everything you need to lift your band.</p>
+
+                  <div className="mt-4 flex items-baseline gap-2">
+                    {saleLive ? (
+                      <span className="text-lg font-semibold text-muted-foreground line-through decoration-2">
+                        {money(proPricing.regular)}
+                      </span>
+                    ) : null}
+                    <span className="text-4xl font-extrabold tracking-tight text-foreground">
+                      {money(proPricing.sale)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
+                    {proPricing.cadence}
+                    {proPricing.perMonth ? ` · ≈ ${money(proPricing.perMonth)}/mo` : ''}
+                  </p>
+                  {saleLive && proPricing.savings > 0 ? (
+                    <p className="mt-2 inline-flex w-fit items-center rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 dark:bg-amber-500/15 dark:text-amber-200">
+                      Save {money(proPricing.savings)} · {proPricing.percentOff}% off — ends{' '}
+                      {new Date(SALE.endsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </p>
+                  ) : null}
+
+                  {cadence === '6month' && examWeeks ? (
+                    <p className="mt-3 rounded-lg bg-accent/10 p-2 text-xs font-semibold text-accent">
+                      Your test is in {examWeeks} {examWeeks === 1 ? 'week' : 'weeks'} — this plan
+                      covers your prep{examDays > 120 ? ' and a retake cycle' : ''}.
+                    </p>
+                  ) : null}
+
+                  <ul className="mt-5 flex flex-1 flex-col gap-2.5">
+                    {PRO_INCLUDES.map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        <span className="text-foreground">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    type="button"
+                    variant="accent"
+                    aria-label={`Choose ${proPricing.name} plan`}
+                    onClick={() => startCheckout(cadence)}
+                    disabled={busySku !== null || planLoading || Boolean(planError)}
+                    className="mt-6 w-full"
+                  >
+                    {busySku === cadence ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Choose this plan
+                  </Button>
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    14-day money-back guarantee · cancel anytime
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
 
         <p className="mt-6 text-center text-sm font-medium text-muted-foreground">
-          Try one Writing sample score free. Every paid option includes the full Premium toolkit.
+          Start with one free Writing sample score. Pro unlocks the full feedback toolkit.
         </p>
 
         {/* Genuine trust signals — every claim maps to real behaviour. */}
@@ -660,14 +787,14 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         </section>
 
         <section className="mx-auto mt-20 max-w-4xl">
-          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">Free practice or Premium feedback?</h2>
+          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">Free practice or Pro feedback?</h2>
           <div className="mt-8 overflow-hidden rounded-2xl border border-border shadow-sm">
             <table className="w-full text-left text-sm">
               <thead className="bg-muted/60">
                 <tr>
                   <th className="px-4 py-3 font-semibold text-foreground sm:px-6">Feature</th>
                   <th className="px-4 py-3 text-center font-semibold text-muted-foreground">Free</th>
-                  <th className="px-4 py-3 text-center font-semibold text-accent">Premium</th>
+                  <th className="px-4 py-3 text-center font-semibold text-accent">Pro</th>
                 </tr>
               </thead>
               <tbody>
@@ -731,8 +858,8 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
               <h2 className="font-bold text-foreground">What if it is not right for me?</h2>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Ask within 14 days of your first purchase for a refund. Cancel subscriptions anytime;
-              access continues to the end of the paid period. The Exam Pass never auto-renews.
+              Ask within 14 days of your first purchase for a refund. Cancel anytime from your
+              account; access continues to the end of the period you have already paid for.
             </p>
             <NextLink href="/termsofservice#billing-refunds" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
               Read the billing and refund terms <ArrowRight className="h-3.5 w-3.5" />
