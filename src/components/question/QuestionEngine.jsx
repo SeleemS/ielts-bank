@@ -15,6 +15,9 @@ import {
   markAttemptSynced,
   syncLocalAttempts,
 } from '../../lib/progress';
+import BandDial from '../mock/BandDial';
+import SectionBreakdown from '../mock/SectionBreakdown';
+import { usePlayOnMount, usePrefersReducedMotion } from '../mock/scoreAnimation';
 
 // The stateful heart of the question-taking experience. It is UI-chrome
 // agnostic: Reading and Listening pages supply their own passage/audio layout
@@ -99,6 +102,8 @@ async function persistAttemptToSupabase(userId, skill, storageKey, answers, resu
 function ResultsSummary({ score, total, skill, module, showBand, onReset, summaryRef, signedIn, sections, byNumber }) {
   const pct = total ? Math.round((score / total) * 100) : 0;
   const band = showBand ? estimateBand(score, total, skill, module) : null;
+  const reduced = usePrefersReducedMotion();
+  const play = usePlayOnMount();
   // Per-section breakdown for mock tests: count correct answers per section.
   const sectionScores =
     Array.isArray(sections) && byNumber
@@ -108,6 +113,28 @@ function ResultsSummary({ score, total, skill, module, showBand, onReset, summar
           correct: section.numbers.filter((n) => byNumber[n]?.correct).length,
         }))
       : null;
+  // Mock tests get the animated band dial + per-section breakdown (the same
+  // visualization as the marketing showcase), with the weakest section flagged.
+  const isMock = Array.isArray(sectionScores) && sectionScores.length > 0;
+  let vizSections = sectionScores;
+  let weakNote = null;
+  if (isMock && sectionScores.length > 1) {
+    let weakest = sectionScores[0];
+    let weakestPct = weakest.total ? weakest.correct / weakest.total : 1;
+    for (const s of sectionScores) {
+      const p = s.total ? s.correct / s.total : 1;
+      if (p < weakestPct) {
+        weakest = s;
+        weakestPct = p;
+      }
+    }
+    const flagWeak = weakestPct < 1;
+    vizSections = sectionScores.map((s) => ({
+      ...s,
+      weak: flagWeak && s.label === weakest.label,
+    }));
+    if (flagWeak) weakNote = `${weakest.label} was your weakest — review it first`;
+  }
   return (
     <div
       ref={summaryRef}
@@ -117,40 +144,39 @@ function ResultsSummary({ score, total, skill, module, showBand, onReset, summar
       className="mb-6 rounded-lg border border-accent/40 bg-accent/5 p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="text-sm font-semibold uppercase tracking-wide text-accent">
-            Your results
-          </div>
-          <div className="mt-1 text-3xl font-bold text-foreground">
-            {score}
-            <span className="text-xl text-muted-foreground"> / {total}</span>
-            <span className="ml-3 text-base font-medium text-muted-foreground">{pct}%</span>
-          </div>
-          {band != null && (
-            <div className="mt-1 text-sm text-muted-foreground">
-              Estimated {skill} band ~{band}
+        <div className="flex items-center gap-4">
+          {isMock && band != null ? (
+            <BandDial band={band} play={play} reduced={reduced} size={112} label="est. band" />
+          ) : null}
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-wide text-accent">
+              Your results
             </div>
-          )}
+            <div className="mt-1 text-3xl font-bold text-foreground">
+              {score}
+              <span className="text-xl text-muted-foreground"> / {total}</span>
+              <span className="ml-3 text-base font-medium text-muted-foreground">{pct}%</span>
+            </div>
+            {band != null && (
+              <div className="mt-1 text-sm text-muted-foreground">
+                {isMock ? `Estimated ${skill} band` : `Estimated ${skill} band ~${band}`}
+              </div>
+            )}
+          </div>
         </div>
         <Button variant="outline" onClick={onReset}>
           Try again
         </Button>
       </div>
-      {sectionScores && (
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {sectionScores.map((s) => (
-            <div key={s.label} className="rounded-md border border-border bg-card px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {s.label}
-              </div>
-              <div className="mt-0.5 text-lg font-bold tabular-nums text-foreground">
-                {s.correct}
-                <span className="text-sm font-medium text-muted-foreground"> / {s.total}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {isMock ? (
+        <SectionBreakdown
+          className="mt-5"
+          sections={vizSections}
+          play={play}
+          reduced={reduced}
+          note={weakNote}
+        />
+      ) : null}
       <p className="mt-3 text-sm text-muted-foreground">
         Review your answers below — correct answers are shown in green and each incorrect
         question reveals the right answer.
