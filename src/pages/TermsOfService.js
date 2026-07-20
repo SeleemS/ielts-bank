@@ -48,8 +48,8 @@ const TermsOfService = () => {
           <Card className="mt-6">
             <CardContent className="space-y-5 pt-6 text-[15px] leading-8 text-slate-700">
               <p>
-                Welcome to IELTSBank. Below are our Terms of Service, which outline
-                the rules and regulations for the use of IELTSBank&apos;s Website.
+                Welcome to IELTS-Bank. Below are our Terms of Service, which outline
+                the rules and regulations for the use of IELTS-Bank&apos;s Website.
               </p>
 
               <div>
@@ -62,28 +62,28 @@ const TermsOfService = () => {
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">2. Use License</h2>
                 <p>
-                  Permission is granted to temporarily download one copy of the materials on IELTSBank&apos;s website for personal, non-commercial use only.
+                  Permission is granted to temporarily download one copy of the materials on IELTS-Bank&apos;s website for personal, non-commercial use only.
                 </p>
               </div>
 
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">3. Disclaimer</h2>
                 <p>
-                  The materials on IELTSBank’s website are provided &quot;as is.&quot; IELTSBank disclaims all warranties, expressed or implied.
+                  The materials on IELTS-Bank’s website are provided &quot;as is.&quot; IELTS-Bank disclaims all warranties, expressed or implied.
                 </p>
               </div>
 
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">4. Limitations</h2>
                 <p>
-                  IELTSBank or its suppliers shall not be liable for any damages arising from the use or inability to use the website.
+                  IELTS-Bank or its suppliers shall not be liable for any damages arising from the use or inability to use the website.
                 </p>
               </div>
 
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">5. Revisions and Errata</h2>
                 <p>
-                  The materials on IELTSBank’s website may include errors. IELTSBank does not guarantee their accuracy or currency.
+                  The materials on IELTS-Bank’s website may include errors. IELTS-Bank does not guarantee their accuracy or currency.
                 </p>
               </div>
 
@@ -91,9 +91,9 @@ const TermsOfService = () => {
                 <h2 className="mb-1 text-base font-semibold text-foreground">6. Advertising, Billing and Refunds</h2>
                 <p>
                   The website is supported by third-party advertising (including Google AdSense)
-                  and optional paid access. Ads are provided by third parties and IELTSBank is not
+                  and optional paid access. Ads are provided by third parties and IELTS-Bank is not
                   responsible for the content of advertisements or the products and services they
-                  promote. Payments are processed by Stripe; IELTSBank does not store full card
+                  promote. Payments are processed by Stripe; IELTS-Bank does not store full card
                   details.
                 </p>
                 <ul className="mt-3 list-disc space-y-2 pl-6">
@@ -136,7 +136,7 @@ const TermsOfService = () => {
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">7. Site Terms of Use Modifications</h2>
                 <p>
-                  IELTSBank may revise these terms at any time without notice. By using this site, you agree to be bound by the current version.
+                  IELTS-Bank may revise these terms at any time without notice. By using this site, you agree to be bound by the current version.
                 </p>
               </div>
 
