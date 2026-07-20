@@ -60,19 +60,40 @@ export default function StudyingNowBadge() {
   return (
     <div
       aria-label={`${count} people studying now`}
-      className="pointer-events-none absolute right-14 top-3 z-10 inline-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-primary/95 px-3 text-primary-foreground shadow-lg shadow-slate-950/15 backdrop-blur sm:right-16 md:right-4 md:top-[calc(100%+0.75rem)]"
+      className="pointer-events-none absolute right-14 top-3 z-10 animate-fade-in select-none sm:right-16 md:right-4 md:top-[calc(100%+0.875rem)]"
       data-testid="studying-now-badge"
     >
-      <span
-        aria-hidden
-        className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.12)] motion-reduce:animate-none"
-      />
-      <span className="text-lg font-extrabold tabular-nums leading-none">{count}</span>
-      <span className="hidden text-[10px] font-bold uppercase leading-[1.05] tracking-[0.12em] text-slate-200 min-[400px]:inline">
-        Studying
-        <br />
-        now
-      </span>
+      {/* Dark glass reads as "live" on the navy hero and on white pages alike,
+          so one treatment works everywhere the navbar renders. */}
+      <div className="relative flex h-9 items-center gap-2.5 overflow-hidden rounded-full border border-emerald-400/20 bg-slate-950/85 pl-3 pr-3.5 shadow-[0_8px_28px_-8px_rgba(16,185,129,0.35),0_2px_10px_-2px_rgba(2,6,23,0.55)] backdrop-blur-md">
+        <span
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-28 bg-[radial-gradient(ellipse_at_left,rgba(16,185,129,0.45),transparent_72%)]"
+        />
+        <span
+          aria-hidden
+          className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+        />
+
+        <span aria-hidden className="relative flex h-2 w-2 shrink-0 items-center justify-center">
+          <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400/80 motion-reduce:hidden" />
+          <span className="relative h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_2px_rgba(52,211,153,0.55)]" />
+        </span>
+
+        <span className="relative flex items-baseline gap-1.5">
+          {/* Re-keying on the count replays the tick animation, so the number
+              visibly updates instead of silently swapping. */}
+          <span
+            key={count}
+            className="animate-count-in text-[15px] font-bold leading-none tabular-nums text-white motion-reduce:animate-none"
+          >
+            {count}
+          </span>
+          <span className="hidden text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-emerald-200/90 min-[400px]:inline">
+            Studying now
+          </span>
+        </span>
+      </div>
     </div>
   );
 }
