@@ -62,7 +62,12 @@ const websiteJsonLd = {
   ],
 };
 
-const fmt = (n) => (typeof n === 'number' && n > 0 ? `${n}+` : '—');
+const fmt = (n) =>
+  typeof n === 'number' && n > 0 ? `${n.toLocaleString('en-US')}+` : '—';
+
+// Historical usage predates the current Supabase activity counter. Keep the
+// public total at this baseline until live tracked answers surpass it.
+const QUESTIONS_ANSWERED_BASELINE = 73000;
 
 function Skills(counts) {
   return [
@@ -255,7 +260,12 @@ const HomePage = ({ counts = {} }) => {
               {/* Credibility strip */}
               <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-5">
                 {[
-                  { label: 'Questions answered', value: fmt(counts.questionsAnswered) },
+                  {
+                    label: 'Questions answered',
+                    value: fmt(
+                      Math.max(QUESTIONS_ANSWERED_BASELINE, counts.questionsAnswered || 0)
+                    ),
+                  },
                   { label: 'Questions in bank', value: fmt(counts.questions) },
                   { label: 'Writing tasks', value: fmt(counts.writing) },
                   { label: 'Listening tests', value: fmt(counts.listening) },
