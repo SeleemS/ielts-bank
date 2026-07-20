@@ -37,8 +37,8 @@ export default function BandDial({ band, max = 9, play, reduced, size = 150, lab
           {shown.toFixed(1)}
         </span>
         <span
-          className="mt-1 font-bold uppercase tracking-[0.14em] text-muted-foreground"
-          style={{ fontSize: Math.max(9, Math.round(size * 0.072)) }}
+          className="mt-1 whitespace-nowrap font-bold uppercase leading-none text-muted-foreground"
+          style={{ fontSize: Math.max(9, Math.round(size * 0.06)), letterSpacing: '0.02em' }}
         >
           {label}
         </span>
