@@ -85,6 +85,7 @@ vi.mock('../lib/supabase', () => ({
       }),
     }),
   }),
+  getPublicTrustStats: async () => ({ questionsAnswered: 0 }),
 }));
 vi.mock('../lib/billing', () => ({
   isPppCountry: () => false,

@@ -4,11 +4,14 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import {
   ArrowRight,
+  BadgeCheck,
   Check,
   CheckCircle2,
   Clock3,
   Loader2,
   Lock,
+  Quote,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
   X,
@@ -17,14 +20,17 @@ import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import SignInDialog from '../src/components/auth/SignInDialog';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
+import { FaqSection, faqJsonLdFor } from '../src/components/SectionLanding';
 import { useAuth } from '../src/lib/auth';
 import { usePlan } from '../src/lib/usePlan';
-import { getSupabase } from '../lib/supabase';
+import { getSupabase, getPublicTrustStats } from '../lib/supabase';
 import { isPppCountry } from '../lib/billing';
 import { track } from '../src/lib/analytics';
 import { PRICING_SEO } from '../lib/pricingSeo';
+import { cn } from '../src/lib/utils';
 
 const PAGE_TITLE = PRICING_SEO.title;
 const PAGE_DESCRIPTION = PRICING_SEO.description;
@@ -84,6 +90,72 @@ const COMPARISON = [
   ['Timed full-mock mode', false, true],
   ['Writing and Speaking trend insights', false, true],
   ['Ad-free experience', false, true],
+];
+
+// Genuine, verifiable trust signals shown near the plans. Every claim here maps
+// to real behaviour: Stripe handles checkout (pages/api/billing/checkout.js),
+// the refund window is in the Terms, scores are anchored to the public band
+// descriptors, and the Exam Pass never renews.
+const TRUST_BAND = [
+  {
+    icon: BadgeCheck,
+    title: 'Anchored to the official rubric',
+    body: 'Every score maps to the public IELTS band descriptors, criterion by criterion — not a generic guess.',
+  },
+  {
+    icon: ShieldCheck,
+    title: '14-day money-back guarantee',
+    body: 'Ask within 14 days of your first purchase for a full refund. No forms to fill in.',
+  },
+  {
+    icon: Lock,
+    title: 'Secure Stripe checkout',
+    body: 'Payments are processed by Stripe. Your card details go straight to them — we never see or store them.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Cancel in one click',
+    body: 'Manage or cancel anytime from your account. The Exam Pass is one-time and never auto-renews.',
+  },
+];
+
+// Real student testimonials go here. Ships EMPTY on purpose — the section below
+// renders nothing until this array has entries, so no invented social proof is
+// ever shown. To add one, push an object of the shape:
+//   { quote: 'Their essay feedback got me from 6 to 7.5.', name: 'Priya R.', detail: 'Band 7.5 · Academic' }
+const TESTIMONIALS = [];
+
+// Pricing-specific FAQs. Rendered visibly AND emitted as FAQPage JSON-LD, so the
+// two must stay in sync. Copy is factual and mirrors the Terms/refund policy.
+const PRICING_FAQS = [
+  {
+    q: 'Is there really a money-back guarantee?',
+    a: 'Yes. If Premium is not right for you, ask within 14 days of your first purchase and we will refund it — no forms and no questions. The full terms are on the billing and refund page.',
+  },
+  {
+    q: 'Can I cancel anytime?',
+    a: 'Yes. Cancel a subscription whenever you like and you keep access until the end of the period you have already paid for. The Exam Pass is a one-time purchase that never renews automatically.',
+  },
+  {
+    q: 'What is free, and what needs Premium?',
+    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score. Premium adds full AI Writing reports on all four criteria, AI Speaking scoring, live AI examiner minutes, timed full mocks, trend insights, and an ad-free experience.',
+  },
+  {
+    q: 'How accurate are the AI band scores?',
+    a: 'Scores are an estimate marked against the public IELTS band descriptors, criterion by criterion. Treat the band as a guide within about half a band, and use the specific per-criterion feedback and corrected sentences to improve.',
+  },
+  {
+    q: 'Why might my price differ from someone in another country?',
+    a: 'Prices are set from the region your request comes from, so learners in lower-income regions pay less. Regional pricing is applied on the server and cannot be selected in the browser.',
+  },
+  {
+    q: 'Is my payment information secure?',
+    a: 'Yes. Checkout is handled by Stripe, a PCI-compliant payment provider. Your card details go directly to Stripe — IELTS-Bank never sees or stores them.',
+  },
+  {
+    q: 'Is IELTS-Bank affiliated with the official IELTS test?',
+    a: 'No. IELTS-Bank provides original practice material and is not affiliated with or endorsed by the IELTS partners (British Council, IDP or Cambridge Assessment English).',
+  },
 ];
 
 const SAMPLE_FEEDBACK = {
@@ -181,6 +253,38 @@ function ActivationChecklist({ upgrade }) {
   );
 }
 
+// Genuine student testimonials, rendered only when TESTIMONIALS has entries.
+function Testimonials({ items }) {
+  if (!items?.length) return null;
+  return (
+    <section className="mx-auto mt-20 max-w-5xl">
+      <div className="text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">In their words</p>
+        <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">What students say</h2>
+      </div>
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((t, i) => (
+          <figure
+            key={t.name ? `${t.name}-${i}` : i}
+            className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm"
+          >
+            <Quote className="h-7 w-7 text-accent/40" aria-hidden />
+            <blockquote className="mt-3 flex-1 text-sm leading-6 text-foreground">
+              “{t.quote}”
+            </blockquote>
+            <figcaption className="mt-5 border-t border-border pt-4">
+              <span className="text-sm font-semibold text-foreground">{t.name}</span>
+              {t.detail ? (
+                <span className="mt-0.5 block text-xs text-muted-foreground">{t.detail}</span>
+              ) : null}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function PricingPage({ regionalPricing = false, country = '' }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -199,6 +303,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const [pendingSku, setPendingSku] = React.useState(null);
   const [examDate, setExamDate] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
+  const [answeredCount, setAnsweredCount] = React.useState(0);
   const trackedRef = React.useRef({ paywall: '', purchase: '' });
 
   const checkoutStatus = typeof router.query.checkout === 'string' ? router.query.checkout : '';
@@ -212,11 +317,27 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const examDays = daysUntil(examDate);
   const examWeeks = examDays == null ? null : Math.max(1, Math.ceil(examDays / 7));
 
+  const pricingFaqJsonLd = React.useMemo(() => faqJsonLdFor(PRICING_FAQS), []);
+
   React.useEffect(() => {
     if (!router.isReady || !upgrade || trackedRef.current.paywall === upgrade) return;
     trackedRef.current.paywall = upgrade;
     track('paywall_view', { source: upgrade });
   }, [router.isReady, upgrade]);
+
+  // Live, real social proof: total practice questions answered across all
+  // learners. Fetched client-side; renders only if the RPC returns a count.
+  React.useEffect(() => {
+    let active = true;
+    getPublicTrustStats()
+      .then((stats) => {
+        if (active) setAnsweredCount(Number(stats?.questionsAnswered || 0));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     if (!user?.id) return;
@@ -325,9 +446,17 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta name="twitter:image" content={PRICING_SEO.ogImage} />
         <meta name="twitter:image:alt" content={PRICING_SEO.imageAlt} />
+        {pricingFaqJsonLd ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(pricingFaqJsonLd).replace(/</g, '\\u003c'),
+            }}
+          />
+        ) : null}
       </Head>
       <Navbar />
-      <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10">
+      <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-10">
         {context ? (
           <div className="mx-auto mb-6 max-w-2xl rounded-xl border border-primary/25 bg-primary/5 p-4 text-center">
             <p className="text-lg font-bold text-foreground">
@@ -338,6 +467,10 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         ) : null}
 
         <header className="mx-auto max-w-3xl text-center">
+          <Badge variant="emerald" className="mb-4">
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+            IELTS-Bank Premium
+          </Badge>
           <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
             Know exactly what is holding your IELTS band back
           </h1>
@@ -345,12 +478,22 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             Keep the free question library. Add full rubric-anchored Writing and Speaking
             feedback, live examiner practice, timed mocks, and trend insights.
           </p>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900">
-            <ShieldCheck className="h-4 w-4" />
-            14-day money-back guarantee
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-accent" />
+              14-day money-back guarantee
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <RefreshCw className="h-4 w-4 text-accent" />
+              Cancel anytime
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Lock className="h-4 w-4 text-accent" />
+              Secure checkout via Stripe
+            </span>
           </div>
           {regionalPricing ? (
-            <p className="mt-3 text-sm font-semibold text-primary">
+            <p className="mt-4 text-sm font-semibold text-primary">
               Priced for your region{country ? ` (${country})` : ''} — your regional rate is shown below.
             </p>
           ) : null}
@@ -415,34 +558,39 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             ) : null}
           </div>
         ) : (
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {BASE_PLANS.map((plan) => {
               const price = regionalPricing ? plan.pppPrice : plan.globalPrice;
               return (
                 <Card
                   key={plan.sku}
                   id={plan.sku === 'exam_pass' ? 'exam-pass' : undefined}
-                  className={plan.hero ? 'relative border-2 border-primary shadow-xl' : 'relative'}
+                  className={cn(
+                    'relative flex flex-col',
+                    plan.hero
+                      ? 'border-2 border-accent bg-accent/[0.03] shadow-xl ring-1 ring-accent/10'
+                      : 'border-border shadow-sm'
+                  )}
                 >
                   {plan.hero ? (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
-                      Best prep-cycle value
+                    <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
+                      Best value
                     </span>
                   ) : null}
                   {plan.pass ? (
-                    <span className="absolute right-3 top-3 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                    <Badge variant="secondary" className="absolute right-4 top-4 uppercase tracking-wide">
                       No renewal
-                    </span>
+                    </Badge>
                   ) : null}
-                  <CardContent className="flex h-full flex-col p-6">
-                    <h2 className="text-lg font-semibold">{plan.name}</h2>
-                    <p className="mt-2">
-                      <span className="text-3xl font-bold">{price}</span>{' '}
-                      <span className="text-sm text-muted-foreground">{plan.cadence}</span>
-                    </p>
-                    <p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground">{plan.note}</p>
+                  <CardContent className="flex h-full flex-col p-6 pt-7">
+                    <h2 className="text-base font-semibold text-foreground">{plan.name}</h2>
+                    <div className="mt-3 flex items-baseline gap-1.5">
+                      <span className="text-4xl font-extrabold tracking-tight text-foreground">{price}</span>
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-muted-foreground">{plan.cadence}</p>
+                    <p className="mt-3 min-h-[2.5rem] text-xs leading-5 text-muted-foreground">{plan.note}</p>
                     {plan.hero && examWeeks ? (
-                      <p className="mt-3 rounded-lg bg-primary/5 p-2 text-xs font-semibold text-primary">
+                      <p className="mt-3 rounded-lg bg-accent/10 p-2 text-xs font-semibold text-accent">
                         Your test is in {examWeeks} {examWeeks === 1 ? 'week' : 'weeks'} — this plan
                         covers your prep{examDays > 120 ? ' and a retake cycle' : ''}.
                       </p>
@@ -473,43 +621,72 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           </div>
         )}
 
-        <p className="mt-5 text-center text-sm font-medium text-muted-foreground">
+        <p className="mt-6 text-center text-sm font-medium text-muted-foreground">
           Try one Writing sample score free. Every paid option includes the full Premium toolkit.
         </p>
 
-        <section className="mx-auto mt-16 max-w-4xl">
+        {/* Genuine trust signals — every claim maps to real behaviour. */}
+        <section className="mt-16">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {TRUST_BAND.map(({ icon: Icon, title, body }) => (
+              <div key={title} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-3 text-sm font-bold text-foreground">{title}</h3>
+                <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{body}</p>
+              </div>
+            ))}
+          </div>
+          {answeredCount > 0 ? (
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">{answeredCount.toLocaleString()}</span>{' '}
+              practice questions answered on IELTS-Bank so far.
+            </p>
+          ) : null}
+        </section>
+
+        <section className="mx-auto mt-20 max-w-4xl">
           <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">See the product</p>
-            <h2 className="mt-2 text-2xl font-bold">What your full feedback looks like</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">See the product</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">What your full feedback looks like</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               This example uses the same report layout you receive after scoring.
             </p>
           </div>
-          <div className="mt-6 rounded-xl border bg-card p-5 shadow-sm sm:p-7">
+          <div className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
             <WritingScoreReport task={2} result={SAMPLE_FEEDBACK} sample />
           </div>
         </section>
 
-        <section className="mx-auto mt-16 max-w-4xl">
-          <h2 className="text-center text-2xl font-bold">Free practice or Premium feedback?</h2>
-          <div className="mt-6 overflow-hidden rounded-xl border">
+        <section className="mx-auto mt-20 max-w-4xl">
+          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">Free practice or Premium feedback?</h2>
+          <div className="mt-8 overflow-hidden rounded-2xl border border-border shadow-sm">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted/50">
+              <thead className="bg-muted/60">
                 <tr>
-                  <th className="px-4 py-3">Feature</th>
-                  <th className="px-4 py-3 text-center">Free</th>
-                  <th className="px-4 py-3 text-center">Premium</th>
+                  <th className="px-4 py-3 font-semibold text-foreground sm:px-6">Feature</th>
+                  <th className="px-4 py-3 text-center font-semibold text-muted-foreground">Free</th>
+                  <th className="px-4 py-3 text-center font-semibold text-accent">Premium</th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON.map(([label, free, premium]) => (
-                  <tr key={label} className="border-t">
-                    <td className="px-4 py-3 font-medium">{label}</td>
+                  <tr key={label} className="border-t border-border">
+                    <td className="px-4 py-3 font-medium text-foreground sm:px-6">{label}</td>
                     <td className="px-4 py-3 text-center">
-                      {free ? <Check className="mx-auto h-4 w-4 text-emerald-600" /> : <X className="mx-auto h-4 w-4 text-slate-300" />}
+                      {free ? (
+                        <Check className="mx-auto h-4 w-4 text-accent" />
+                      ) : (
+                        <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
+                      )}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      {premium ? <Check className="mx-auto h-4 w-4 text-emerald-600" /> : <X className="mx-auto h-4 w-4 text-slate-300" />}
+                    <td className="bg-accent/[0.04] px-4 py-3 text-center">
+                      {premium ? (
+                        <Check className="mx-auto h-4 w-4 text-accent" />
+                      ) : (
+                        <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -518,11 +695,27 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           </div>
         </section>
 
-        <section className="mx-auto mt-16 grid max-w-4xl gap-5 md:grid-cols-2">
-          <div className="rounded-xl border bg-card p-6">
+        <section className="mx-auto mt-20 max-w-3xl">
+          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">Everything included</h2>
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+            {PERKS.map((perk) => (
+              <li key={perk} className="flex items-start gap-2.5 rounded-xl border border-border bg-card p-3.5 text-sm shadow-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span className="text-foreground">{perk}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <Testimonials items={TESTIMONIALS} />
+
+        <section className="mx-auto mt-20 grid max-w-4xl gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="font-bold">Why not use a generic chatbot?</h2>
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <h2 className="font-bold text-foreground">Why not use a generic chatbot?</h2>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Generic chatbots can over-score IELTS essays and often skip Task Response. IELTS Bank
@@ -530,10 +723,12 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
               the reasoning and corrections behind the estimate.
             </p>
           </div>
-          <div className="rounded-xl border bg-card p-6">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-600" />
-              <h2 className="font-bold">What if it is not right for me?</h2>
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <h2 className="font-bold text-foreground">What if it is not right for me?</h2>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Ask within 14 days of your first purchase for a refund. Cancel subscriptions anytime;
@@ -545,25 +740,18 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           </div>
         </section>
 
-        <section className="mx-auto mt-16 max-w-3xl">
-          <h2 className="text-center text-2xl font-bold">Everything included</h2>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-            {PERKS.map((perk) => (
-              <li key={perk} className="flex items-start gap-2 rounded-lg border bg-card p-3 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                <span>{perk}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8 flex items-start gap-3 rounded-xl bg-muted/50 p-4 text-xs leading-5 text-muted-foreground">
-            <Clock3 className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>
-              Regional pricing is selected on the server from request geography and cannot be
-              chosen by the browser. Fair-use limits keep scoring responsive. IELTS Bank is not
-              affiliated with or endorsed by the IELTS partners.
-            </p>
-          </div>
+        <section className="mx-auto mt-20 max-w-3xl">
+          <FaqSection faqs={PRICING_FAQS} />
         </section>
+
+        <div className="mx-auto mt-12 flex max-w-3xl items-start gap-3 rounded-xl bg-muted/50 p-4 text-xs leading-5 text-muted-foreground">
+          <Clock3 className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>
+            Regional pricing is selected on the server from request geography and cannot be
+            chosen by the browser. Fair-use limits keep scoring responsive. IELTS Bank is not
+            affiliated with or endorsed by the IELTS partners.
+          </p>
+        </div>
       </main>
       <Footer />
       <SignInDialog
