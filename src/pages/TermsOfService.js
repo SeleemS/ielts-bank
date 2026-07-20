@@ -140,8 +140,33 @@ const TermsOfService = () => {
                 </p>
               </div>
 
+              <div>
+                <h2 className="mb-1 text-base font-semibold text-foreground">8. Governing Law and Disputes</h2>
+                <p>
+                  These Terms of Service, and any dispute arising out of or relating to
+                  them or your use of the website, are governed by the laws of the State
+                  of Delaware, United States, without regard to its conflict-of-law
+                  principles. If you have a concern, please first contact us at{' '}
+                  <a href="mailto:info@ielts-bank.com" className="text-primary underline-offset-2 hover:underline">info@ielts-bank.com</a>{' '}
+                  so we can try to resolve it informally.
+                </p>
+                <p className="mt-3">
+                  If a dispute cannot be resolved informally, you agree that it will be
+                  subject to the exclusive jurisdiction of the state and federal courts
+                  located in the State of Delaware, and you consent to personal
+                  jurisdiction in those courts.
+                </p>
+                <p className="mt-3">
+                  Nothing in this section removes any mandatory legal rights you have as a
+                  consumer. If you are a consumer resident in a jurisdiction whose laws
+                  guarantee you the protection of local consumer rules or the right to
+                  bring proceedings in your own local courts (for example the United
+                  Kingdom or the European Economic Area), those rights are not affected.
+                </p>
+              </div>
+
               <p>
-                <strong className="font-semibold text-foreground">Last Updated:</strong> July 18, 2026
+                <strong className="font-semibold text-foreground">Last Updated:</strong> July 20, 2026
               </p>
 
               <p>
