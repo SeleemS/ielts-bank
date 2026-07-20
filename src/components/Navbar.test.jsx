@@ -115,3 +115,15 @@ describe('Navbar mobile navigation', () => {
     ).toBe('Site navigation');
   });
 });
+
+describe('Navbar studying-now badge', () => {
+  it('shows the live badge without estimate language', () => {
+    const badge = container.querySelector('[data-testid="studying-now-badge"]');
+    expect(badge).not.toBeNull();
+    expect(badge.textContent).toContain('Studying');
+    expect(badge.textContent.toLowerCase()).not.toContain('estimate');
+    expect(badge.getAttribute('aria-label')).toMatch(
+      /^\d{2} people studying now$/
+    );
+  });
+});

@@ -21,6 +21,7 @@ import { Separator } from '../../components/ui/separator';
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth';
 import SignInDialog from './auth/SignInDialog';
+import StudyingNowBadge from './StudyingNowBadge';
 
 // Pure Tailwind/shadcn Navbar. No Chakra imports — this renders on every page,
 // including pages still built with Chakra, so it must be self-contained.
@@ -203,6 +204,7 @@ export default function Navbar() {
           <Menu className="h-5 w-5" />
         </button>
       </div>
+      <StudyingNowBadge />
 
       {/* Mobile sheet */}
       <Sheet open={open} onOpenChange={setOpen}>

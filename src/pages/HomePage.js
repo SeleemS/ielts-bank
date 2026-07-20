@@ -64,32 +64,6 @@ const websiteJsonLd = {
 
 const fmt = (n) => (typeof n === 'number' && n > 0 ? `${n}+` : '—');
 
-export function studyEstimateFor(timestamp) {
-  const fiveMinuteBucket = Math.floor(Number(timestamp || 0) / 300000);
-  // Deterministic for a time bucket, bounded to the explicitly-labelled
-  // estimate range until real concurrent-user analytics replaces it.
-  return 10 + ((fiveMinuteBucket * 17 + 23) % 41);
-}
-
-function LiveStudyEstimate() {
-  const [count, setCount] = React.useState(27);
-  React.useEffect(() => {
-    const refresh = () => setCount(studyEstimateFor(Date.now()));
-    refresh();
-    const timer = window.setInterval(refresh, 60000);
-    return () => window.clearInterval(timer);
-  }, []);
-  return (
-    <span
-      className="inline-flex items-center justify-center gap-2"
-      title="Estimated activity until live analytics is connected"
-    >
-      <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
-      {count}
-    </span>
-  );
-}
-
 function Skills(counts) {
   return [
     {
@@ -279,10 +253,9 @@ const HomePage = ({ counts = {} }) => {
               </div>
 
               {/* Credibility strip */}
-              <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-5">
                 {[
                   { label: 'Questions answered', value: fmt(counts.questionsAnswered) },
-                  { label: 'Studying now · estimate', value: <LiveStudyEstimate /> },
                   { label: 'Questions in bank', value: fmt(counts.questions) },
                   { label: 'Writing tasks', value: fmt(counts.writing) },
                   { label: 'Listening tests', value: fmt(counts.listening) },
