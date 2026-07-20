@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Search, ArrowRight, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listPassages } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
+import { formatAverageUserBand } from '../../lib/averageUserBand';
 import { cn } from '../lib/utils';
 import AdUnit from './AdUnit';
 
@@ -43,6 +44,31 @@ function DifficultyBadge({ difficulty }) {
   );
 }
 
+function AverageUserBand({ item, className }) {
+  const value = Number(item.averageUserBand);
+  if (!Number.isFinite(value)) return null;
+  const estimated = item.averageUserBandIsEstimated !== false;
+  const formatted = formatAverageUserBand(value);
+  const description = estimated
+    ? `Estimated average band ${formatted}; this becomes the submitted user average after the first score`
+    : `Average user band ${formatted} from ${item.bandSubmissionCount} total ${item.bandSubmissionCount === 1 ? 'submission' : 'submissions'}`;
+
+  return (
+    <span
+      className={cn('inline-flex items-baseline gap-1 whitespace-nowrap text-sm tabular-nums', className)}
+      aria-label={description}
+      title={description}
+    >
+      {estimated ? (
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Est.
+        </span>
+      ) : null}
+      <span className="font-semibold text-foreground">{formatted}</span>
+    </span>
+  );
+}
+
 function LoadingSkeleton() {
   return (
     <div className="divide-y divide-border">
@@ -51,6 +77,7 @@ function LoadingSkeleton() {
           <div className="h-4 w-6 shrink-0 animate-pulse rounded bg-muted" />
           <div className="h-4 flex-1 animate-pulse rounded bg-muted" style={{ maxWidth: `${60 - i * 4}%` }} />
           <div className="h-5 w-16 shrink-0 animate-pulse rounded-full bg-muted" />
+          <div className="hidden h-4 w-14 shrink-0 animate-pulse rounded bg-muted md:block" />
           <div className="hidden h-8 w-24 shrink-0 animate-pulse rounded-md bg-muted sm:block" />
         </div>
       ))}
@@ -79,7 +106,7 @@ const DataTable = ({ items, skill, selectedOption }) => {
     }
     let active = true;
     setLoading(true);
-    // listPassages returns [{ id: slug, legacyId, title, difficulty }].
+    // listPassages also includes the stored/estimated average user band.
     listPassages(skillLower)
       .then((res) => {
         if (active) {
@@ -184,8 +211,13 @@ const DataTable = ({ items, skill, selectedOption }) => {
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Title
                   </th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:table-cell">
                     Difficulty
+                  </th>
+                  <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:table-cell">
+                    <abbr title="Average user band" className="no-underline">
+                      Avg. band
+                    </abbr>
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
                     <span className="sr-only">Action</span>
@@ -227,9 +259,18 @@ const DataTable = ({ items, skill, selectedOption }) => {
                         >
                           {item.title}
                         </NextLink>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2 md:hidden">
+                          <span className="sm:hidden">
+                            <DifficultyBadge difficulty={item.difficulty} />
+                          </span>
+                          <AverageUserBand item={item} />
+                        </div>
                       </td>
-                      <td className="px-4 py-4 align-middle">
+                      <td className="hidden px-4 py-4 align-middle sm:table-cell">
                         <DifficultyBadge difficulty={item.difficulty} />
+                      </td>
+                      <td className="hidden px-4 py-4 align-middle md:table-cell">
+                        <AverageUserBand item={item} />
                       </td>
                       <td className="px-4 py-4 text-right align-middle sm:px-6">
                         <Button asChild size="sm" variant="ghost" className="text-accent hover:text-accent">
