@@ -5,6 +5,7 @@ import { ArrowUpCircle, CalendarClock, CreditCard, Loader2, PauseCircle, ShieldC
 import Navbar from '../../src/components/Navbar';
 import Footer from '../../src/components/Footer';
 import { Button } from '../../components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
 import { useAuth } from '../../src/lib/auth';
 import { usePlan } from '../../src/lib/usePlan';
 import { getSupabase } from '../../lib/supabase';
@@ -16,6 +17,20 @@ async function authHeaders() {
   const token = data?.session?.access_token;
   if (!token) throw new Error('Please sign in again.');
   return { Authorization: `Bearer ${token}` };
+}
+
+function formatMoney(amountMinor, currency) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: String(currency || 'usd').toUpperCase(),
+    currencyDisplay: 'code',
+  }).format(Number(amountMinor || 0) / 100);
+}
+
+function cadenceLabel(quote) {
+  if (quote?.interval === 'year' && quote?.intervalCount === 1) return 'per year';
+  if (quote?.interval === 'month' && quote?.intervalCount === 1) return 'per month';
+  return `every ${quote?.intervalCount || ''} ${quote?.interval || ''}s`.trim();
 }
 
 export default function ManageBillingPage() {
@@ -36,6 +51,8 @@ export default function ManageBillingPage() {
   const [message, setMessage] = React.useState('');
   const [error, setError] = React.useState('');
   const [pauseResult, setPauseResult] = React.useState(null);
+  const [upgradeQuote, setUpgradeQuote] = React.useState(null);
+  const [quoteMessage, setQuoteMessage] = React.useState('');
 
   async function openPortal() {
     setBusy('portal');
@@ -77,10 +94,11 @@ export default function ManageBillingPage() {
     }
   }
 
-  async function upgradePlan(sku) {
+  async function upgradePlan(sku, acceptedQuote = null) {
     setBusy(`upgrade:${sku}`);
     setError('');
     setMessage('');
+    setQuoteMessage('');
     try {
       const response = await fetch('/api/billing/change-plan', {
         method: 'POST',
@@ -88,15 +106,34 @@ export default function ManageBillingPage() {
           ...(await authHeaders()),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sku }),
+        body: JSON.stringify(
+          acceptedQuote
+            ? {
+                sku,
+                action: 'confirm',
+                acceptedAmount: acceptedQuote.amountDue,
+                acceptedCurrency: acceptedQuote.currency,
+                prorationDate: acceptedQuote.prorationDate,
+                quoteToken: acceptedQuote.token,
+              }
+            : { sku, action: 'preview' }
+        ),
       });
       const body = await response.json().catch(() => ({}));
+      if (body.requiresConfirmation && body.quote) {
+        setUpgradeQuote(body.quote);
+        setQuoteMessage(response.ok ? '' : body.error || 'Review the updated estimate.');
+        return;
+      }
       if (body.url) {
         window.location.assign(body.url);
         return;
       }
-      if (!response.ok) throw new Error(body.error || 'Could not upgrade the plan.');
+      if (!response.ok || body.changed !== true) {
+        throw new Error(body.error || 'Could not upgrade the plan.');
+      }
       track('subscription_plan_change', { from_sku: planSku, to_sku: sku });
+      setUpgradeQuote(null);
       setMessage(body.message || 'Your plan was upgraded.');
     } catch (upgradeError) {
       setError(upgradeError.message);
@@ -269,6 +306,83 @@ export default function ManageBillingPage() {
         </main>
         <Footer />
       </div>
+      <Sheet
+        open={Boolean(upgradeQuote)}
+        onOpenChange={(open) => {
+          if (!open && !busy) {
+            setUpgradeQuote(null);
+            setQuoteMessage('');
+          }
+        }}
+      >
+        <SheetContent
+          side="right"
+          showClose={false}
+          onClose={() => {
+            if (!busy) {
+              setUpgradeQuote(null);
+              setQuoteMessage('');
+            }
+          }}
+          aria-describedby="upgrade-quote-details"
+          aria-labelledby="upgrade-quote-title"
+        >
+          <SheetHeader>
+            <SheetTitle id="upgrade-quote-title">Review your plan upgrade</SheetTitle>
+            <p id="upgrade-quote-details" className="text-sm text-muted-foreground">
+              Stripe calculated this estimate using the unused time on your current plan. Nothing
+              changes until you confirm.
+            </p>
+          </SheetHeader>
+          {quoteMessage ? (
+            <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+              {quoteMessage}
+            </p>
+          ) : null}
+          {upgradeQuote ? (
+            <div className="grid gap-3 rounded-2xl border bg-card p-4 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">New plan price</span>
+                <strong>
+                  {formatMoney(upgradeQuote.targetAmount, upgradeQuote.currency)}{' '}
+                  {cadenceLabel(upgradeQuote)}
+                </strong>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t pt-3">
+                <span className="text-muted-foreground">Estimated charge today</span>
+                <strong className="text-base">
+                  {formatMoney(upgradeQuote.amountDue, upgradeQuote.currency)}
+                </strong>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">
+                This estimate is valid for five minutes. If Stripe recalculates it, you will be
+                shown the new amount and asked to confirm again.
+              </p>
+            </div>
+          ) : null}
+          <div className="mt-auto grid gap-2">
+            <Button
+              type="button"
+              disabled={Boolean(busy) || !upgradeQuote}
+              onClick={() => upgradePlan(upgradeQuote.targetSku, upgradeQuote)}
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpCircle className="h-4 w-4" />}
+              Confirm upgrade and charge {formatMoney(upgradeQuote?.amountDue, upgradeQuote?.currency)}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={Boolean(busy)}
+              onClick={() => {
+                setUpgradeQuote(null);
+                setQuoteMessage('');
+              }}
+            >
+              Keep current plan
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

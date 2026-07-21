@@ -4,6 +4,7 @@
 // Lives outside pages/ so Next.js never serves it as a route.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Readable } from 'node:stream';
+import { createHmac } from 'node:crypto';
 import Stripe from 'stripe';
 
 const WEBHOOK_SECRET = 'whsec_test_secret_for_vitest';
@@ -126,6 +127,7 @@ const mockState = {
   retrievedSession: null,
   retrievedSubscription: null,
   updatedSubscription: null,
+  previewInvoice: null,
   subscriptionUpdateError: null,
   reconciliationOutcome: 'activated user user-1 (active)',
   priceOverride: null,
@@ -262,6 +264,12 @@ vi.mock('../lib/billing', async (importOriginal) => {
           mockState.stripeCalls.subscriptionUpdate = { id, args, options };
           if (mockState.subscriptionUpdateError) throw mockState.subscriptionUpdateError;
           return mockState.updatedSubscription;
+        },
+      },
+      invoices: {
+        createPreview: async (args) => {
+          mockState.stripeCalls.invoicePreview = args;
+          return mockState.previewInvoice;
         },
       },
     }),
@@ -978,6 +986,11 @@ describe('POST /api/billing/change-plan', () => {
     mockState.rpcCalls = [];
     mockState.stripeCalls = {};
     mockState.subscriptionUpdateError = null;
+    mockState.previewInvoice = {
+      id: 'upcoming_in_upgrade',
+      amount_due: 3200,
+      currency: 'usd',
+    };
     mockState.priceOverride = null;
     mockState.priceList = null;
     mockState.userRow = {
@@ -1021,15 +1034,67 @@ describe('POST /api/billing/change-plan', () => {
     vi.restoreAllMocks();
   });
 
-  async function callChangePlan(body = { sku: 'annual' }) {
+  async function callChangePlan(body = {}) {
     const { default: handler } = await import('../pages/api/billing/change-plan');
     const res = makeRes();
+    const prorationDate = Math.floor(Date.now() / 1000);
+    const quoteToken = createHmac('sha256', process.env.STRIPE_SECRET_KEY)
+      .update(JSON.stringify({
+        userId: 'user-1',
+        subscriptionId: 'sub_existing',
+        currentPriceId: 'price_current',
+        targetPriceId: 'price_mock_1',
+        targetSku: 'annual',
+        amountDue: 3200,
+        currency: 'usd',
+        targetAmount: 4499,
+        interval: 'year',
+        intervalCount: 1,
+        prorationDate,
+      }))
+      .digest('hex');
+    const requestBody = {
+      sku: 'annual',
+      action: 'confirm',
+      acceptedAmount: 3200,
+      acceptedCurrency: 'usd',
+      prorationDate,
+      quoteToken,
+      ...body,
+    };
     await handler(
-      makeReq({ headers: { authorization: 'Bearer tok' }, body }),
+      makeReq({ headers: { authorization: 'Bearer tok' }, body: requestBody }),
       res
     );
     return res;
   }
+
+  it('previews the exact prorated charge without changing the subscription', async () => {
+    const res = await callChangePlan({ action: 'preview' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({
+      changed: false,
+      requiresConfirmation: true,
+      quote: {
+        targetSku: 'annual',
+        amountDue: 3200,
+        currency: 'usd',
+        targetAmount: 4499,
+        interval: 'year',
+        intervalCount: 1,
+        token: expect.any(String),
+      },
+    });
+    expect(mockState.stripeCalls.invoicePreview).toMatchObject({
+      subscription: 'sub_existing',
+      subscription_details: {
+        items: [{ id: 'si_current', price: 'price_mock_1', quantity: 1 }],
+        proration_behavior: 'always_invoice',
+      },
+    });
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
 
   it('replaces the current item and immediately invoices only the proration', async () => {
     const res = await callChangePlan();
@@ -1045,10 +1110,58 @@ describe('POST /api/billing/change-plan', () => {
       args: {
         items: [{ id: 'si_current', price: 'price_mock_1', quantity: 1 }],
         proration_behavior: 'always_invoice',
+        proration_date: expect.any(Number),
         payment_behavior: 'pending_if_incomplete',
         cancel_at_period_end: false,
       },
     });
+  });
+
+  it.each([
+    ['amount', { acceptedAmount: 3199 }],
+    ['currency', { acceptedCurrency: 'cad' }],
+  ])('requires a fresh quote when the signed %s is altered', async (_field, override) => {
+    const res = await callChangePlan(override);
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody).toMatchObject({
+      changed: false,
+      requiresConfirmation: true,
+      quote: { amountDue: 3200, currency: 'usd' },
+    });
+    expect(res.jsonBody.error).toMatch(/changed or expired/i);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
+
+  it('defaults a legacy SKU-only request to preview instead of charging', async () => {
+    const res = await callChangePlan({ action: undefined });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.requiresConfirmation).toBe(true);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
+
+  it('refreshes an expired quote instead of charging it', async () => {
+    const res = await callChangePlan({
+      prorationDate: Math.floor(Date.now() / 1000) - 301,
+    });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.quote.prorationDate).toBeGreaterThan(
+      Math.floor(Date.now() / 1000) - 5
+    );
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
+
+  it('fails closed when Stripe returns an invalid invoice preview', async () => {
+    mockState.previewInvoice = { amount_due: -1, currency: 'usd' };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callChangePlan();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/confirm the upgrade price/i);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
   });
 
   it('preserves PPP pricing from Stripe instead of trusting request geography', async () => {

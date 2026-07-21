@@ -2816,6 +2816,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   Drift branches are injected before the provider mutation in route tests; no live subscription or
   payment was changed to manufacture a pricing mismatch.
 
+## CA-113 — Plan upgrade could charge immediately without a quote or confirmation
+
+- Status: `FIXED`
+- Area: Monetization / existing-subscriber upgrade / informed consent / proration
+- Severity: High
+- Evidence: Billing Management rendered `Upgrade to 6 months` and `Upgrade to annual` buttons with
+  no plan price or estimated amount due. One click called the mutation route, which immediately used
+  `proration_behavior: always_invoice`; there was no preview or confirmation step between intent and
+  a potentially chargeable subscription update. The server also accepted the SKU alone, so a stale
+  client could still trigger the one-step mutation. Stripe's current
+  [invoice preview API](https://docs.stripe.com/api/invoices/create_preview) previews subscription
+  changes without creating an invoice and recommends reusing `subscription_details.proration_date`
+  on the actual update so the calculation matches.
+- Fix: split the route into explicit `preview` and `confirm` actions. Preview retrieves Stripe's
+  exact invoice estimate and returns the recurring plan price, cadence, currency, amount due, and
+  proration timestamp without modifying the subscription. Confirmation requires the same amount,
+  currency, and a server-signed timestamp no older than five minutes. The signature binds the
+  learner, subscription, current/target Price IDs, amount, currency, cadence, and timestamp; the
+  server recomputes that quote and reopens confirmation if it changed, expired, or was altered.
+  SKU-only legacy requests now default to preview. Only an exact accepted quote reaches
+  `subscriptions.update`, which now reuses the preview timestamp. Billing Management presents the
+  values in a focus-managed modal and labels the final action with the exact USD charge.
+- Regression coverage: the billing route suite proves preview makes no subscription update, exact
+  confirmation carries the same proration timestamp into Stripe, mismatched and expired quotes
+  stop before mutation, and invalid preview data fails closed. The real Billing page test proves the
+  first click only previews, displays the USD 44.99 yearly price and USD 32.00 estimated charge,
+  emits no conversion event, and sends the mutation only after the learner confirms. A changed
+  quote updates to USD 33.00 and requires another confirmation without recording success.
+- Commit: `Require confirmation for plan upgrade charges`.
+- Verification: the focused two-file/72-test billing route and Billing page suite, complete
+  92-file/615-test Vitest suite, ESLint, strict 175-file analytics audit covering 284 interactive
+  controls, and the network-enabled 529-page production build passed. Publication and post-deploy
+  non-mutating evidence are recorded after the isolated fix deploys.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

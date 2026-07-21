@@ -5,6 +5,7 @@
 export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { originAllowed } from '../../../lib/apiSecurity';
 import {
   getStripe,
@@ -17,6 +18,7 @@ import {
 
 const CHANGE_WINDOW_SECONDS = 10 * 60;
 const CHANGE_MAX_PER_WINDOW = 10;
+const QUOTE_MAX_AGE_SECONDS = 5 * 60;
 const UPGRADE_PRICE_CONTRACTS = {
   '6month': {
     global: { amountMinor: 4999, interval: 'month', intervalCount: 6 },
@@ -85,6 +87,37 @@ function invoiceUrl(invoice) {
   return invoice.hosted_invoice_url || null;
 }
 
+function signQuote(fields) {
+  const secret = process.env.STRIPE_SECRET_KEY;
+  if (!secret) throw new Error('stripe-not-configured');
+  return createHmac('sha256', secret)
+    .update(JSON.stringify(fields))
+    .digest('hex');
+}
+
+function quoteTokenMatches(token, fields) {
+  if (!/^[a-f0-9]{64}$/.test(String(token || ''))) return false;
+  const actual = Buffer.from(String(token), 'hex');
+  const expected = Buffer.from(signQuote(fields), 'hex');
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+function quotePayload(preview, targetPrice, targetSku, prorationDate, identity) {
+  const quote = {
+    targetSku,
+    amountDue: preview.amount_due,
+    currency: preview.currency,
+    targetAmount: targetPrice.unit_amount,
+    interval: targetPrice.recurring.interval,
+    intervalCount: targetPrice.recurring.interval_count,
+    prorationDate,
+  };
+  return {
+    ...quote,
+    token: signQuote({ ...identity, ...quote }),
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -102,6 +135,10 @@ export default async function handler(req, res) {
   const targetSku = typeof req.body?.sku === 'string' ? req.body.sku : '';
   if (!['6month', 'annual'].includes(targetSku)) {
     return res.status(400).json({ error: 'Choose a valid upgrade plan.' });
+  }
+  const action = req.body?.action == null ? 'preview' : req.body.action;
+  if (!['preview', 'confirm'].includes(action)) {
+    return res.status(400).json({ error: 'Choose a valid plan-change action.' });
   }
 
   const admin = getAdmin();
@@ -203,11 +240,85 @@ export default async function handler(req, res) {
       });
     }
 
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const requestedProrationDate = Number(req.body?.prorationDate);
+    const quoteTimestampValid =
+      Number.isInteger(requestedProrationDate) &&
+      requestedProrationDate <= nowSeconds &&
+      requestedProrationDate >= nowSeconds - QUOTE_MAX_AGE_SECONDS;
+    const acceptedAmount = Number(req.body?.acceptedAmount);
+    const acceptedCurrency = String(req.body?.acceptedCurrency || '').toLowerCase();
+    const quoteIdentity = {
+      userId: user.id,
+      subscriptionId: subscription.id,
+      currentPriceId: item.price.id,
+      targetPriceId: targetPrice.id,
+    };
+    const submittedQuote = {
+      ...quoteIdentity,
+      targetSku,
+      amountDue: acceptedAmount,
+      currency: acceptedCurrency,
+      targetAmount: targetPrice.unit_amount,
+      interval: targetPrice.recurring.interval,
+      intervalCount: targetPrice.recurring.interval_count,
+      prorationDate: requestedProrationDate,
+    };
+    const quoteTokenValid =
+      action === 'confirm' &&
+      quoteTimestampValid &&
+      quoteTokenMatches(req.body?.quoteToken, submittedQuote);
+    const prorationDate =
+      quoteTokenValid
+        ? requestedProrationDate
+        : nowSeconds;
+    const preview = await stripe.invoices.createPreview({
+      subscription: subscription.id,
+      subscription_details: {
+        items: [{ id: item.id, price: targetPrice.id, quantity: 1 }],
+        proration_behavior: 'always_invoice',
+        proration_date: prorationDate,
+      },
+    });
+    if (
+      !Number.isInteger(preview.amount_due) ||
+      preview.amount_due < 0 ||
+      preview.currency !== 'usd'
+    ) {
+      console.error('change-plan: invalid Stripe invoice preview');
+      return res.status(503).json({
+        error: 'Could not confirm the upgrade price. Please try again.',
+      });
+    }
+    const quote = quotePayload(
+      preview,
+      targetPrice,
+      targetSku,
+      prorationDate,
+      quoteIdentity
+    );
+    const quoteAccepted =
+      quoteTokenValid &&
+      Number.isInteger(acceptedAmount) &&
+      acceptedAmount === preview.amount_due &&
+      acceptedCurrency === preview.currency;
+    if (!quoteAccepted) {
+      return res.status(action === 'confirm' ? 409 : 200).json({
+        changed: false,
+        requiresConfirmation: true,
+        quote,
+        ...(action === 'confirm'
+          ? { error: 'The upgrade estimate changed or expired. Review it and confirm again.' }
+          : {}),
+      });
+    }
+
     const updated = await stripe.subscriptions.update(
       subscription.id,
       {
         items: [{ id: item.id, price: targetPrice.id, quantity: 1 }],
         proration_behavior: 'always_invoice',
+        proration_date: prorationDate,
         payment_behavior: 'pending_if_incomplete',
         cancel_at_period_end: false,
         metadata: {
