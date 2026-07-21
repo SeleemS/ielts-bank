@@ -2671,9 +2671,13 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Route auth failures by stable codes`.
 - Verification: the focused five-file/17-test auth/account suite, complete 92-file/584-test Vitest
   suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
-  network-enabled 529-page production build passed. Publication and exact deployed-sha evidence are
-  recorded after the isolated fix deploys. No auth request, email, session, or account was created
-  or changed during local verification.
+  network-enabled 529-page production build passed. GitHub's Vercel status tied exact SHA
+  `64b0e07f134dc9b83770182848ba737cc71ead20` to deployment
+  `dpl_Dgeqi6BMYJnFmxW8okiVZRWG34Qa`, which reached promoted `READY` on the canonical aliases. The
+  canonical shared-auth chunk contained both stable error codes and the safe invalid-credentials
+  guidance, and a fresh production browser opened the password, email-code, and recovery controls.
+  Code-specific branches are verified by the deterministic unfamiliar-message tests; no auth
+  request, email, session, or account was created or changed during production verification.
 
 ## Investigation notes
 
