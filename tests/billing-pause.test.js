@@ -16,6 +16,14 @@ const state = {
   rpcCalls: [],
   userUpdates: [],
   stripeUpdates: [],
+  stripeRetrieves: [],
+  stripeRawRequests: [],
+  stripeSubscription: null,
+  stripeRetrieveError: null,
+  stripeMetadataError: null,
+  stripePauseError: null,
+  stripePauseResult: null,
+  confirmPauseOnReadback: false,
   claimAvailable: true,
   claimError: null,
   claimReject: null,
@@ -23,7 +31,6 @@ const state = {
   detailError: null,
   detailReject: null,
   eventReject: null,
-  stripeError: null,
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -111,11 +118,28 @@ vi.mock('../lib/billing', async (importOriginal) => {
     ...actual,
     getStripe: () => ({
       subscriptions: {
+        retrieve: async (id) => {
+          state.stripeRetrieves.push(id);
+          if (state.stripeRetrieveError) throw state.stripeRetrieveError;
+          if (state.confirmPauseOnReadback && state.stripeRetrieves.length > 1) {
+            return {
+              ...state.stripeSubscription,
+              status: 'paused',
+              metadata: state.stripeUpdates[0].fields.metadata,
+            };
+          }
+          return state.stripeSubscription;
+        },
         update: async (id, fields) => {
           state.stripeUpdates.push({ id, fields });
-          if (state.stripeError) throw state.stripeError;
+          if (state.stripeMetadataError) throw state.stripeMetadataError;
           return { id };
         },
+      },
+      rawRequest: async (method, path, params, options) => {
+        state.stripeRawRequests.push({ method, path, params, options });
+        if (state.stripePauseError) throw state.stripePauseError;
+        return state.stripePauseResult;
       },
     }),
   };
@@ -168,6 +192,7 @@ describe('POST /api/billing/pause', () => {
     state.authError = null;
     state.authReject = null;
     state.userRow = {
+      stripe_customer_id: 'cus_123',
       stripe_subscription_id: 'sub_123',
       plan: 'premium',
       plan_status: 'active',
@@ -184,6 +209,24 @@ describe('POST /api/billing/pause', () => {
     state.rpcCalls = [];
     state.userUpdates = [];
     state.stripeUpdates = [];
+    state.stripeRetrieves = [];
+    state.stripeRawRequests = [];
+    state.stripeSubscription = {
+      id: 'sub_123',
+      customer: 'cus_123',
+      status: 'active',
+      billing_mode: { type: 'flexible' },
+      collection_method: 'charge_automatically',
+      pause_collection: null,
+      schedule: null,
+      billing_schedules: null,
+      metadata: { user_id: 'user-1' },
+    };
+    state.stripeRetrieveError = null;
+    state.stripeMetadataError = null;
+    state.stripePauseError = null;
+    state.stripePauseResult = { id: 'sub_123', status: 'paused' };
+    state.confirmPauseOnReadback = false;
     state.claimAvailable = true;
     state.claimError = null;
     state.claimReject = null;
@@ -191,7 +234,6 @@ describe('POST /api/billing/pause', () => {
     state.detailError = null;
     state.detailReject = null;
     state.eventReject = null;
-    state.stripeError = null;
     vi.restoreAllMocks();
   });
 
@@ -261,7 +303,7 @@ describe('POST /api/billing/pause', () => {
     expect(state.userUpdates).toEqual([]);
   });
 
-  it('sets a 30-day Stripe pause and permanently records that the offer was used', async () => {
+  it('uses Stripe true pause, credits unused time, and records the one-time offer', async () => {
     const res = await callPause();
 
     expect(res.statusCode).toBe(200);
@@ -277,10 +319,53 @@ describe('POST /api/billing/pause', () => {
       },
     ]);
     expect(state.stripeUpdates).toHaveLength(1);
-    expect(state.stripeUpdates[0].fields.pause_collection.behavior).toBe('void');
+    expect(state.stripeUpdates[0]).toMatchObject({
+      id: 'sub_123',
+      fields: {
+        metadata: {
+          user_id: 'user-1',
+        },
+      },
+    });
+    expect(
+      Number(state.stripeUpdates[0].fields.metadata.ielts_pause_resumes_at)
+    ).toBeGreaterThan(Math.floor(Date.now() / 1000));
+    expect(state.stripeRawRequests).toEqual([
+      {
+        method: 'POST',
+        path: '/v1/subscriptions/sub_123/pause',
+        params: {
+          bill_for: {
+            unused_time_from: { type: 'now' },
+            outstanding_usage_through: { type: 'now' },
+          },
+          invoicing_behavior: 'pending_invoice_item',
+        },
+        options: { apiVersion: '2026-06-24.preview' },
+      },
+    ]);
     expect(state.userUpdates[0].fields.billing_pause_used_at).toBeTruthy();
     expect(state.userUpdates[1].fields.billing_pause_until).toBeTruthy();
+    expect(state.userUpdates[1].fields.plan_status).toBe('paused');
     expect(res.jsonBody.reconciling).toBe(false);
+  });
+
+  it.each([
+    ['classic billing', { billing_mode: { type: 'classic' } }],
+    ['manual invoices', { collection_method: 'send_invoice' }],
+    ['an attached schedule', { schedule: 'sub_sched_123' }],
+    ['legacy collection pause', { pause_collection: { behavior: 'void' } }],
+    ['a mismatched customer', { customer: 'cus_other' }],
+  ])('rejects %s before reserving or mutating Stripe', async (_, override) => {
+    state.stripeSubscription = { ...state.stripeSubscription, ...override };
+
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.error).toMatch(/cannot be paused automatically/i);
+    expect(state.userUpdates).toEqual([]);
+    expect(state.stripeUpdates).toEqual([]);
+    expect(state.stripeRawRequests).toEqual([]);
   });
 
   it('rejects a second pause without calling Stripe', async () => {
@@ -364,7 +449,7 @@ describe('POST /api/billing/pause', () => {
   });
 
   it('releases the exact claim when Stripe fails before changing the subscription', async () => {
-    state.stripeError = new Error('stripe unavailable');
+    state.stripePauseError = new Error('stripe unavailable');
     const res = await callPause();
 
     expect(res.statusCode).toBe(503);
@@ -383,7 +468,7 @@ describe('POST /api/billing/pause', () => {
   });
 
   it('reports a stuck claim truthfully when its rollback rejects', async () => {
-    state.stripeError = new Error('stripe unavailable');
+    state.stripePauseError = new Error('stripe unavailable');
     state.rollbackReject = new Error('database unavailable');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const res = await callPause();
@@ -391,6 +476,21 @@ describe('POST /api/billing/pause', () => {
     expect(res.statusCode).toBe(503);
     expect(res.jsonBody.error).toMatch(/contact support/i);
     expect(state.userUpdates).toHaveLength(2);
+  });
+
+  it('keeps the exact claim when a lost response is confirmed by Stripe readback', async () => {
+    state.stripePauseError = new Error('response lost');
+    state.confirmPauseOnReadback = true;
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const res = await callPause();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toMatchObject({ paused: true, reconciling: false });
+    expect(state.stripeRetrieves).toEqual(['sub_123', 'sub_123']);
+    expect(
+      state.userUpdates.some((update) => update.fields.billing_pause_used_at === null)
+    ).toBe(false);
   });
 
   it('keeps the one-time claim and reports reconciliation after Stripe succeeds', async () => {

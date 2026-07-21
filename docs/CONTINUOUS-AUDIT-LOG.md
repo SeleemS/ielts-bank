@@ -2926,6 +2926,48 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit; deciding which paid commitment to retain requires billing-owner review, and leaving both
   active carries a residual duplicate-charge risk.
 
+## CA-116 — The 30-day pause stopped access but did not pause the paid term
+
+- Status: `FIXED`; full verification and production publication pending
+- Area: Monetization / subscription pause / unused-time credit / automatic resume
+- Severity: High
+- Evidence: the route set `pause_collection: { behavior: 'void' }` and separately blocked Premium
+  access for 30 days. Stripe's [pause-payment documentation](https://docs.stripe.com/billing/subscriptions/pause-payment)
+  states that this primitive continues service delivery and invoice generation; `void` only makes
+  invoices generated inside the window free. For the normal case where renewal was more than 30
+  days away, no invoice occurred, the billing date did not move, and the learner simply lost 30 paid
+  days. If renewal occurred inside the window, Stripe could void the whole renewal invoice and later
+  restore access for the remainder of an uncharged monthly, six-month, or annual period. The UI's
+  promise that billing and access both paused was therefore false in either timing case. Read-only
+  live Stripe reconciliation confirmed every current active subscription uses flexible billing,
+  which supports Stripe's true pause lifecycle.
+- Fix: use Stripe's [true subscription pause](https://docs.stripe.com/billing/subscriptions/pause)
+  preview endpoint with the required API version, flexible-billing/customer/subscription ownership
+  checks, automatic collection, no legacy pause, and no attached schedule. Pause now stops service
+  and invoice generation and creates a pending credit for unused licensed time and outstanding usage.
+  App metadata binds the exact 30-day resume timestamp; a lost mutation response is read back before
+  the one-time claim can be released. True paused subscriptions map to an explicit paused billing
+  state that blocks both entitlement and duplicate checkout. An authenticated hourly Vercel cron
+  resumes due subscriptions with `resume_on_payment_success`, resets the billing cycle, applies the
+  credit through proration, clears pause metadata, and restores app access only for an active/trialing
+  provider result. Failed payments remain paused for retry; terminal provider states reconcile
+  without retrying forever. Billing Management now discloses the unused-time credit and possible
+  remaining charge when billing resumes.
+- Regression coverage: pause route cases require the preview API call and exact credit parameters,
+  reject classic/manual/scheduled/mismatched/legacy subscriptions before mutation, preserve a
+  read-back-confirmed lost response, and retain prior authorization, rate-limit, concurrency,
+  rollback, and reconciliation guarantees. Mapper/checkout/status tests cover true paused state and
+  stale metadata. The new cron suite covers authentication, no-op, successful resume, payment-pending
+  retry, terminal reconciliation, and dependency failure.
+- Commit: `Use true Stripe subscription pauses`.
+- Verification: the focused seven-file/154-test pause, resume, mapper, checkout, status, real Billing,
+  and Pricing page suite; complete 93-file/637-test Vitest suite; ESLint; strict 176-file analytics
+  audit covering 284 interactive controls; and the network-enabled 529-page production build passed.
+  Safe live probes against guaranteed nonexistent IDs reached both versioned pause
+  and resume endpoints and returned Stripe `resource_missing`, proving the preview API and request
+  options are enabled without mutating a billing object. Exact-SHA deployment, true pause/resume
+  provider exercise, and cleanup remain pending.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

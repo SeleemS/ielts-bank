@@ -434,6 +434,27 @@ describe('POST /api/billing/checkout', () => {
     expect(mockState.stripeCalls).toEqual({});
   });
 
+  it('rejects checkout while Stripe holds the subscription in true paused status', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'premium',
+      plan_status: 'paused',
+      billing_pause_until: '2098-08-20T00:00:00.000Z',
+      stripe_customer_id: 'cus_existing',
+      stripe_subscription_id: 'sub_existing',
+    };
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('already_premium');
+    expect(mockState.rpcCalls).toEqual([]);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
   it('rate-limits repeated checkout attempts before any Stripe call', async () => {
     mockState.authUser = { id: 'user-1' };
     mockState.userRow = {

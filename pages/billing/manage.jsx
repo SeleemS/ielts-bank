@@ -86,7 +86,7 @@ export default function ManageBillingPage() {
         resumesAt: body.resumesAt,
         usedAt: new Date().toISOString(),
       });
-      setMessage(`Billing and Premium access are paused until ${new Date(body.resumesAt).toLocaleDateString()}.`);
+      setMessage(`Billing and Premium access are paused until ${new Date(body.resumesAt).toLocaleDateString()}. Stripe will apply your unused-time credit when billing resumes.`);
     } catch (pauseError) {
       setError(pauseError.message);
     } finally {
@@ -148,6 +148,7 @@ export default function ManageBillingPage() {
   const pauseActive =
     Boolean(effectivePauseUntil) &&
     new Date(effectivePauseUntil).getTime() > Date.now();
+  const pausePending = planStatus === 'paused';
   const upgrades =
     planSku === 'monthly'
       ? [
@@ -193,7 +194,11 @@ export default function ManageBillingPage() {
                   <ShieldCheck className="mt-1 h-5 w-5 text-emerald-600" />
                   <div>
                     <h2 className="font-bold">
-                      {pauseActive ? 'Premium is paused' : 'Keep Premium active'}
+                      {pauseActive
+                        ? 'Premium is paused'
+                        : pausePending
+                          ? 'Billing is resuming'
+                          : 'Keep Premium active'}
                     </h2>
                     <p className="mt-1 text-sm text-slate-600">
                       {billingStatusMessage({
@@ -253,8 +258,9 @@ export default function ManageBillingPage() {
                     <div className="flex-1">
                       <h2 className="font-bold">Pause for 30 days</h2>
                       <p className="mt-1 text-sm text-slate-600">
-                        Billing and Premium access pause now and resume automatically in 30 days.
-                        Use this if your exam is over but a retake is still possible.
+                        Billing, invoices, and Premium access stop now. Stripe credits the unused
+                        part of your paid period. In 30 days it applies that credit to a new billing
+                        period, charges any remaining balance, and restores access after payment.
                       </p>
                       <Button type="button" variant="outline" className="mt-4" disabled={Boolean(busy)} onClick={pausePlan}>
                         {busy === 'pause' ? <Loader2 className="h-4 w-4 animate-spin" /> : <PauseCircle className="h-4 w-4" />}

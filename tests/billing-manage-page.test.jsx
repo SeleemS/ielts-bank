@@ -7,6 +7,9 @@ import { act } from 'react-dom/test-utils';
 const testState = vi.hoisted(() => ({
   planError: null,
   planSku: 'monthly',
+  planStatus: 'active',
+  isPremium: true,
+  pauseUntil: null,
 }));
 
 vi.mock('next/head', () => ({
@@ -30,12 +33,12 @@ vi.mock('../src/lib/auth', () => ({
 }));
 vi.mock('../src/lib/usePlan', () => ({
   usePlan: () => ({
-    isPremium: true,
+    isPremium: testState.isPremium,
     planSku: testState.planSku,
-    planStatus: 'active',
+    planStatus: testState.planStatus,
     renewsAt: '2026-10-01T00:00:00.000Z',
     expiresAt: null,
-    pauseUntil: null,
+    pauseUntil: testState.pauseUntil,
     pauseUsedAt: null,
     hasBillingAccount: true,
     loading: false,
@@ -66,6 +69,9 @@ let root;
 beforeEach(() => {
   testState.planError = null;
   testState.planSku = 'monthly';
+  testState.planStatus = 'active';
+  testState.isPremium = true;
+  testState.pauseUntil = null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -80,6 +86,25 @@ afterEach(() => {
 });
 
 describe('billing pause state', () => {
+  it('keeps billing management in a resuming state until Stripe confirms payment', async () => {
+    testState.planStatus = 'paused';
+    testState.isPremium = false;
+    testState.pauseUntil = '2020-08-20T00:00:00.000Z';
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('Billing is resuming');
+    expect(container.textContent).toContain('access returns after Stripe confirms payment');
+    expect(
+      [...container.querySelectorAll('button')].some(
+        (button) => button.textContent.includes('Pause once')
+      )
+    ).toBe(false);
+  });
+
   it('immediately removes the one-time action and shows the paused state after success', async () => {
     const resumesAt = new Date(Date.now() + 30 * 86400000).toISOString();
     global.fetch.mockResolvedValue({
@@ -109,6 +134,7 @@ describe('billing pause state', () => {
     });
     expect(container.textContent).toContain('Premium is paused');
     expect(container.textContent).toContain('Your current pause ends');
+    expect(container.textContent).toContain('unused-time credit');
     expect(
       [...container.querySelectorAll('button')].some(
         (button) => button.textContent.includes('Pause once')

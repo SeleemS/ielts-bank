@@ -9,6 +9,9 @@ export function billingStatusMessage({
   if (pauseUntil && new Date(pauseUntil).getTime() > now) {
     return `Your current pause ends ${new Date(pauseUntil).toLocaleDateString()}.`;
   }
+  if (planStatus === 'paused') {
+    return 'Billing is resuming. Premium access returns after Stripe confirms payment.';
+  }
   if (expiresAt) {
     return `Your Exam Pass ends ${new Date(expiresAt).toLocaleDateString()}.`;
   }

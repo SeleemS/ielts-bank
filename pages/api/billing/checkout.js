@@ -138,7 +138,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await admin
       .from('users')
-      .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id')
+      .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id, stripe_subscription_id')
       .eq('id', authUser.id)
       .maybeSingle();
     if (error) throw error;
@@ -160,7 +160,15 @@ export default async function handler(req, res) {
   // the stored row returns false. It must not make the learner eligible to buy
   // a second recurring subscription. Ignore only the access-pause timestamp
   // when deciding whether an existing paid commitment still owns this account.
-  if (isPremiumRow({ ...userRow, billing_pause_until: null })) {
+  const hasTruePausedSubscription = Boolean(
+    userRow.stripe_subscription_id
+    && userRow.plan === 'premium'
+    && userRow.plan_status === 'paused'
+  );
+  if (
+    isPremiumRow({ ...userRow, billing_pause_until: null })
+    || hasTruePausedSubscription
+  ) {
     return res.status(409).json({ error: 'You already have Premium.', code: 'already_premium' });
   }
   const winBackEligible =

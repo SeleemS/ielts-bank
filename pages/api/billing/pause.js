@@ -2,7 +2,11 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
-import { getStripe } from '../../../lib/billing';
+import {
+  getStripe,
+  pauseStripeSubscription,
+  STRIPE_PAUSE_RESUMES_AT_METADATA,
+} from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
 
 const PAUSE_WINDOW_SECONDS = 10 * 60;
@@ -50,7 +54,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await admin
       .from('users')
-      .select('stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
+      .select('stripe_customer_id, stripe_subscription_id, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at')
       .eq('id', user.id)
       .maybeSingle();
     if (error) throw error;
@@ -92,6 +96,40 @@ export default async function handler(req, res) {
     });
   }
 
+  let stripe;
+  let subscription;
+  try {
+    stripe = getStripe();
+    subscription = await stripe.subscriptions.retrieve(row.stripe_subscription_id);
+  } catch (error) {
+    console.error('pause Stripe subscription lookup error:', error.message);
+    return res.status(503).json({
+      error: 'Could not verify your Stripe subscription. Please try again.',
+    });
+  }
+  const subscriptionCustomerId =
+    typeof subscription.customer === 'string'
+      ? subscription.customer
+      : subscription.customer?.id;
+  const hasBillingSchedules = Array.isArray(subscription.billing_schedules)
+    ? subscription.billing_schedules.length > 0
+    : Boolean(subscription.billing_schedules);
+  if (
+    subscription.id !== row.stripe_subscription_id
+    || (row.stripe_customer_id && subscriptionCustomerId !== row.stripe_customer_id)
+    || (subscription.metadata?.user_id && subscription.metadata.user_id !== user.id)
+    || subscription.status !== 'active'
+    || subscription.billing_mode?.type !== 'flexible'
+    || subscription.collection_method !== 'charge_automatically'
+    || Boolean(subscription.pause_collection)
+    || Boolean(subscription.schedule)
+    || hasBillingSchedules
+  ) {
+    return res.status(409).json({
+      error: 'This subscription cannot be paused automatically. Continue to Stripe for billing options.',
+    });
+  }
+
   const resumesAt = Math.floor(Date.now() / 1000) + 30 * 86400;
   const resumeIso = new Date(resumesAt * 1000).toISOString();
   const pausedAt = new Date().toISOString();
@@ -123,34 +161,67 @@ export default async function handler(req, res) {
   }
 
   try {
-    await getStripe().subscriptions.update(row.stripe_subscription_id, {
-      pause_collection: { behavior: 'void', resumes_at: resumesAt },
-      metadata: { user_id: user.id },
+    await stripe.subscriptions.update(row.stripe_subscription_id, {
+      metadata: {
+        user_id: user.id,
+        [STRIPE_PAUSE_RESUMES_AT_METADATA]: String(resumesAt),
+      },
     });
+    const pausedSubscription = await pauseStripeSubscription(
+      stripe,
+      row.stripe_subscription_id
+    );
+    if (pausedSubscription?.status !== 'paused') {
+      throw new Error('Stripe did not return a paused subscription');
+    }
   } catch (stripeError) {
-    // Stripe did not change, so release this exact reservation for a safe
-    // retry. The timestamp guard prevents one request from undoing another.
-    let rollbackError;
+    // A lost response can arrive after Stripe committed the pause. Read back
+    // before releasing the one-time reservation so a retry can never pause the
+    // same billing commitment twice.
+    let confirmedPaused = false;
     try {
-      const result = await admin
-        .from('users')
-        .update({ billing_pause_used_at: null })
-        .eq('id', user.id)
-        .eq('billing_pause_used_at', pausedAt)
-        .select('id')
-        .maybeSingle();
-      rollbackError = result.error;
-    } catch (error) {
-      rollbackError = error;
+      const readback = await stripe.subscriptions.retrieve(row.stripe_subscription_id);
+      confirmedPaused =
+        readback?.status === 'paused'
+        && readback?.metadata?.[STRIPE_PAUSE_RESUMES_AT_METADATA] === String(resumesAt);
+    } catch (readbackError) {
+      console.error('pause Stripe readback error:', readbackError.message);
     }
-    if (rollbackError) console.error('pause claim rollback error:', rollbackError.message);
-    console.error('pause subscription error:', stripeError.message);
-    if (rollbackError) {
-      return res.status(503).json({
-        error: 'The subscription was not paused, but the one-time action could not be reset. Please contact support.',
-      });
+    if (confirmedPaused) {
+      console.warn('pause Stripe response was lost; readback confirmed the pause');
+    } else {
+      try {
+        await stripe.subscriptions.update(row.stripe_subscription_id, {
+          metadata: { [STRIPE_PAUSE_RESUMES_AT_METADATA]: '' },
+        });
+      } catch (metadataError) {
+        console.error('pause metadata rollback error:', metadataError.message);
+      }
+
+      // Stripe did not change, so release this exact reservation for a safe
+      // retry. The timestamp guard prevents one request from undoing another.
+      let rollbackError;
+      try {
+        const result = await admin
+          .from('users')
+          .update({ billing_pause_used_at: null })
+          .eq('id', user.id)
+          .eq('billing_pause_used_at', pausedAt)
+          .select('id')
+          .maybeSingle();
+        rollbackError = result.error;
+      } catch (error) {
+        rollbackError = error;
+      }
+      if (rollbackError) console.error('pause claim rollback error:', rollbackError.message);
+      console.error('pause subscription error:', stripeError.message);
+      if (rollbackError) {
+        return res.status(503).json({
+          error: 'The subscription was not paused, but the one-time action could not be reset. Please contact support.',
+        });
+      }
+      return res.status(503).json({ error: 'Could not pause the subscription. Please try again.' });
     }
-    return res.status(503).json({ error: 'Could not pause the subscription. Please try again.' });
   }
 
   let updateError;
@@ -159,7 +230,7 @@ export default async function handler(req, res) {
       .from('users')
       .update({
         billing_pause_until: resumeIso,
-        plan_status: 'active',
+        plan_status: 'paused',
       })
       .eq('id', user.id)
       .select('id')

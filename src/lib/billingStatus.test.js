@@ -31,6 +31,13 @@ describe('billing status display', () => {
       isPremium: false,
       now: new Date('2026-07-19T04:35:48.000Z').getTime(),
     })).toContain('current pause ends');
+
+    expect(billingStatusMessage({
+      planStatus: 'paused',
+      pauseUntil: '2026-07-18T04:35:48.000Z',
+      isPremium: false,
+      now: new Date('2026-07-19T04:35:48.000Z').getTime(),
+    })).toContain('access returns after Stripe confirms payment');
   });
 
   it('does not offer another billing pause after cancellation is scheduled', () => {
