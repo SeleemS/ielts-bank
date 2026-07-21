@@ -279,72 +279,74 @@ const DataTable = ({ items, skill, selectedOption, questionTypeOptions }) => {
 
   return (
     <div className="w-full font-sans">
-      {/* Toolbar: search + difficulty + question-type filters + result count.
-          One wrapping row. The result count is last and pushed right (sm:ml-auto),
-          so when width is tight it is the COUNT that wraps to the next line — the
-          filter controls never reflow when the count text changes (e.g. the
-          " found" that appears once a filter is active). All three controls share
-          the same h-10 height and rounded-md/border-input styling so they read as
+      {/* Toolbar: a controls group (search + difficulty + question-type) and the
+          result count. The controls sit in a flex-1 group that soaks up width
+          changes; the count is a right-aligned sibling, so toggling a filter
+          (which adds " found" to the count) never reflows the row. Below lg the
+          count drops onto its own line under the controls. All three controls
+          share the same h-10 / rounded-md / border-input styling so they read as
           one set. */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title..."
-            aria-label={`Search ${itemNoun}s by title`}
-            className={cn(
-              'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground sm:text-sm',
-              'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
-              'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
-            )}
-          />
-        </div>
-        {difficultiesPresent.length > 1 && (
-          <div
-            role="group"
-            aria-label="Filter by difficulty"
-            className="inline-flex h-10 shrink-0 items-center gap-1 rounded-md border border-input bg-muted/50 p-1 shadow-sm"
-          >
-            {['all', ...difficultiesPresent].map((level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => setDifficulty(level)}
-                aria-pressed={difficulty === level}
-                className={cn(
-                  'inline-flex h-full items-center rounded px-3 text-xs font-semibold capitalize outline-none transition-colors',
-                  'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
-                  difficulty === level
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {level === 'all' ? 'All levels' : level}
-              </button>
-            ))}
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:flex-1">
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title..."
+              aria-label={`Search ${itemNoun}s by title`}
+              className={cn(
+                'h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-base text-foreground sm:text-sm',
+                'placeholder:text-muted-foreground shadow-sm outline-none transition-colors',
+                'focus:border-accent focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background'
+              )}
+            />
           </div>
-        )}
-        {availableTypeOptions.length > 0 && (
-          <div className="w-full sm:w-56">
-            <Select
-              value={questionType}
-              onChange={(e) => setQuestionType(e.target.value)}
-              aria-label="Filter by question type"
+          {difficultiesPresent.length > 1 && (
+            <div
+              role="group"
+              aria-label="Filter by difficulty"
+              className="inline-flex h-10 shrink-0 items-center gap-1 rounded-md border border-input bg-muted/50 p-1 shadow-sm"
             >
-              <option value="all">All question types</option>
-              {availableTypeOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
+              {['all', ...difficultiesPresent].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDifficulty(level)}
+                  aria-pressed={difficulty === level}
+                  className={cn(
+                    'inline-flex h-full items-center rounded px-3 text-xs font-semibold capitalize outline-none transition-colors',
+                    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
+                    difficulty === level
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {level === 'all' ? 'All levels' : level}
+                </button>
               ))}
-            </Select>
-          </div>
-        )}
+            </div>
+          )}
+          {availableTypeOptions.length > 0 && (
+            <div className="w-full sm:w-56 sm:shrink-0">
+              <Select
+                value={questionType}
+                onChange={(e) => setQuestionType(e.target.value)}
+                aria-label="Filter by question type"
+              >
+                <option value="all">All question types</option>
+                {availableTypeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
+        </div>
         {!loading && (
-          <p className="shrink-0 whitespace-nowrap text-sm text-muted-foreground sm:ml-auto">
+          <p className="shrink-0 whitespace-nowrap text-sm text-muted-foreground lg:text-right">
             {filtered.length} {filtered.length === 1 ? itemNoun : `${itemNoun}s`}
             {isFiltering ? ' found' : ''}
             {completedInList > 0 ? (
