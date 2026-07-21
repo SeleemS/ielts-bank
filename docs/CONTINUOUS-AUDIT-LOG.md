@@ -3938,6 +3938,51 @@ False positives are kept in the investigation notes so they are not rediscovered
   `auth_session` markers. No microphone permission, realtime session, quota reservation, or
   scoring request was initiated during this deployment smoke check.
 
+## CA-146 — Failed live-examiner scoring discarded the completed journey
+
+- Status: `FIXED`
+- Area: Live Speaking Examiner / end interview / transcript recovery / scoring retry
+- Severity: High
+- Evidence: `endInterview()` permanently tore down the paid realtime session and set its one-way
+  `endedRef` before scoring. A resolved auth outage then sent the completed transcript to the scorer
+  without authorization, while rejected auth reads and every scorer/network error returned the UI
+  to idle. There was no score-retry action; starting another session cleared the transcript. A
+  learner could therefore consume 5–14 examiner minutes, finish enough speech, and still have to
+  repeat the entire interview because a post-session dependency failed.
+- Fix: capture every scorable completed transcript before its first score request, bind it to the
+  account that ran the session, and retain it for at most 24 hours in tab-scoped `sessionStorage`
+  rather than durable local storage. The recovery layer validates owner, mode, age, roles, and the
+  server's 60,000-character bound; distinguishes auth outage, verified sign-in, owner mismatch,
+  server failure, incomplete success, and network failure; and sends no request until the original
+  account has a verified token. Failed attempts render explicit “Retry scoring” and destructive
+  “Discard transcript” actions, survive refresh when storage is available, and use a synchronous
+  single-flight guard. Only a valid score result or explicit discard clears the pending transcript.
+- Regression coverage: storage tests cover account-bound round-trip/clear, expiry, invalid mode,
+  missing owner, oversize transcript, and denied storage. Submission tests cover both Supabase auth
+  failure shapes with zero fetches, account mismatch before auth, verified missing session, exact
+  Bearer request/payload, auth recovery followed by one request, HTTP 401 reauthentication, server
+  error without caller mutation, incomplete HTTP success, and rejected network requests. Existing
+  Speaking authorization, realtime mint, score route, and single-flight tests remain green; the
+  production build compiles the recovery and retry UI into the legacy examiner page.
+- Commit: `9c1a8fba7259e1272ca258102ea29d8dbf8fc7d5`
+  (`fix: preserve failed examiner scores for retry`).
+- Verification: the focused 4-file/61-test recovery/authorization/realtime route run, complete
+  101-file/724-test Vitest suite, ESLint, strict 187-file analytics audit covering 293 interactive
+  controls and 107 explicit track calls, and the network-enabled 530-page production build passed.
+  Immediately before commit, a fresh fetch proved local HEAD and `origin/main` both matched exact
+  canonical evidence SHA `8e1e40f8a7a5443fffbc745a755d8892dd0da48d`; after push they both
+  matched the code SHA above. GitHub's successful Vercel status tied it to deployment
+  `dpl_8kNZegFSvjfjJepUpyBT54YmTNJW`, which reached promoted `READY` on every canonical alias.
+  Fresh in-app browser inspection of canonical `/speaking-examiner` reached the correct signed-out
+  Premium gate. Canonical HTML referenced `speaking-examiner-894d9bf94fc9a3c8.js`; direct promoted
+  chunk inspection found the tab-storage key, retry/discard controls, saved-transcript recovery
+  copy, and original-account guard. No microphone, realtime session, quota, transcript, or scoring
+  request was created during this deployment smoke check.
+- Residual risk: a browser network failure can be ambiguous if the server completed scoring but its
+  response was lost. The transcript is now recoverable, but the score route does not yet accept an
+  idempotency key, so a manual retry could duplicate provider work or a saved attempt. This is
+  queued as the next isolated examiner-scoring audit item rather than represented as solved here.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
