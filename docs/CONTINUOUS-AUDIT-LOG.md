@@ -2618,6 +2618,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   disposable Auth user was then deleted; live readback found no matching Auth user and zero
   `user_quotas` rows, and the temporary session artifact was removed.
 
+## CA-107 — Unexpected auth-client failures escaped every account journey
+
+- Status: `FIXED`
+- Area: Authentication / shared provider / signup / login / OTP / recovery
+- Severity: Medium
+- Evidence: every shared auth helper except the already-hardened sign-out path awaited client
+  initialization and an auth operation without a rejection boundary. The dialog consumes the
+  documented `{ error }` result contract and uses `finally` only, so an unexpected thrown failure
+  could escape its event handler without user feedback across password signup, password login,
+  passwordless login, OTP verification, confirmation resend, recovery-code request, or password
+  update. [Supabase's current error-handling guide](https://supabase.com/docs/guides/api/handling-errors-in-supabase-js)
+  documents the normal `{ data, error }` and `AuthError` paths; the installed `auth-js` client
+  catches those errors but deliberately rethrows non-auth exceptions such as client initialization
+  or browser-storage failures.
+- Fix: add one shared last-resort recovery boundary at the AuthProvider API. Provider-returned
+  errors remain unchanged, unexpected `Error` objects remain inspectable, non-Error throws become
+  journey-specific retry messages, and password signup preserves its `{ data, error }` shape with
+  `data: null` on rejection. Dialog behavior and successful auth transitions are unchanged.
+- Regression coverage: the real provider suite forces each of the seven non-sign-out client calls
+  to reject and requires every public helper to resolve with the original error. Existing dialog
+  cases continue to require visible service feedback, retained form state, and enabled retry.
+- Commit: `Recover unexpected auth client failures`.
+- Verification: the focused five-file/16-test auth/account suite, complete 92-file/583-test Vitest
+  suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  network-enabled 529-page production build passed. Publication and exact deployed-sha evidence are
+  recorded after the isolated fix deploys. No auth request, email, session, or account was created
+  or changed during local verification.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

@@ -38,6 +38,25 @@ function backfillLocalAttempts(userId) {
 
 const AuthContext = React.createContext(null);
 
+function toAuthError(error, fallbackMessage) {
+  return error instanceof Error ? error : new Error(fallbackMessage);
+}
+
+// auth-js returns AuthError failures as { error }, but deliberately rethrows
+// unexpected failures (for example client initialization or browser-storage
+// exceptions). Keep the context's documented resolved-result contract for
+// both cases so UI event handlers can always show a retryable error.
+async function recoverAuthCall(operation, fallbackMessage, failureData = {}) {
+  try {
+    return await operation();
+  } catch (error) {
+    return {
+      ...failureData,
+      error: toAuthError(error, fallbackMessage),
+    };
+  }
+}
+
 // window.location.origin, safe during SSR / build (returns '' server-side).
 function getOrigin() {
   if (typeof window !== 'undefined' && window.location) {
@@ -112,33 +131,39 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signInWithEmail = React.useCallback(async (email) => {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: callbackUrl(),
-        // This helper powers the existing-account "one-time code instead"
-        // sign-in path. Supabase otherwise creates a user by default.
-        shouldCreateUser: false,
-      },
-    });
-    return { error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: callbackUrl(),
+          // This helper powers the existing-account "one-time code instead"
+          // sign-in path. Supabase otherwise creates a user by default.
+          shouldCreateUser: false,
+        },
+      });
+      return { error };
+    }, 'Could not send the sign-in code. Please try again.');
   }, []);
 
   const signUpWithPassword = React.useCallback(async (email, password) => {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: callbackUrl() },
-    });
-    return { data, error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: callbackUrl() },
+      });
+      return { data, error };
+    }, 'Could not create your account. Please try again.', { data: null });
   }, []);
 
   const signInWithPassword = React.useCallback(async (email, password) => {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error };
+    }, 'Could not sign you in. Please try again.');
   }, []);
 
   // Verify an emailed 6-digit code. `type` is the expected OTP kind
@@ -147,13 +172,15 @@ export function AuthProvider({ children }) {
   // as a fallback since failed attempts are limited per token; recovery codes
   // are only ever recovery codes, so no fallback there.
   const verifyEmailOtp = React.useCallback(async (email, token, type = 'signup') => {
-    const supabase = getSupabase();
-    const primary = await supabase.auth.verifyOtp({ email, token, type });
-    if (!primary.error) return { error: null };
-    const altType = type === 'signup' ? 'email' : type === 'email' ? 'signup' : null;
-    if (!altType) return { error: primary.error };
-    const secondary = await supabase.auth.verifyOtp({ email, token, type: altType });
-    return { error: secondary.error ? primary.error : null };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const primary = await supabase.auth.verifyOtp({ email, token, type });
+      if (!primary.error) return { error: null };
+      const altType = type === 'signup' ? 'email' : type === 'email' ? 'signup' : null;
+      if (!altType) return { error: primary.error };
+      const secondary = await supabase.auth.verifyOtp({ email, token, type: altType });
+      return { error: secondary.error ? primary.error : null };
+    }, 'Could not verify the code. Please try again.');
   }, []);
 
   // Password reset, OTP-style: emails a 6-digit recovery code (the Supabase
@@ -161,25 +188,31 @@ export function AuthProvider({ children }) {
   // verifyEmailOtp(type 'recovery'), after which updatePassword sets the new
   // password on the recovered session.
   const requestPasswordReset = React.useCallback(async (email) => {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    return { error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      return { error };
+    }, 'Could not send the reset code. Please try again.');
   }, []);
 
   const updatePassword = React.useCallback(async (password) => {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.updateUser({ password });
-    return { error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.updateUser({ password });
+      return { error };
+    }, 'Could not update your password. Please try again.');
   }, []);
 
   const resendSignupEmail = React.useCallback(async (email) => {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo: callbackUrl() },
-    });
-    return { error };
+    return recoverAuthCall(async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: callbackUrl() },
+      });
+      return { error };
+    }, 'Could not resend the confirmation code. Please try again.');
   }, []);
 
   const signOut = React.useCallback(async () => {
@@ -194,10 +227,7 @@ export function AuthProvider({ children }) {
       return { error: null };
     } catch (error) {
       return {
-        error:
-          error instanceof Error
-            ? error
-            : new Error('Could not sign out. Please try again.'),
+        error: toAuthError(error, 'Could not sign out. Please try again.'),
       };
     }
   }, []);

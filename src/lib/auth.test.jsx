@@ -7,6 +7,12 @@ import { act } from 'react-dom/test-utils';
 const testState = vi.hoisted(() => ({
   signOut: vi.fn(),
   signInWithOtp: vi.fn(),
+  signUp: vi.fn(),
+  signInWithPassword: vi.fn(),
+  verifyOtp: vi.fn(),
+  resetPasswordForEmail: vi.fn(),
+  updateUser: vi.fn(),
+  resend: vi.fn(),
 }));
 
 vi.mock('../../lib/supabase', () => ({
@@ -24,6 +30,12 @@ vi.mock('../../lib/supabase', () => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
       signInWithOtp: testState.signInWithOtp,
+      signUp: testState.signUp,
+      signInWithPassword: testState.signInWithPassword,
+      verifyOtp: testState.verifyOtp,
+      resetPasswordForEmail: testState.resetPasswordForEmail,
+      updateUser: testState.updateUser,
+      resend: testState.resend,
       signOut: testState.signOut,
     },
   }),
@@ -89,6 +101,12 @@ async function clickSignOut() {
 beforeEach(() => {
   currentAuth = null;
   testState.signInWithOtp.mockResolvedValue({ error: null });
+  testState.signUp.mockResolvedValue({ data: { user: null, session: null }, error: null });
+  testState.signInWithPassword.mockResolvedValue({ error: null });
+  testState.verifyOtp.mockResolvedValue({ error: null });
+  testState.resetPasswordForEmail.mockResolvedValue({ error: null });
+  testState.updateUser.mockResolvedValue({ error: null });
+  testState.resend.mockResolvedValue({ error: null });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -139,5 +157,40 @@ describe('AuthProvider sign out', () => {
         shouldCreateUser: false,
       },
     });
+  });
+});
+
+describe('AuthProvider rejected-call recovery', () => {
+  it('preserves the resolved error contract across every exposed auth journey', async () => {
+    const networkError = new Error('network unavailable');
+    await renderProvider();
+
+    const cases = [
+      [testState.signInWithOtp, () => currentAuth.signInWithEmail('audit@example.com')],
+      [testState.signUp, () => currentAuth.signUpWithPassword('audit@example.com', 'password123')],
+      [testState.signInWithPassword, () => currentAuth.signInWithPassword('audit@example.com', 'password123')],
+      [testState.verifyOtp, () => currentAuth.verifyEmailOtp('audit@example.com', '123456')],
+      [testState.resend, () => currentAuth.resendSignupEmail('audit@example.com')],
+      [testState.resetPasswordForEmail, () => currentAuth.requestPasswordReset('audit@example.com')],
+      [testState.updateUser, () => currentAuth.updatePassword('password123')],
+    ];
+
+    for (const [providerCall, invoke] of cases) {
+      providerCall.mockRejectedValueOnce(networkError);
+      let result;
+      await act(async () => {
+        result = await invoke();
+      });
+      expect(result.error).toBe(networkError);
+    }
+
+    testState.signInWithPassword.mockRejectedValueOnce('offline');
+    const fallback = await currentAuth.signInWithPassword(
+      'audit@example.com',
+      'password123'
+    );
+    expect(fallback.error).toEqual(
+      new Error('Could not sign you in. Please try again.')
+    );
   });
 });
