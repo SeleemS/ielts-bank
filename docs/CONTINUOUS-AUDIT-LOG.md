@@ -3272,6 +3272,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   promoted `READY` on every canonical alias. Fresh canonical production HTML rendered exactly “Last
   updated: July 21, 2026.”
 
+## CA-126 — Estimator reveal treated a plan lookup outage as verified Free
+
+- Status: `FIXED`
+- Area: Band estimator / Premium entitlement / reveal reliability / fail-closed billing state
+- Severity: Medium
+- Evidence: `fetchPremiumStatus` deliberately returns separate entitlement and error fields so a
+  route can distinguish a verified Free account from a database outage. The new estimator reveal
+  route discarded the error and used only `isPremium`. Any billing-profile read failure therefore
+  returned HTTP 200 with the redacted Free payload to a Premium learner, falsely implying the full
+  report was not included in their plan and making a temporary service problem look like a durable
+  entitlement decision.
+- Fix: require an error-free plan lookup before choosing either report shape. A billing-profile
+  failure now returns retryable HTTP 503 without a band payload; verified Free and Premium branches
+  remain unchanged.
+- Regression coverage: the seven-case reveal suite now injects a resolved plan-query error for an
+  already owned result, requires the explicit HTTP 503 response, and proves no band is disclosed.
+  Atomic ownership, claim failures and races, same-user idempotency, other-user non-disclosure, and
+  unauthenticated rejection remain covered.
+- Commit: `4ee69f4022a9c286f1b710bc5556df3604e0b1e5` (`fix: fail closed on estimator plan outage`).
+- Verification: the focused 1-file/7-test reveal suite, complete 96-file/664-test Vitest suite,
+  ESLint, strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_D4dXYtX8wV9muUHLgNKsEMGy7zzE`, which reached
+  promoted `READY` on every canonical alias. A disposable confirmed Premium production learner then
+  claimed a seeded estimator result through the canonical route. The response returned HTTP 200,
+  `premium: true`, Band 7, all four criteria, the summary, improvements, and corrected examples.
+  Direct access to the underlying table with that authenticated learner still returned Postgres
+  `42501` and zero rows. The estimator row, learner, profile, attempt, and score were deleted, and
+  service-role read-back found zero matching rows in all four audited data groups.
+
 ## Investigation notes
 
 - `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
