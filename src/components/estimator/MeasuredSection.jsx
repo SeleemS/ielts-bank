@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { sanitizeHtml } from '../../../lib/sanitize';
 import QuestionGroup from '../question/QuestionGroup';
 import AudioPlayer from '../question/AudioPlayer';
+import { gradeQuestion } from '../question/grade';
 
 const PASSAGE_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
@@ -83,6 +84,24 @@ export default function MeasuredSection({
 
   const isReading = skill === 'reading';
   const Icon = isReading ? BookOpen : Headphones;
+  const completion = React.useMemo(() => {
+    let total = 0;
+    let completed = 0;
+    (groups || []).forEach((group) => {
+      (group.questions || []).forEach((question) => {
+        total += 1;
+        const value = answers?.[question.number];
+        if (group.questionType === 'multiple_choice_multi') {
+          const required = question.answerKey?.correctOptionKeys?.length || 0;
+          if (required > 0 && Array.isArray(value) && value.length === required) completed += 1;
+        } else if (gradeQuestion(group, question, value).answered) {
+          completed += 1;
+        }
+      });
+    });
+    return { total, completed };
+  }, [groups, answers]);
+  const allAnswered = completion.total > 0 && completion.completed === completion.total;
 
   return (
     <div
@@ -168,9 +187,22 @@ export default function MeasuredSection({
 
       {/* Actions */}
       <div className="mt-8 flex flex-col items-center gap-3">
-        <Button variant="accent" size="lg" onClick={onContinue} className="w-full max-w-sm">
+        <Button
+          variant="accent"
+          size="lg"
+          onClick={onContinue}
+          disabled={!allAnswered}
+          className="w-full max-w-sm"
+        >
           Continue <ArrowRight className="h-4 w-4" />
         </Button>
+        {!allAnswered ? (
+          <p className="text-center text-xs text-muted-foreground">
+            {completion.total > 0
+              ? `Complete all ${completion.total} ${completion.total === 1 ? 'question' : 'questions'} to continue (${completion.completed}/${completion.total} complete), or skip.`
+              : 'Questions are unavailable. Skip this section to continue.'}
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={onSkip}

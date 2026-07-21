@@ -39,9 +39,70 @@ function clickButton(text) {
   });
 }
 
+function clickQuestionChoice(number, text) {
+  const target = [...container.querySelectorAll(`#question-${number} button, #question-${number} label`)].find((node) =>
+    node.textContent.trim().toLowerCase().includes(text.toLowerCase())
+  );
+  if (!target) throw new Error(`No question ${number} choice matching "${text}"`);
+  act(() => {
+    target.click();
+  });
+}
+
 const props = {
-  readingGroups: [],
-  listeningGroups: [],
+  readingGroups: [
+    {
+      id: 'reading-group',
+      questionType: 'true_false_notgiven',
+      prompt: 'Reading statement',
+      instructionsHtml: '',
+      imageSvg: '',
+      options: [],
+      questions: [
+        {
+          number: 1,
+          promptText: 'The passage supports this statement.',
+          answerKey: { accepted: ['true'], correctOptionKeys: [], normalize: 'lower_trim' },
+        },
+      ],
+    },
+    {
+      id: 'reading-multi-group',
+      questionType: 'multiple_choice_multi',
+      prompt: 'Choose TWO letters, A–C.',
+      instructionsHtml: '',
+      imageSvg: '',
+      options: [
+        { key: 'A', text: 'First method' },
+        { key: 'B', text: 'Second method' },
+        { key: 'C', text: 'Third method' },
+      ],
+      questions: [
+        {
+          number: 2,
+          promptText: 'Which TWO methods are described?',
+          answerKey: { accepted: [], correctOptionKeys: ['A', 'B'], normalize: 'lower_trim' },
+        },
+      ],
+    },
+  ],
+  listeningGroups: [
+    {
+      id: 'listening-group',
+      questionType: 'true_false_notgiven',
+      prompt: 'Listening statement',
+      instructionsHtml: '',
+      imageSvg: '',
+      options: [],
+      questions: [
+        {
+          number: 3,
+          promptText: 'The speaker supports this statement.',
+          answerKey: { accepted: ['true'], correctOptionKeys: [], normalize: 'lower_trim' },
+        },
+      ],
+    },
+  ],
   listeningAudioUrl: '',
   readingTitle: 'Test Reading',
   listeningTitle: 'Test Listening',
@@ -72,6 +133,15 @@ describe('EstimatorRunner stepper', () => {
     render(<EstimatorRunner {...props} />);
     clickButton('Start the test');
     expect(container.textContent).toContain('Step 1 of 5 · Reading');
+    expect(container.textContent).toContain('0/2 complete');
+    expect([...container.querySelectorAll('button')].find((node) => node.textContent.includes('Continue')).disabled).toBe(true);
+    clickQuestionChoice(1, 'True');
+    expect(container.textContent).toContain('1/2 complete');
+    expect([...container.querySelectorAll('button')].find((node) => node.textContent.includes('Continue')).disabled).toBe(true);
+    clickQuestionChoice(2, 'First method');
+    expect(container.textContent).toContain('1/2 complete');
+    expect([...container.querySelectorAll('button')].find((node) => node.textContent.includes('Continue')).disabled).toBe(true);
+    clickQuestionChoice(2, 'Second method');
     clickButton('Continue');
     expect(container.textContent).toContain('Step 2 of 5 · Listening');
     // estimator_start fired once on Start.
@@ -81,7 +151,7 @@ describe('EstimatorRunner stepper', () => {
   it('skips every section through to the results screen', () => {
     render(<EstimatorRunner {...props} />);
     clickButton('Start the test');
-    clickButton('Continue'); // reading measured (empty) -> listening
+    clickButton('Skip this section'); // reading -> listening
     clickButton('Skip this section'); // listening -> writing
     expect(container.textContent).toContain('Step 3 of 5 · Writing');
     // Writing now defaults to a MEASURED sample; opting out drops back to the
@@ -101,6 +171,25 @@ describe('EstimatorRunner stepper', () => {
     );
     // estimator_complete fired once on entering results.
     expect(track).toHaveBeenCalledWith('estimator_complete', expect.objectContaining({ version: expect.any(String) }));
+  });
+
+  it('does not score an unanswered measured section as a completed low band', () => {
+    render(<EstimatorRunner {...props} />);
+    clickButton('Start the test');
+
+    const continueButton = [...container.querySelectorAll('button')].find((node) =>
+      node.textContent.includes('Continue')
+    );
+    expect(continueButton.disabled).toBe(true);
+    expect(container.textContent).toContain('Complete all 2 questions to continue (0/2 complete), or skip.');
+    expect(container.textContent).toContain('Step 1 of 5 · Reading');
+
+    clickButton('Skip this section');
+    expect(container.textContent).toContain('Step 2 of 5 · Listening');
+    expect(track).toHaveBeenCalledWith(
+      'estimator_section_complete',
+      expect.objectContaining({ skill: 'reading', skipped: true })
+    );
   });
 
   it('shows the marked writing sample by default and discloses the gate upfront', () => {
