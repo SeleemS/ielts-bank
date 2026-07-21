@@ -3869,6 +3869,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   session-verification retry message. No paid purchase or Stripe session was initiated during this
   deployment smoke check.
 
+## CA-144 — Billing actions misreported auth outages as reauthentication
+
+- Status: `FIXED`
+- Area: Billing management / portal / subscription pause / plan upgrade / auth verification
+- Severity: Medium
+- Evidence: all three billing mutation journeys shared an `authHeaders()` helper that read only
+  `data` from Supabase `getSession()`. A resolved `{ data, error }` failure was therefore reported to
+  an already linked learner as “Please sign in again,” while a rejected session lookup exposed the
+  dependency error text directly. The actions stopped before their protected APIs, but portal,
+  pause, and upgrade each offered a false or inconsistent recovery path at a sensitive billing
+  boundary.
+- Fix: route the shared billing authorization helper through the three-state browser-session
+  resolver. Resolved and rejected auth failures now produce one accessible refresh-and-retry alert
+  before any billing API call. A verified missing session retains the explicit reauthentication
+  path, and valid tokens continue through the unchanged portal, pause, upgrade-preview, and
+  upgrade-confirm requests.
+- Regression coverage: the Billing DOM suite exercises portal launch, one-time pause, and annual
+  upgrade under both resolved and rejected auth failures. All six cases require zero API calls and
+  the truthful retry alert. A separate case preserves the verified no-session message, while the
+  existing valid-token pause and two-step quoted-upgrade journeys remain covered.
+- Commit: `1258deeca25990e75fc490388088d3d0a43cf2ef`
+  (`fix: recover billing action auth outages`).
+- Verification: the focused 2-file/19-test Billing/session run, complete 100-file/704-test Vitest
+  suite, ESLint, strict 185-file analytics audit covering 291 interactive controls and 105 explicit
+  track calls, and the network-enabled 530-page production build passed. Immediately before commit,
+  a fresh fetch proved local HEAD and `origin/main` both matched exact canonical evidence SHA
+  `2e5ad9c74e7a60b6896d9f1be97535f56ddd84a8`; after push they both matched the code SHA above.
+  GitHub's successful Vercel status tied it to deployment
+  `dpl_2ZTYRVaLAhCbTsKNsZNzvTyEKrA5`, which reached promoted `READY` on every canonical alias.
+  Fresh in-app browser inspection of canonical `/billing/manage` reached the correct signed-out
+  guard after auth loading. Canonical HTML referenced `billing/manage-279a57d2b326ed44.js`, and
+  direct promoted-chunk inspection found the shared session-verification retry message. No portal,
+  pause, plan change, Stripe session, or charge was initiated during this deployment smoke check.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
