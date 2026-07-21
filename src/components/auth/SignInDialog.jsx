@@ -46,6 +46,10 @@ const GOALS = [
 ];
 const BANDS = ['6.0', '6.5', '7.0', '7.5', '8.0+'];
 
+function matchesAuthError(error, code, legacyMessagePattern) {
+  return error?.code === code || legacyMessagePattern.test(error?.message || '');
+}
+
 // Merge goal + target band into the signed-in user's row. Fails soft — the
 // worst outcome is an unanswered onboarding question.
 async function saveProfile(userId, { goal, band, examDate }) {
@@ -234,7 +238,7 @@ export default function SignInDialog({
         if (error) {
           // Unconfirmed account: push them into the verify step instead of a
           // dead-end error.
-          if (/email not confirmed/i.test(error.message || '')) {
+          if (matchesAuthError(error, 'email_not_confirmed', /email not confirmed/i)) {
             const { error: resendError } = await resendSignupEmail(trimmed);
             if (resendError) {
               setErrorMsg(
@@ -249,7 +253,7 @@ export default function SignInDialog({
             return;
           }
           setErrorMsg(
-            /invalid login credentials/i.test(error.message || '')
+            matchesAuthError(error, 'invalid_credentials', /invalid login credentials/i)
               ? 'Email or password is incorrect. If you signed up before we added passwords, use the emailed code option below.'
               : error.message || 'Could not sign you in. Please try again.'
           );

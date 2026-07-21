@@ -2650,6 +2650,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   controls intact. Unexpected exceptions are verified by the deterministic forced-rejection test;
   no auth request, email, session, or account was created or changed during production verification.
 
+## CA-108 — Login recovery depended on mutable provider message text
+
+- Status: `FIXED`
+- Area: Authentication / password login / email confirmation / error routing
+- Severity: Medium
+- Evidence: password login detected an unconfirmed account and invalid credentials by matching the
+  provider's English `error.message`. If Supabase changed that copy while retaining its stable error
+  contract, an unconfirmed learner would remain on the password form instead of receiving a fresh
+  confirmation code, and invalid credentials could expose raw provider wording. [Supabase's current
+  error-handling guide](https://supabase.com/docs/guides/api/handling-errors-in-supabase-js)
+  explicitly recommends branching on `AuthError.code` because messages can change; the installed
+  client documents `email_not_confirmed` and `invalid_credentials` for these cases.
+- Fix: route both decisions by their stable Auth error codes. Preserve the existing case-insensitive
+  message checks only as a compatibility fallback for older or nonconforming error objects.
+- Regression coverage: the real dialog receives unfamiliar messages paired with each stable code.
+  The unconfirmed-account case must still request a confirmation resend and preserve the password
+  form if that send fails; the invalid-credentials case must show the existing safe learner-facing
+  guidance rather than the unfamiliar provider text.
+- Commit: `Route auth failures by stable codes`.
+- Verification: the focused five-file/17-test auth/account suite, complete 92-file/584-test Vitest
+  suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  network-enabled 529-page production build passed. Publication and exact deployed-sha evidence are
+  recorded after the isolated fix deploys. No auth request, email, session, or account was created
+  or changed during local verification.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

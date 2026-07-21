@@ -130,7 +130,9 @@ describe('SignInDialog password validation', () => {
 
   it('does not claim a confirmation code was sent when automatic resend fails', async () => {
     testState.signInWithPassword.mockResolvedValue({
-      error: new Error('Email not confirmed'),
+      error: Object.assign(new Error('Confirm your email before signing in'), {
+        code: 'email_not_confirmed',
+      }),
     });
     testState.resendSignupEmail.mockResolvedValue({
       error: new Error('Email service unavailable'),
@@ -156,6 +158,30 @@ describe('SignInDialog password validation', () => {
     );
     expect(document.querySelector('#signin-password')).not.toBeNull();
     expect(document.querySelector('#signin-otp')).toBeNull();
+  });
+
+  it('uses the stable invalid-credentials code instead of exposing provider text', async () => {
+    testState.signInWithPassword.mockResolvedValue({
+      error: Object.assign(new Error('Authentication failed for supplied login'), {
+        code: 'invalid_credentials',
+      }),
+    });
+    await renderDialog('signin');
+    setInput('#signin-email', 'learner@example.com');
+    setInput('#signin-password', 'password123');
+
+    const submit = document.querySelector('[role="dialog"] button[type="submit"]');
+    await act(async () => {
+      submit.closest('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toBe(
+      'Email or password is incorrect. If you signed up before we added passwords, use the emailed code option below.'
+    );
   });
 
   it('allows an immediate retry when a manual resend fails', async () => {
