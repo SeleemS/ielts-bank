@@ -128,7 +128,11 @@ export default async function handler(req, res) {
     await mirrorToHistory(admin, { userId, row });
   }
 
-  const { isPremium } = await fetchPremiumStatus(admin, userId);
+  const premium = await fetchPremiumStatus(admin, userId);
+  if (premium.error) {
+    return res.status(503).json({ error: 'Could not verify your plan. Please try again.' });
+  }
+  const { isPremium } = premium;
   const result = row.result || {};
   const criteria = result.criteria || {};
   const band = Number(row.writing_band);

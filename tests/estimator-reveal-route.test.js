@@ -187,6 +187,17 @@ describe('POST /api/estimator/reveal', () => {
     expect(state.scores).toHaveLength(0);
   });
 
+  it('fails closed instead of treating a plan lookup outage as verified Free', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    state.premium = { isPremium: false, error: { message: 'billing profile unavailable' } };
+    const res = mockRes();
+    await handler(mockReq(), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(res.body).toEqual({ error: 'Could not verify your plan. Please try again.' });
+    expect(res.body).not.toHaveProperty('band');
+  });
+
   it('does not expose a result already claimed by another user', async () => {
     state.lookupRows = [{ ...ROW, claimed_by_user_id: OTHER_USER_ID }];
     const res = mockRes();
