@@ -3122,11 +3122,46 @@ False positives are kept in the investigation notes so they are not rediscovered
   signed out through the production account menu. No Stripe object was created; the Auth user was
   deleted, and service-role read-back found zero matching `users`, `user_quotas`, or rate-limit rows.
 
+## CA-121 — Premium article visits could initialize an ad before plan verification
+
+- Status: `FIXED`; remote-history isolation exception documented below
+- Area: Monetization / ads / Premium entitlement / auth transition / third-party requests
+- Severity: Medium
+- Evidence: `AdUnit` consumed only `usePlan().isPremium`. During the authenticated owner query,
+  `isPremium` is still false while `loading` is true, so an article could mount an AdSense slot and
+  push it to `adsbygoogle` before the verified Premium result removed the unit. This was the remaining
+  ad-specific consumer identified by CA-120 and could disclose a paid learner's page visit to an ad
+  provider despite the product promise that Premium removes ads.
+- Fix: gate ad rendering on both a configured slot and completed plan verification. `AdUnit` now
+  returns nothing while the plan is loading, remains absent for a verified Premium learner, and
+  initializes exactly once for a verified Free learner.
+- Regression coverage: the component suite holds plan verification in the loading state and proves
+  there is no ad DOM and no `adsbygoogle` push, then proves one unit and one push after verified Free
+  resolution, followed by removal without another push after verified Premium resolution.
+- Commit: `4e154b2747020cdac75093b44b55f9b7c0bd93fb` (`fix: defer ads until plan verification`).
+  The intended CA-121 change was limited to `src/components/AdUnit.jsx` and
+  `src/components/AdUnit.test.jsx`. Concurrently staged estimator work was accidentally captured in
+  the same commit and another process pushed that mixed commit to `main` before the local history
+  could be split. The reconstructed two-commit local tree was byte-identical to the pushed tree, but
+  rewriting published `main` was not authorized, so the remote commit remains a documented exception
+  to the one-fix-per-commit audit rule. Subsequent audit commits must use path-limited commits when
+  unrelated staged changes are present.
+- Verification: the focused 1-test AdUnit suite, complete 95-file/653-test Vitest suite, ESLint,
+  strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched exact mixed SHA
+  `4e154b2747020cdac75093b44b55f9b7c0bd93fb`; GitHub's successful Vercel status tied that SHA to
+  deployment `dpl_7NvjFX5gGUsoJzPhADbgqXePFM5C`, which reached promoted `READY` on every canonical
+  alias. A disposable confirmed production Premium learner signed in through the real dialog and
+  opened a live article. Both the immediate authenticated read and settled DOM contained zero ad
+  elements and zero configured slot elements while the article content rendered normally. The Auth
+  user was deleted, and service-role read-back found zero matching `users`, `user_quotas`, or
+  rate-limit rows.
+
 ## Investigation notes
 
-- `AdUnit`, `EstimatorResults`, and `AiQuotaPanel` consume `usePlan().isPremium` without honoring
-  `loading`; they remain an explicit follow-up audit surface because CA-120 can protect only consumers
-  that observe the hook's loading contract.
+- `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
+  they remain an explicit follow-up audit surface because CA-120 can protect only consumers that
+  observe the hook's loading contract. `AdUnit` was corrected in CA-121.
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
   Direct DOM text verification confirmed that the live page renders normal quotation marks; no
