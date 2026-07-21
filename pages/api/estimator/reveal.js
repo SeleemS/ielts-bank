@@ -37,24 +37,90 @@ async function resolveUserId(req) {
   return data.user.id;
 }
 
-// Mirror the estimator sample into the learner's own history (fail-soft: the
-// reveal itself must still succeed if this write fails).
+function isEstimatorAttempt(attempt, { userId, rowId }) {
+  return (
+    attempt?.user_id === userId &&
+    attempt?.responses?.source === 'band-estimator' &&
+    (!attempt.responses.estimatorScoreId || attempt.responses.estimatorScoreId === rowId)
+  );
+}
+
+async function findEstimatorAttempt(admin, { userId, row }) {
+  // New mirrors use the estimator row UUID as the attempt UUID. Besides making
+  // retries cheap to find, the attempts primary key prevents two concurrent
+  // reveal requests from creating duplicate history rows.
+  const { data: current, error: currentError } = await admin
+    .from('attempts')
+    .select('id, user_id, responses')
+    .eq('id', row.id)
+    .maybeSingle();
+  if (currentError) throw currentError;
+  if (isEstimatorAttempt(current, { userId, rowId: row.id })) return current;
+
+  // CA-121 through CA-128 created attempts with random UUIDs and no stable
+  // estimatorScoreId. Preserve those rows instead of duplicating them.
+  const { data: legacy, error: legacyError } = await admin
+    .from('attempts')
+    .select('id, user_id, responses')
+    .eq('user_id', userId)
+    .eq('skill', 'writing')
+    .eq('submitted_at', row.created_at)
+    .contains('responses', { source: 'band-estimator' })
+    .limit(1)
+    .maybeSingle();
+  if (legacyError) throw legacyError;
+  return isEstimatorAttempt(legacy, { userId, rowId: row.id }) ? legacy : null;
+}
+
+async function findAttemptScore(admin, { attemptId, userId }) {
+  const { data, error } = await admin
+    .from('scores')
+    .select('id')
+    .eq('attempt_id', attemptId)
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Mirror the estimator sample into the learner's own history. This operation is
+// idempotent and returns false until BOTH rows are durably present, so a claimed
+// result can be retried safely after a transient database failure.
 async function mirrorToHistory(admin, { userId, row }) {
   try {
-    const { data: attempt, error: attemptErr } = await admin
-      .from('attempts')
-      .insert({
-        user_id: userId,
-        passage_id: null,
-        skill: 'writing',
-        responses: { essay: row.essay, source: 'band-estimator', wordCount: row.word_count },
-        band: row.writing_band,
-        submitted_at: row.created_at,
-      })
-      .select('id')
-      .single();
-    if (attemptErr || !attempt) return;
-    const { error: scoreErr } = await admin.from('scores').insert({
+    let attempt = await findEstimatorAttempt(admin, { userId, row });
+    if (!attempt) {
+      const { data, error } = await admin
+        .from('attempts')
+        .insert({
+          id: row.id,
+          user_id: userId,
+          passage_id: null,
+          skill: 'writing',
+          responses: {
+            essay: row.essay,
+            source: 'band-estimator',
+            wordCount: row.word_count,
+            estimatorScoreId: row.id,
+          },
+          band: row.writing_band,
+          submitted_at: row.created_at,
+        })
+        .select('id, user_id, responses')
+        .single();
+      attempt = !error && isEstimatorAttempt(data, { userId, rowId: row.id }) ? data : null;
+
+      // A competing retry may have won the primary-key race. Read it back
+      // rather than treating the duplicate insert as a failed save.
+      if (!attempt) attempt = await findEstimatorAttempt(admin, { userId, row });
+    }
+    if (!attempt) return false;
+
+    if (await findAttemptScore(admin, { attemptId: attempt.id, userId })) return true;
+
+    const { error: scoreError } = await admin.from('scores').insert({
+      id: row.id,
       attempt_id: attempt.id,
       user_id: userId,
       skill: 'writing',
@@ -62,9 +128,13 @@ async function mirrorToHistory(admin, { userId, row }) {
       criteria: row.result?.criteria || {},
       model: row.model || null,
     });
-    if (scoreErr) await admin.from('attempts').delete().eq('id', attempt.id);
+    if (!scoreError) return true;
+
+    // As above, a duplicate insert can mean another request completed first.
+    return Boolean(await findAttemptScore(admin, { attemptId: attempt.id, userId }));
   } catch (error) {
     console.error('estimator reveal mirror failed:', error.message);
+    return false;
   }
 }
 
@@ -125,7 +195,13 @@ export default async function handler(req, res) {
       console.error('estimator reveal claim failed:', error.message);
       return res.status(503).json({ error: 'Could not save this result to your account. Please try again.' });
     }
-    await mirrorToHistory(admin, { userId, row });
+  }
+
+  const historySaved = await mirrorToHistory(admin, { userId, row });
+  if (!historySaved) {
+    return res.status(503).json({
+      error: 'Could not save this result to your history. Please try again.',
+    });
   }
 
   const premium = await fetchPremiumStatus(admin, userId);

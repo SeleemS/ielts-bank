@@ -34,7 +34,11 @@ const state = {
   claimUpdates: [],
   claimNullFilters: [],
   attempts: [],
+  attemptInsertCalls: [],
+  attemptInsertError: null,
   scores: [],
+  scoreInsertCalls: [],
+  scoreInsertError: null,
   premium: { isPremium: false, error: null },
 };
 
@@ -62,6 +66,46 @@ function estimatorClaim(values) {
   return query;
 }
 
+function containsObject(actual, expected) {
+  return Object.entries(expected).every(([key, value]) => actual?.[key] === value);
+}
+
+function attemptLookup() {
+  const filters = [];
+  const query = {
+    eq: (column, value) => {
+      filters.push((row) => row[column] === value);
+      return query;
+    },
+    contains: (column, value) => {
+      filters.push((row) => containsObject(row[column], value));
+      return query;
+    },
+    limit: () => query,
+    maybeSingle: async () => ({
+      data: state.attempts.find((row) => filters.every((filter) => filter(row))) || null,
+      error: null,
+    }),
+  };
+  return query;
+}
+
+function scoreLookup() {
+  const filters = [];
+  const query = {
+    eq: (column, value) => {
+      filters.push((row) => row[column] === value);
+      return query;
+    },
+    limit: () => query,
+    maybeSingle: async () => ({
+      data: state.scores.find((row) => filters.every((filter) => filter(row))) || null,
+      error: null,
+    }),
+  };
+  return query;
+}
+
 const admin = {
   auth: {
     getUser: async () => ({ data: { user: state.authUser }, error: state.authError }),
@@ -75,20 +119,35 @@ const admin = {
     }
     if (table === 'attempts') {
       return {
+        select: () => attemptLookup(),
         insert: (values) => {
-          state.attempts.push(values);
+          state.attemptInsertCalls.push(values);
           return {
             select: () => ({
-              single: async () => ({ data: { id: 'attempt-1' }, error: null }),
+              single: async () => {
+                if (state.attemptInsertError) {
+                  return { data: null, error: state.attemptInsertError };
+                }
+                if (state.attempts.some((attempt) => attempt.id === values.id)) {
+                  return { data: null, error: { code: '23505', message: 'duplicate key' } };
+                }
+                state.attempts.push(values);
+                return { data: values, error: null };
+              },
             }),
           };
         },
-        delete: () => ({ eq: async () => ({ error: null }) }),
       };
     }
     if (table === 'scores') {
       return {
+        select: () => scoreLookup(),
         insert: async (values) => {
+          state.scoreInsertCalls.push(values);
+          if (state.scoreInsertError) return { error: state.scoreInsertError };
+          if (state.scores.some((score) => score.id === values.id)) {
+            return { error: { code: '23505', message: 'duplicate key' } };
+          }
           state.scores.push(values);
           return { error: null };
         },
@@ -136,7 +195,11 @@ beforeEach(() => {
   state.claimUpdates = [];
   state.claimNullFilters = [];
   state.attempts = [];
+  state.attemptInsertCalls = [];
+  state.attemptInsertError = null;
   state.scores = [];
+  state.scoreInsertCalls = [];
+  state.scoreInsertError = null;
   state.premium = { isPremium: false, error: null };
 });
 
@@ -151,7 +214,10 @@ describe('POST /api/estimator/reveal', () => {
     expect(state.claimUpdates[0]).toMatchObject({ claimed_by_user_id: USER_ID });
     expect(state.claimNullFilters).toEqual([{ column: 'claimed_by_user_id', value: null }]);
     expect(state.attempts).toHaveLength(1);
+    expect(state.attempts[0].id).toBe(ROW.id);
+    expect(state.attempts[0].responses.estimatorScoreId).toBe(ROW.id);
     expect(state.scores).toHaveLength(1);
+    expect(state.scores[0]).toMatchObject({ id: ROW.id, attempt_id: ROW.id });
   });
 
   it('fails closed when the ownership claim returns a database error', async () => {
@@ -176,15 +242,113 @@ describe('POST /api/estimator/reveal', () => {
     expect(state.scores).toHaveLength(0);
   });
 
-  it('allows an idempotent re-reveal only for the same user', async () => {
+  it('repairs missing history on a same-user re-reveal without reclaiming the result', async () => {
     state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
     const res = mockRes();
     await handler(mockReq(), res);
 
     expect(res.statusCode).toBe(200);
     expect(state.claimUpdates).toHaveLength(0);
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+  });
+
+  it('does not duplicate history when the same user reveals the result again', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    const first = mockRes();
+    const second = mockRes();
+    await handler(mockReq(), first);
+    await handler(mockReq(), second);
+
+    expect(first.statusCode).toBe(200);
+    expect(second.statusCode).toBe(200);
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+    expect(state.attemptInsertCalls).toHaveLength(1);
+    expect(state.scoreInsertCalls).toHaveLength(1);
+  });
+
+  it('uses deterministic primary keys to collapse concurrent same-user reveals', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    const first = mockRes();
+    const second = mockRes();
+    await Promise.all([handler(mockReq(), first), handler(mockReq(), second)]);
+
+    expect(first.statusCode).toBe(200);
+    expect(second.statusCode).toBe(200);
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+    expect(state.attempts[0].id).toBe(ROW.id);
+    expect(state.scores[0].id).toBe(ROW.id);
+  });
+
+  it('fails closed and retries a transient history score failure', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    state.scoreInsertError = { message: 'database unavailable' };
+    const failed = mockRes();
+    await handler(mockReq(), failed);
+
+    expect(failed.statusCode).toBe(503);
+    expect(failed.body).toEqual({
+      error: 'Could not save this result to your history. Please try again.',
+    });
+    expect(failed.body).not.toHaveProperty('band');
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(0);
+
+    state.scoreInsertError = null;
+    const retried = mockRes();
+    await handler(mockReq(), retried);
+
+    expect(retried.statusCode).toBe(200);
+    expect(retried.body).toMatchObject({ band: 6, premium: false });
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+    expect(state.attemptInsertCalls).toHaveLength(1);
+  });
+
+  it('fails closed and retries a transient history attempt failure', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    state.attemptInsertError = { message: 'database unavailable' };
+    const failed = mockRes();
+    await handler(mockReq(), failed);
+
+    expect(failed.statusCode).toBe(503);
+    expect(failed.body).toEqual({
+      error: 'Could not save this result to your history. Please try again.',
+    });
     expect(state.attempts).toHaveLength(0);
     expect(state.scores).toHaveLength(0);
+
+    state.attemptInsertError = null;
+    const retried = mockRes();
+    await handler(mockReq(), retried);
+
+    expect(retried.statusCode).toBe(200);
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+  });
+
+  it('reuses a legacy estimator history row instead of duplicating it', async () => {
+    state.lookupRows = [{ ...ROW, claimed_by_user_id: USER_ID }];
+    state.attempts = [
+      {
+        id: 'legacy-attempt',
+        user_id: USER_ID,
+        skill: 'writing',
+        submitted_at: ROW.created_at,
+        responses: { essay: ROW.essay, source: 'band-estimator', wordCount: ROW.word_count },
+      },
+    ];
+    state.scores = [{ id: 'legacy-score', attempt_id: 'legacy-attempt', user_id: USER_ID }];
+    const res = mockRes();
+    await handler(mockReq(), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(state.attempts).toHaveLength(1);
+    expect(state.scores).toHaveLength(1);
+    expect(state.attemptInsertCalls).toHaveLength(0);
+    expect(state.scoreInsertCalls).toHaveLength(0);
   });
 
   it('fails closed instead of treating a plan lookup outage as verified Free', async () => {
