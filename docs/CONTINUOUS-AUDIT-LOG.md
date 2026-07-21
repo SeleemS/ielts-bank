@@ -2679,6 +2679,30 @@ False positives are kept in the investigation notes so they are not rediscovered
   Code-specific branches are verified by the deterministic unfamiliar-message tests; no auth
   request, email, session, or account was created or changed during production verification.
 
+## CA-109 — A past exam date could block every profile update
+
+- Status: `FIXED`
+- Area: Dashboard / Account Settings / profile form / exam date
+- Severity: Medium
+- Evidence: Account Settings loaded the learner's persisted exam date into an HTML date input whose
+  `min` was always today. Once that date passed, native form validation marked the control invalid
+  and could prevent submission before React's handler ran. A returning learner could therefore be
+  unable to save an unrelated display name, target band, or weekly goal, with no application error
+  explaining why.
+- Fix: remove the unconditional native minimum from the persisted Settings field and validate date
+  changes inside the existing form handler. An unchanged historical date remains valid so unrelated
+  settings can be saved without silent data loss; a newly selected past date is rejected with clear
+  feedback before any database request. Fresh-signup onboarding retains its future-date minimum.
+- Regression coverage: the real Settings form loads a saved 2020 date, requires no native `min`,
+  changes the display name, and completes the profile update. A separate case selects a new 2020
+  date and requires visible feedback plus zero profile writes.
+- Commit: `Keep historical exam dates editable`.
+- Verification: the focused one-file/five-test Account Settings suite, complete 92-file/586-test
+  Vitest suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  network-enabled 529-page production build passed. Publication and a disposable-user production
+  check are recorded after the isolated fix deploys. No profile or account was changed during local
+  verification.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

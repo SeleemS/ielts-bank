@@ -41,6 +41,31 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let container;
 let root;
 
+const baseProfile = {
+  display_name: 'Audit Learner',
+  target_band: 7,
+  exam_date: null,
+  prefs: {},
+  plan: 'free',
+  plan_status: 'inactive',
+  plan_renews_at: null,
+  plan_expires_at: null,
+  billing_pause_until: null,
+};
+
+function renderSettings(profile = {}) {
+  act(() => {
+    root.render(
+      <AccountSettings
+        user={{ id: 'user-1', email: 'audit@example.com' }}
+        profile={{ ...baseProfile, ...profile }}
+        onProfileChange={vi.fn()}
+        onSignOut={testState.signOut}
+      />
+    );
+  });
+}
+
 function setInput(id, value) {
   const input = container.querySelector(id);
   const setter = Object.getOwnPropertyDescriptor(
@@ -65,26 +90,7 @@ beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => {
-    root.render(
-      <AccountSettings
-        user={{ id: 'user-1', email: 'audit@example.com' }}
-        profile={{
-          display_name: 'Audit Learner',
-          target_band: 7,
-          exam_date: null,
-          prefs: {},
-          plan: 'free',
-          plan_status: 'inactive',
-          plan_renews_at: null,
-          plan_expires_at: null,
-          billing_pause_until: null,
-        }}
-        onProfileChange={vi.fn()}
-        onSignOut={testState.signOut}
-      />
-    );
-  });
+  renderSettings();
 });
 
 afterEach(() => {
@@ -145,5 +151,36 @@ describe('AccountSettings network failures', () => {
       'Could not reach the authentication service.'
     );
     expect(button.disabled).toBe(false);
+  });
+});
+
+describe('AccountSettings exam dates', () => {
+  it('lets a learner with a historical saved date update unrelated preferences', async () => {
+    renderSettings({ exam_date: '2020-01-15' });
+    testState.profileSave.mockResolvedValue({
+      data: { ...baseProfile, display_name: 'Updated Learner', exam_date: '2020-01-15' },
+      error: null,
+    });
+
+    const date = container.querySelector('#dashboard-exam-date');
+    expect(date.value).toBe('2020-01-15');
+    expect(date.getAttribute('min')).toBeNull();
+    setInput('#dashboard-name', 'Updated Learner');
+    await submit(container.querySelectorAll('form')[0]);
+
+    expect(testState.profileSave).toHaveBeenCalledOnce();
+    expect(container.querySelector('[role="status"]')?.textContent).toContain(
+      'Your learning preferences are saved.'
+    );
+  });
+
+  it('rejects a newly selected past exam date with visible feedback', async () => {
+    setInput('#dashboard-exam-date', '2020-01-15');
+    await submit(container.querySelectorAll('form')[0]);
+
+    expect(testState.profileSave).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Choose today or a future exam date.'
+    );
   });
 });

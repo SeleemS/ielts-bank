@@ -46,8 +46,17 @@ function ProfileSettings({ user, profile, onProfileChange }) {
     event.preventDefault();
     setFeedback({ type: '', message: '' });
     const trimmed = displayName.trim();
+    const savedExamDate = profile.exam_date || profile.prefs?.examDate || '';
+    const today = new Date().toISOString().slice(0, 10);
     if (trimmed.length > 80) {
       setFeedback({ type: 'error', message: 'Display name must be 80 characters or fewer.' });
+      return;
+    }
+    // A historical date may already be saved when a learner returns after
+    // their exam. Let them update unrelated settings without silently clearing
+    // it, while still rejecting a newly selected date in the past.
+    if (examDate && examDate < today && examDate !== savedExamDate) {
+      setFeedback({ type: 'error', message: 'Choose today or a future exam date.' });
       return;
     }
     const nextProfile = {
@@ -90,7 +99,7 @@ function ProfileSettings({ user, profile, onProfileChange }) {
           <div className="space-y-2"><Label htmlFor="dashboard-email">Email address</Label><div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input id="dashboard-email" value={user.email || ''} disabled className="h-11 rounded-xl bg-slate-50 pl-9" /></div></div>
           <div className="space-y-2"><Label htmlFor="dashboard-target">Target IELTS band</Label><Select id="dashboard-target" value={targetBand} onChange={(event) => setTargetBand(event.target.value)} className="h-11 rounded-xl"><option value="">Not set yet</option>{Array.from({ length: 13 }, (_, index) => 3 + index * 0.5).map((band) => <option key={band} value={band}>{band.toFixed(1)}</option>)}</Select></div>
           <div className="space-y-2"><Label htmlFor="dashboard-goal">Weekly submission goal</Label><Select id="dashboard-goal" value={weeklyGoal} onChange={(event) => setWeeklyGoal(event.target.value)} className="h-11 rounded-xl">{[2, 3, 5, 7, 10].map((goal) => <option key={goal} value={goal}>{goal} submissions per week</option>)}</Select></div>
-          <div className="space-y-2 sm:col-span-2"><Label htmlFor="dashboard-exam-date">Exam date <span className="font-normal text-slate-400">(optional)</span></Label><div className="relative sm:max-w-xs"><CalendarClock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input id="dashboard-exam-date" type="date" value={examDate} onChange={(event) => setExamDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} className="h-11 rounded-xl pl-9" /></div></div>
+          <div className="space-y-2 sm:col-span-2"><Label htmlFor="dashboard-exam-date">Exam date <span className="font-normal text-slate-400">(optional)</span></Label><div className="relative sm:max-w-xs"><CalendarClock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input id="dashboard-exam-date" type="date" value={examDate} onChange={(event) => setExamDate(event.target.value)} className="h-11 rounded-xl pl-9" /></div></div>
         </div>
         <Feedback type={feedback.type}>{feedback.message}</Feedback>
         <div className="flex justify-end"><Button type="submit" variant="accent" disabled={busy} className="rounded-xl">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Save preferences</Button></div>
