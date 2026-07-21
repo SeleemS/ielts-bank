@@ -17,7 +17,17 @@ import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../src/lib/prefs';
-import { resolveSpeakingAuthAction } from '../src/lib/pendingSpeakingSession';
+import {
+  claimPendingSpeakingScore,
+  releasePendingSpeakingScore,
+  resolveSpeakingAuthAction,
+} from '../src/lib/pendingSpeakingSession';
+import {
+  clearPendingRealtimeScore,
+  loadPendingRealtimeScore,
+  savePendingRealtimeScore,
+  submitPendingRealtimeScore,
+} from '../src/lib/realtimeScoreRecovery';
 import {
   ScoringProgress,
   CriterionFeedback,
@@ -46,6 +56,14 @@ function fmtTime(totalSeconds) {
 // scoring API enforces the same threshold server-side).
 const MIN_SCORABLE_WORDS = 40;
 const INTRO_PREF = 'examinerIntroDismissed';
+
+function getBrowserSessionStorage() {
+  try {
+    return typeof window === 'undefined' ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
 
 // Connection animation: concentric pulse rings around a mic orb with staged
 // status text — replaces the bare spinner.
@@ -95,11 +113,11 @@ const SPEAKING_TIPS = [
 ];
 
 export default function SpeakingExaminerPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
   const minutes = useRealtimeMinutes();
 
-  // phase: idle | connecting | live | scoring | done | error
+  // phase: idle | connecting | live | scoring | score_error | done
   const [phase, setPhase] = React.useState('idle');
   const [error, setError] = React.useState('');
   const [signInOpen, setSignInOpen] = React.useState(false);
@@ -107,6 +125,7 @@ export default function SpeakingExaminerPage() {
   const [secondsLeft, setSecondsLeft] = React.useState(0);
   const [result, setResult] = React.useState(null);
   const [activeMode, setActiveMode] = React.useState(null);
+  const [pendingScore, setPendingScore] = React.useState(null);
 
   const pcRef = React.useRef(null);
   const micRef = React.useRef(null);
@@ -134,6 +153,15 @@ export default function SpeakingExaminerPage() {
   const [candidateWords, setCandidateWords] = React.useState(0);
   // Auto-end when the examiner closes the test.
   const autoEndRef = React.useRef(null);
+  const sessionOwnerRef = React.useRef(null);
+  const scoreAttemptRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const saved = loadPendingRealtimeScore(getBrowserSessionStorage());
+    if (!saved) return;
+    setPendingScore({ ...saved, stored: true });
+    setPhase('score_error');
+  }, []);
 
   React.useEffect(() => {
     if (getLocalPref(INTRO_PREF)) {
@@ -290,12 +318,6 @@ export default function SpeakingExaminerPage() {
     }
   }
 
-  async function authHeader() {
-    const { data } = await getSupabase().auth.getSession();
-    const token = data?.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : null;
-  }
-
   async function startSession(mode) {
     setError('');
     if (!user) {
@@ -334,6 +356,7 @@ export default function SpeakingExaminerPage() {
         return;
       }
       const headers = auth.headers;
+      sessionOwnerRef.current = user.id;
 
       // 1. Mic first — no point burning minutes if permission is denied.
       const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -468,28 +491,86 @@ export default function SpeakingExaminerPage() {
       return;
     }
 
+    const scorePayload = {
+      version: 1,
+      userId: sessionOwnerRef.current || user?.id || '',
+      mode: activeMode,
+      createdAt: Date.now(),
+      transcript,
+    };
+    const stored = savePendingRealtimeScore(getBrowserSessionStorage(), scorePayload);
+    const recoverableScore = { ...scorePayload, stored };
+    setPendingScore(recoverableScore);
+    await scorePendingInterview(recoverableScore);
+  }
+
+  async function scorePendingInterview(pending) {
+    if (!pending || !claimPendingSpeakingScore(scoreAttemptRef)) return;
     setPhase('scoring');
+    setError('');
     try {
-      const headers = await authHeader();
-      const res = await fetch('/api/score/speaking-realtime', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(headers || {}) },
-        body: JSON.stringify({ mode: activeMode, transcript }),
+      const outcome = await submitPendingRealtimeScore({
+        currentUserId: user?.id || null,
+        fetchFn: fetch,
+        getClient: getSupabase,
+        pending,
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setPhase('idle');
-        setError(body.error || 'Scoring failed. Your interview still counted — try again.');
+      if (outcome.status === 'success') {
+        clearPendingRealtimeScore(getBrowserSessionStorage());
+        setPendingScore(null);
+        // Hold the reveal: the scoring animation fast-forwards to 100% first
+        // (its onFinished flips the phase to 'done').
+        setResult(outcome.result);
+        track('realtime_session_scored', {
+          mode: pending.mode,
+          band: outcome.result.overallBand,
+        });
         return;
       }
-      // Hold the reveal: the scoring animation fast-forwards to 100% first
-      // (its onFinished flips the phase to 'done').
-      setResult(body);
-      track('realtime_session_scored', { mode: activeMode, band: body.overallBand });
-    } catch {
-      setPhase('idle');
-      setError('Scoring failed. Please try again.');
+
+      setPhase('score_error');
+      const recovery = pending.stored
+        ? 'Your transcript is saved in this tab. Refresh and retry scoring.'
+        : 'Your transcript is still available on this page. Retry without refreshing.';
+      const errorType = outcome.status === 'auth_error' ? 'auth_session' : outcome.status;
+      track('realtime_session_error', {
+        mode: pending.mode,
+        stage: 'score',
+        error_type: errorType,
+      });
+      if (outcome.status === 'auth_error') {
+        setError(`Could not verify your session. ${recovery}`);
+      } else if (outcome.status === 'sign_in') {
+        setSignInOpen(true);
+        setError(`Sign in again to score this interview. ${recovery}`);
+      } else if (outcome.status === 'owner_mismatch') {
+        setError('Sign in with the account that completed this interview before retrying its score.');
+      } else if (outcome.status === 'api_error') {
+        setError(`${outcome.message} ${recovery}`);
+      } else if (outcome.status === 'network_error') {
+        setError(`Scoring could not connect. ${recovery}`);
+      } else {
+        clearPendingRealtimeScore(getBrowserSessionStorage());
+        setPendingScore(null);
+        setPhase('idle');
+        setError('This saved interview transcript could not be recovered. Please start a new session.');
+      }
+    } finally {
+      releasePendingSpeakingScore(scoreAttemptRef);
     }
+  }
+
+  function discardPendingScore() {
+    clearPendingRealtimeScore(getBrowserSessionStorage());
+    setPendingScore(null);
+    setError('');
+    setResult(null);
+    setPhase('idle');
+    transcriptRef.current = [];
+    setCaptions([]);
+    setCandidateWords(0);
+    endedRef.current = false;
+    sessionOwnerRef.current = null;
   }
 
   const handleScoringFinished = React.useCallback(() => {
@@ -549,14 +630,14 @@ export default function SpeakingExaminerPage() {
         </header>
 
         {error ? (
-          <div className="mx-auto mt-6 max-w-xl rounded-lg border border-red-300 bg-red-50 p-4 text-center text-sm text-red-900">
+          <div role="alert" className="mx-auto mt-6 max-w-xl rounded-lg border border-red-300 bg-red-50 p-4 text-center text-sm text-red-900">
             {error}
           </div>
         ) : null}
 
         {/* ---------- gate: signed-out / free ---------- */}
         {phase === 'idle' && !planLoading && !isPremium ? (
-          <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
+          <div role="status" className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
             <p className="text-lg font-semibold">This is a Premium feature</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Premium includes 30–60 AI examiner minutes every month, depending on regional plan,
@@ -725,6 +806,35 @@ export default function SpeakingExaminerPage() {
           </div>
         ) : null}
 
+        {/* ---------- recover a completed interview score ---------- */}
+        {phase === 'score_error' && pendingScore ? (
+          <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
+            <h2 className="text-lg font-bold">Your interview is still ready to score</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You do not need to repeat the interview. Retry the saved transcript when your
+              connection or session is ready.
+            </p>
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => scorePendingInterview(pendingScore)}
+                disabled={authLoading}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                <Sparkles className="h-4 w-4" />
+                {authLoading ? 'Checking your account…' : 'Retry scoring my interview'}
+              </button>
+              <button
+                type="button"
+                onClick={discardPendingScore}
+                className="rounded-lg border px-5 py-2.5 text-sm font-semibold hover:bg-muted"
+              >
+                Discard transcript and start over
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         {/* ---------- results ---------- */}
         {phase === 'done' && result ? (
           <div className="mt-8 space-y-4">
@@ -810,8 +920,12 @@ export default function SpeakingExaminerPage() {
       <SignInDialog
         open={signInOpen}
         onOpenChange={setSignInOpen}
-        title="Sign in to meet your examiner"
-        description="Create your account or sign in — you'll stay right on this page."
+        title={pendingScore ? 'Sign in to score your interview' : 'Sign in to meet your examiner'}
+        description={
+          pendingScore
+            ? "Use the account that completed this interview — the transcript will stay here."
+            : "Create your account or sign in — you'll stay right on this page."
+        }
         trigger="speaking_examiner"
       />
       <ExaminerIntroModal
