@@ -3357,6 +3357,45 @@ False positives are kept in the investigation notes so they are not rediscovered
   `band-estimator-e962375b6f064956.js`; that promoted chunk contained the new “Your Writing
   feedback,” “Indicative short Writing sample,” secure unlock, and estimator attribution literals.
 
+## CA-129 — Claimed estimator results could permanently miss dashboard history
+
+- Status: `FIXED`
+- Area: Band estimator / account linking / dashboard history / retry safety / concurrent requests
+- Severity: High
+- Evidence: the reveal route atomically claimed the anonymous estimator row, then deliberately
+  treated its `attempts` and `scores` writes as fail-soft. If either write failed, the route still
+  returned the band. Every later same-owner reveal skipped history mirroring because only a first
+  claim called the writer. A transient database failure could therefore consume the account-linking
+  transition, tell the learner the save succeeded, and permanently omit the promised baseline from
+  their dashboard. The old insert pair also had no idempotency key, so simply retrying it would have
+  risked duplicate attempts or scores under concurrent requests.
+- Fix: run history reconciliation for both first claims and same-owner re-reveals, and return a
+  retryable HTTP 503 without a band until both the attempt and score are durably present. New rows
+  use the estimator row UUID as the deterministic primary key in both tables and record
+  `estimatorScoreId` in the attempt responses. Primary-key conflicts are read back as possible
+  concurrent wins, making parallel retries converge on one attempt and one score. The lookup also
+  recognizes the timestamp/source shape written by CA-121 through CA-128 so already-saved history
+  is reused rather than duplicated. A score failure retains the deterministic attempt, allowing a
+  later reveal to complete the missing half safely.
+- Regression coverage: the 12-case reveal suite now covers missing-history repair, sequential and
+  truly concurrent same-owner reveals, deterministic IDs and marker ownership, transient attempt
+  and score failures followed by successful retries, and reuse of legacy estimator history. Atomic
+  claim errors and races, other-user non-disclosure, plan lookup failure, Free response shape, and
+  authentication enforcement remain covered.
+- Commit: `5de4e2c3f012cfd7e9c2db13efe4e33f7fe489e2`
+  (`fix: retry estimator history persistence`).
+- Verification: the focused 1-file/12-test reveal suite, complete 97-file/672-test Vitest suite,
+  ESLint, strict 181-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. The verified base was the exact prior canonical production SHA;
+  local HEAD and `origin/main` then matched the code SHA above. GitHub's successful Vercel status
+  tied it to deployment `dpl_hffpP39BZqd9CNoe5aHrDcCsx3Fi`, which reached promoted `READY` on every
+  canonical alias. A disposable confirmed Free production learner claimed a seeded estimator row
+  through `www.ielts-bank.com`, then issued two concurrent same-owner reveals. All three responses
+  returned HTTP 200, Band 6.5, and `premium: false`; service-role read-back found exactly one owned
+  attempt, one owned score, both deterministic IDs, and the estimator marker. Cleanup deleted the
+  estimator row and Auth user; exact read-back found zero estimator rows, attempts, scores, profile
+  rows, and lifecycle-email rows for the audit fixtures.
+
 ## Investigation notes
 
 - `EstimatorResults` consumes `usePlan().isPremium` without honoring `loading`; it remains an
