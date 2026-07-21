@@ -171,6 +171,22 @@ describe('billing pause state', () => {
 });
 
 describe('billing account state', () => {
+  it('does not offer the active-only pause during a trial', async () => {
+    testState.planStatus = 'trialing';
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(
+      [...container.querySelectorAll('button')].some(
+        (button) => button.textContent.includes('Pause once')
+      )
+    ).toBe(false);
+    expect(container.textContent).toContain('Upgrade to 6 months');
+  });
+
   it('shows a scheduled cancellation without impossible upgrade actions', async () => {
     testState.planStatus = 'canceled';
 

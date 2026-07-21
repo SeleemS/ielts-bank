@@ -61,6 +61,7 @@ describe('billing status display', () => {
     };
 
     expect(canOfferBillingPause({ ...base, planStatus: 'active' })).toBe(true);
+    expect(canOfferBillingPause({ ...base, planStatus: 'trialing' })).toBe(false);
     expect(canOfferBillingPause({ ...base, planStatus: 'canceled' })).toBe(false);
     expect(canOfferBillingPause({ ...base, planStatus: 'past_due' })).toBe(false);
   });

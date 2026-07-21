@@ -38,7 +38,7 @@ export function canOfferBillingPause({
 }) {
   return Boolean(
     isPremium
-    && ['active', 'trialing'].includes(planStatus)
+    && planStatus === 'active'
     && renewsAt
     && !expiresAt
     && !pauseUsedAt
