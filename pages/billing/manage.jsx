@@ -149,8 +149,14 @@ export default function ManageBillingPage() {
     Boolean(effectivePauseUntil) &&
     new Date(effectivePauseUntil).getTime() > Date.now();
   const pausePending = planStatus === 'paused';
+  const canChangeRecurringPlan =
+    isPremium
+    && ['monthly', '6month', 'annual'].includes(planSku)
+    && ['active', 'trialing'].includes(planStatus);
   const upgrades =
-    planSku === 'monthly'
+    !canChangeRecurringPlan
+      ? []
+      : planSku === 'monthly'
       ? [
           { sku: '6month', label: 'Upgrade to 6 months' },
           { sku: 'annual', label: 'Upgrade to annual' },
@@ -171,8 +177,8 @@ export default function ManageBillingPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Billing choices</p>
             <h1 className="mt-2 text-3xl font-black">Choose what fits your test timeline</h1>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              Pause once, switch to a non-renewing Exam Pass after your current period, or continue
-              to Stripe to cancel. There is no hidden exit.
+              Review your plan status, payment details, renewal choices, and the actions currently
+              available for your account. There is no hidden exit.
             </p>
           </div>
 
@@ -198,7 +204,15 @@ export default function ManageBillingPage() {
                         ? 'Premium is paused'
                         : pausePending
                           ? 'Billing is resuming'
-                          : 'Keep Premium active'}
+                          : planStatus === 'canceled'
+                            ? 'Premium is ending'
+                            : planStatus === 'past_due'
+                              ? 'Payment needs attention'
+                              : expiresAt
+                                ? 'Exam Pass is active'
+                                : isPremium
+                                  ? 'Keep Premium active'
+                                  : 'Premium is not active'}
                     </h2>
                     <p className="mt-1 text-sm text-slate-600">
                       {billingStatusMessage({
@@ -271,31 +285,46 @@ export default function ManageBillingPage() {
                 </section>
               ) : null}
 
-              <section className="rounded-2xl border bg-white p-6">
-                <div className="flex items-start gap-3">
-                  <CalendarClock className="mt-1 h-5 w-5 text-blue-600" />
-                  <div>
-                    <h2 className="font-bold">Prefer no subscription next time?</h2>
-                    <p className="mt-1 text-sm text-slate-600">
-                      The 4-week Exam Pass is one payment and never renews. Cancel the current plan
-                      at period end, then choose the Exam Pass whenever you return.
-                    </p>
-                    <Button asChild variant="outline" className="mt-4">
-                      <NextLink href="/pricing#exam-pass" className="no-underline">See the Exam Pass</NextLink>
-                    </Button>
+              {canChangeRecurringPlan ? (
+                <section className="rounded-2xl border bg-white p-6">
+                  <div className="flex items-start gap-3">
+                    <CalendarClock className="mt-1 h-5 w-5 text-blue-600" />
+                    <div>
+                      <h2 className="font-bold">Prefer no subscription next time?</h2>
+                      <p className="mt-1 text-sm text-slate-600">
+                        The 4-week Exam Pass is one payment and never renews. Cancel the current plan
+                        at period end, then choose the Exam Pass whenever you return.
+                      </p>
+                      <Button asChild variant="outline" className="mt-4">
+                        <NextLink href="/pricing#exam-pass" className="no-underline">See the Exam Pass</NextLink>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </section>
+                </section>
+              ) : null}
 
               {hasBillingAccount ? (
                 <section className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
                   <div className="flex items-start gap-3">
                     <CreditCard className="mt-1 h-5 w-5 text-rose-700" />
                     <div className="flex-1">
-                      <h2 className="font-bold text-rose-950">Change payment details or cancel</h2>
+                      <h2 className="font-bold text-rose-950">
+                        {planStatus === 'canceled'
+                          ? 'Review your canceled plan'
+                          : planStatus === 'past_due'
+                            ? 'Update payment details'
+                            : isPremium && !expiresAt
+                              ? 'Change payment details or cancel'
+                              : 'Review billing history'}
+                      </h2>
                       <p className="mt-1 text-sm text-rose-900/75">
-                        Stripe will collect one cancellation reason and schedule cancellation at
-                        period end. You keep access through the time you already paid for.
+                        {planStatus === 'canceled'
+                          ? 'Stripe has scheduled cancellation at period end. You keep access through the time you already paid for.'
+                          : planStatus === 'past_due'
+                            ? 'Update your payment method in Stripe. Premium remains in a temporary grace period while payment is resolved.'
+                            : isPremium && !expiresAt
+                              ? 'Stripe will collect one cancellation reason and schedule cancellation at period end. You keep access through the time you already paid for.'
+                              : 'Stripe lets you review past invoices and saved billing details. There is no active recurring plan to cancel.'}
                       </p>
                       <Button type="button" variant="outline" className="mt-4 border-rose-300" disabled={Boolean(busy)} onClick={openPortal}>
                         {busy === 'portal' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}

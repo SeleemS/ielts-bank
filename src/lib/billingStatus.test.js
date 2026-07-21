@@ -40,6 +40,18 @@ describe('billing status display', () => {
     })).toContain('access returns after Stripe confirms payment');
   });
 
+  it('directs a past-due learner to update payment instead of promising a renewal', () => {
+    const message = billingStatusMessage({
+      planStatus: 'past_due',
+      renewsAt: '2026-08-19T04:35:48.000Z',
+      isPremium: true,
+    });
+
+    expect(message).toContain('payment is past due');
+    expect(message).toContain('Update your payment details');
+    expect(message).not.toContain('next renewal');
+  });
+
   it('does not offer another billing pause after cancellation is scheduled', () => {
     const base = {
       isPremium: true,
@@ -50,5 +62,6 @@ describe('billing status display', () => {
 
     expect(canOfferBillingPause({ ...base, planStatus: 'active' })).toBe(true);
     expect(canOfferBillingPause({ ...base, planStatus: 'canceled' })).toBe(false);
+    expect(canOfferBillingPause({ ...base, planStatus: 'past_due' })).toBe(false);
   });
 });

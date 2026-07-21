@@ -10,6 +10,8 @@ const testState = vi.hoisted(() => ({
   planStatus: 'active',
   isPremium: true,
   pauseUntil: null,
+  expiresAt: null,
+  hasBillingAccount: true,
 }));
 
 vi.mock('next/head', () => ({
@@ -37,10 +39,10 @@ vi.mock('../src/lib/usePlan', () => ({
     planSku: testState.planSku,
     planStatus: testState.planStatus,
     renewsAt: '2026-10-01T00:00:00.000Z',
-    expiresAt: null,
+    expiresAt: testState.expiresAt,
     pauseUntil: testState.pauseUntil,
     pauseUsedAt: null,
-    hasBillingAccount: true,
+    hasBillingAccount: testState.hasBillingAccount,
     loading: false,
     error: testState.planError,
   }),
@@ -72,6 +74,8 @@ beforeEach(() => {
   testState.planStatus = 'active';
   testState.isPremium = true;
   testState.pauseUntil = null;
+  testState.expiresAt = null;
+  testState.hasBillingAccount = true;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -163,6 +167,67 @@ describe('billing pause state', () => {
           || button.textContent.includes('Continue to Stripe')
       )
     ).toBe(false);
+  });
+});
+
+describe('billing account state', () => {
+  it('shows a scheduled cancellation without impossible upgrade actions', async () => {
+    testState.planStatus = 'canceled';
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('Premium is ending');
+    expect(container.textContent).toContain('It will not renew');
+    expect(container.textContent).toContain('Review your canceled plan');
+    expect(container.textContent).toContain('scheduled cancellation at period end');
+    expect(container.textContent).not.toContain('Upgrade to 6 months');
+    expect(container.textContent).not.toContain('Upgrade to annual');
+    expect(
+      [...container.querySelectorAll('button')].some(
+        (button) => button.textContent.includes('Pause once')
+      )
+    ).toBe(false);
+    expect(container.textContent).not.toContain('Prefer no subscription next time');
+  });
+
+  it('sends a past-due learner to payment recovery without upgrade actions', async () => {
+    testState.planStatus = 'past_due';
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('Payment needs attention');
+    expect(container.textContent).toContain('payment is past due');
+    expect(container.textContent).toContain('Update payment details');
+    expect(container.textContent).toContain('temporary grace period');
+    expect(container.textContent).not.toContain('Upgrade to 6 months');
+    expect(container.textContent).not.toContain('Upgrade to annual');
+    expect(
+      [...container.querySelectorAll('button')].some(
+        (button) => button.textContent.includes('Pause once')
+      )
+    ).toBe(false);
+  });
+
+  it('does not tell an Exam Pass holder to cancel a non-renewing purchase', async () => {
+    testState.planSku = 'exam_pass';
+    testState.expiresAt = '2026-10-01T00:00:00.000Z';
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('Exam Pass is active');
+    expect(container.textContent).toContain('Review billing history');
+    expect(container.textContent).toContain('There is no active recurring plan to cancel');
+    expect(container.textContent).not.toContain('schedule cancellation at period end');
+    expect(container.textContent).not.toContain('Prefer no subscription next time');
   });
 });
 

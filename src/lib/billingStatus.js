@@ -12,6 +12,9 @@ export function billingStatusMessage({
   if (planStatus === 'paused') {
     return 'Billing is resuming. Premium access returns after Stripe confirms payment.';
   }
+  if (planStatus === 'past_due') {
+    return 'Your payment is past due. Update your payment details in Stripe to keep Premium active.';
+  }
   if (expiresAt) {
     return `Your Exam Pass ends ${new Date(expiresAt).toLocaleDateString()}.`;
   }
@@ -35,7 +38,7 @@ export function canOfferBillingPause({
 }) {
   return Boolean(
     isPremium
-    && planStatus !== 'canceled'
+    && ['active', 'trialing'].includes(planStatus)
     && renewsAt
     && !expiresAt
     && !pauseUsedAt
