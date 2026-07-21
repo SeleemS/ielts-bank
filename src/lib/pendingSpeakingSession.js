@@ -13,3 +13,13 @@ export async function getPendingSpeakingAccessToken(getClient) {
     return { accessToken: null, error };
   }
 }
+
+export function claimPendingSpeakingScore(lock) {
+  if (!lock || lock.current) return false;
+  lock.current = true;
+  return true;
+}
+
+export function releasePendingSpeakingScore(lock) {
+  if (lock) lock.current = false;
+}

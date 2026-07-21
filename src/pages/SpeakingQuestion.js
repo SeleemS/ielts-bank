@@ -25,7 +25,11 @@ import { useAuth } from '../lib/auth';
 import { usePlan } from '../lib/usePlan';
 import SignInDialog from '../components/auth/SignInDialog';
 import { getSupabase } from '../../lib/supabase';
-import { getPendingSpeakingAccessToken } from '../lib/pendingSpeakingSession';
+import {
+  claimPendingSpeakingScore,
+  getPendingSpeakingAccessToken,
+  releasePendingSpeakingScore,
+} from '../lib/pendingSpeakingSession';
 import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import {
@@ -763,6 +767,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
   // A recording saved to the user's account at the premium gate, waiting to
   // be scored (survives the round trip to the billing page).
   const [pendingRecording, setPendingRecording] = useState(null);
+  const pendingScoreLock = useRef(false);
 
   const pendingKey = `${PENDING_PREFIX}${item?.slug || routeId}`;
 
@@ -959,18 +964,25 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
       setSignInOpen(true);
       return;
     }
-    const session = await getPendingSpeakingAccessToken(getSupabase);
-    if (session.error) {
-      track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'auth_session', part, from_pending: true, signed_in: true });
-      setErrorMsg('Could not verify your session. Please refresh and try again.');
-      return;
+    if (!claimPendingSpeakingScore(pendingScoreLock)) return;
+    setIsLoading(true);
+    try {
+      const session = await getPendingSpeakingAccessToken(getSupabase);
+      if (session.error) {
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'auth_session', part, from_pending: true, signed_in: true });
+        setErrorMsg('Could not verify your session. Please refresh and try again.');
+        return;
+      }
+      if (!session.accessToken) {
+        setSignInOpen(true);
+        return;
+      }
+      track('speaking_submit', { skill: 'speaking', slug: item.slug, part, from_pending: true, signed_in: true });
+      await scoreAudioPath(pendingRecording.audioPath, session.accessToken, true);
+    } finally {
+      releasePendingSpeakingScore(pendingScoreLock);
+      setIsLoading(false);
     }
-    if (!session.accessToken) {
-      setSignInOpen(true);
-      return;
-    }
-    track('speaking_submit', { skill: 'speaking', slug: item.slug, part, from_pending: true, signed_in: true });
-    await scoreAudioPath(pendingRecording.audioPath, session.accessToken, true);
   };
 
   // SEO.

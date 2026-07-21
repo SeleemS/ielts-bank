@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getPendingSpeakingAccessToken } from './pendingSpeakingSession';
+import {
+  claimPendingSpeakingScore,
+  getPendingSpeakingAccessToken,
+  releasePendingSpeakingScore,
+} from './pendingSpeakingSession';
 
 describe('getPendingSpeakingAccessToken', () => {
   it('returns the current linked-session token', async () => {
@@ -55,5 +59,17 @@ describe('getPendingSpeakingAccessToken', () => {
       accessToken: null,
       error: sessionError,
     });
+  });
+});
+
+describe('pending Speaking score single-flight lock', () => {
+  it('allows one submission until the active attempt releases', () => {
+    const lock = { current: false };
+
+    expect(claimPendingSpeakingScore(lock)).toBe(true);
+    expect(claimPendingSpeakingScore(lock)).toBe(false);
+
+    releasePendingSpeakingScore(lock);
+    expect(claimPendingSpeakingScore(lock)).toBe(true);
   });
 });
