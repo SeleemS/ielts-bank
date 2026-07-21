@@ -131,6 +131,40 @@ export default async function handler(req, res) {
     });
   }
 
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (error) {
+    console.error('portal Stripe setup error:', error.message);
+    return res.status(503).json({ error: 'Could not open the billing portal. Please try again.' });
+  }
+
+  // A portal session exposes the customer's invoices, payment methods, tax
+  // details, and subscription controls. Do not treat a service-role database
+  // pointer as sufficient authorization: require the provider-side user
+  // mapping to agree with the authenticated learner before opening the portal.
+  let customer;
+  try {
+    customer = await stripe.customers.retrieve(userRow.stripe_customer_id);
+  } catch (error) {
+    if (error?.code === 'resource_missing') {
+      console.error('portal customer is missing in Stripe');
+      return res.status(409).json({
+        error: 'Your billing account needs attention. Please contact support.',
+        code: 'billing_account_mismatch',
+      });
+    }
+    console.error('portal customer lookup error:', error.message);
+    return res.status(503).json({ error: 'Could not open the billing portal. Please try again.' });
+  }
+  if (customer.deleted || customer.metadata?.user_id !== user.id) {
+    console.error('portal customer ownership mismatch');
+    return res.status(409).json({
+      error: 'Your billing account needs attention. Please contact support.',
+      code: 'billing_account_mismatch',
+    });
+  }
+
   try {
     const origin =
       process.env.NODE_ENV !== 'production' &&
@@ -138,7 +172,6 @@ export default async function handler(req, res) {
       req.headers.origin.startsWith('http://localhost')
         ? req.headers.origin
         : 'https://www.ielts-bank.com';
-    const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: userRow.stripe_customer_id,
       configuration: await portalConfiguration(stripe),
@@ -147,6 +180,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: session.url });
   } catch (e) {
     console.error('portal error:', e.message);
-    return res.status(500).json({ error: 'Could not open the billing portal.' });
+    return res.status(503).json({ error: 'Could not open the billing portal. Please try again.' });
   }
 }

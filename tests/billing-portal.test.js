@@ -15,6 +15,9 @@ const state = {
   rateLimitError: null,
   rateLimitReject: null,
   rpcCalls: [],
+  customer: { id: 'cus_test', metadata: { user_id: 'user-1' } },
+  customerError: null,
+  customerCalls: [],
   portalError: null,
   portalCalls: [],
 };
@@ -49,6 +52,13 @@ vi.mock('@supabase/supabase-js', () => ({
 
 vi.mock('../lib/billing', () => ({
   getStripe: () => ({
+    customers: {
+      retrieve: async (customerId) => {
+        state.customerCalls.push(customerId);
+        if (state.customerError) throw state.customerError;
+        return state.customer;
+      },
+    },
     billingPortal: {
       sessions: {
         create: async (input) => {
@@ -111,6 +121,9 @@ describe('POST /api/billing/portal', () => {
     state.rateLimitError = null;
     state.rateLimitReject = null;
     state.rpcCalls = [];
+    state.customer = { id: 'cus_test', metadata: { user_id: 'user-1' } };
+    state.customerError = null;
+    state.customerCalls = [];
     state.portalError = null;
     state.portalCalls = [];
     vi.restoreAllMocks();
@@ -123,6 +136,64 @@ describe('POST /api/billing/portal', () => {
 
     res = await callPortal({ origin: 'https://attacker.example' });
     expect(res.statusCode).toBe(403);
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('refuses to expose a customer owned by another learner', async () => {
+    state.customer = { id: 'cus_test', metadata: { user_id: 'user-2' } };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('billing_account_mismatch');
+    expect(state.customerCalls).toEqual(['cus_test']);
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('refuses a customer without an explicit Stripe ownership mapping', async () => {
+    state.customer = { id: 'cus_test', metadata: {} };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('billing_account_mismatch');
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('refuses a deleted Stripe customer', async () => {
+    state.customer = { id: 'cus_test', deleted: true };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('billing_account_mismatch');
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('reports a missing Stripe customer as a billing-account mismatch', async () => {
+    state.customerError = Object.assign(new Error('No such customer'), {
+      code: 'resource_missing',
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('billing_account_mismatch');
+    expect(state.portalCalls).toEqual([]);
+  });
+
+  it('returns a retryable error when Stripe customer verification is unavailable', async () => {
+    state.customerError = new Error('stripe unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callPortal();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
     expect(state.portalCalls).toEqual([]);
   });
 
@@ -248,6 +319,7 @@ describe('POST /api/billing/portal', () => {
         return_url: 'https://www.ielts-bank.com/billing/manage',
       },
     ]);
+    expect(state.customerCalls).toEqual(['cus_test']);
   });
 
   it('returns a recoverable error when Stripe cannot open the portal', async () => {
@@ -255,7 +327,7 @@ describe('POST /api/billing/portal', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const res = await callPortal();
 
-    expect(res.statusCode).toBe(500);
-    expect(res.jsonBody.error).toMatch(/could not open/i);
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/try again/i);
   });
 });
