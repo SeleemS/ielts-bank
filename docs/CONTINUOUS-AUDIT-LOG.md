@@ -3185,6 +3185,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   production endpoint reached `/api/estimator/score-writing` and returned the expected HTTP 400 for
   an invalid anonymous identifier before model use or persistence.
 
+## CA-123 — Estimator reveal returned results without a verified ownership claim
+
+- Status: `FIXED`
+- Area: Band estimator / post-sign-up reveal / object ownership / attempt history
+- Severity: High
+- Evidence: the reveal route selected an unclaimed anonymous result, issued an unconditional claim
+  update, and neither inspected Supabase's resolved `{ error }` nor verified that the row was still
+  unclaimed. A database rejection would therefore be ignored, while two concurrent account claims
+  could both proceed from the same pre-claim row. Either path returned the withheld Writing band and
+  mirrored an attempt before the route had established durable ownership, leaving the result
+  available for a later claimant and potentially filing one anonymous sample into multiple accounts.
+  The feature had no route-level reveal tests.
+- Fix: condition the ownership update on `claimed_by_user_id IS NULL`, request the updated row, and
+  require exactly one successful claim before revealing or mirroring. Resolved database errors now
+  return retryable HTTP 503; a lost claim race returns HTTP 409; neither failure path exposes the band
+  or creates history. A result already claimed by the same user remains idempotently revealable, and
+  rows owned by another user remain indistinguishable from absent rows.
+- Regression coverage: the new six-case reveal suite covers authenticated atomic first claim,
+  conditional null-owner filtering, attempt/score mirroring, resolved claim errors, a competing
+  claimant, same-owner idempotency, other-owner non-disclosure, and unauthenticated rejection.
+- Commit: `03e99d50b6cd8bd443260f84985581f8fb686001` (`fix: claim estimator results atomically`).
+- Verification: the focused 1-file/6-test reveal suite, complete 96-file/660-test Vitest suite,
+  ESLint, strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_GtGaeqEkfUnr9sz4nj3VFqn4ud6Z`, which reached
+  promoted `READY` on every canonical alias. A disposable confirmed production learner then claimed
+  a service-role-seeded anonymous estimator result through the canonical authenticated route. The
+  first response returned the expected Free band, production read-back matched the claim owner and
+  timestamp, and exactly one attempt plus one score existed. A second reveal returned the same result
+  without duplicating history. The estimator row, Auth user, profile, attempt, and score were deleted;
+  service-role read-back found zero matching rows in all four audited data groups.
+
 ## Investigation notes
 
 - `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
