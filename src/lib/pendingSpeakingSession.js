@@ -14,6 +14,16 @@ export async function getSpeakingAccessToken(getClient) {
   }
 }
 
+export async function resolveSpeakingAuthAction(getClient) {
+  const { accessToken, error } = await getSpeakingAccessToken(getClient);
+  if (error) return { state: 'retry', headers: null };
+  if (!accessToken) return { state: 'sign_in', headers: null };
+  return {
+    state: 'authorized',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  };
+}
+
 export function claimPendingSpeakingScore(lock) {
   if (!lock || lock.current) return false;
   lock.current = true;

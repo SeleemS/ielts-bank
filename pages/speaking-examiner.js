@@ -17,6 +17,7 @@ import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../src/lib/prefs';
+import { resolveSpeakingAuthAction } from '../src/lib/pendingSpeakingSession';
 import {
   ScoringProgress,
   CriterionFeedback,
@@ -320,12 +321,19 @@ export default function SpeakingExaminerPage() {
     track('realtime_session_start', { mode });
 
     try {
-      const headers = await authHeader();
-      if (!headers) {
+      const auth = await resolveSpeakingAuthAction(getSupabase);
+      if (auth.state === 'retry') {
+        track('realtime_session_error', { mode, stage: 'start', error_type: 'auth_session' });
+        setError('Could not verify your session. Please refresh and try again.');
+        setPhase('idle');
+        return;
+      }
+      if (auth.state === 'sign_in') {
         setSignInOpen(true);
         setPhase('idle');
         return;
       }
+      const headers = auth.headers;
 
       // 1. Mic first — no point burning minutes if permission is denied.
       const mic = await navigator.mediaDevices.getUserMedia({ audio: true });

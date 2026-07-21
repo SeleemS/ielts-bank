@@ -3,6 +3,7 @@ import {
   claimPendingSpeakingScore,
   getSpeakingAccessToken,
   releasePendingSpeakingScore,
+  resolveSpeakingAuthAction,
 } from './pendingSpeakingSession';
 
 describe('getSpeakingAccessToken', () => {
@@ -58,6 +59,57 @@ describe('getSpeakingAccessToken', () => {
     await expect(getSpeakingAccessToken(getClient)).resolves.toEqual({
       accessToken: null,
       error: sessionError,
+    });
+  });
+});
+
+describe('resolveSpeakingAuthAction', () => {
+  it('returns authorized headers only for a verified token', async () => {
+    const getClient = () => ({
+      auth: {
+        getSession: async () => ({
+          data: { session: { access_token: 'examiner-token' } },
+          error: null,
+        }),
+      },
+    });
+
+    await expect(resolveSpeakingAuthAction(getClient)).resolves.toEqual({
+      state: 'authorized',
+      headers: { Authorization: 'Bearer examiner-token' },
+    });
+  });
+
+  it('returns sign_in only for a verified missing session', async () => {
+    const getClient = () => ({
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+      },
+    });
+
+    await expect(resolveSpeakingAuthAction(getClient)).resolves.toEqual({
+      state: 'sign_in',
+      headers: null,
+    });
+  });
+
+  it.each([
+    ['resolved', false],
+    ['rejected', true],
+  ])('returns retry for a %s auth failure', async (_failureType, rejectSession) => {
+    const sessionError = new Error('temporary auth outage');
+    const getClient = () => ({
+      auth: {
+        getSession: async () => {
+          if (rejectSession) throw sessionError;
+          return { data: { session: null }, error: sessionError };
+        },
+      },
+    });
+
+    await expect(resolveSpeakingAuthAction(getClient)).resolves.toEqual({
+      state: 'retry',
+      headers: null,
     });
   });
 });
