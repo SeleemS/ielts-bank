@@ -2642,9 +2642,13 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Recover unexpected auth client failures`.
 - Verification: the focused five-file/16-test auth/account suite, complete 92-file/583-test Vitest
   suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
-  network-enabled 529-page production build passed. Publication and exact deployed-sha evidence are
-  recorded after the isolated fix deploys. No auth request, email, session, or account was created
-  or changed during local verification.
+  network-enabled 529-page production build passed. GitHub's Vercel status tied exact SHA
+  `730c9dc61cea0200a0477c9f4b1565de3b759e5d` to deployment
+  `dpl_2irF2wf3hsG8Z73YDSAcafMUViWv`, which reached promoted `READY` on the canonical aliases. The
+  canonical app bundle contained all seven journey-specific recovery messages, and a fresh
+  production browser opened the shared sign-in dialog with password, email-code, and recovery
+  controls intact. Unexpected exceptions are verified by the deterministic forced-rejection test;
+  no auth request, email, session, or account was created or changed during production verification.
 
 ## Investigation notes
 
