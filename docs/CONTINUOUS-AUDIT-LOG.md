@@ -2859,7 +2859,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-114 — Deleted-account subscription webhooks retried forever
 
-- Status: `FIXED`; production publication and exact-event replay pending
+- Status: `FIXED`
 - Area: Monetization / Stripe webhook / account deletion / idempotent acknowledgement
 - Severity: Medium
 - Evidence: the newest live `customer.subscription.deleted` event remained at
@@ -2879,8 +2879,16 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Acknowledge deleted-account Stripe events`.
 - Verification: the focused two-file/100-test billing suite, complete 92-file/617-test Vitest suite,
   ESLint, strict 175-file analytics audit covering 284 interactive controls, and the network-enabled
-  529-page production build passed. Exact-SHA deployment verification and a signed replay of the
-  affected production event remain pending before this issue is closed operationally.
+  529-page production build passed. Local HEAD and `origin/main` matched exact SHA
+  `9521a66ca6a253256f05b1c13585af6309d7dfc6`; GitHub's successful Vercel status tied that SHA to
+  deployment `dpl_BNWshqHkv8ZpfrU6Z8MWeaXuJikg`, which reached promoted `READY` on every canonical
+  alias. A locally signed replay of the exact affected Stripe event then returned HTTP 200
+  `{ received: true }` from `www.ielts-bank.com`; the exact deployment log recorded
+  `ignored: no user mapping for subscription.deleted`. Service-role readback before and after the
+  replay remained at zero matching `users`, `user_quotas`, and billing `activity_events` rows. The
+  original Stripe delivery record remains at `pending_webhooks: 1` until Stripe performs its next
+  provider-managed retry; a locally signed replay verifies the deployed behavior but does not
+  rewrite that provider delivery counter.
 
 ## Investigation notes
 
