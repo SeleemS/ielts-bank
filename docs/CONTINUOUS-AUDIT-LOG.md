@@ -2807,8 +2807,14 @@ False positives are kept in the investigation notes so they are not rediscovered
   suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
   network-enabled 529-page production build passed. Read-only live Stripe queries found exactly one
   active USD per-unit recurring licensed Price for each global/PPP 6-month and annual lookup key,
-  with amounts and cadence matching the enforced contract. Publication and post-deploy route
-  evidence are recorded after the isolated fix deploys; no subscription or payment was mutated.
+  with amounts and cadence matching the enforced contract. GitHub's successful Vercel status tied
+  exact SHA `80c6089c56154280be473a25ac89abd7131f39e0` to production deployment
+  `dpl_CG8GPQwz4CxgQ4gmpwkMzz6C2p9e`, which reached promoted `READY` on every canonical alias.
+  Fresh deployed probes returned HTTP 405 with `Allow: POST` for GET, HTTP 403 for a cross-origin
+  POST, and HTTP 401 for a same-origin unauthenticated POST. A post-deploy Stripe readback again
+  found exactly one active target for all four lookup keys with the enforced amounts and shapes.
+  Drift branches are injected before the provider mutation in route tests; no live subscription or
+  payment was changed to manufacture a pricing mismatch.
 
 ## Investigation notes
 
