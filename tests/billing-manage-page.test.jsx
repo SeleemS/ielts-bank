@@ -12,6 +12,9 @@ const testState = vi.hoisted(() => ({
   pauseUntil: null,
   expiresAt: null,
   hasBillingAccount: true,
+  accessToken: 'billing-access-token',
+  sessionError: null,
+  rejectSession: false,
 }));
 
 vi.mock('next/head', () => ({
@@ -50,9 +53,17 @@ vi.mock('../src/lib/usePlan', () => ({
 vi.mock('../lib/supabase', () => ({
   getSupabase: () => ({
     auth: {
-      getSession: async () => ({
-        data: { session: { access_token: 'billing-access-token' } },
-      }),
+      getSession: async () => {
+        if (testState.rejectSession) throw testState.sessionError;
+        return {
+          data: {
+            session: testState.accessToken
+              ? { access_token: testState.accessToken }
+              : null,
+          },
+          error: testState.sessionError,
+        };
+      },
     },
   }),
 }));
@@ -76,6 +87,9 @@ beforeEach(() => {
   testState.pauseUntil = null;
   testState.expiresAt = null;
   testState.hasBillingAccount = true;
+  testState.accessToken = 'billing-access-token';
+  testState.sessionError = null;
+  testState.rejectSession = false;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -244,6 +258,67 @@ describe('billing account state', () => {
     expect(container.textContent).toContain('There is no active recurring plan to cancel');
     expect(container.textContent).not.toContain('schedule cancellation at period end');
     expect(container.textContent).not.toContain('Prefer no subscription next time');
+  });
+});
+
+describe('billing action session verification', () => {
+  it.each([
+    ['Continue to Stripe', 'resolved', false],
+    ['Continue to Stripe', 'rejected', true],
+    ['Pause once', 'resolved', false],
+    ['Pause once', 'rejected', true],
+    ['Upgrade to annual', 'resolved', false],
+    ['Upgrade to annual', 'rejected', true],
+  ])(
+    'stops %s before its API call when session verification has a %s auth failure',
+    async (actionLabel, _failureType, rejectSession) => {
+      testState.accessToken = null;
+      testState.sessionError = new Error('temporary auth outage');
+      testState.rejectSession = rejectSession;
+
+      await act(async () => {
+        root.render(<ManageBillingPage />);
+        await Promise.resolve();
+      });
+
+      const action = [...container.querySelectorAll('button')].find(
+        (button) => button.textContent.includes(actionLabel)
+      );
+      expect(action).toBeTruthy();
+      await act(async () => {
+        action.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        'Could not verify your signed-in session. Please refresh and try again.'
+      );
+    }
+  );
+
+  it('keeps a verified missing session on the reauthentication path', async () => {
+    testState.accessToken = null;
+
+    await act(async () => {
+      root.render(<ManageBillingPage />);
+      await Promise.resolve();
+    });
+
+    const portalButton = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent.includes('Continue to Stripe')
+    );
+    await act(async () => {
+      portalButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Please sign in again.'
+    );
   });
 });
 

@@ -11,12 +11,15 @@ import { usePlan } from '../../src/lib/usePlan';
 import { getSupabase } from '../../lib/supabase';
 import { track } from '../../src/lib/analytics';
 import { billingStatusMessage, canOfferBillingPause } from '../../src/lib/billingStatus';
+import { getSessionAccess } from '../../src/lib/sessionAccess';
 
 async function authHeaders() {
-  const { data } = await getSupabase().auth.getSession();
-  const token = data?.session?.access_token;
-  if (!token) throw new Error('Please sign in again.');
-  return { Authorization: `Bearer ${token}` };
+  const { accessToken, error } = await getSessionAccess(getSupabase);
+  if (error) {
+    throw new Error('Could not verify your signed-in session. Please refresh and try again.');
+  }
+  if (!accessToken) throw new Error('Please sign in again.');
+  return { Authorization: `Bearer ${accessToken}` };
 }
 
 function formatMoney(amountMinor, currency) {
