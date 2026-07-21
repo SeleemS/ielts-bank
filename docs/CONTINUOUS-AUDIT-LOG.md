@@ -2769,8 +2769,17 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Confirm entitlement after checkout return`.
 - Verification: the focused two-file/60-test billing and Pricing return suite, complete
   92-file/598-test Vitest suite, ESLint, strict 175-file analytics audit covering 282 interactive
-  controls, and the network-enabled 529-page production build passed. Publication and post-deploy
-  checkout-return evidence are recorded after the isolated fix deploys.
+  controls, and the network-enabled 529-page production build passed. GitHub's successful Vercel
+  status tied exact SHA `198558924621d8dd00c9d256b76791a91a62247b` to production deployment
+  `dpl_BQYZv8fPiYuQGVWuiwDFXrzfCLg7`, which reached promoted `READY` on every canonical alias. A
+  disposable confirmed learner then created one deployed global monthly checkout. Stripe readback
+  confirmed the Session was open and unpaid; submitting its exact reference to the deployed return
+  endpoint produced HTTP 409 with `status: open` and no active claim. No payment was submitted. The
+  Session was expired, its exact customer and Auth user were deleted, and readback found zero
+  residual matching Auth users, `users`, `user_quotas`, or checkout/verification rate-limit rows.
+  Completed-but-inactive and unsupported reconciliation outcomes are covered without charging or
+  consuming a limited live promotion by the dependency-injected route cases and real Pricing
+  component test described above.
 
 ## Investigation notes
 
