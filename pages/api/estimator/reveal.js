@@ -110,12 +110,20 @@ export default async function handler(req, res) {
   const firstClaim = !row.claimed_by_user_id;
   if (firstClaim) {
     try {
-      await admin
+      const { data: claimed, error: claimError } = await admin
         .from('estimator_writing_scores')
         .update({ claimed_by_user_id: userId, claimed_at: new Date().toISOString() })
-        .eq('id', row.id);
+        .eq('id', row.id)
+        .is('claimed_by_user_id', null)
+        .select('id')
+        .maybeSingle();
+      if (claimError) throw claimError;
+      if (!claimed) {
+        return res.status(409).json({ error: 'This estimator result has already been claimed.' });
+      }
     } catch (error) {
       console.error('estimator reveal claim failed:', error.message);
+      return res.status(503).json({ error: 'Could not save this result to your account. Please try again.' });
     }
     await mirrorToHistory(admin, { userId, row });
   }
