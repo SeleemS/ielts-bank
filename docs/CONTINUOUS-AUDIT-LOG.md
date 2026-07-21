@@ -3694,6 +3694,42 @@ False positives are kept in the investigation notes so they are not rediscovered
   synchronous ref claim before loading/session lookup, the guarded scorer call, and claim/loading
   release in `finally`.
 
+## CA-139 — Retryable saved Speaking failures destroyed the only recording copy
+
+- Status: `FIXED`
+- Area: Speaking practice / post-upgrade return / saved recording / retry recovery
+- Severity: High
+- Evidence: after the Premium checkout handoff, the browser intentionally retains only the private
+  storage path; the original `Blob` is no longer available after navigation. The saved-recording UI
+  kept that pointer and told the learner to retry after rate-limit, quota, dependency, storage,
+  transcription, and scorer failures, but the API deleted the object on each of those responses.
+  The next retry therefore reached a missing object and forced the learner to discard an otherwise
+  valid answer and record it again. Fresh uploads did not have the same data-loss condition because
+  their in-page `Blob` remained available for a new upload.
+- Fix: mark only the explicit saved-recording resume request and preserve its owner-validated object
+  across retryable limiter, quota, dependency, download, transcription, and scorer failures. The
+  server still removes every fresh failed upload, every successfully consumed recording, and saved
+  recordings with terminal question/audio failures such as part mismatch, missing question,
+  oversize or empty audio, and insufficient speech. The existing 30-day cleanup job remains the
+  outer retention bound. The client now clears a saved pointer for the corresponding terminal
+  HTTP 400/403/404/413/422 results and retains it for retryable responses.
+- Regression coverage: the recorded Speaking route suite proves a resumed object survives a user
+  limit, daily quota exhaustion, missing provider configuration, and an actual scoring-provider
+  failure through the route's final cleanup path. It also proves a missing question still removes
+  the resumed object, while all established fresh-upload cleanup assertions remain unchanged.
+- Commit: `5d43e40c13252df558b5f586d9b5098c3890ab45`
+  (`fix: preserve retryable saved speaking recordings`).
+- Verification: the focused 2-file/30-test saved-session/route run, complete 99-file/691-test
+  Vitest suite, ESLint, strict 183-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. Immediately before commit, a fresh fetch proved
+  local HEAD and `origin/main` both matched the exact prior deployed evidence SHA
+  `d52a0358122d7c13cea7f8b8a6d471e5f508d871`; after push they both matched the code SHA above.
+  GitHub's successful Vercel status tied that SHA to deployment
+  `dpl_5VoBctoDcFKSHGLf8sc2oh9A1m5k`, which reached promoted `READY` on every canonical alias.
+  Fresh canonical Speaking detail HTML referenced
+  `speakingquestion/%5Bid%5D-dc5cec6d216b6197.js`; direct promoted-chunk inspection showed
+  `resume_saved` sent only for the saved path and the terminal 400/403/404/413/422 pointer cleanup.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
