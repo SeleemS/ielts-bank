@@ -3396,11 +3396,41 @@ False positives are kept in the investigation notes so they are not rediscovered
   estimator row and Auth user; exact read-back found zero estimator rows, attempts, scores, profile
   rows, and lifecycle-email rows for the audit fixtures.
 
+## CA-130 — Estimator showed verified-Free pitches before plan verification
+
+- Status: `FIXED`
+- Area: Band estimator / auth transition / Premium messaging / plan lookup failure
+- Severity: Medium
+- Evidence: `EstimatorResults` consumed `usePlan().isPremium` without its loading or error state.
+  The hook intentionally initializes `isPremium` to false while it queries a newly signed-in owner.
+  During that interval, a Premium learner's results rendered the Free acquisition messages “Get
+  your real Writing band” and “Meet the AI examiner.” If the profile query failed, those messages
+  remained indefinitely, converting an unknown entitlement into an apparently verified Free plan.
+  This was the last loading-ignorant `usePlan` consumer recorded in the estimator investigation.
+- Fix: signed-in results now render an accessible “Checking your plan…” status while the owner plan
+  is unresolved. Plan-specific Writing and Speaking next steps appear only after a successful query.
+  A lookup error renders the hook's explicit refresh message in an alert and never falls through to
+  Free copy. Anonymous visitors still receive the appropriate Free acquisition path without waiting
+  for an owner-only query.
+- Regression coverage: the six-case estimator results DOM suite now starts a signed-in learner in
+  unresolved default-Free state, proves neither Free pitch is present, then resolves the same render
+  to Premium and requires the two Premium messages. A separate error case proves plan-query failure
+  renders the explicit alert and no Free copy. Anonymous gating, post-sign-in reveal, full Premium
+  Writing feedback, and self-assessed fallback behavior remain covered.
+- Commit: `7fbae103a0d62a1b7dd14d84eeaf438069524b50`
+  (`fix: wait for estimator plan verification`).
+- Verification: the focused 1-file/6-test estimator results suite, complete 97-file/674-test Vitest
+  suite, ESLint, strict 181-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. Local HEAD and `origin/main` matched the exact
+  code SHA, and GitHub's successful Vercel status tied it to deployment
+  `dpl_dSMRNQgns9AQbVM5pw3H6cPyY1Lj`, which reached promoted `READY` on every canonical alias. Fresh
+  canonical `/band-estimator` HTML referenced `band-estimator-01acee39ccff060e.js`; the promoted
+  chunk contained the new checking, personalised-next-steps, and plan-verification-error literals.
+
 ## Investigation notes
 
-- `EstimatorResults` consumes `usePlan().isPremium` without honoring `loading`; it remains an
-  explicit follow-up audit surface because CA-120 can protect only consumers that observe the
-  hook's loading contract. `AdUnit` was corrected in CA-121 and `AiQuotaPanel` in CA-127.
+- The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
+  corrected: `AdUnit` in CA-121, `AiQuotaPanel` in CA-127, and `EstimatorResults` in CA-130.
 
 - A live production query using only the public anonymous Supabase key attempted to select from
   `estimator_writing_scores`. Postgres returned `42501`, and zero rows were exposed, confirming the
