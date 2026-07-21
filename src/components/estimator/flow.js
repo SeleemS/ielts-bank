@@ -12,11 +12,11 @@ import { overallEstimate } from './score';
 
 export const STEPS = ['intro', 'reading', 'listening', 'writing', 'speaking', 'results'];
 
-// Skills that produce a band, in section order. Reading/Listening are MEASURED;
-// Writing/Speaking are SELF-ASSESSED.
-export const MEASURED_SKILLS = ['reading', 'listening'];
+// Skills that produce a band, in section order. Writing is hybrid: its default
+// short sample is measured, while the explicit fallback is self-assessed.
+export const MEASURED_SKILLS = ['reading', 'listening', 'writing'];
 export const SELF_ASSESSED_SKILLS = ['writing', 'speaking'];
-export const SKILLS = [...MEASURED_SKILLS, ...SELF_ASSESSED_SKILLS];
+export const SKILLS = ['reading', 'listening', 'writing', 'speaking'];
 
 // Counted steps for the progress indicator (intro excluded, results included).
 const COUNTED_STEPS = ['reading', 'listening', 'writing', 'speaking', 'results'];
@@ -67,7 +67,8 @@ export function prevStep(step) {
 //
 // Inputs (all already reduced to their display shape by score.js):
 //   reading / listening : number | null   (measured band; null when skipped)
-//   writing  / speaking  : { min, max } | null  (self-assessed range; null when skipped)
+//   writing : number | { min, max } | null (measured sample or self-assessed fallback)
+//   speaking: { min, max } | null (self-assessed range; null when skipped)
 //   skipped  : { reading, listening, writing, speaking }  (booleans)
 //   targetBand : number | undefined
 //   completedAt : ISO string (defaults to now)

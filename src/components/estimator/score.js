@@ -4,9 +4,10 @@
 // caller so these functions stay config-agnostic and unit-testable.
 //
 // Reading/Listening are MEASURED from real bank questions via the existing
-// grading engine; Writing/Speaking are SELF-ASSESSED into a band range. The
-// overall estimate averages whatever skills are present and applies the
-// official IELTS rounding rule (reused from lib/bandTables).
+// grading engine. Writing is measured by default with a self-assessed fallback;
+// Speaking is self-assessed into a band range. The overall estimate averages
+// whatever skills are present and applies the official IELTS rounding rule
+// (reused from lib/bandTables).
 
 import { gradeAll, estimateBand } from '../question/grade';
 import { roundBandMean } from '../../../lib/bandTables';

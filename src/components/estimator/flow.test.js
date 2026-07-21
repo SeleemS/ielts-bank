@@ -31,7 +31,8 @@ describe('step machine', () => {
 
   it('classifies measured vs self-assessed steps', () => {
     expect(isMeasured('reading')).toBe(true);
-    expect(isMeasured('writing')).toBe(false);
+    expect(isMeasured('writing')).toBe(true);
+    expect(isSelfAssessed('writing')).toBe(true);
     expect(isSelfAssessed('speaking')).toBe(true);
     expect(isSelfAssessed('listening')).toBe(false);
   });
