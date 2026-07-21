@@ -2928,7 +2928,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-116 — The 30-day pause stopped access but did not pause the paid term
 
-- Status: `FIXED`; full verification and production publication pending
+- Status: `FIXED`; live success-path exercise needs a scoped cron credential or Stripe sandbox
 - Area: Monetization / subscription pause / unused-time credit / automatic resume
 - Severity: High
 - Evidence: the route set `pause_collection: { behavior: 'void' }` and separately blocked Premium
@@ -2965,8 +2965,17 @@ False positives are kept in the investigation notes so they are not rediscovered
   audit covering 284 interactive controls; and the network-enabled 529-page production build passed.
   Safe live probes against guaranteed nonexistent IDs reached both versioned pause
   and resume endpoints and returned Stripe `resource_missing`, proving the preview API and request
-  options are enabled without mutating a billing object. Exact-SHA deployment, true pause/resume
-  provider exercise, and cleanup remain pending.
+  options are enabled without mutating a billing object. Local HEAD and `origin/main` matched exact
+  SHA `e839b814a01bd2b8658115e50941472f8d47c99b`; GitHub's successful Vercel status tied
+  that SHA to deployment `dpl_Fbczb53cf6pQW2YwCMqKWE5S7Yih`, which reached promoted `READY` on
+  every canonical alias. Deployment metadata contains the new `/api/cron/resume-billing` schedule
+  at minute 47 of every hour. Deployed probes returned HTTP 405 with `Allow: POST` for pause GET,
+  HTTP 403 for a cross-origin pause POST, HTTP 401 for a same-origin unauthenticated pause POST,
+  HTTP 401 for an unsigned resume-cron GET, and HTTP 405 with `Allow: GET` for cron POST. A full live
+  pause/resume success exercise was not run: the needed `CRON_SECRET` is deployment-only, and the
+  attempted full-environment export was denied because it would expose unrelated production secrets.
+  No billing object was created or mutated during that attempt. The remaining success-path gap is
+  explicit until a scoped cron credential or Stripe sandbox is available.
 
 ## Investigation notes
 
