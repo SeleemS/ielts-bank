@@ -128,8 +128,33 @@ const mockState = {
   updatedSubscription: null,
   subscriptionUpdateError: null,
   reconciliationOutcome: 'activated user user-1 (active)',
+  priceOverride: null,
+  priceList: null,
   stripeCalls: {},
 };
+
+function priceForLookupKey(lookupKey) {
+  const priceShape = {
+    premium_monthly: { unit_amount: 1499, interval_count: 1 },
+    premium_6month: { unit_amount: 4999, interval_count: 6 },
+    premium_monthly_ppp: { unit_amount: 399, interval_count: 1 },
+    premium_6month_ppp: { unit_amount: 1499, interval_count: 6 },
+  }[lookupKey] || { unit_amount: 7999, interval_count: 12 };
+  return {
+    id: 'price_mock_1',
+    lookup_key: lookupKey,
+    active: true,
+    currency: 'usd',
+    type: 'recurring',
+    unit_amount: priceShape.unit_amount,
+    recurring: {
+      interval: 'month',
+      interval_count: priceShape.interval_count,
+      usage_type: 'licensed',
+    },
+    ...(mockState.priceOverride || {}),
+  };
+}
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -196,7 +221,11 @@ vi.mock('../lib/billing', async (importOriginal) => {
       prices: {
         list: async (args) => {
           mockState.stripeCalls.pricesList = args;
-          return { data: [{ id: 'price_mock_1', lookup_key: args.lookup_keys[0] }] };
+          return {
+            data:
+              mockState.priceList
+              || [priceForLookupKey(args.lookup_keys[0])],
+          };
         },
       },
       customers: {
@@ -268,6 +297,8 @@ describe('POST /api/billing/checkout', () => {
     mockState.updatedSubscription = null;
     mockState.subscriptionUpdateError = null;
     mockState.reconciliationOutcome = 'activated user user-1 (active)';
+    mockState.priceOverride = null;
+    mockState.priceList = null;
     mockState.stripeCalls = {};
     vi.restoreAllMocks();
     delete process.env.STRIPE_AUTOMATIC_TAX;
@@ -438,7 +469,11 @@ describe('POST /api/billing/checkout', () => {
     const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody.url).toContain('checkout.stripe.com');
-    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_monthly']);
+    expect(mockState.stripeCalls.pricesList).toEqual({
+      lookup_keys: ['premium_monthly'],
+      active: true,
+      limit: 2,
+    });
     const session = mockState.stripeCalls.sessionCreate;
     expect(session.mode).toBe('subscription');
     expect(session.client_reference_id).toBe('user-1');
@@ -458,6 +493,57 @@ describe('POST /api/billing/checkout', () => {
     expect(res.statusCode).toBe(200);
     expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_6month_ppp']);
     expect(mockState.stripeCalls.sessionCreate.subscription_data.metadata.ppp).toBe('1');
+  });
+
+  it.each([
+    ['amount', { unit_amount: 999 }],
+    ['currency', { currency: 'cad' }],
+    ['active state', { active: false }],
+    ['price type', { type: 'one_time', recurring: null }],
+    [
+      'billing interval',
+      { recurring: { interval: 'year', interval_count: 1, usage_type: 'licensed' } },
+    ],
+    [
+      'usage type',
+      { recurring: { interval: 'month', interval_count: 1, usage_type: 'metered' } },
+    ],
+  ])('blocks checkout when Stripe %s differs from the advertised plan', async (_, override) => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    mockState.priceOverride = override;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/pricing is being updated/i);
+    expect(mockState.stripeCalls.customerCreate).toBeUndefined();
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
+  });
+
+  it('blocks checkout when a lookup key resolves ambiguously', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'free',
+    };
+    const first = priceForLookupKey('premium_monthly');
+    mockState.priceList = [first, { ...first, id: 'price_mock_2' }];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockState.stripeCalls.customerCreate).toBeUndefined();
+    expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
   });
 
   it('reuses an existing stripe customer instead of creating a new one', async () => {

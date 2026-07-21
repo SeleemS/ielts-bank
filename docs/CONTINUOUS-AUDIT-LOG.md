@@ -2708,6 +2708,35 @@ False positives are kept in the investigation notes so they are not rediscovered
   past-date rejection is verified by the real-component no-write test. The exact Auth user was then
   deleted, with zero residual Auth users, `users` rows, or `user_quotas` rows.
 
+## CA-110 — Checkout continued when Stripe could charge a different plan
+
+- Status: `FIXED`
+- Area: Monetization / Stripe Checkout / displayed-price integrity / global and PPP plans
+- Severity: High
+- Evidence: the checkout route compared the Stripe price's USD amount with the pricing page but only
+  logged a mismatch and deliberately continued. It did not validate active state, currency,
+  recurring type, billing interval/count, or licensed usage. A stale or misconfigured lookup key
+  could therefore create a chargeable Checkout Session whose price or cadence differed from the
+  learner's selected card. Stripe documents that a [Price object](https://docs.stripe.com/api/prices/object?lang=nodejs)
+  defines the amount, currency, active state, price type, and recurring interval/count, and that
+  [price listing](https://docs.stripe.com/api/prices/list?lang=node) can filter active lookup keys.
+- Fix: request active prices with enough result capacity to detect ambiguity, require exactly one
+  match, and fail closed before customer or session creation unless amount, USD currency, active
+  state, recurring type, monthly interval/count, and licensed usage exactly match `saleConfig` and
+  the selected SKU. Return a retryable pricing-update response while logging the full mismatch for
+  operators.
+- Regression coverage: the 49-test billing route suite requires the normal global and PPP sessions
+  to use the exact active-price query, then independently injects wrong amount, currency, active
+  state, one-time type, billing interval, metered usage, and duplicate lookup results. Every drift
+  case must stop before Stripe customer or Checkout Session creation.
+- Commit: `Block checkout on Stripe price drift`.
+- Verification: the focused one-file/49-test billing route suite, complete 92-file/593-test Vitest
+  suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  network-enabled 529-page production build passed. Read-only live Stripe queries found exactly one
+  active USD recurring licensed price for all four advertised global/PPP lookup keys, with amounts
+  and monthly interval counts matching the pricing page. Publication and post-deploy route evidence
+  are recorded after the isolated fix deploys; no Stripe or account mutation occurred.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

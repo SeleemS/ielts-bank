@@ -20,6 +20,34 @@ import { planPricing } from '../../../src/lib/saleConfig';
 const CHECKOUT_WINDOW_SECONDS = 10 * 60;
 const CHECKOUT_MAX_PER_WINDOW = 10;
 
+function advertisedPriceMismatch(price, sku, ppp) {
+  const expected = planPricing(sku, ppp);
+  const expectedIntervalCount = sku === '6month' ? 6 : 1;
+  const expectedMinor = expected ? Math.round(expected.sale * 100) : null;
+  const valid =
+    Boolean(expected) &&
+    price?.active === true &&
+    price?.currency === 'usd' &&
+    price?.unit_amount === expectedMinor &&
+    price?.type === 'recurring' &&
+    price?.recurring?.interval === 'month' &&
+    price?.recurring?.interval_count === expectedIntervalCount &&
+    price?.recurring?.usage_type === 'licensed';
+  return valid
+    ? null
+    : {
+        expectedMinor,
+        expectedIntervalCount,
+        actualMinor: price?.unit_amount ?? null,
+        actualCurrency: price?.currency ?? null,
+        actualType: price?.type ?? null,
+        actualInterval: price?.recurring?.interval ?? null,
+        actualIntervalCount: price?.recurring?.interval_count ?? null,
+        actualUsageType: price?.recurring?.usage_type ?? null,
+        active: price?.active ?? null,
+      };
+}
+
 let _admin = null;
 function getAdmin() {
   if (_admin) return _admin;
@@ -171,31 +199,30 @@ export default async function handler(req, res) {
   try {
     stripe = getStripe();
 
-    const prices = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
+    const prices = await stripe.prices.list({
+      lookup_keys: [lookupKey],
+      active: true,
+      limit: 2,
+    });
     const price = prices.data[0];
-    if (!price) {
+    if (!price || prices.data.length !== 1) {
       console.error('checkout: missing price for lookup key', lookupKey);
       return res.status(500).json({ error: 'Pricing unavailable. Please try again later.' });
     }
 
-    // Safety net: the pricing page shows amounts from saleConfig, but Stripe
-    // charges whatever this resolved price is. If a Stripe price wasn't updated
-    // for a sale/price change they silently diverge (the page says $14.99 while
-    // Stripe still charges $9.99). Log loudly so it's caught — never block
-    // checkout on it, and never let a guard error affect the sale.
-    try {
-      const expected = planPricing(sku, isPppCountry(country));
-      if (expected && price.currency === 'usd' && Number.isFinite(price.unit_amount)) {
-        const expectedMinor = Math.round(expected.sale * 100);
-        if (price.unit_amount !== expectedMinor) {
-          console.error(
-            `checkout PRICE MISMATCH: sku=${sku} lookup=${lookupKey} ` +
-              `stripe=${price.unit_amount} pageExpects=${expectedMinor} — update the Stripe price.`
-          );
-        }
-      }
-    } catch (guardError) {
-      console.error('checkout price-consistency guard failed:', guardError.message);
+    // Stripe charges the resolved Price, not the amount rendered from
+    // saleConfig. Fail closed before customer/session creation unless amount,
+    // currency, and billing cadence match the advertised plan exactly.
+    const mismatch = advertisedPriceMismatch(price, sku, isPppCountry(country));
+    if (mismatch) {
+      console.error('checkout PRICE MISMATCH:', {
+        sku,
+        lookupKey,
+        ...mismatch,
+      });
+      return res.status(503).json({
+        error: 'Pricing is being updated. Please try again later.',
+      });
     }
 
     let customerId = userRow.stripe_customer_id;
