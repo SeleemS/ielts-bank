@@ -3837,6 +3837,17 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## Investigation notes
 
+- Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
+  `/blog/ielts-writing-task-2-problem-solution`. Local HEAD and `origin/main` matched that SHA;
+  GitHub's successful status mapped it to canonical READY deployment
+  `dpl_2m3FGfLopBCuZZRuThtxzHwQjzJ1`. Live in-app browser inspection found one article landmark and
+  H1, the complete published article hierarchy and four contextual links, an indexable
+  self-canonical, Article JSON-LD, complete OG/Twitter metadata, and no console warnings or errors.
+  The article CTA navigated to the attributed Writing Checker URL, and the live sitemap contained
+  the canonical article URL exactly once with `lastmod` 2026-07-21. The complete 100-file/695-test
+  suite, ESLint, strict 185-file analytics audit, and network-enabled 530-page build passed. No
+  defect was found in this latest-commit page audit.
+
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
   corrected: `AdUnit` in CA-121, `AiQuotaPanel` in CA-127, and `EstimatorResults` in CA-130.
 
