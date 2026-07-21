@@ -2456,7 +2456,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-102 — Optional analytics and advertising default on in consent-required regions
 
-- Status: `OPEN — OWNER-DIRECTED RISK`
+- Status: `PARTIALLY FIXED — CERTIFIED CMP PENDING`
 - Area: Privacy / consent / Google Analytics / AdSense / regulatory and provider policy
 - Severity: High
 - Evidence: commit `2cad189` deliberately reversed CA-029's denied-until-granted model. The exact
@@ -2474,15 +2474,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   [Google CMP requirement](https://support.google.com/adsense/answer/13554116),
   [Google Consent Mode setup](https://developers.google.com/tag-platform/security/guides/consent),
   and [ICO cookie guidance](https://ico.org.uk/media/for-organisations/guide-to-pecr/cookies-and-similar-technologies-2-4.pdf).
-- Resolution boundary: the commit message records that a compliant geo-aware default was proposed
-  and explicitly declined as founder-directed. The audit therefore preserves this as an open
-  provider-policy and jurisdictional risk rather than silently reverting the requested business
-  decision. Recommended resolution is a Google-certified CMP or, at minimum, region-scoped
-  denied-until-granted behavior for EEA, UK, and Switzerland while retaining the chosen opt-out
-  model only where it is lawful and policy-compatible.
-- Verification: exact local/remote/canonical production SHA alignment was confirmed before the
-  browser check. No consent choice was submitted and no account, analytics preference, payment,
-  or application data was changed.
+- Fix: preserve the founder-directed opt-out default for a resolved non-required country, but add
+  edge geo classification that defaults EU-27, EEA, UK, and Switzerland visitors to denied until
+  an explicit grant. Missing or malformed geo fails closed. The pre-tag bootstrap, application
+  tracking gates, banner copy, and AdSense loader now share the same region-aware state; AdSense is
+  not loaded while optional consent is denied. Global Privacy Control and explicit saved choices
+  continue to override the regional default.
+- Regression coverage: pure region tests cover all 32 consent-required territories, representative
+  opt-out countries, case normalization, and fail-closed input. Middleware-boundary tests require
+  denied cookies for DE/GB/NO/CH, granted for CA, denied for missing/malformed geo, and no rewrite
+  for an unchanged cookie. Consent, analytics, banner, ad-policy, and loader suites cover the
+  default, explicit grant/rejection, GPC override, pre-tag order, and consent-gated AdSense path.
+- Commit: `db82abe` (`Make analytics/ads consent geo-aware (opt-out except EU/EEA/UK/CH)`).
+- Verification: the focused seven-file/39-test consent/analytics/advertising suite, complete
+  91-file/572-test Vitest suite, ESLint, strict 174-file analytics audit covering 282 interactive
+  controls, and 529-page production build passed. The first sandboxed build failed only because
+  Google Fonts DNS was unavailable; the network-enabled rerun passed. The compiled production
+  runtime returned HTTP 200 and the expected cookie for DE=`denied`, CH=`denied`, CA=`granted`, and
+  missing geo=`denied`; an unchanged denied cookie was not rewritten. GitHub's Vercel status tied
+  exact SHA `db82abec855554cd1d54f6d3e359fc49e20d0d36` to production deployment
+  `dpl_E4rB4QPPGTRbRLNPeAq3SKpoRKh3`, which reached promoted `READY` on the canonical aliases. A
+  fresh canonical request from the Toronto edge returned the expected `granted` cookie, ignored
+  caller-supplied DE/CH geo headers in favor of trusted edge geo, and served the fail-closed pre-tag
+  bootstrap. Live browser verification showed the Canadian opt-out disclosure, then an explicit
+  rejection removed the AdSense script and left the privacy control available. This browser-local
+  preference was the only state changed; no account, payment, provider, or application data changed.
+- Residual risk: the custom consent UI is not a Google-certified TCF-integrated CMP. The geo fix
+  removes the confirmed pre-consent default/storage and ad-loader defect, but does not by itself
+  satisfy Google's separate certified-CMP requirement for serving personalized ads in the EEA, UK,
+  and Switzerland. CA-102 therefore remains partially open until a certified CMP is configured and
+  verified end to end in a consent-required location.
 
 ## Investigation notes
 
