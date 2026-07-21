@@ -84,6 +84,9 @@ describe('EstimatorRunner stepper', () => {
     clickButton('Continue'); // reading measured (empty) -> listening
     clickButton('Skip this section'); // listening -> writing
     expect(container.textContent).toContain('Step 3 of 5 · Writing');
+    // Writing now defaults to a MEASURED sample; opting out drops back to the
+    // self-check, which is what can then be skipped entirely.
+    clickButton('rather rate'); // sample -> self-check (same step)
     clickButton('Skip this section'); // writing -> speaking
     expect(container.textContent).toContain('Step 4 of 5 · Speaking');
     clickButton('Skip this section'); // speaking -> results
@@ -100,11 +103,26 @@ describe('EstimatorRunner stepper', () => {
     expect(track).toHaveBeenCalledWith('estimator_complete', expect.objectContaining({ version: expect.any(String) }));
   });
 
+  it('shows the marked writing sample by default and discloses the gate upfront', () => {
+    render(<EstimatorRunner {...props} />);
+    clickButton('Start the test');
+    clickButton('Skip this section'); // reading
+    clickButton('Skip this section'); // listening
+
+    expect(container.textContent).toContain('Writing sample');
+    expect(container.textContent).toContain('Mark my writing');
+    // The sign-up gate must be stated BEFORE the visitor invests effort writing.
+    expect(container.textContent).toMatch(/unlock when you save your results/i);
+    // ...and there is always a visible escape to the self-check.
+    expect(container.textContent).toMatch(/rather rate my own writing/i);
+  });
+
   it('persists the final result to localStorage on completion', () => {
     render(<EstimatorRunner {...props} />);
     clickButton('Start the test');
     clickButton('Skip this section'); // reading
     clickButton('Skip this section'); // listening
+    clickButton('rather rate'); // writing sample -> self-check
     clickButton('Skip this section'); // writing
     clickButton('Skip this section'); // speaking -> results
 

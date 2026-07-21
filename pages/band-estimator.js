@@ -15,11 +15,19 @@ import { BAND_ESTIMATOR_SEO } from '../lib/bandEstimatorSeo';
 const FAQ = [
   {
     q: 'Is this an official IELTS score?',
-    a: 'No. It is an independent study estimate based on 20 real practice questions and your own Writing and Speaking self-assessment. Only an official test can issue an IELTS score.',
+    a: 'No. It is an independent study estimate based on 20 real practice questions, a short marked writing sample, and your own Speaking self-assessment. Only an official test can issue an IELTS score.',
   },
   {
-    q: 'Why are Writing and Speaking shown as ranges?',
-    a: 'Those skills need a written response or live performance to measure properly. A range is more honest than pretending three self-rating questions can produce an exact band.',
+    q: 'Is my Writing actually marked, or do I rate myself?',
+    a: 'It is actually marked. You write about 100 words and an AI examiner scores it against the public band descriptors. Because a short sample limits how far ideas can be developed, we show it as an indicative band — a full 250-word essay in the Writing Checker gives a sharper one.',
+  },
+  {
+    q: 'Why is Speaking shown as a range?',
+    a: 'Speaking needs a live performance to measure properly. A range is more honest than pretending three self-rating questions can produce an exact band.',
+  },
+  {
+    q: 'Why do I need an account to see my Writing band?',
+    a: 'Reading and Listening are shown immediately. Marking writing costs real compute, so the Writing band and your overall estimate unlock when you create a free account — no payment — which also saves the result as your baseline so you can track progress.',
   },
   {
     q: 'Does the estimator work for General Training IELTS?',
@@ -100,19 +108,25 @@ export default function BandEstimatorPage({
               <h2 className="text-3xl font-bold tracking-tight">How this IELTS band estimate works</h2>
               <div className="mt-6 space-y-5 text-base leading-8 text-muted-foreground">
                 <p>
-                  This diagnostic samples two skills that can be marked objectively in the browser.
-                  You answer ten Academic Reading questions and ten Listening questions drawn from
-                  the same structured practice bank used across IELTS-Bank. Your answers are graded
-                  against the stored answer keys, then scaled to the familiar nine-band range. With
-                  only ten questions per measured skill, the result is deliberately shown as an
-                  approximation rather than false precision.
+                  This diagnostic measures three of the four skills. You answer ten Academic Reading
+                  questions and ten Listening questions drawn from the same structured practice bank
+                  used across IELTS-Bank; your answers are graded against the stored answer keys and
+                  scaled to the familiar nine-band range. With only ten questions per skill, those
+                  results are deliberately shown as an approximation rather than false precision.
                 </p>
                 <p>
-                  Writing and Speaking cannot be measured responsibly from multiple-choice answers.
-                  They depend on task response, coherence, vocabulary, grammar, fluency, and
-                  pronunciation. The short self-check therefore returns a one-band range and styles
-                  it differently from the measured Reading and Listening cards. Self-ratings often
-                  run optimistic, so use those ranges to choose your next task—not as proof of a
+                  Writing is genuinely marked rather than self-rated. You write a short paragraph of
+                  about 100 words and an AI examiner assesses it against the public band descriptors,
+                  the same rubric used by our full Writing checker. Because a short sample shows
+                  grammar and vocabulary clearly but limits how far ideas can be developed, the
+                  result is presented as an indicative band — a full 250-word essay gives a sharper
+                  one.
+                </p>
+                <p>
+                  Speaking still cannot be measured responsibly from a quiz: it depends on fluency,
+                  coherence and pronunciation in real time. The short self-check therefore returns a
+                  one-band range and is styled differently from the measured cards. Self-ratings tend
+                  to run optimistic, so use that range to choose your next task—not as proof of a
                   score.
                 </p>
                 <p>

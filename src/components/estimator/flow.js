@@ -86,9 +86,16 @@ export function buildResult({
   skipped = {},
   targetBand,
   completedAt,
+  writingLocked = false,
 } = {}) {
   const bands = { reading, listening, writing, speaking };
-  const { overall } = overallEstimate({ reading, listening, writing, speaking });
+  // When the Writing sample has been scored but not yet revealed (an anonymous
+  // visitor), the client knows neither the Writing band nor a trustworthy
+  // overall — computing an overall from the other three would quietly publish a
+  // DIFFERENT number than the one they unlock. Both stay locked until sign-up.
+  const { overall } = writingLocked
+    ? { overall: null }
+    : overallEstimate({ reading, listening, writing, speaking });
   const sectionsSkipped = SKILLS.filter((skill) => skipped[skill]);
 
   const result = {
@@ -98,6 +105,7 @@ export function buildResult({
     completedAt: completedAt || new Date().toISOString(),
     sectionsSkipped: sectionsSkipped.join(','),
   };
+  if (writingLocked) result.writingLocked = true;
   if (typeof targetBand === 'number' && !Number.isNaN(targetBand)) {
     result.targetBand = targetBand;
   }

@@ -68,8 +68,11 @@ export function overallEstimate({ reading, listening, writing, speaking } = {}) 
   const entries = [
     ['reading', toNumber(reading)],
     ['listening', toNumber(listening)],
-    ['writing', midpoint(writing)],
-    ['speaking', midpoint(speaking)],
+    // Writing is a MEASURED point band once the short sample is revealed, or a
+    // self-assessed range when the visitor skipped the sample. Speaking is
+    // always a range today. toPoint() accepts either shape.
+    ['writing', toPoint(writing)],
+    ['speaking', toPoint(speaking)],
   ];
   const used = entries.filter(([, value]) => value !== null);
   const usedSkills = used.map(([name]) => name);
@@ -94,6 +97,14 @@ export function formatBand(band) {
 // --- internal helpers ------------------------------------------------------
 function toNumber(value) {
   return typeof value === 'number' && !Number.isNaN(value) ? value : null;
+}
+
+// A skill contributes either a measured point band (number) or the midpoint of a
+// self-assessed { min, max } range.
+function toPoint(value) {
+  const asNumber = toNumber(value);
+  if (asNumber !== null) return asNumber;
+  return midpoint(value);
 }
 
 function midpoint(range) {

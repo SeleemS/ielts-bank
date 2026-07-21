@@ -1,15 +1,16 @@
 import React from 'react';
 import NextLink from 'next/link';
-import { ArrowRight, BookOpen, Headphones, PenLine, Mic, RotateCcw, Target, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Headphones, PenLine, Mic, RotateCcw, Target, Sparkles, Lock, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { cn } from '../../lib/utils';
-import { track } from '../../lib/analytics';
+import { track, getAnonId } from '../../lib/analytics';
 import { useAuth } from '../../lib/auth';
 import { usePlan } from '../../lib/usePlan';
+import { getSupabase } from '../../../lib/supabase';
 import NewsletterSignup from '../NewsletterSignup';
 import SignInDialog from '../auth/SignInDialog';
 import { BandHero } from '../question/ScoreUI';
-import { formatBand } from './score';
+import { formatBand, overallEstimate } from './score';
 import { ESTIMATOR_VERSION } from '../../../lib/estimatorConfig';
 import { biggestGap } from './flow';
 
@@ -94,6 +95,164 @@ function SelfAssessedCard({ skill, section }) {
   );
 }
 
+// Writing WAS measured, but the band is withheld until the visitor creates a
+// free account. Note this renders no band at all — there is nothing hidden in
+// the DOM to un-blur, because the API never sent it.
+function LockedWritingCard({ onUnlock, revealing, error }) {
+  return (
+    <div className="rounded-xl border border-dashed border-accent/50 bg-accent/5 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <PenLine className="h-4 w-4 text-accent" /> Writing
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent">
+          <Lock className="h-3 w-3" /> Locked
+        </span>
+      </div>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-3xl font-extrabold text-muted-foreground">—</span>
+        <span className="text-sm font-medium text-muted-foreground">marked &amp; waiting</span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Your sample was marked against the official band descriptors.
+      </p>
+      <button
+        type="button"
+        onClick={onUnlock}
+        disabled={revealing}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+      >
+        {revealing ? (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin" /> Unlocking…
+          </>
+        ) : (
+          <>
+            Unlock my Writing band <ArrowRight className="h-3 w-3" />
+          </>
+        )}
+      </button>
+      {error ? <p className="mt-1.5 text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
+// Writing after the reveal: a measured band, honestly labelled as indicative
+// because it came from a ~100-word sample rather than a full essay.
+function RevealedWritingCard({ band, wordCount, onPractice }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <PenLine className="h-4 w-4 text-accent" /> Writing
+      </div>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-3xl font-extrabold tabular-nums text-foreground">~{formatBand(band)}</span>
+        <span className="text-sm font-medium text-muted-foreground">indicative</span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Marked from your {wordCount ? `${wordCount}-word` : 'short'} sample — a full essay gives a
+        sharper band.
+      </p>
+      <NextLink
+        href="/ielts-writing-checker"
+        onClick={onPractice}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent no-underline underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Score a full essay <ArrowRight className="h-3 w-3" />
+      </NextLink>
+    </div>
+  );
+}
+
+// What to actually DO next, driven by the weakest skill against the target.
+const PLAN_BY_SKILL = {
+  reading: {
+    action: 'Drill the Reading question types that cost the most marks',
+    detail: 'True/False/Not Given and Matching Headings are where most candidates lose Reading marks.',
+    href: '/readingquestion',
+    cta: 'Practise Reading',
+  },
+  listening: {
+    action: 'Practise Listening with the transcript afterwards',
+    detail: 'Answer first, then read the transcript to see exactly where the answer was signalled.',
+    href: '/listeningquestion',
+    cta: 'Practise Listening',
+  },
+  writing: {
+    action: 'Get a full Task 2 essay marked',
+    detail: 'A 250-word essay gives a precise band plus criterion-by-criterion feedback and corrections.',
+    href: '/ielts-writing-checker',
+    cta: 'Score an essay',
+  },
+  speaking: {
+    action: 'Sit a live mock with the AI examiner',
+    detail: 'Speaking only improves under real conditions — a full 3-part mock gives you a band.',
+    href: '/speaking-examiner',
+    cta: 'Meet the examiner',
+  },
+};
+
+function StudyPlan({ worst, gap, targetBand, onCta }) {
+  const focus = worst ? PLAN_BY_SKILL[worst.skill] : null;
+  const steps = [
+    focus
+      ? { title: focus.action, body: focus.detail, href: focus.href, cta: focus.cta }
+      : {
+          title: 'Build your first full baseline',
+          body: 'Measure every skill once so your plan can target the real weak spot.',
+          href: '/readingquestion',
+          cta: 'Start practising',
+        },
+    {
+      title: 'Practise on consecutive days, not in one long session',
+      body: 'Short daily sets beat cramming — and your dashboard tracks the streak.',
+      href: '/dashboard',
+      cta: 'Open dashboard',
+    },
+    {
+      title: 'Confirm with a full 40-question mock',
+      body: 'This 20-question snapshot points the direction; a timed mock gives the sharper number.',
+      href: '/mock-test',
+      cta: 'Take a mock',
+    },
+  ];
+
+  return (
+    <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-accent" />
+        <h3 className="text-sm font-bold text-foreground">Your plan to reach {formatBand(targetBand)}</h3>
+      </div>
+      {worst ? (
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Start with <span className="font-semibold text-foreground">{SKILL_META[worst.skill].label}</span>
+          {typeof gap === 'number' && gap > 0 ? ` — it's your biggest gap (${gap.toFixed(1)} bands).` : '.'}
+        </p>
+      ) : null}
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, index) => (
+          <li key={step.title} className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent">
+              {index + 1}
+            </span>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-foreground">{step.title}</div>
+              <p className="mt-0.5 text-sm text-muted-foreground">{step.body}</p>
+              <NextLink
+                href={step.href}
+                onClick={onCta ? onCta(`plan_${index + 1}`) : undefined}
+                className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-accent no-underline underline-offset-4 hover:underline"
+              >
+                {step.cta} <ArrowRight className="h-3 w-3" />
+              </NextLink>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // A skipped-skill card: honest "not measured" + practice link.
 function SkippedCard({ skill, onPractice }) {
   const meta = SKILL_META[skill];
@@ -164,6 +323,14 @@ export default function EstimatorResults({
   const [targetBand, setTargetBand] = React.useState(initialTargetBand);
   const [signInOpen, setSignInOpen] = React.useState(false);
 
+  // The Writing sample was marked server-side and the band withheld. It can only
+  // be read back by an authenticated call, which also files the sample into the
+  // learner's history.
+  const writingLocked = Boolean(writing && writing.locked);
+  const [revealed, setRevealed] = React.useState(null);
+  const [revealing, setRevealing] = React.useState(false);
+  const [revealError, setRevealError] = React.useState('');
+
   const emit = React.useCallback(
     (event, params = {}) => {
       track(event, { version: ESTIMATOR_VERSION, signed_in: signedIn, ...params });
@@ -176,18 +343,69 @@ export default function EstimatorResults({
     [emit]
   );
 
+  const reveal = React.useCallback(async () => {
+    if (!signedIn || revealing) return;
+    setRevealing(true);
+    setRevealError('');
+    try {
+      const { data } = await getSupabase().auth.getSession();
+      const token = data?.session?.access_token;
+      const response = await fetch('/api/estimator/reveal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ anon_id: getAnonId() }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setRevealError(body.error || 'Could not unlock your Writing band.');
+        return;
+      }
+      setRevealed(body);
+      emit('estimator_writing_revealed', { band: body.band });
+    } catch {
+      setRevealError('Could not unlock your Writing band. Please refresh and try again.');
+    } finally {
+      setRevealing(false);
+    }
+  }, [signedIn, revealing, emit]);
+
+  // Unlock automatically the moment a session exists — the visitor already
+  // asked for this by creating the account.
+  React.useEffect(() => {
+    if (signedIn && writingLocked && !revealed && !revealing && !revealError) reveal();
+  }, [signedIn, writingLocked, revealed, revealing, revealError, reveal]);
+
+  const stillLocked = writingLocked && !revealed;
   const bands = {
     reading: reading ? reading.band : null,
     listening: listening ? listening.band : null,
-    writing: writing ? writing.band : null,
+    writing: revealed ? revealed.band : writing && !writing.locked ? writing.band : null,
     speaking: speaking ? speaking.band : null,
   };
+  // The runner could not compute an overall while Writing was locked; once
+  // revealed we can, so recompute here rather than showing a stale null.
+  const effectiveOverall = stillLocked
+    ? null
+    : revealed
+      ? overallEstimate({
+          reading: bands.reading,
+          listening: bands.listening,
+          writing: bands.writing,
+          speaking: bands.speaking,
+        }).overall
+      : overall;
 
   const measuredCount =
     (reading ? reading.total : 0) + (listening ? listening.total : 0);
+  const writingMeasured = writingLocked || Boolean(revealed);
   const heroCaption =
     measuredCount > 0
-      ? `Estimated from ${measuredCount} exam-style questions + your self-assessment. Not an official score.`
+      ? `Estimated from ${measuredCount} exam-style questions${
+          writingMeasured ? ', a marked writing sample' : ''
+        } and your self-assessment. Not an official score.`
       : 'Estimated from your self-assessment. Not an official score.';
 
   const handleTarget = (label) => {
@@ -196,7 +414,10 @@ export default function EstimatorResults({
     onTargetBandChange?.(value);
   };
 
-  const gap = typeof overall === 'number' ? Math.round((targetBand - overall) * 10) / 10 : null;
+  const gap =
+    typeof effectiveOverall === 'number'
+      ? Math.round((targetBand - effectiveOverall) * 10) / 10
+      : null;
   const worst = biggestGap(bands, targetBand);
 
   const renderCard = (skill) => {
@@ -207,6 +428,32 @@ export default function EstimatorResults({
       const section = skill === 'reading' ? reading : listening;
       if (!section) return <SkippedCard key={skill} skill={skill} onPractice={ctaClick(`practice_${skill}`)} />;
       return <MeasuredCard key={skill} skill={skill} section={section} onPractice={ctaClick(`practice_${skill}`)} />;
+    }
+    if (skill === 'writing') {
+      if (stillLocked) {
+        return (
+          <LockedWritingCard
+            key="writing"
+            revealing={revealing}
+            error={revealError}
+            onUnlock={() => {
+              emit('estimator_cta_click', { destination: 'unlock_writing' });
+              if (signedIn) reveal();
+              else setSignInOpen(true);
+            }}
+          />
+        );
+      }
+      if (revealed) {
+        return (
+          <RevealedWritingCard
+            key="writing"
+            band={revealed.band}
+            wordCount={revealed.wordCount}
+            onPractice={ctaClick('writing_checker')}
+          />
+        );
+      }
     }
     const section = skill === 'writing' ? writing : speaking;
     if (!section) return <SkippedCard key={skill} skill={skill} onPractice={ctaClick(`practice_${skill}`)} />;
@@ -223,8 +470,52 @@ export default function EstimatorResults({
 
       {/* (a) Overall band hero */}
       <div>
-        <BandHero band={typeof overall === 'number' ? overall : undefined} subtitle={heroCaption} />
-        <p className="mt-2 text-center text-xs text-muted-foreground">{heroCaption}</p>
+        {stillLocked ? (
+          <div className="rounded-2xl border-2 border-dashed border-accent/50 bg-accent/5 p-6 text-center">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/15 text-accent">
+              <Lock className="h-6 w-6" />
+            </span>
+            <h3 className="mt-3 text-xl font-bold text-foreground">Your overall band is ready</h3>
+            <p className="mx-auto mt-1.5 max-w-md text-sm text-muted-foreground">
+              We marked your writing sample
+              {measuredCount > 0 ? ` and scored ${measuredCount} questions` : ''}. Create a free
+              account to reveal your Writing band and overall estimate — no payment, a few seconds.
+            </p>
+            <Button
+              variant="accent"
+              size="lg"
+              className="mt-4 w-full max-w-sm"
+              disabled={revealing}
+              onClick={() => {
+                emit('estimator_cta_click', { destination: 'unlock_overall' });
+                if (signedIn) reveal();
+                else setSignInOpen(true);
+              }}
+            >
+              {revealing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Unlocking…
+                </>
+              ) : (
+                <>
+                  Reveal my band <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            {revealError ? <p className="mt-2 text-xs text-destructive">{revealError}</p> : null}
+            <p className="mt-3 text-xs text-muted-foreground">
+              Your Reading and Listening bands are shown below either way.
+            </p>
+          </div>
+        ) : (
+          <>
+            <BandHero
+              band={typeof effectiveOverall === 'number' ? effectiveOverall : undefined}
+              subtitle={heroCaption}
+            />
+            <p className="mt-2 text-center text-xs text-muted-foreground">{heroCaption}</p>
+          </>
+        )}
         <div className="mt-4">
           <CtaCard
             icon={Sparkles}
@@ -295,6 +586,12 @@ export default function EstimatorResults({
         )}
       </div>
 
+      {/* (c2) The personalised plan is part of the account reward, so it appears
+          alongside the revealed band rather than to an anonymous visitor. */}
+      {!stillLocked ? (
+        <StudyPlan worst={worst} gap={gap} targetBand={targetBand} onCta={ctaClick} />
+      ) : null}
+
       {/* (d) Conversion block */}
       <div className="space-y-3">
         <CtaCard
@@ -324,7 +621,7 @@ export default function EstimatorResults({
           onClick={ctaClick('speaking_examiner')}
         />
 
-        {!signedIn ? (
+        {!signedIn && !stillLocked ? (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground">
@@ -378,9 +675,13 @@ export default function EstimatorResults({
         open={signInOpen}
         onOpenChange={setSignInOpen}
         redirectOnFinish={false}
-        trigger="estimator_save"
-        title="Save your estimate"
-        description="Create a free account to keep this baseline and track your progress."
+        trigger={stillLocked ? 'estimator_unlock' : 'estimator_save'}
+        title={stillLocked ? 'Reveal your band' : 'Save your estimate'}
+        description={
+          stillLocked
+            ? 'Create a free account to unlock your Writing band, your overall estimate and your plan. No payment.'
+            : 'Create a free account to keep this baseline and track your progress.'
+        }
       />
     </div>
   );

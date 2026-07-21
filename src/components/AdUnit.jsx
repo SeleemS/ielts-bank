@@ -5,8 +5,8 @@ import { usePlan } from '../lib/usePlan';
 const CLIENT = 'ca-pub-5189362957619937';
 
 export default function AdUnit({ slot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_IN_CONTENT, className }) {
-  const { isPremium } = usePlan();
-  const showAd = Boolean(slot) && !isPremium;
+  const { isPremium, loading } = usePlan();
+  const showAd = Boolean(slot) && !loading && !isPremium;
   React.useEffect(() => {
     if (!showAd) return;
     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch { /* AdSense may be blocked */ }

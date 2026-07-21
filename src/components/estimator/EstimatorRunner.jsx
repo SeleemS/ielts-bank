@@ -5,6 +5,7 @@ import { track } from '../../lib/analytics';
 import { useAuth } from '../../lib/auth';
 import {
   ESTIMATOR_VERSION,
+  WRITING_SAMPLE_TASK,
   WRITING_SELF_ASSESSMENT,
   SPEAKING_SELF_ASSESSMENT,
 } from '../../../lib/estimatorConfig';
@@ -17,6 +18,7 @@ import {
 } from './flow';
 import MeasuredSection from './MeasuredSection';
 import SelfAssessmentStep from './SelfAssessmentStep';
+import WritingSampleStep from './WritingSampleStep';
 import EstimatorResults from './EstimatorResults';
 
 const IN_PROGRESS_KEY = 'ielts-estimator:v1';
@@ -83,6 +85,13 @@ export default function EstimatorRunner({
   const [listeningAnswers, setListeningAnswers] = React.useState({});
   const [writingAnswers, setWritingAnswers] = React.useState({});
   const [speakingAnswers, setSpeakingAnswers] = React.useState({});
+  // Writing is MEASURED by default via a short sample; 'selfassess' is the
+  // visible opt-out fallback. `writingScored` means the server holds a band for
+  // this visitor's anon_id — which the client deliberately cannot read until
+  // sign-up reveals it.
+  const [writingSample, setWritingSample] = React.useState('');
+  const [writingMode, setWritingMode] = React.useState('sample');
+  const [writingScored, setWritingScored] = React.useState(false);
   const [skipped, setSkipped] = React.useState(EMPTY_SKIPPED);
   const [lastResult, setLastResult] = React.useState(null);
   const [detail, setDetail] = React.useState(null); // completed run detail (for View results)
@@ -108,6 +117,9 @@ export default function EstimatorRunner({
       setListeningAnswers(saved.listeningAnswers || {});
       setWritingAnswers(saved.writingAnswers || {});
       setSpeakingAnswers(saved.speakingAnswers || {});
+      setWritingSample(saved.writingSample || '');
+      setWritingMode(saved.writingMode === 'selfassess' ? 'selfassess' : 'sample');
+      setWritingScored(Boolean(saved.writingScored));
       setSkipped({ ...EMPTY_SKIPPED, ...(saved.skipped || {}) });
       startedAtRef.current = saved.startedAt || null;
     }
@@ -126,12 +138,26 @@ export default function EstimatorRunner({
         listeningAnswers,
         writingAnswers,
         speakingAnswers,
+        writingSample,
+        writingMode,
+        writingScored,
         skipped,
         startedAt: startedAtRef.current,
       });
     }, 400);
     return () => window.clearTimeout(id);
-  }, [mounted, step, readingAnswers, listeningAnswers, writingAnswers, speakingAnswers, skipped]);
+  }, [
+    mounted,
+    step,
+    readingAnswers,
+    listeningAnswers,
+    writingAnswers,
+    speakingAnswers,
+    writingSample,
+    writingMode,
+    writingScored,
+    skipped,
+  ]);
 
   // ---- Compute the four section results from current answers/skips --------
   const computeSections = React.useCallback(
@@ -142,15 +168,32 @@ export default function EstimatorRunner({
       const listening = skipOverride.listening
         ? null
         : sectionBand(listeningGroups, listeningAnswers, 'listening');
+      // A scored sample yields a band the client is not allowed to see, so it is
+      // represented as `{ locked: true }` until sign-up reveals it. Falling back
+      // to the self-check produces the usual { points, band: {min,max} }.
       const writing = skipOverride.writing
         ? null
-        : selfAssessBand(writingAnswers, WRITING_SELF_ASSESSMENT);
+        : writingMode === 'sample'
+          ? writingScored
+            ? { locked: true }
+            : null
+          : selfAssessBand(writingAnswers, WRITING_SELF_ASSESSMENT);
       const speaking = skipOverride.speaking
         ? null
         : selfAssessBand(speakingAnswers, SPEAKING_SELF_ASSESSMENT);
       return { reading, listening, writing, speaking };
     },
-    [skipped, readingGroups, listeningGroups, readingAnswers, listeningAnswers, writingAnswers, speakingAnswers]
+    [
+      skipped,
+      readingGroups,
+      listeningGroups,
+      readingAnswers,
+      listeningAnswers,
+      writingAnswers,
+      speakingAnswers,
+      writingMode,
+      writingScored,
+    ]
   );
 
   const startRun = () => {
@@ -175,6 +218,10 @@ export default function EstimatorRunner({
         total: s ? s.total : 0,
         band: s ? s.band : null,
       });
+    } else if (skill === 'writing' && writingMode === 'sample') {
+      // Measured server-side; the band is withheld from the client, so there is
+      // nothing to report here beyond the fact that it was scored.
+      emit('estimator_section_complete', { skill, measured: true, locked: true });
     } else {
       const config = skill === 'writing' ? WRITING_SELF_ASSESSMENT : SPEAKING_SELF_ASSESSMENT;
       const answers = skill === 'writing' ? writingAnswers : speakingAnswers;
@@ -190,10 +237,13 @@ export default function EstimatorRunner({
   // Finish the whole run: compute, persist, fire estimator_complete.
   const finish = (finalSkipped) => {
     const sections = computeSections(finalSkipped);
+    // A scored-but-unrevealed Writing sample means the client knows neither the
+    // Writing band nor a trustworthy overall — both stay locked until sign-up.
+    const writingLocked = Boolean(sections.writing && sections.writing.locked);
     const bands = {
       reading: sections.reading ? sections.reading.band : null,
       listening: sections.listening ? sections.listening.band : null,
-      writing: sections.writing ? sections.writing.band : null,
+      writing: writingLocked ? null : sections.writing ? sections.writing.band : null,
       speaking: sections.speaking ? sections.speaking.band : null,
     };
     const prefillTarget =
@@ -206,6 +256,7 @@ export default function EstimatorRunner({
       speaking: bands.speaking,
       skipped: finalSkipped,
       targetBand: prefillTarget,
+      writingLocked,
     });
     const detailSnapshot = {
       ...sections,
@@ -227,6 +278,8 @@ export default function EstimatorRunner({
       overall_band: result.overall,
       reading_band: bands.reading,
       listening_band: bands.listening,
+      writing_locked: writingLocked,
+      writing_measured: writingLocked || writingMode === 'sample',
       writing_min: bands.writing ? bands.writing.min : null,
       writing_max: bands.writing ? bands.writing.max : null,
       speaking_min: bands.speaking ? bands.speaking.min : null,
@@ -259,6 +312,9 @@ export default function EstimatorRunner({
     setListeningAnswers({});
     setWritingAnswers({});
     setSpeakingAnswers({});
+    setWritingSample('');
+    setWritingMode('sample');
+    setWritingScored(false);
     setSkipped(EMPTY_SKIPPED);
     startedAtRef.current = null;
   };
@@ -303,6 +359,28 @@ export default function EstimatorRunner({
   }
 
   if (step === 'writing') {
+    // Default: a MEASURED short sample. "Skip — rate my own writing" drops back
+    // to the original self-check rather than losing the section entirely.
+    if (writingMode === 'sample') {
+      return (
+        <WritingSampleStep
+          task={WRITING_SAMPLE_TASK}
+          value={writingSample}
+          onChange={setWritingSample}
+          progress={progressLabel('writing')}
+          onScored={({ wordCount }) => {
+            setWritingScored(true);
+            emit('estimator_writing_sample_scored', { word_count: wordCount });
+            advance('writing', false);
+          }}
+          onSelfAssess={() => {
+            setWritingMode('selfassess');
+            emit('estimator_writing_self_assess_fallback');
+          }}
+          onError={(code) => emit('estimator_writing_sample_error', { code })}
+        />
+      );
+    }
     return (
       <SelfAssessmentStep
         config={WRITING_SELF_ASSESSMENT}
@@ -372,16 +450,16 @@ export default function EstimatorRunner({
         What&apos;s your IELTS band right now?
       </h1>
       <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-        Answer 10 real Reading and 10 real Listening questions, then a quick self-check for Writing
-        and Speaking. You&apos;ll get an honest band estimate and a clear next step — no sign-up
-        needed.
+        Answer 10 real Reading and 10 real Listening questions, write a short paragraph we actually
+        mark, and add a quick Speaking self-check. You&apos;ll get an honest band estimate and a
+        clear next step — no sign-up needed to start.
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 text-left sm:grid-cols-4">
         {[
           { icon: BookOpen, label: 'Reading', sub: '10 questions' },
           { icon: Headphones, label: 'Listening', sub: '10 questions' },
-          { icon: PenLine, label: 'Writing', sub: 'Self-check' },
+          { icon: PenLine, label: 'Writing', sub: 'Marked sample' },
           { icon: Mic, label: 'Speaking', sub: 'Self-check' },
         ].map(({ icon: Icon, label, sub }) => (
           <div key={label} className="rounded-lg border border-border bg-card p-3">
