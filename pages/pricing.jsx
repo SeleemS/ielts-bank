@@ -29,6 +29,7 @@ import { usePlan } from '../src/lib/usePlan';
 import { getSupabase, getPublicTrustStats } from '../lib/supabase';
 import { isPppCountry } from '../lib/billing';
 import { track } from '../src/lib/analytics';
+import { getSessionAccess } from '../src/lib/sessionAccess';
 import { PRICING_SEO } from '../lib/pricingSeo';
 import { cn } from '../src/lib/utils';
 import SaleCountdown from '../src/components/SaleCountdown';
@@ -398,9 +399,11 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   }, [checkoutStatus, sessionId, upgrade, user?.id]);
 
   const authHeader = React.useCallback(async () => {
-    const { data } = await getSupabase().auth.getSession();
-    const token = data?.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : null;
+    const { accessToken, error: sessionError } = await getSessionAccess(getSupabase);
+    return {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : null,
+      sessionError,
+    };
   }, []);
 
   const startCheckout = React.useCallback(async (sku) => {
@@ -413,7 +416,11 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     setBusySku(sku);
     track('checkout_start', { sku, source: upgrade || 'pricing', country, ppp: regionalPricing });
     try {
-      const headers = await authHeader();
+      const { headers, sessionError } = await authHeader();
+      if (sessionError) {
+        setError('Could not verify your signed-in session. Please refresh and try again.');
+        return;
+      }
       if (!headers) {
         setSignInOpen(true);
         return;
@@ -546,7 +553,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           </div>
         ) : null}
         {error ? (
-          <div className="mx-auto mt-6 max-w-xl rounded-lg border border-red-300 bg-red-50 p-4 text-center text-sm text-red-900">
+          <div role="alert" className="mx-auto mt-6 max-w-xl rounded-lg border border-red-300 bg-red-50 p-4 text-center text-sm text-red-900">
             {error}
           </div>
         ) : null}

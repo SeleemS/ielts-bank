@@ -12,6 +12,8 @@ const testState = vi.hoisted(() => ({
   user: null,
   authLoading: false,
   accessToken: 'test-access-token',
+  sessionError: null,
+  rejectSession: false,
   planError: null,
   pauseUntil: null,
   hasBillingAccount: false,
@@ -73,13 +75,19 @@ vi.mock('../src/lib/usePlan', () => ({
 vi.mock('../lib/supabase', () => ({
   getSupabase: () => ({
     auth: {
-      getSession: async () => ({
-        data: {
-          session: {
-            access_token: testState.accessToken,
+      getSession: async () => {
+        if (testState.rejectSession) throw testState.sessionError;
+        return {
+          data: {
+            session: testState.accessToken
+              ? {
+                  access_token: testState.accessToken,
+                }
+              : null,
           },
-        },
-      }),
+          error: testState.sessionError,
+        };
+      },
     },
     from: () => ({
       select: () => ({
@@ -135,6 +143,8 @@ beforeEach(() => {
   testState.user = null;
   testState.authLoading = false;
   testState.accessToken = 'test-access-token';
+  testState.sessionError = null;
+  testState.rejectSession = false;
   testState.planError = null;
   testState.pauseUntil = null;
   testState.hasBillingAccount = false;
@@ -318,6 +328,37 @@ describe('pricing authentication handoff', () => {
       body: JSON.stringify({ sku: 'monthly', offer: '' }),
     });
   });
+
+  it.each([
+    ['resolved', false],
+    ['rejected', true],
+  ])(
+    'keeps a signed-in learner out of a false sign-in flow when session verification is %s',
+    async (_failureType, rejectSession) => {
+      testState.router = { isReady: true, query: {} };
+      testState.user = { id: 'user-1' };
+      testState.accessToken = null;
+      testState.sessionError = new Error('temporary auth outage');
+      testState.rejectSession = rejectSession;
+
+      await renderPage();
+
+      const proButton = [...container.querySelectorAll('button')].find(
+        (button) => button.textContent.trim() === 'Choose this plan'
+      );
+      await act(async () => {
+        proButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(container.querySelector('[data-testid="pricing-auth-dialog"]')).toBeNull();
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        'Could not verify your signed-in session. Please refresh and try again.'
+      );
+      expect(global.fetch).not.toHaveBeenCalled();
+    }
+  );
 
   it('disables every checkout action when current plan verification fails', async () => {
     testState.router = {
