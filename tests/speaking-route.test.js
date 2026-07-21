@@ -182,6 +182,16 @@ function makeReq({
   };
 }
 
+function savedRecordingBody(overrides = {}) {
+  return {
+    passageSlug: 'speaking-question',
+    part: 2,
+    audioPath: 'premium-user/recording.webm',
+    resume_saved: true,
+    ...overrides,
+  };
+}
+
 async function callRoute(options) {
   const { default: handler } = await import('../pages/api/score/speaking');
   const res = makeRes();
@@ -345,6 +355,14 @@ describe('POST /api/score/speaking quota safety', () => {
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
+  it('retains a resumed saved recording after a retryable user limit', async () => {
+    state.rateLimits['speaking-score'] = false;
+    const res = await callRoute({ body: savedRecordingBody() });
+
+    expect(res.statusCode).toBe(429);
+    expect(state.removedPaths).toEqual([]);
+  });
+
   it('rejects a missing practice question before quota or OpenAI work', async () => {
     state.passageRow = null;
 
@@ -357,6 +375,14 @@ describe('POST /api/score/speaking quota safety', () => {
     ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
     expect(chatCompletionWithFallback).not.toHaveBeenCalled();
+  });
+
+  it('still removes a resumed saved recording after a terminal missing-question result', async () => {
+    state.passageRow = null;
+    const res = await callRoute({ body: savedRecordingBody() });
+
+    expect(res.statusCode).toBe(404);
+    expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
   it('rejects a speaking-part mismatch before quota or OpenAI work', async () => {
@@ -436,6 +462,20 @@ describe('POST /api/score/speaking quota safety', () => {
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
+  it('retains a resumed saved recording until a retryable daily quota resets', async () => {
+    state.quotaResult = {
+      allowed: false,
+      remaining: 0,
+      reason: 'daily_cap',
+      resetsAt: '2026-07-20T00:00:00.000Z',
+    };
+    const res = await callRoute({ body: savedRecordingBody() });
+
+    expect(res.statusCode).toBe(402);
+    expect(res.jsonBody.reason).toBe('daily_cap');
+    expect(state.removedPaths).toEqual([]);
+  });
+
   it('preserves the upload only for the Premium checkout handoff', async () => {
     state.quotaResult = {
       allowed: false,
@@ -466,6 +506,57 @@ describe('POST /api/score/speaking quota safety', () => {
       p_consumed_at: '2026-07-19T12:00:00.000Z',
     });
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
+  });
+
+  it('retains a resumed saved recording when scoring cannot start', async () => {
+    const res = await callRoute({ body: savedRecordingBody() });
+
+    expect(res.statusCode).toBe(502);
+    expect(state.rpcCalls.at(-1)).toMatchObject({
+      name: 'refund_ai_score',
+      args: { p_uid: 'premium-user', p_skill: 'speaking' },
+    });
+    expect(state.removedPaths).toEqual([]);
+  });
+
+  it('retains a resumed saved recording after a retryable scoring-provider failure', async () => {
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { 'content-type': 'audio/webm' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            text:
+              'I enjoy travelling because it teaches me about different people and cultures while helping me become more independent and adaptable.',
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }
+        )
+      );
+    chatCompletionWithFallback.mockResolvedValue({
+      ok: false,
+      status: 503,
+      model: 'gpt-5.1',
+      payload: null,
+      detail: 'provider unavailable',
+    });
+
+    const res = await callRoute({ body: savedRecordingBody() });
+
+    expect(res.statusCode).toBe(502);
+    expect(state.rpcCalls.at(-1)).toMatchObject({
+      name: 'refund_ai_score',
+      args: { p_uid: 'premium-user', p_skill: 'speaking' },
+    });
+    expect(state.removedPaths).toEqual([]);
   });
 
   it('removes the attempt when its score row cannot be persisted', async () => {

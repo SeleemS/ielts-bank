@@ -401,6 +401,7 @@ export default async function handler(req, res) {
       : null;
   const audioPath =
     typeof body.audioPath === 'string' ? body.audioPath.trim() : '';
+  const resumeSaved = body.resume_saved === true;
 
   if (!passageSlug) {
     return res.status(400).json({ error: 'passageSlug is required.' });
@@ -424,6 +425,14 @@ export default async function handler(req, res) {
       .json({ error: 'You can only score your own recordings.' });
   }
 
+  // Fresh recordings remain aggressively cleaned on every failure. A saved
+  // post-checkout recording has no browser Blob to recreate it, so retain that
+  // explicitly resumed object only for retryable failures; the 30-day cleanup
+  // cron remains the outer retention bound.
+  const cleanupRetryableRecording = async () => {
+    if (!resumeSaved) await cleanupRecording(audioPath);
+  };
+
   // --- 3. Rate limit BEFORE any OpenAI spend -------------------------------
   // Check the owner bucket before the shared circuit breaker. Both calls
   // increment, so an owner already at their cap must not reduce global access.
@@ -435,13 +444,13 @@ export default async function handler(req, res) {
   );
   if (userLimit.error) {
     console.error('rate-limit check failed:', userLimit.error.message);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!userLimit.allowed) {
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res.status(429).json({
       error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
     });
@@ -456,13 +465,13 @@ export default async function handler(req, res) {
   );
   if (globalLimit.error) {
     console.error('rate-limit check failed:', globalLimit.error.message);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!globalLimit.allowed) {
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res.status(429).json({
       error:
         'AI scoring is temporarily unavailable due to high demand. Please try again later.',
@@ -471,7 +480,7 @@ export default async function handler(req, res) {
 
   const passageLookup = await fetchPassageContext(passageSlug, part);
   if (passageLookup.error) {
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(503)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
@@ -495,14 +504,14 @@ export default async function handler(req, res) {
     quota = await consumeQuota(userId);
   } catch (error) {
     console.error('quota check failed:', error.message);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }
   if (!quota?.allowed) {
-    // Preserve the upload only for the intentional upgrade handoff: the client
-    // stores this exact path and resumes scoring after purchase. Every other
-    // denial is terminal for this request and must not orphan private audio.
-    if (quota?.reason !== 'premium_required') await cleanupRecording(audioPath);
+    // A first-time Premium gate is the intentional checkout handoff and must
+    // preserve its upload. An explicitly resumed recording also survives a
+    // retryable quota denial so the user can retry after the quota resets.
+    if (quota?.reason !== 'premium_required') await cleanupRetryableRecording();
     return res.status(402).json({
       error:
         quota?.reason === 'premium_required'
@@ -518,7 +527,7 @@ export default async function handler(req, res) {
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');
     await refundQuota(userId, quota);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(502)
       .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
@@ -546,7 +555,7 @@ export default async function handler(req, res) {
     if (!objRes.ok) {
       console.error('storage download error', objRes.status);
       await refundQuota(userId, quota);
-      await cleanupRecording(audioPath);
+      await cleanupRetryableRecording();
       return res
         .status(502)
         .json({ error: 'Could not read your recording. Please try again.' });
@@ -579,7 +588,7 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error('audio download failed:', e.message);
     await refundQuota(userId, quota);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(502)
       .json({ error: 'Could not read your recording. Please try again.' });
@@ -613,7 +622,7 @@ export default async function handler(req, res) {
       console.error('Whisper error', wRes.status, detail.slice(0, 500));
       clearTimeout(timeout);
       await refundQuota(userId, quota);
-      await cleanupRecording(audioPath);
+      await cleanupRetryableRecording();
       return res.status(502).json({
         error: 'We could not transcribe your recording. Please try again.',
       });
@@ -638,14 +647,14 @@ export default async function handler(req, res) {
     if (e.name === 'AbortError') {
       console.error('Whisper request timed out');
       await refundQuota(userId, quota);
-      await cleanupRecording(audioPath);
+      await cleanupRetryableRecording();
       return res
         .status(502)
         .json({ error: 'Transcription took too long. Please try again.' });
     }
     console.error('transcription failed:', e.message);
     await refundQuota(userId, quota);
-    await cleanupRecording(audioPath);
+    await cleanupRetryableRecording();
     return res
       .status(502)
       .json({ error: 'We could not transcribe your recording. Please try again.' });
@@ -666,6 +675,7 @@ export default async function handler(req, res) {
   const passageId = passage.id;
   const contextText = passage.contextText;
 
+  let scoringCompleted = false;
   try {
     const userContent = `IELTS SPEAKING — PART ${part}
 
@@ -774,6 +784,7 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     });
 
     // --- 8. Respond with the exact contract shape --------------------------
+    scoringCompleted = true;
     return res.status(200).json({
       overallBand,
       criteria,
@@ -795,8 +806,9 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
     });
   } finally {
     clearTimeout(timeout);
-    // The recording is needed only for this scoring request. Remove it after
-    // success or failure so private voice data does not accumulate indefinitely.
-    await cleanupRecording(audioPath);
+    // Always remove a successfully consumed recording. Fresh failures also
+    // clean immediately; explicitly resumed saved recordings survive only a
+    // retryable scoring failure and remain bounded by the cleanup cron.
+    if (scoringCompleted || !resumeSaved) await cleanupRecording(audioPath);
   }
 }

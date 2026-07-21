@@ -859,6 +859,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
           passageSlug: item.slug,
           part: fromPending ? pendingRecording?.part || part : part,
           audioPath,
+          resume_saved: fromPending,
         }),
       });
 
@@ -879,8 +880,12 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         // Server-side premium gate (covers a stale client plan).
         track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'premium_gate', part, signed_in: true });
         goToPremium(audioPath);
-      } else if (fromPending && (response.status === 403 || response.status === 404)) {
-        // The saved recording is gone or not theirs — drop the stale pointer.
+      } else if (
+        fromPending &&
+        [400, 403, 404, 413, 422].includes(response.status)
+      ) {
+        // Terminal validation/audio failures remove (or cannot access) the
+        // object, so this pointer can never succeed on a later retry.
         clearPendingRecording();
         setErrorMsg('Your saved recording is no longer available. Please record your answer again.');
       } else {
