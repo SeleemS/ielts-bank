@@ -3903,6 +3903,41 @@ False positives are kept in the investigation notes so they are not rediscovered
   direct promoted-chunk inspection found the shared session-verification retry message. No portal,
   pause, plan change, Stripe session, or charge was initiated during this deployment smoke check.
 
+## CA-145 — Live examiner start auth outages opened false recovery paths
+
+- Status: `FIXED`
+- Area: Live Speaking Examiner / session start / auth verification / microphone and quota boundary
+- Severity: Medium
+- Evidence: after the page had identified a learner, `startSession()` used an auth helper that read
+  only Supabase session `data`. A resolved `{ data, error }` outage was therefore treated as a
+  verified missing session and reopened sign-in. A rejected lookup fell into the broad connection
+  catch and claimed the examiner could not connect. Both failures happened before the microphone,
+  metered session mint, or OpenAI call, but neither recovery described the actual dependency state.
+- Fix: add a tested Speaking authorization decision with explicit `authorized`, `sign_in`, and
+  `retry` states, then use it at examiner start. Resolved and rejected auth outages now emit
+  `realtime_session_error` with `auth_session`, return to idle, and show a refresh-and-retry message
+  before requesting microphone access. Only a verified missing session opens sign-in; a valid token
+  continues through the unchanged microphone, quota reservation, and WebRTC setup.
+- Regression coverage: the Speaking session helper suite requires a verified token to produce the
+  Bearer header, a verified missing session to produce `sign_in`, and both resolved and rejected
+  auth failures to produce `retry`. Existing recorded-Speaking session, realtime mint route, and
+  realtime scoring route coverage remains green; the production build compiles the new decision
+  into the legacy JSX-in-`.js` examiner page.
+- Commit: `39797a7806c769540b50fadb1ff9a89fa442372a`
+  (`fix: recover examiner start auth outages`).
+- Verification: the focused 3-file/45-test Speaking helper/realtime route run, complete
+  100-file/708-test Vitest suite, ESLint, strict 185-file analytics audit covering 291 interactive
+  controls and 106 explicit track calls, and the network-enabled 530-page production build passed.
+  Immediately before commit, a fresh fetch proved local HEAD and `origin/main` both matched exact
+  canonical evidence SHA `9f5d9ab0b57016b5a3e42ce346b2e55f4aa97db7`; after push they both
+  matched the code SHA above. GitHub's successful Vercel status tied it to deployment
+  `dpl_Fr9grwtCcvBMXzEksbh9hB69Mmxt`, which reached promoted `READY` on every canonical alias.
+  Fresh in-app browser inspection of canonical `/speaking-examiner` reached the correct signed-out
+  Premium gate. Canonical HTML referenced `speaking-examiner-3290a0384071ac85.js`, and direct
+  promoted-chunk inspection found the retry message plus `realtime_session_error` and
+  `auth_session` markers. No microphone permission, realtime session, quota reservation, or
+  scoring request was initiated during this deployment smoke check.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
