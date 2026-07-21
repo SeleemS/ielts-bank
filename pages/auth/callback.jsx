@@ -16,6 +16,13 @@ export default function AuthCallback() {
   useEffect(() => {
     if (!router.isReady) return undefined;
     let active = true;
+    let retryTimer;
+
+    function fail() {
+      if (!active) return;
+      setError(true);
+      void router.replace('/');
+    }
 
     async function finish() {
       try {
@@ -24,30 +31,32 @@ export default function AuthCallback() {
         if (!active) return;
         if (sessionError || !data?.session) {
           // Give supabase-js a brief moment to process the URL, then retry once.
-          setTimeout(async () => {
-            if (!active) return;
-            const retry = await supabase.auth.getSession();
-            if (!active) return;
-            if (retry.data?.session) {
-              router.replace(POST_AUTH_PATH);
-            } else {
-              setError(true);
-              router.replace('/');
+          retryTimer = setTimeout(async () => {
+            try {
+              if (!active) return;
+              const retry = await supabase.auth.getSession();
+              if (!active) return;
+              if (retry.data?.session) {
+                void router.replace(POST_AUTH_PATH);
+              } else {
+                fail();
+              }
+            } catch {
+              fail();
             }
           }, 600);
           return;
         }
-        router.replace(POST_AUTH_PATH);
-      } catch (err) {
-        if (!active) return;
-        setError(true);
-        router.replace('/');
+        void router.replace(POST_AUTH_PATH);
+      } catch {
+        fail();
       }
     }
 
     finish();
     return () => {
       active = false;
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, [router, router.isReady]);
 

@@ -2505,6 +2505,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   and Switzerland. CA-102 therefore remains partially open until a certified CMP is configured and
   verified end to end in a consent-required location.
 
+## CA-103 — A rejected auth-callback retry left the sign-in page hanging
+
+- Status: `FIXED`
+- Area: Authentication / email callback / failure recovery
+- Severity: Medium
+- Evidence: `/auth/callback` guarded its first `getSession()` request, but scheduled the second
+  request in an async timer outside that `try/catch`. If the first read resolved without a session
+  and the delayed retry rejected, the rejection escaped the component, no failure state was shown,
+  and no redirect ran. A learner completing an emailed authentication link during that dependency
+  failure could therefore remain indefinitely on “Signing you in…” with an unhandled promise.
+- Fix: route both initial and delayed failures through one active-component failure handler, catch
+  retry rejections explicitly, mark router transitions intentionally fire-and-forget, retain the
+  successful `/dashboard` destination, and cancel the retry timer when the callback unmounts.
+- Regression coverage: the callback component suite now executes the real 600ms retry boundary with
+  fake time. It requires a delayed session to reach `/dashboard` and a rejected delayed read to show
+  the recovery copy and redirect home, while preserving the callback's `noindex, nofollow` metadata.
+- Commit: `Recover auth callback retry failures`.
+- Verification: the focused five-file/14-test auth suite, complete 91-file/574-test Vitest suite,
+  ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
+  production build passed. Production publication and live callback verification are recorded after
+  the isolated fix reaches the canonical deployment.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
