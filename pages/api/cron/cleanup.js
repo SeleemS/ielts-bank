@@ -50,6 +50,16 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Estimator result cleanup failed.' });
   }
 
+  let realtimeScoreRequestsRemoved = 0;
+  try {
+    const { data, error } = await admin.rpc('cleanup_realtime_score_requests');
+    if (error) throw error;
+    realtimeScoreRequestsRemoved = Number(data) || 0;
+  } catch (error) {
+    console.error('realtime-score request cleanup failed:', error.message);
+    return res.status(503).json({ error: 'Realtime score request cleanup failed.' });
+  }
+
   let removed = 0;
   try {
     const bucket = admin.storage.from('speaking-uploads');
@@ -97,5 +107,6 @@ export default async function handler(req, res) {
     ok: true,
     recordingsRemoved: removed,
     estimatorResultsRemoved,
+    realtimeScoreRequestsRemoved,
   });
 }

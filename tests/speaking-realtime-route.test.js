@@ -13,6 +13,9 @@ const state = {
   rateLimitError: null,
   rateLimitReject: null,
   rpcCalls: [],
+  idempotencyClaimResponses: [],
+  idempotencyCompleteResponses: [],
+  idempotencyFailResponses: [],
   tableCalls: [],
   scoreError: null,
   scoreReject: null,
@@ -69,6 +72,18 @@ vi.mock('@supabase/supabase-js', () => ({
     }),
     rpc: async (name, args) => {
       state.rpcCalls.push({ name, args });
+      if (name === 'claim_realtime_score_request') {
+        return state.idempotencyClaimResponses.shift() || {
+          data: [{ action: 'claimed', replay_result: null, claim_lease_id: 'lease-1' }],
+          error: null,
+        };
+      }
+      if (name === 'complete_realtime_score_request') {
+        return state.idempotencyCompleteResponses.shift() || { data: true, error: null };
+      }
+      if (name === 'fail_realtime_score_request') {
+        return state.idempotencyFailResponses.shift() || { data: true, error: null };
+      }
       if (state.rateLimitReject) throw state.rateLimitReject;
       return {
         data: Object.hasOwn(state.rateLimits, args.p_bucket)
@@ -131,6 +146,9 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     state.rateLimitError = null;
     state.rateLimitReject = null;
     state.rpcCalls = [];
+    state.idempotencyClaimResponses = [];
+    state.idempotencyCompleteResponses = [];
+    state.idempotencyFailResponses = [];
     state.tableCalls = [];
     state.scoreError = null;
     state.scoreReject = null;
@@ -276,6 +294,184 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     expect(state.tableCalls).toEqual([]);
   });
 
+  it('rejects a malformed request ID before claiming or consuming limits', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+
+    const res = await callRoute({
+      body: { ...validTranscriptBody(), requestId: 'not-a-uuid' },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.jsonBody.error).toMatch(/request reference/i);
+    expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('rejects an oversized transcript before claiming or consuming limits', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+
+    const res = await callRoute({
+      body: {
+        requestId: '11111111-1111-4111-8111-111111111111',
+        mode: 'mock',
+        transcript: [{ role: 'candidate', text: 'word '.repeat(12001) }],
+      },
+    });
+
+    expect(res.statusCode).toBe(413);
+    expect(res.jsonBody.error).toMatch(/too long/i);
+    expect(state.rpcCalls).toEqual([]);
+  });
+
+  it('fails safely when the request ledger cannot claim work', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.idempotencyClaimResponses.push({
+      data: null,
+      error: new Error('ledger unavailable'),
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(503);
+    expect(state.rpcCalls).toHaveLength(1);
+    expect(state.rpcCalls[0].name).toBe('claim_realtime_score_request');
+  });
+
+  it.each([
+    ['busy', 202],
+    ['conflict', 409],
+  ])('stops duplicate request action %s before limits or provider work', async (action, status) => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.idempotencyClaimResponses.push({
+      data: [{ action, replay_result: null, claim_lease_id: null }],
+      error: null,
+    });
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(status);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'claim_realtime_score_request',
+    ]);
+    expect(state.tableCalls).toEqual([]);
+  });
+
+  it('replays a completed request without limits, provider work, or persistence', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    const replay = {
+      mode: 'mock',
+      candidateWords: 40,
+      overallBand: 7,
+      criteria: {},
+      summary: 'Previously completed.',
+    };
+    state.idempotencyClaimResponses.push({
+      data: [{ action: 'replay', replay_result: replay, claim_lease_id: null }],
+      error: null,
+    });
+    const provider = vi.spyOn(global, 'fetch');
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toEqual(replay);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'claim_realtime_score_request',
+    ]);
+    expect(provider).not.toHaveBeenCalled();
+    expect(state.tableCalls).toEqual([]);
+  });
+
+  it('completes a claimed request once and persists its request reference', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    mockSuccessfulRealtimeScore();
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(state.rpcCalls.map(({ name }) => name)).toEqual([
+      'claim_realtime_score_request',
+      'check_rate_limit',
+      'check_rate_limit',
+      'complete_realtime_score_request',
+    ]);
+    expect(
+      state.tableCalls.find(({ table }) => table === 'attempts').values.responses
+        .realtime_request_id
+    ).toBe('11111111-1111-4111-8111-111111111111');
+    expect(state.rpcCalls.at(-1).args).toMatchObject({
+      p_request_id: '11111111-1111-4111-8111-111111111111',
+      p_user_id: 'user-1',
+      p_lease_id: 'lease-1',
+    });
+    expect(state.rpcCalls.at(-1).args.p_result.overallBand).toBe(7.5);
+  });
+
+  it('retries an ambiguous completion RPC once without repeating provider work', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.idempotencyCompleteResponses.push(
+      { data: null, error: new Error('response lost') },
+      { data: true, error: null }
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const provider = mockSuccessfulRealtimeScore();
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(200);
+    expect(provider).toHaveBeenCalledTimes(1);
+    expect(
+      state.rpcCalls.filter(({ name }) => name === 'complete_realtime_score_request')
+    ).toHaveLength(2);
+  });
+
+  it('withholds a result when its idempotency completion cannot be confirmed', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    state.idempotencyCompleteResponses.push(
+      { data: false, error: null },
+      { data: false, error: null }
+    );
+    const provider = mockSuccessfulRealtimeScore();
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/confirmation is delayed/i);
+    expect(provider).toHaveBeenCalledTimes(1);
+  });
+
+  it('releases a claimed request after a provider failure', async () => {
+    state.authUser = { id: 'user-1' };
+    state.planRow = { plan: 'premium', plan_status: 'active' };
+    process.env.OPENAI_API_KEY = 'sk-test-dummy';
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: { message: 'provider unavailable' } }),
+    });
+
+    const res = await callRoute({ body: idempotentTranscriptBody() });
+
+    expect(res.statusCode).toBe(502);
+    expect(state.rpcCalls.at(-1)).toEqual({
+      name: 'fail_realtime_score_request',
+      args: {
+        p_request_id: '11111111-1111-4111-8111-111111111111',
+        p_user_id: 'user-1',
+        p_lease_id: 'lease-1',
+      },
+    });
+  });
+
   it('computes and persists the overall from the three criterion bands', async () => {
     state.authUser = { id: 'user-1' };
     state.planRow = { plan: 'premium', plan_status: 'active' };
@@ -399,6 +595,13 @@ function validTranscriptBody() {
   };
 }
 
+function idempotentTranscriptBody() {
+  return {
+    ...validTranscriptBody(),
+    requestId: '11111111-1111-4111-8111-111111111111',
+  };
+}
+
 function criterion(band) {
   return {
     band,
@@ -409,7 +612,7 @@ function criterion(band) {
 
 function mockSuccessfulRealtimeScore() {
   process.env.OPENAI_API_KEY = 'sk-test-dummy';
-  vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+  return vi.spyOn(global, 'fetch').mockResolvedValueOnce({
     ok: true,
     json: async () => ({
       choices: [

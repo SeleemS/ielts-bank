@@ -25,6 +25,7 @@ const PER_IP_WINDOW_SECONDS = 3600;
 const PER_IP_MAX = 8;
 const GLOBAL_WINDOW_SECONDS = 86400;
 const GLOBAL_MAX = 300;
+const REQUEST_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 let _admin = null;
 function getAdmin() {
@@ -100,6 +101,45 @@ async function rollbackRealtimeAttempt(admin, attemptId) {
   }
 }
 
+async function failRealtimeScoreClaim(claim) {
+  if (!claim) return true;
+  try {
+    const { data, error } = await getAdmin().rpc('fail_realtime_score_request', {
+      p_request_id: claim.requestId,
+      p_user_id: claim.userId,
+      p_lease_id: claim.leaseId,
+    });
+    if (error || data !== true) {
+      console.error('realtime score claim release failed:', error?.message || 'lease mismatch');
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('realtime score claim release failed:', error.message);
+    return false;
+  }
+}
+
+async function completeRealtimeScoreClaim(claim, result) {
+  if (!claim) return true;
+  // A lost RPC response is ambiguous, so retry the idempotent completion once.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const { data, error } = await getAdmin().rpc('complete_realtime_score_request', {
+        p_request_id: claim.requestId,
+        p_user_id: claim.userId,
+        p_lease_id: claim.leaseId,
+        p_result: result,
+      });
+      if (!error && data === true) return true;
+      if (error) console.error('realtime score claim completion failed:', error.message);
+    } catch (error) {
+      console.error('realtime score claim completion failed:', error.message);
+    }
+  }
+  return false;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -128,6 +168,10 @@ export default async function handler(req, res) {
 
   // --- Validate transcript before mutating rate-limit counters -------------
   const body = req.body || {};
+  const requestId = body.requestId == null ? null : body.requestId;
+  if (requestId != null && (typeof requestId !== 'string' || !REQUEST_ID_RE.test(requestId))) {
+    return res.status(400).json({ error: 'Invalid scoring request reference.' });
+  }
   const mode = typeof body.mode === 'string' ? body.mode : 'mock';
   if (!MODES[mode]) {
     return res.status(400).json({ error: 'Unknown session mode.' });
@@ -143,6 +187,11 @@ export default async function handler(req, res) {
     )
     .map((t) => ({ role: t.role, text: t.text.trim() }));
 
+  const transcriptChars = turns.reduce((total, turn) => total + turn.text.length, 0);
+  if (transcriptChars > MAX_TRANSCRIPT_CHARS) {
+    return res.status(413).json({ error: 'This interview transcript is too long to score.' });
+  }
+
   const candidateWords = turns
     .filter((t) => t.role === 'candidate')
     .reduce((n, t) => n + countWords(t.text), 0);
@@ -152,6 +201,55 @@ export default async function handler(req, res) {
         'There is not enough of your speech in this session to score fairly. Try a longer conversation with the examiner.',
     });
   }
+
+  let scoreClaim = null;
+  if (requestId) {
+    try {
+      const { data, error } = await getAdmin().rpc('claim_realtime_score_request', {
+        p_request_id: requestId,
+        p_user_id: userId,
+        p_mode: mode,
+        p_transcript: turns,
+      });
+      const claimed = Array.isArray(data) ? data[0] : data;
+      if (error || !claimed?.action) {
+        console.error('realtime score claim failed:', error?.message || 'empty claim');
+        return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+      }
+      if (claimed.action === 'replay') {
+        if (!claimed.replay_result || typeof claimed.replay_result !== 'object') {
+          console.error('realtime score replay was empty');
+          return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+        }
+        return res.status(200).json(claimed.replay_result);
+      }
+      if (claimed.action === 'busy') {
+        return res.status(202).json({
+          error: 'This interview is still being scored. Wait a moment and retry.',
+        });
+      }
+      if (claimed.action === 'conflict') {
+        return res.status(409).json({ error: 'This scoring request does not match the saved interview.' });
+      }
+      if (claimed.action !== 'claimed' || !claimed.claim_lease_id) {
+        console.error('realtime score claim returned an unknown action:', claimed.action);
+        return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+      }
+      scoreClaim = {
+        requestId,
+        userId,
+        leaseId: claimed.claim_lease_id,
+      };
+    } catch (error) {
+      console.error('realtime score claim failed:', error.message);
+      return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+    }
+  }
+
+  const failAndRespond = async (status, payload) => {
+    await failRealtimeScoreClaim(scoreClaim);
+    return res.status(status).json(payload);
+  };
 
   // Reject an already-capped caller before incrementing the shared daily
   // circuit breaker; check_rate_limit mutates its counter on every invocation.
@@ -164,9 +262,9 @@ export default async function handler(req, res) {
   if (ipLimit.error || !ipLimit.allowed) {
     if (ipLimit.error) {
       console.error('check_rate_limit error:', ipLimit.error.message);
-      return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+      return failAndRespond(503, { error: 'Scoring is temporarily unavailable.' });
     }
-    return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
+    return failAndRespond(429, { error: 'Too many scoring requests. Please wait a while.' });
   }
 
   const dayKey = new Date().toISOString().slice(0, 10);
@@ -180,7 +278,7 @@ export default async function handler(req, res) {
     if (globalLimit.error) {
       console.error('global check_rate_limit error:', globalLimit.error.message);
     }
-    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
+    return failAndRespond(503, { error: 'Scoring is temporarily unavailable.' });
   }
 
   const rendered = turns
@@ -190,7 +288,7 @@ export default async function handler(req, res) {
 
   if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY is not set');
-    return res.status(502).json({ error: 'Scoring is temporarily unavailable.' });
+    return failAndRespond(502, { error: 'Scoring is temporarily unavailable.' });
   }
 
   // --- Score ---------------------------------------------------------------
@@ -223,7 +321,7 @@ export default async function handler(req, res) {
     const payload = await r.json().catch(() => ({}));
     if (!r.ok) {
       console.error('scoring call failed:', r.status, payload?.error?.message);
-      return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+      return failAndRespond(502, { error: 'Scoring failed. Please try again.' });
     }
     await recordAiUsage(
       getAdmin(),
@@ -240,7 +338,7 @@ export default async function handler(req, res) {
     result = JSON.parse(payload.choices?.[0]?.message?.content || '{}');
   } catch (e) {
     console.error('scoring error:', e.message);
-    return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+    return failAndRespond(502, { error: 'Scoring failed. Please try again.' });
   } finally {
     clearTimeout(timeout);
   }
@@ -258,7 +356,7 @@ export default async function handler(req, res) {
       'realtime scoring returned invalid bands:',
       JSON.stringify(criteria).slice(0, 500)
     );
-    return res.status(502).json({ error: 'Scoring failed. Please try again.' });
+    return failAndRespond(502, { error: 'Scoring failed. Please try again.' });
   }
   const overallBand = roundBandMean((fluency + lexical + grammar) / 3);
   result = { ...result, overallBand };
@@ -273,7 +371,12 @@ export default async function handler(req, res) {
       .insert({
         user_id: userId,
         skill: 'speaking',
-        responses: { realtime: true, mode, transcript: turns },
+        responses: {
+          realtime: true,
+          mode,
+          transcript: turns,
+          ...(requestId ? { realtime_request_id: requestId } : {}),
+        },
         band: overallBand,
         submitted_at: new Date().toISOString(),
       })
@@ -303,5 +406,11 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(200).json({ mode, candidateWords, ...result });
+  const responseBody = { mode, candidateWords, ...result };
+  if (!(await completeRealtimeScoreClaim(scoreClaim, responseBody))) {
+    return res.status(503).json({
+      error: 'Your score finished but confirmation is delayed. Retry this saved interview.',
+    });
+  }
+  return res.status(200).json(responseBody);
 }

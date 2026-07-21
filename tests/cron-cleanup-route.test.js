@@ -21,6 +21,10 @@ const state = {
   estimatorReject: null,
   estimatorCount: 0,
   estimatorDeletes: [],
+  cleanupRpcError: null,
+  cleanupRpcReject: null,
+  cleanupRpcCount: 0,
+  rpcCalls: [],
   listResponses: {},
   listRejects: {},
   listCalls: [],
@@ -34,6 +38,14 @@ vi.mock('@supabase/supabase-js', () => ({
     state.clientCreations += 1;
     if (state.clientError) throw state.clientError;
     return {
+      async rpc(name) {
+        state.rpcCalls.push(name);
+        if (name !== 'cleanup_realtime_score_requests') {
+          throw new Error(`unexpected-rpc:${name}`);
+        }
+        if (state.cleanupRpcReject) throw state.cleanupRpcReject;
+        return { data: state.cleanupRpcCount, error: state.cleanupRpcError };
+      },
       from(table) {
         state.fromCalls.push(table);
         if (table === 'rate_limits') {
@@ -150,6 +162,10 @@ describe('GET /api/cron/cleanup', () => {
     state.estimatorReject = null;
     state.estimatorCount = 0;
     state.estimatorDeletes = [];
+    state.cleanupRpcError = null;
+    state.cleanupRpcReject = null;
+    state.cleanupRpcCount = 0;
+    state.rpcCalls = [];
     state.listResponses = {};
     state.listRejects = {};
     state.listCalls = [];
@@ -242,6 +258,7 @@ describe('GET /api/cron/cleanup', () => {
 
   it('removes estimator results older than 30 days and reports the exact count', async () => {
     state.estimatorCount = 3;
+    state.cleanupRpcCount = 4;
     state.listResponses[''] = { data: [], error: null };
 
     const res = await callRoute();
@@ -251,6 +268,7 @@ describe('GET /api/cron/cleanup', () => {
       ok: true,
       recordingsRemoved: 0,
       estimatorResultsRemoved: 3,
+      realtimeScoreRequestsRemoved: 4,
     });
     expect(state.estimatorDeletes).toHaveLength(1);
     expect(state.estimatorDeletes[0].options).toEqual({ count: 'exact' });
@@ -258,6 +276,27 @@ describe('GET /api/cron/cleanup', () => {
     const ageDays = (Date.now() - Date.parse(state.estimatorDeletes[0].cutoff)) / 864e5;
     expect(ageDays).toBeGreaterThanOrEqual(29.99);
     expect(ageDays).toBeLessThanOrEqual(30.01);
+  });
+
+  it('stops before upload work when realtime score request cleanup fails', async () => {
+    state.cleanupRpcError = { message: 'database unavailable' };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody).toEqual({ error: 'Realtime score request cleanup failed.' });
+    expect(state.rpcCalls).toEqual(['cleanup_realtime_score_requests']);
+    expect(state.listCalls).toEqual([]);
+  });
+
+  it('recovers when realtime score request cleanup rejects', async () => {
+    state.cleanupRpcReject = new Error('network unavailable');
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody).toEqual({ error: 'Realtime score request cleanup failed.' });
+    expect(state.listCalls).toEqual([]);
   });
 
   it('fails the run when a storage listing fails', async () => {
@@ -362,6 +401,7 @@ describe('GET /api/cron/cleanup', () => {
       ok: true,
       recordingsRemoved: 2,
       estimatorResultsRemoved: 0,
+      realtimeScoreRequestsRemoved: 0,
     });
     expect(state.rateDeletes).toHaveLength(1);
     expect(state.rateDeletes[0].column).toBe('window_start');
@@ -423,6 +463,7 @@ describe('GET /api/cron/cleanup', () => {
       ok: true,
       recordingsRemoved: 1,
       estimatorResultsRemoved: 0,
+      realtimeScoreRequestsRemoved: 0,
     });
     expect(state.fromCalls).toEqual(['rate_limits', 'estimator_writing_scores']);
     expect(state.listCalls.filter(({ prefix }) => prefix === '')).toEqual([
@@ -492,6 +533,7 @@ describe('GET /api/cron/cleanup', () => {
       ok: true,
       recordingsRemoved: 2,
       estimatorResultsRemoved: 0,
+      realtimeScoreRequestsRemoved: 0,
     });
     expect(state.listCalls.map(({ prefix }) => prefix)).toEqual([
       '',
@@ -531,6 +573,7 @@ describe('GET /api/cron/cleanup', () => {
       ok: true,
       recordingsRemoved: 1002,
       estimatorResultsRemoved: 0,
+      realtimeScoreRequestsRemoved: 0,
     });
     expect(state.listCalls).toEqual([
       {

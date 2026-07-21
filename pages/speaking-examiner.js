@@ -24,6 +24,7 @@ import {
 } from '../src/lib/pendingSpeakingSession';
 import {
   clearPendingRealtimeScore,
+  createRealtimeScoreRequestId,
   loadPendingRealtimeScore,
   savePendingRealtimeScore,
   submitPendingRealtimeScore,
@@ -493,6 +494,7 @@ export default function SpeakingExaminerPage() {
 
     const scorePayload = {
       version: 1,
+      requestId: createRealtimeScoreRequestId(),
       userId: sessionOwnerRef.current || user?.id || '',
       mode: activeMode,
       createdAt: Date.now(),

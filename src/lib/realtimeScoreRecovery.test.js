@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   clearPendingRealtimeScore,
+  createRealtimeScoreRequestId,
   loadPendingRealtimeScore,
   savePendingRealtimeScore,
   submitPendingRealtimeScore,
@@ -9,6 +10,7 @@ import {
 function pendingScore(overrides = {}) {
   return {
     version: 1,
+    requestId: '11111111-1111-4111-8111-111111111111',
     userId: 'user-1',
     mode: 'mock',
     createdAt: 1784671200000,
@@ -47,6 +49,12 @@ function sessionClient({ token = 'examiner-token', error = null, reject = false 
 }
 
 describe('pending realtime score storage', () => {
+  it('creates a version-4 UUID for a new scoring journey', () => {
+    expect(createRealtimeScoreRequestId()).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
+  });
+
   it('round-trips a valid account-bound transcript and clears it', () => {
     const storage = memoryStorage();
     const pending = pendingScore();
@@ -85,6 +93,21 @@ describe('pending realtime score storage', () => {
     };
 
     expect(savePendingRealtimeScore(storage, pendingScore())).toBe(false);
+  });
+
+  it('adds and persists a request ID when loading a pre-idempotency transcript', () => {
+    const storage = memoryStorage();
+    const legacy = pendingScore();
+    delete legacy.requestId;
+    storage.setItem('ielts-pending-realtime-score', JSON.stringify(legacy));
+
+    const loaded = loadPendingRealtimeScore(storage, {
+      now: legacy.createdAt + 1000,
+      requestIdFactory: () => '22222222-2222-4222-8222-222222222222',
+    });
+
+    expect(loaded.requestId).toBe('22222222-2222-4222-8222-222222222222');
+    expect(JSON.parse(storage.setItem.mock.calls.at(-1)[1])).toEqual(loaded);
   });
 });
 
@@ -141,6 +164,7 @@ describe('submitPendingRealtimeScore', () => {
     const result = { overallBand: 7, summary: 'A clear interview.' };
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => result,
     });
     const pending = pendingScore();
@@ -160,7 +184,11 @@ describe('submitPendingRealtimeScore', () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer examiner-token',
       },
-      body: JSON.stringify({ mode: pending.mode, transcript: pending.transcript }),
+      body: JSON.stringify({
+        requestId: pending.requestId,
+        mode: pending.mode,
+        transcript: pending.transcript,
+      }),
     });
   });
 
@@ -168,6 +196,7 @@ describe('submitPendingRealtimeScore', () => {
     const pending = pendingScore();
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => ({ overallBand: 7 }),
     });
     let authError = new Error('temporary auth outage');
@@ -204,7 +233,11 @@ describe('submitPendingRealtimeScore', () => {
     ).resolves.toEqual({ status: 'success', result: { overallBand: 7 } });
     expect(fetchFn).toHaveBeenCalledTimes(1);
     expect(fetchFn.mock.calls[0][1].body).toBe(
-      JSON.stringify({ mode: pending.mode, transcript: pending.transcript })
+      JSON.stringify({
+        requestId: pending.requestId,
+        mode: pending.mode,
+        transcript: pending.transcript,
+      })
     );
   });
 
@@ -245,6 +278,26 @@ describe('submitPendingRealtimeScore', () => {
         pending: pendingScore(),
       })
     ).resolves.toEqual({ status: 'sign_in' });
+  });
+
+  it('keeps an in-progress idempotent request retryable instead of treating 202 as a score', async () => {
+    await expect(
+      submitPendingRealtimeScore({
+        currentUserId: 'user-1',
+        fetchFn: vi.fn().mockResolvedValue({
+          ok: true,
+          status: 202,
+          json: async () => ({
+            error: 'This interview is still being scored. Wait a moment and retry.',
+          }),
+        }),
+        getClient: sessionClient(),
+        pending: pendingScore(),
+      })
+    ).resolves.toEqual({
+      status: 'api_error',
+      message: 'This interview is still being scored. Wait a moment and retry.',
+    });
   });
 
   it('keeps the transcript retryable when a successful response is incomplete', async () => {

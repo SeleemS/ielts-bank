@@ -7,13 +7,37 @@ const STORAGE_KEY = 'ielts-pending-realtime-score';
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const MAX_TRANSCRIPT_CHARS = 60000;
 const ALLOWED_MODES = new Set(['mock', 'part1', 'part2', 'part3']);
+const REQUEST_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function createRealtimeScoreRequestId(cryptoApi = globalThis.crypto) {
+  const nativeId = cryptoApi?.randomUUID?.();
+  if (REQUEST_ID_RE.test(nativeId || '')) return nativeId;
+
+  const bytes = new Uint8Array(16);
+  if (cryptoApi?.getRandomValues) cryptoApi.getRandomValues(bytes);
+  else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map((value) => value.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 function normalizePendingRealtimeScore(value) {
   if (!value || value.version !== 1) return null;
+  const requestId = typeof value.requestId === 'string' ? value.requestId : '';
   const userId = typeof value.userId === 'string' ? value.userId.trim() : '';
   const mode = typeof value.mode === 'string' ? value.mode : '';
   const createdAt = Number(value.createdAt);
-  if (!userId || !ALLOWED_MODES.has(mode) || !Number.isFinite(createdAt)) return null;
+  if (
+    !REQUEST_ID_RE.test(requestId)
+    || !userId
+    || !ALLOWED_MODES.has(mode)
+    || !Number.isFinite(createdAt)
+  ) return null;
   if (!Array.isArray(value.transcript) || value.transcript.length === 0) return null;
 
   let totalChars = 0;
@@ -33,7 +57,7 @@ function normalizePendingRealtimeScore(value) {
     transcript.push({ role: turn.role, text });
   }
 
-  return { version: 1, userId, mode, createdAt, transcript };
+  return { version: 1, requestId, userId, mode, createdAt, transcript };
 }
 
 export function savePendingRealtimeScore(storage, pending) {
@@ -47,12 +71,20 @@ export function savePendingRealtimeScore(storage, pending) {
   }
 }
 
-export function loadPendingRealtimeScore(storage, { now = Date.now() } = {}) {
+export function loadPendingRealtimeScore(
+  storage,
+  { now = Date.now(), requestIdFactory = createRealtimeScoreRequestId } = {}
+) {
   if (!storage) return null;
   try {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const normalized = normalizePendingRealtimeScore(JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    const hadRequestId = Boolean(parsed.requestId);
+    if (!parsed.requestId) {
+      parsed.requestId = requestIdFactory();
+    }
+    const normalized = normalizePendingRealtimeScore(parsed);
     if (
       !normalized
       || normalized.createdAt > now + 60000
@@ -60,6 +92,9 @@ export function loadPendingRealtimeScore(storage, { now = Date.now() } = {}) {
     ) {
       storage.removeItem(STORAGE_KEY);
       return null;
+    }
+    if (!hadRequestId) {
+      storage.setItem(STORAGE_KEY, JSON.stringify(normalized));
     }
     return normalized;
   } catch {
@@ -96,13 +131,14 @@ export async function submitPendingRealtimeScore({
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...auth.headers },
       body: JSON.stringify({
+        requestId: normalized.requestId,
         mode: normalized.mode,
         transcript: normalized.transcript,
       }),
     });
     const body = await response.json().catch(() => ({}));
     if (response.status === 401) return { status: 'sign_in' };
-    if (!response.ok) {
+    if (!response.ok || response.status !== 200) {
       return {
         status: 'api_error',
         message: body.error || 'Scoring failed. Please try again.',
