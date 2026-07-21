@@ -27,7 +27,7 @@ import SignInDialog from '../components/auth/SignInDialog';
 import { getSupabase } from '../../lib/supabase';
 import {
   claimPendingSpeakingScore,
-  getPendingSpeakingAccessToken,
+  getSpeakingAccessToken,
   releasePendingSpeakingScore,
 } from '../lib/pendingSpeakingSession';
 import { track } from '../lib/analytics';
@@ -919,14 +919,21 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
 
     setIsLoading(true);
     try {
-      const supabase = getSupabase();
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
+      const session = await getSpeakingAccessToken(getSupabase);
+      if (session.error) {
+        setIsLoading(false);
+        track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'auth_session', part, from_pending: false, signed_in: true });
+        setErrorMsg('Could not verify your session. Please refresh and try again.');
+        return;
+      }
+      const accessToken = session.accessToken;
       if (!accessToken) {
         setIsLoading(false);
         setSignInOpen(true);
         return;
       }
+
+      const supabase = getSupabase();
 
       // Upload the recording to the owner-only speaking-uploads bucket. This
       // also happens for non-premium users: it captures the answer to their
@@ -972,7 +979,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
     if (!claimPendingSpeakingScore(pendingScoreLock)) return;
     setIsLoading(true);
     try {
-      const session = await getPendingSpeakingAccessToken(getSupabase);
+      const session = await getSpeakingAccessToken(getSupabase);
       if (session.error) {
         track('ai_score_result', { skill: 'speaking', slug: item.slug, outcome: 'error', error_type: 'auth_session', part, from_pending: true, signed_in: true });
         setErrorMsg('Could not verify your session. Please refresh and try again.');

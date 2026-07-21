@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   claimPendingSpeakingScore,
-  getPendingSpeakingAccessToken,
+  getSpeakingAccessToken,
   releasePendingSpeakingScore,
 } from './pendingSpeakingSession';
 
-describe('getPendingSpeakingAccessToken', () => {
+describe('getSpeakingAccessToken', () => {
   it('returns the current linked-session token', async () => {
     const getClient = () => ({
       auth: {
@@ -15,7 +15,7 @@ describe('getPendingSpeakingAccessToken', () => {
       },
     });
 
-    await expect(getPendingSpeakingAccessToken(getClient)).resolves.toEqual({
+    await expect(getSpeakingAccessToken(getClient)).resolves.toEqual({
       accessToken: 'saved-recording-token',
       error: null,
     });
@@ -26,7 +26,7 @@ describe('getPendingSpeakingAccessToken', () => {
       auth: { getSession: async () => ({ data: { session: null } }) },
     });
 
-    await expect(getPendingSpeakingAccessToken(getClient)).resolves.toEqual({
+    await expect(getSpeakingAccessToken(getClient)).resolves.toEqual({
       accessToken: null,
       error: null,
     });
@@ -38,7 +38,7 @@ describe('getPendingSpeakingAccessToken', () => {
     const sessionError = new Error('auth dependency unavailable');
 
     await expect(
-      getPendingSpeakingAccessToken(() => {
+      getSpeakingAccessToken(() => {
         throw clientError;
       })
     ).resolves.toEqual({ accessToken: null, error: clientError });
@@ -49,13 +49,13 @@ describe('getPendingSpeakingAccessToken', () => {
       },
     });
     await expect(
-      getPendingSpeakingAccessToken(getResolvedErrorClient)
+      getSpeakingAccessToken(getResolvedErrorClient)
     ).resolves.toEqual({ accessToken: null, error: resolvedError });
 
     const getClient = () => ({
       auth: { getSession: vi.fn().mockRejectedValue(sessionError) },
     });
-    await expect(getPendingSpeakingAccessToken(getClient)).resolves.toEqual({
+    await expect(getSpeakingAccessToken(getClient)).resolves.toEqual({
       accessToken: null,
       error: sessionError,
     });
