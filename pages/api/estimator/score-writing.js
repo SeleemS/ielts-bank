@@ -19,6 +19,7 @@ import { buildWritingScoreSchema } from '../../../lib/writingScoreSchema';
 import { WRITING_CALIBRATION } from '../../../lib/writingCalibration';
 import { overallBand as calculateOverallBand } from '../../../lib/bandTables';
 import { chatUsageRow, recordAiUsage } from '../../../lib/aiCost';
+import { WRITING_SAMPLE_TASK } from '../../../lib/estimatorConfig';
 
 // Independently tunable from the free checker: set ESTIMATOR_MODEL to a stronger
 // model (e.g. gpt-5.1) to trade cost for a sharper short-sample band without a
@@ -99,7 +100,6 @@ export default async function handler(req, res) {
   if (!anonId) return res.status(400).json({ error: 'A valid anonymous id is required.' });
 
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
-  const promptText = typeof body.prompt === 'string' ? body.prompt.trim().slice(0, 600) : '';
   if (!essay) return res.status(400).json({ error: 'Write a short response first.' });
   if (essay.length > MAX_CHARS) return res.status(400).json({ error: 'That is longer than this quick sample needs.' });
   const words = countWords(essay);
@@ -141,7 +141,7 @@ export default async function handler(req, res) {
     const userContent = `TASK TYPE: Short Writing sample (diagnostic, ~100 words)
 
 PROMPT / QUESTION:
-${promptText || '(a short opinion paragraph)'}
+${WRITING_SAMPLE_TASK.prompt}
 
 CANDIDATE'S RESPONSE (${words} words):
 """

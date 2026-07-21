@@ -36,7 +36,7 @@ export default function WritingSampleStep({
       const response = await fetch('/api/estimator/score-writing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anon_id: getAnonId(), essay: value, prompt: task.prompt }),
+        body: JSON.stringify({ anon_id: getAnonId(), essay: value }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
