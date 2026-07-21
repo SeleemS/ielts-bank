@@ -3427,6 +3427,43 @@ False positives are kept in the investigation notes so they are not rediscovered
   canonical `/band-estimator` HTML referenced `band-estimator-01acee39ccff060e.js`; the promoted
   chunk contained the new checking, personalised-next-steps, and plan-verification-error literals.
 
+## CA-131 — Empty or partial measured sections became false low bands
+
+- Status: `FIXED`
+- Area: Band estimator / Reading / Listening / scoring integrity / accidental submission
+- Severity: High
+- Evidence: Reading and Listening exposed an always-enabled Continue button. Their scorer correctly
+  counts blank questions as incorrect, so clicking Continue with zero or partial answers recorded a
+  completed measured section and converted the omissions into a very low band. The same screen also
+  had a distinct “Skip this section” path, but the primary control bypassed that honest null result.
+  This contradicted the Writing/Speaking self-assessment steps, which already require every question
+  before Continue. The live Reading set also contains one “Choose TWO” multi-select; the shared
+  grader calls a one-option response “answered,” so a simple nonblank count would still have accepted
+  a structurally incomplete response.
+- Fix: derive measured-section completion from every rendered question and disable Continue until
+  all are complete. Standard inputs reuse the shared grader's type-aware nonblank semantics. A
+  multi-select is complete only when its selection count exactly matches the question's required
+  option count, without checking whether those selections are correct. The UI reports the live
+  complete/total count; missing content stays blocked with an explicit unavailable message, and
+  “Skip this section” remains available at every point.
+- Regression coverage: the six-case runner integration suite now uses real question-shaped Reading
+  and Listening fixtures instead of empty arrays. It proves an empty two-question section is
+  blocked, a completed TF/NG plus one of two required checkbox choices is still blocked, the exact
+  second selection enables Continue, and choosing Skip records `skipped: true` rather than a low
+  measured score. Step transitions, writing-gate disclosure, all-skill skip, local result
+  persistence, and analytics remain covered.
+- Commit: `ec28246046ce48605c35e2da2ed1ffbb3b9114d1`
+  (`fix: require complete estimator sections`).
+- Verification: the focused 1-file/6-test runner suite, complete 97-file/675-test Vitest suite,
+  ESLint, strict 181-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Canonical page-data inspection confirmed the guard's live input
+  surface includes sentence completion, TF/NG, matching features, single-choice, note completion,
+  and a two-selection multi-choice question. Local HEAD and `origin/main` matched the exact code SHA;
+  GitHub's successful Vercel status tied it to deployment `dpl_5z1ESgkmp8amd1JvouHLT2PE7BqC`, which
+  reached promoted `READY` on every canonical alias. Fresh canonical `/band-estimator` HTML
+  referenced `band-estimator-049ed9793748e730.js`, and that promoted chunk contained the completion
+  and unavailable-section barrier literals.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
