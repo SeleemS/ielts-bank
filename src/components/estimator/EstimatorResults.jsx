@@ -14,6 +14,7 @@ import WritingScoreReport from '../question/WritingScoreReport';
 import { formatBand, overallEstimate } from './score';
 import { ESTIMATOR_VERSION } from '../../../lib/estimatorConfig';
 import { biggestGap } from './flow';
+import { getSessionAccess } from '../../lib/sessionAccess';
 
 // Target-band options mirror the onboarding chips in SignInDialog (~line 45).
 const TARGET_BANDS = ['6.0', '6.5', '7.0', '7.5', '8.0+'];
@@ -350,13 +351,19 @@ export default function EstimatorResults({
     setRevealing(true);
     setRevealError('');
     try {
-      const { data } = await getSupabase().auth.getSession();
-      const token = data?.session?.access_token;
+      const session = await getSessionAccess(getSupabase);
+      if (session.error) {
+        emit('estimator_writing_reveal_error', { code: 'auth_session' });
+        setRevealError('Could not verify your session. Please refresh and try again.');
+        return;
+      }
       const response = await fetch('/api/estimator/reveal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(session.accessToken
+            ? { Authorization: `Bearer ${session.accessToken}` }
+            : {}),
         },
         body: JSON.stringify({ anon_id: getAnonId() }),
       });

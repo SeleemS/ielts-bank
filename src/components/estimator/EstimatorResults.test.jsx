@@ -7,7 +7,17 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
-const state = { user: null, isPremium: false, planLoading: false, planError: null };
+const state = {
+  user: null,
+  isPremium: false,
+  planLoading: false,
+  planError: null,
+  sessionResult: {
+    data: { session: { access_token: 'tok' } },
+    error: null,
+  },
+  sessionReject: null,
+};
 
 vi.mock('../../lib/analytics', () => ({
   track: vi.fn(),
@@ -27,7 +37,14 @@ vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }) => React.createElement('a', { href, ...rest }, children),
 }));
 vi.mock('../../../lib/supabase', () => ({
-  getSupabase: () => ({ auth: { getSession: async () => ({ data: { session: { access_token: 'tok' } } }) } }),
+  getSupabase: () => ({
+    auth: {
+      getSession: async () => {
+        if (state.sessionReject) throw state.sessionReject;
+        return state.sessionResult;
+      },
+    },
+  }),
 }));
 
 import EstimatorResults from './EstimatorResults';
@@ -50,6 +67,11 @@ beforeEach(() => {
   state.isPremium = false;
   state.planLoading = false;
   state.planError = null;
+  state.sessionResult = {
+    data: { session: { access_token: 'tok' } },
+    error: null,
+  };
+  state.sessionReject = null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -128,6 +150,56 @@ describe('EstimatorResults writing gate', () => {
     expect(container.textContent).toContain('Your Band 6.0 sample has 5 fixable issues');
     expect(container.textContent).not.toContain('essay has 5 fixable issues');
     expect(onWritingRevealed).toHaveBeenCalledWith({ band: 6, overall: 6.5 });
+  });
+
+  it('does not misreport an auth outage and allows a manual reveal retry', async () => {
+    state.user = { id: 'user-1' };
+    state.sessionResult = {
+      data: { session: null },
+      error: new Error('auth unavailable'),
+    };
+    global.fetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        band: 6,
+        wordCount: 104,
+        criteria: { taskResponse: { band: 6 } },
+        lockedIssueCount: 0,
+        premium: false,
+      }),
+    }));
+
+    act(() => {
+      root.render(<EstimatorResults {...baseProps} writing={{ locked: true }} overall={null} />);
+    });
+    await flush();
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(container.textContent).toContain(
+      'Could not verify your session. Please refresh and try again.'
+    );
+    expect(container.textContent).toContain('Reveal my band');
+
+    state.sessionResult = {
+      data: { session: { access_token: 'recovered-token' } },
+      error: null,
+    };
+    const retryButton = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent.includes('Reveal my band')
+    );
+    await act(async () => {
+      retryButton.click();
+    });
+    await flush();
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/estimator/reveal',
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer recovered-token' }),
+      })
+    );
+    expect(container.textContent).not.toContain('Reveal my band');
   });
 
   it('renders the complete estimator Writing report for Premium', async () => {
