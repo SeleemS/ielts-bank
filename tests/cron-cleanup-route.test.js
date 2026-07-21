@@ -17,6 +17,10 @@ const state = {
   rateError: null,
   rateReject: null,
   rateDeletes: [],
+  estimatorError: null,
+  estimatorReject: null,
+  estimatorCount: 0,
+  estimatorDeletes: [],
   listResponses: {},
   listRejects: {},
   listCalls: [],
@@ -39,6 +43,17 @@ vi.mock('@supabase/supabase-js', () => ({
                 state.rateDeletes.push({ column, cutoff });
                 if (state.rateReject) throw state.rateReject;
                 return { error: state.rateError };
+              },
+            }),
+          };
+        }
+        if (table === 'estimator_writing_scores') {
+          return {
+            delete: (options) => ({
+              lt: async (column, cutoff) => {
+                state.estimatorDeletes.push({ options, column, cutoff });
+                if (state.estimatorReject) throw state.estimatorReject;
+                return { count: state.estimatorCount, error: state.estimatorError };
               },
             }),
           };
@@ -131,6 +146,10 @@ describe('GET /api/cron/cleanup', () => {
     state.rateError = null;
     state.rateReject = null;
     state.rateDeletes = [];
+    state.estimatorError = null;
+    state.estimatorReject = null;
+    state.estimatorCount = 0;
+    state.estimatorDeletes = [];
     state.listResponses = {};
     state.listRejects = {};
     state.listCalls = [];
@@ -198,6 +217,47 @@ describe('GET /api/cron/cleanup', () => {
     expect(res.jsonBody).toEqual({ error: 'Rate-limit cleanup failed.' });
     expect(state.fromCalls).toEqual(['rate_limits']);
     expect(state.listCalls).toEqual([]);
+  });
+
+  it('stops before upload work when stale estimator-result deletion fails', async () => {
+    state.estimatorError = { message: 'database unavailable' };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody).toEqual({ error: 'Estimator result cleanup failed.' });
+    expect(state.fromCalls).toEqual(['rate_limits', 'estimator_writing_scores']);
+    expect(state.listCalls).toEqual([]);
+  });
+
+  it('recovers when stale estimator-result deletion rejects', async () => {
+    state.estimatorReject = new Error('network unavailable');
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody).toEqual({ error: 'Estimator result cleanup failed.' });
+    expect(state.listCalls).toEqual([]);
+  });
+
+  it('removes estimator results older than 30 days and reports the exact count', async () => {
+    state.estimatorCount = 3;
+    state.listResponses[''] = { data: [], error: null };
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody).toEqual({
+      ok: true,
+      recordingsRemoved: 0,
+      estimatorResultsRemoved: 3,
+    });
+    expect(state.estimatorDeletes).toHaveLength(1);
+    expect(state.estimatorDeletes[0].options).toEqual({ count: 'exact' });
+    expect(state.estimatorDeletes[0].column).toBe('created_at');
+    const ageDays = (Date.now() - Date.parse(state.estimatorDeletes[0].cutoff)) / 864e5;
+    expect(ageDays).toBeGreaterThanOrEqual(29.99);
+    expect(ageDays).toBeLessThanOrEqual(30.01);
   });
 
   it('fails the run when a storage listing fails', async () => {
@@ -298,7 +358,11 @@ describe('GET /api/cron/cleanup', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(200);
-    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 2 });
+    expect(res.jsonBody).toEqual({
+      ok: true,
+      recordingsRemoved: 2,
+      estimatorResultsRemoved: 0,
+    });
     expect(state.rateDeletes).toHaveLength(1);
     expect(state.rateDeletes[0].column).toBe('window_start');
     expect(Date.parse(state.rateDeletes[0].cutoff)).toBeGreaterThan(0);
@@ -355,8 +419,12 @@ describe('GET /api/cron/cleanup', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(200);
-    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 1 });
-    expect(state.fromCalls).toEqual(['rate_limits']);
+    expect(res.jsonBody).toEqual({
+      ok: true,
+      recordingsRemoved: 1,
+      estimatorResultsRemoved: 0,
+    });
+    expect(state.fromCalls).toEqual(['rate_limits', 'estimator_writing_scores']);
     expect(state.listCalls.filter(({ prefix }) => prefix === '')).toEqual([
       {
         bucket: 'speaking-uploads',
@@ -420,7 +488,11 @@ describe('GET /api/cron/cleanup', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(200);
-    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 2 });
+    expect(res.jsonBody).toEqual({
+      ok: true,
+      recordingsRemoved: 2,
+      estimatorResultsRemoved: 0,
+    });
     expect(state.listCalls.map(({ prefix }) => prefix)).toEqual([
       '',
       'user-1',
@@ -455,7 +527,11 @@ describe('GET /api/cron/cleanup', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(200);
-    expect(res.jsonBody).toEqual({ ok: true, recordingsRemoved: 1002 });
+    expect(res.jsonBody).toEqual({
+      ok: true,
+      recordingsRemoved: 1002,
+      estimatorResultsRemoved: 0,
+    });
     expect(state.listCalls).toEqual([
       {
         bucket: 'speaking-uploads',

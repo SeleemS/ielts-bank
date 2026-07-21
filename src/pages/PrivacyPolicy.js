@@ -71,7 +71,7 @@ const PrivacyPolicy = () => {
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">3. Practice and AI Scoring Data</h2>
                 <p>
-                  Submitted Writing responses and scoring results may be stored with a signed-in learner&apos;s attempt history. Speaking recordings are uploaded only for scoring and are deleted after the scoring request completes; a scheduled cleanup also removes any recording older than 30 days. Writing text and speaking audio are sent to our AI provider to generate the feedback you request. Do not submit sensitive personal information in practice answers.
+                  Submitted Writing responses and scoring results may be stored with a signed-in learner&apos;s attempt history. A short Writing sample submitted anonymously through the Band Estimator is stored against a random browser identifier for up to 30 days so its band can be revealed after sign-up; scheduled cleanup deletes the estimator copy after that period. Speaking recordings are uploaded only for scoring and are deleted after the scoring request completes; a scheduled cleanup also removes any recording older than 30 days. Writing text and speaking audio are sent to our AI provider to generate the feedback you request. Do not submit sensitive personal information in practice answers.
                 </p>
               </div>
 

@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Cleanup is not configured.' });
   }
   const rateCutoff = new Date(Date.now() - 2 * 864e5).toISOString();
+  const estimatorCutoff = new Date(Date.now() - 30 * 864e5).toISOString();
   const audioCutoff = Date.now() - 30 * 864e5;
   try {
     const { error: rateError } = await admin
@@ -34,6 +35,19 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('rate-limit cleanup failed:', error.message);
     return res.status(503).json({ error: 'Rate-limit cleanup failed.' });
+  }
+
+  let estimatorResultsRemoved = 0;
+  try {
+    const { count, error } = await admin
+      .from('estimator_writing_scores')
+      .delete({ count: 'exact' })
+      .lt('created_at', estimatorCutoff);
+    if (error) throw error;
+    estimatorResultsRemoved = Number(count) || 0;
+  } catch (error) {
+    console.error('estimator-result cleanup failed:', error.message);
+    return res.status(503).json({ error: 'Estimator result cleanup failed.' });
   }
 
   let removed = 0;
@@ -79,5 +93,9 @@ export default async function handler(req, res) {
     console.error('upload cleanup failed:', error.message);
     return res.status(503).json({ error: 'Upload cleanup failed.' });
   }
-  return res.status(200).json({ ok: true, recordingsRemoved: removed });
+  return res.status(200).json({
+    ok: true,
+    recordingsRemoved: removed,
+    estimatorResultsRemoved,
+  });
 }
