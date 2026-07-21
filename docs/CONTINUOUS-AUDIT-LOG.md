@@ -2857,6 +2857,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   preview/confirm behavior is covered without altering a live subscription by the signed route and
   real-component cases above.
 
+## CA-114 — Deleted-account subscription webhooks retried forever
+
+- Status: `FIXED`; production publication and exact-event replay pending
+- Area: Monetization / Stripe webhook / account deletion / idempotent acknowledgement
+- Severity: Medium
+- Evidence: the newest live `customer.subscription.deleted` event remained at
+  `pending_webhooks: 1`. Two delivery attempts against the current production deployment logged an
+  `activity_events_user_id_fkey` violation. The event still carried its original `metadata.user_id`,
+  but the learner's application row had already been deleted. `findUserId` trusted that metadata
+  without checking the row still existed, so the handler attempted an orphan activity insert,
+  returned HTTP 500, and caused Stripe to keep retrying an event that could no longer update any
+  account.
+- Fix: resolve every supplied user, subscription, and customer identifier against the current
+  `users` table before returning a mapping. A genuinely deleted account now reaches the existing
+  no-mapping branch, performs no writes, and acknowledges the event. Database lookup failures still
+  throw so transient dependency failures retain provider retries rather than being silently lost.
+- Regression coverage: one handler case supplies a deleted account's stale metadata and requires
+  the exact ignored result with zero updates or inserts; a second injects a lookup failure and
+  requires the handler to throw with zero writes.
+- Commit: `Acknowledge deleted-account Stripe events`.
+- Verification: the focused two-file/100-test billing suite, complete 92-file/617-test Vitest suite,
+  ESLint, strict 175-file analytics audit covering 284 interactive controls, and the network-enabled
+  529-page production build passed. Exact-SHA deployment verification and a signed replay of the
+  affected production event remain pending before this issue is closed operationally.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
