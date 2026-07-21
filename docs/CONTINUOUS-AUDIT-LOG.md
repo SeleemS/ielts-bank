@@ -3157,6 +3157,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   user was deleted, and service-role read-back found zero matching `users`, `user_quotas`, or
   rate-limit rows.
 
+## CA-122 — Estimator scoring reported success when its result was not stored
+
+- Status: `FIXED`
+- Area: Band estimator / anonymous Writing score / persistence / conversion journey
+- Severity: High
+- Evidence: the newly deployed anonymous Writing scorer awaited the Supabase insert but never
+  inspected the client's resolved `{ error }`. Supabase write failures normally resolve with an
+  error object rather than rejecting the promise, so a missing table, schema drift, database outage,
+  or rejected row would still produce HTTP 200 `{ scored: true }`. The visitor would finish the
+  estimator and be asked to create an account for a band that `/api/estimator/reveal` could never
+  find. A read-only production service-role check confirmed the new table and all queried claim
+  columns are currently reachable and contain one row, so the defect was a failure-path data-loss
+  risk rather than evidence of a presently missing migration.
+- Fix: inspect the estimator-score insert result and route every resolved Supabase error through the
+  existing HTTP 503 save-failure response. A successful response is now emitted only after the band
+  and report have actually been accepted by the database.
+- Regression coverage: the route mock can now return a resolved insert error. The new case completes
+  model scoring, rejects persistence, requires HTTP 503 with the retryable save message, and proves
+  the response does not contain the false `scored` success flag.
+- Commit: `4416f10b32438493e4bd22a01f40839170a84d6b` (`fix: fail closed when estimator storage fails`).
+- Verification: the focused 1-file/6-test scorer suite, complete 95-file/654-test Vitest suite,
+  ESLint, strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_JDU3kHKU6mYpCyLQi4yPgvJJCEsj`, which reached
+  promoted `READY` on every canonical alias. A no-cost same-origin request to the canonical
+  production endpoint reached `/api/estimator/score-writing` and returned the expected HTTP 400 for
+  an invalid anonymous identifier before model use or persistence.
+
 ## Investigation notes
 
 - `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
