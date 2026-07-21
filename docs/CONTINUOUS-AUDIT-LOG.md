@@ -2524,8 +2524,13 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Recover auth callback retry failures`.
 - Verification: the focused five-file/14-test auth suite, complete 91-file/574-test Vitest suite,
   ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
-  production build passed. Production publication and live callback verification are recorded after
-  the isolated fix reaches the canonical deployment.
+  production build passed. GitHub's Vercel status tied exact SHA
+  `99ff72149ec39579e162557ff0f32cf5c4eb671b` to deployment
+  `dpl_32J6DqoKEjBB4VEB1PF3eMkMcTwo`, which reached promoted `READY` on the canonical aliases. A
+  fresh signed-out production browser visit to `/auth/callback` without a credential payload left
+  the transient page after the retry window and reached `/`; it did not remain on the spinner. The
+  live rejected-provider branch was not induced, so that branch is verified by the component's
+  deterministic rejected-promise test. No auth session, account, or application data was changed.
 
 ## Investigation notes
 
