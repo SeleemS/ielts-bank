@@ -6,6 +6,7 @@ import { act } from 'react-dom/test-utils';
 
 const testState = vi.hoisted(() => ({
   signOut: vi.fn(),
+  signInWithOtp: vi.fn(),
 }));
 
 vi.mock('../../lib/supabase', () => ({
@@ -22,6 +23,7 @@ vi.mock('../../lib/supabase', () => ({
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
+      signInWithOtp: testState.signInWithOtp,
       signOut: testState.signOut,
     },
   }),
@@ -38,9 +40,12 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 let container;
 let root;
+let currentAuth;
 
 function Harness() {
-  const { user, loading, signOut } = useAuth();
+  const auth = useAuth();
+  currentAuth = auth;
+  const { user, loading, signOut } = auth;
   const [message, setMessage] = React.useState('');
   return (
     <>
@@ -82,6 +87,8 @@ async function clickSignOut() {
 }
 
 beforeEach(() => {
+  currentAuth = null;
+  testState.signInWithOtp.mockResolvedValue({ error: null });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -115,5 +122,21 @@ describe('AuthProvider sign out', () => {
     expect(container.textContent).toContain('signed out');
     expect(container.querySelector('output')?.textContent).toBe('success');
     expect(setAnalyticsUser).toHaveBeenLastCalledWith(null, null);
+  });
+
+  it('does not create a new account from the existing-user email-code path', async () => {
+    await renderProvider();
+
+    await act(async () => {
+      await currentAuth.signInWithEmail('existing@example.com');
+    });
+
+    expect(testState.signInWithOtp).toHaveBeenCalledWith({
+      email: 'existing@example.com',
+      options: {
+        emailRedirectTo: expect.stringMatching(/\/auth\/callback$/),
+        shouldCreateUser: false,
+      },
+    });
   });
 });

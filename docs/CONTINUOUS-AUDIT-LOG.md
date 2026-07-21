@@ -2560,6 +2560,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   production; both rejected-provider transitions are verified by deterministic dialog tests. No
   email was sent and no auth or application data was changed.
 
+## CA-105 — Existing-user passwordless sign-in could create a new account
+
+- Status: `FIXED`
+- Area: Authentication / passwordless OTP / signup boundary
+- Severity: Medium
+- Evidence: the dialog labels its passwordless alternative `Email me a one-time code instead` and
+  documents it as a sign-in fallback for accounts from the magic-link era, but the shared helper
+  called `signInWithOtp()` without `shouldCreateUser`. The installed `@supabase/auth-js` source sends
+  `create_user: true` by default, so entering a new email through the sign-in control could create a
+  fresh Auth account outside the explicit signup and onboarding path. [Supabase's current OTP
+  reference](https://supabase.com/docs/reference/javascript/auth-signinwithotp) identifies the API
+  as a sign-in method, while the installed client contract explicitly requires
+  `shouldCreateUser: false` to prevent implicit signup.
+- Fix: pass `shouldCreateUser: false` only in the existing-user email-code helper while preserving
+  its email callback URL. Explicit password signup, confirmation resend, and recovery OTP flows are
+  unchanged.
+- Regression coverage: the AuthProvider suite invokes the exported email-code helper and requires
+  the exact Supabase call to include the existing email, canonical `/auth/callback` destination, and
+  `shouldCreateUser: false` option.
+- Commit: `Restrict email-code sign-in to existing users`.
+- Verification: the focused four-file/12-test auth suite, complete 92-file/582-test Vitest suite,
+  ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
+  production build passed. Publication and a no-user-created live provider check are recorded after
+  the isolated fix deploys. No email, auth account, or application data was changed locally.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

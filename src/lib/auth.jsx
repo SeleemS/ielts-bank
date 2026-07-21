@@ -115,7 +115,12 @@ export function AuthProvider({ children }) {
     const supabase = getSupabase();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: callbackUrl() },
+      options: {
+        emailRedirectTo: callbackUrl(),
+        // This helper powers the existing-account "one-time code instead"
+        // sign-in path. Supabase otherwise creates a user by default.
+        shouldCreateUser: false,
+      },
     });
     return { error };
   }, []);
