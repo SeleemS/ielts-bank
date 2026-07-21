@@ -2892,7 +2892,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-115 — A paused learner could buy a second recurring subscription
 
-- Status: `FIXED`; production publication and disposable-user verification pending
+- Status: `FIXED`; one pre-existing duplicate requires billing-owner remediation
 - Area: Monetization / Stripe Checkout / billing pause / duplicate subscriptions
 - Severity: High
 - Evidence: read-only live Stripe and service-role reconciliation found one learner mapped to two
@@ -2915,8 +2915,16 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Block duplicate checkout during billing pause`.
 - Verification: the focused two-file/77-test billing route and Pricing page suite, complete
   92-file/619-test Vitest suite, ESLint, strict 175-file analytics audit covering 284 interactive
-  controls, and the network-enabled 529-page production build passed. Exact-SHA deployment and
-  disposable production verification remain pending.
+  controls, and the network-enabled 529-page production build passed. Local HEAD and `origin/main`
+  matched exact SHA `7602e8a6f9548f675d4b6c08d5e1457139322f7f`; GitHub's successful Vercel
+  status tied that SHA to deployment `dpl_GFbpXJ1Ypg1N5YwxCANbAr7DoJPA`, which reached promoted
+  `READY` on every canonical alias. A disposable confirmed learner with active Premium, a future
+  pause, and inert customer/subscription identifiers called the deployed checkout: it returned HTTP
+  409 `already_premium`, created zero rate-limit rows, and left every billing field unchanged. The
+  exact Auth user was deleted with zero residual matching `users`, `user_quotas`, or rate-limit rows.
+  The pre-existing learner's two real active subscriptions were not canceled or refunded during the
+  audit; deciding which paid commitment to retain requires billing-owner review, and leaving both
+  active carries a residual duplicate-charge risk.
 
 ## Investigation notes
 
