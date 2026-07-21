@@ -2609,8 +2609,14 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Keep sign-out scoped to this device`.
 - Verification: the focused five-file/15-test auth/account suite, complete 92-file/582-test Vitest
   suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
-  529-page production build passed. Publication and a disposable two-session production check are
-  recorded after the isolated fix deploys. No session or account was changed locally.
+  529-page production build passed. GitHub's Vercel status tied exact SHA
+  `7cc7034d65d02a0d4f3da3601b90571efe58c7b6` to deployment
+  `dpl_995pwXikJ1ryyebqgqqFNAWSwpeG`, which reached promoted `READY` on the canonical aliases. A
+  disposable confirmed user established two independent password sessions. The deployed dashboard
+  Settings control signed session A out and immediately returned that browser to the signed-out
+  state, while a provider-validated `getUser()` call proved session B remained valid. The exact
+  disposable Auth user was then deleted; live readback found no matching Auth user and zero
+  `user_quotas` rows, and the temporary session artifact was removed.
 
 ## Investigation notes
 
