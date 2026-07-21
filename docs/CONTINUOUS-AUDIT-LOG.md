@@ -3630,6 +3630,39 @@ False positives are kept in the investigation notes so they are not rediscovered
   live proof; the deployed server change is tied to the exact successful SHA and its deterministic
   RPC-order route coverage.
 
+## CA-137 — Saved Speaking recordings had no auth-outage recovery
+
+- Status: `FIXED`
+- Area: Speaking practice / post-upgrade return / saved recording / session verification
+- Severity: Medium
+- Evidence: a signed-in learner returning from the Premium handoff can restore an uploaded
+  owner-only recording and press “Score my saved recording.” That handler awaited Supabase
+  `getSession()` outside any error boundary. A rejected client/session dependency produced an
+  unhandled event promise with no message, no scoring request, and no recovery action; a resolved
+  auth error was also indistinguishable from a verified missing session and reopened sign-in as if
+  the learner's credentials were the problem. The fresh-recording submission path already caught
+  the corresponding dependency failure and showed a retryable message.
+- Fix: resolve the saved-recording access token through a small failure-aware helper that catches
+  both client construction and rejected session reads and preserves resolved Supabase errors. The
+  page now shows an explicit refresh-and-retry message plus `auth_session` error telemetry for a
+  dependency failure, while a successful no-session result retains the existing sign-in dialog and
+  a valid token continues to the unchanged scorer call.
+- Regression coverage: the helper suite covers a valid linked-session token, a verified missing
+  session, client-construction throw, resolved Supabase auth error, and rejected session lookup.
+  The recorded Speaking route suite remains green, and the production build compiles the page/helper
+  wiring that Vitest cannot directly import because the legacy page has JSX in a `.js` file.
+- Commit: `4a2f7b762769c71d0a2b723a802235ad69a81a0e`
+  (`fix: recover saved speaking session lookup`).
+- Verification: the focused 2-file/24-test helper/route run, complete 99-file/685-test Vitest suite,
+  ESLint, strict 183-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. The verified base was the exact prior canonical production
+  evidence SHA; local HEAD and `origin/main` then matched the code SHA above. GitHub's successful
+  Vercel status tied it to deployment `dpl_35jqo7i9KxBdtomhmUVbspgJnXpR`, which reached promoted
+  `READY` on every canonical alias. Fresh canonical Speaking detail HTML referenced
+  `speakingquestion/%5Bid%5D-ab2afe9924f631a3.js`; direct promoted-chunk inspection showed the
+  failure-aware helper result, `auth_session` telemetry and retry message before the unchanged
+  missing-token sign-in branch.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
