@@ -10,6 +10,7 @@ import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import { getStripe, resolveLookupKey, isPppCountry, SKUS } from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
+import { planPricing } from '../../../src/lib/saleConfig';
 
 const CHECKOUT_WINDOW_SECONDS = 10 * 60;
 const CHECKOUT_MAX_PER_WINDOW = 10;
@@ -168,6 +169,26 @@ export default async function handler(req, res) {
     if (!price) {
       console.error('checkout: missing price for lookup key', lookupKey);
       return res.status(500).json({ error: 'Pricing unavailable. Please try again later.' });
+    }
+
+    // Safety net: the pricing page shows amounts from saleConfig, but Stripe
+    // charges whatever this resolved price is. If a Stripe price wasn't updated
+    // for a sale/price change they silently diverge (the page says $14.99 while
+    // Stripe still charges $9.99). Log loudly so it's caught — never block
+    // checkout on it, and never let a guard error affect the sale.
+    try {
+      const expected = planPricing(sku, isPppCountry(country));
+      if (expected && price.currency === 'usd' && Number.isFinite(price.unit_amount)) {
+        const expectedMinor = Math.round(expected.sale * 100);
+        if (price.unit_amount !== expectedMinor) {
+          console.error(
+            `checkout PRICE MISMATCH: sku=${sku} lookup=${lookupKey} ` +
+              `stripe=${price.unit_amount} pageExpects=${expectedMinor} — update the Stripe price.`
+          );
+        }
+      }
+    } catch (guardError) {
+      console.error('checkout price-consistency guard failed:', guardError.message);
     }
 
     let customerId = userRow.stripe_customer_id;
