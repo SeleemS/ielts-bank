@@ -3596,6 +3596,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   `_app-4eb3c78124a2ed59.js`; direct promoted-chunk inspection showed the UUID-format check,
   corrupted-value replacement, and catch path returning the stable generated fallback.
 
+## CA-136 — Locally blocked scoring requests consumed global AI capacity
+
+- Status: `FIXED`
+- Area: AI Writing / recorded Speaking / realtime Speaking / estimator Writing / availability
+- Severity: High
+- Evidence: all four metered scoring routes invoked their shared daily circuit-breaker bucket before
+  the narrower anonymous-ID, IP, or user bucket. `check_rate_limit` is an atomic increment, not a
+  read-only capacity check. A caller already over their local cap could therefore repeat requests
+  that never reached OpenAI but still incremented the global counter. One IP could exhaust the
+  Writing or realtime shared allowance; one Premium owner could exhaust recorded Speaking; and an
+  anonymous estimator caller could burn global capacity after either the visitor or IP limit had
+  already denied them, turning a local throttle into a service-wide availability failure.
+- Fix: evaluate limiters from narrowest identity to widest scope. The estimator now checks
+  anonymous UUID, then IP, then global capacity; authenticated Writing and realtime Speaking check
+  IP before global; recorded Speaking checks its authenticated owner before global. Existing
+  fail-closed dependency handling, status codes, quota sequencing, and owned-audio cleanup remain
+  unchanged. Eligible requests still increment the global cost breaker immediately before paid
+  provider work.
+- Regression coverage: the four focused route suites now pin the exact bucket order. Anonymous,
+  IP, and user denial/error cases require only their caller-specific bucket(s) and prove the global
+  bucket is untouched. Separate global exhaustion/error cases require successful narrow checks
+  first and then the shared bucket, preserving every endpoint's established HTTP 429 or 503
+  contract and preventing OpenAI/persistence work.
+- Commit: `e70fb53c6b94ae8b722436426bdec8c05f441361`
+  (`fix: protect global scoring capacity`).
+- Verification: the focused 4-file/63-test scorer route run, complete 98-file/682-test Vitest suite,
+  ESLint, strict 181-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. The verified base was the exact prior canonical production
+  evidence SHA; local HEAD and `origin/main` then matched the code SHA above. GitHub's successful
+  Vercel status tied it to deployment `dpl_9xiWbd8Tb7ctSmRLEPVt3xQRdSnn`, which reached promoted
+  `READY` on every canonical alias. Production rate-limit rows were deliberately not mutated for
+  live proof; the deployed server change is tied to the exact successful SHA and its deterministic
+  RPC-order route coverage.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
