@@ -283,6 +283,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     planStatus,
     renewsAt,
     expiresAt,
+    pauseUntil,
     hasBillingAccount,
     loading: planLoading,
     error: planError,
@@ -309,6 +310,8 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
       : '';
   const sessionId = typeof router.query.session_id === 'string' ? router.query.session_id : '';
   const offer = router.query.offer === 'winback' ? 'winback' : '';
+  const pauseActive =
+    Boolean(pauseUntil) && new Date(pauseUntil).getTime() > Date.now();
   const context = contextualCopy(upgrade);
   const examDays = daysUntil(examDate);
   const examWeeks = examDays == null ? null : Math.max(1, Math.ceil(examDays / 7));
@@ -552,11 +555,15 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           </div>
         ) : null}
 
-        {isPremium ? (
+        {isPremium || pauseActive ? (
           <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
-            <p className="text-lg font-semibold">Your Pro tools are active ✨</p>
+            <p className="text-lg font-semibold">
+              {pauseActive ? 'Your Pro plan is paused' : 'Your Pro tools are active ✨'}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {expiresAt
+              {pauseActive
+                ? `Premium access resumes ${new Date(pauseUntil).toLocaleDateString()}.`
+                : expiresAt
                 ? `Your Exam Pass is active until ${new Date(expiresAt).toLocaleDateString()}.`
                 : planStatus === 'canceled' && renewsAt
                   ? `Your plan stays active until ${new Date(renewsAt).toLocaleDateString()}.`

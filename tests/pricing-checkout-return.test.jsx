@@ -13,6 +13,8 @@ const testState = vi.hoisted(() => ({
   authLoading: false,
   accessToken: 'test-access-token',
   planError: null,
+  pauseUntil: null,
+  hasBillingAccount: false,
 }));
 
 vi.mock('next/head', () => ({
@@ -61,7 +63,8 @@ vi.mock('../src/lib/usePlan', () => ({
     planStatus: 'inactive',
     renewsAt: null,
     expiresAt: null,
-    hasBillingAccount: false,
+    pauseUntil: testState.pauseUntil,
+    hasBillingAccount: testState.hasBillingAccount,
     loading: false,
     error: testState.planError,
   }),
@@ -132,6 +135,8 @@ beforeEach(() => {
   testState.authLoading = false;
   testState.accessToken = 'test-access-token';
   testState.planError = null;
+  testState.pauseUntil = null;
+  testState.hasBillingAccount = false;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -223,6 +228,24 @@ describe('pricing checkout return verification', () => {
 });
 
 describe('pricing authentication handoff', () => {
+  it('shows billing management instead of a second checkout while access is paused', async () => {
+    testState.router = { isReady: true, query: {} };
+    testState.user = { id: 'user-1' };
+    testState.pauseUntil = '2099-08-20T00:00:00.000Z';
+    testState.hasBillingAccount = true;
+
+    await renderPage();
+
+    expect(container.textContent).toContain('Your Pro plan is paused');
+    expect(container.textContent).toContain('Premium access resumes');
+    expect(container.textContent).not.toContain('Choose this plan');
+    expect(container.querySelector('a[href="/billing/manage"]')).not.toBeNull();
+    expect(global.fetch).not.toHaveBeenCalledWith(
+      '/api/billing/checkout',
+      expect.anything()
+    );
+  });
+
   it('gives the checkout action a plan-specific accessible name', async () => {
     testState.router = {
       isReady: true,

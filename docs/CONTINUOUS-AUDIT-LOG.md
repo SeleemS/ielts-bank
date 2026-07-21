@@ -2890,6 +2890,34 @@ False positives are kept in the investigation notes so they are not rediscovered
   provider-managed retry; a locally signed replay verifies the deployed behavior but does not
   rewrite that provider delivery counter.
 
+## CA-115 — A paused learner could buy a second recurring subscription
+
+- Status: `FIXED`; production publication and disposable-user verification pending
+- Area: Monetization / Stripe Checkout / billing pause / duplicate subscriptions
+- Severity: High
+- Evidence: read-only live Stripe and service-role reconciliation found one learner mapped to two
+  simultaneously active subscriptions. The monthly subscription was paused at 17:15, then a new
+  six-month subscription was created for the same learner 11 minutes later. The newer webhook
+  replaced the app row's single subscription mapping while the older monthly subscription remained
+  active and scheduled to resume, leaving two independent future billing commitments. The checkout
+  route used `isPremiumRow` as its ownership guard, but that entitlement helper deliberately returns
+  false while `billing_pause_until` is in the future. The Pricing page made the same inference and
+  rendered a new purchase action during the pause.
+- Fix: when deciding checkout eligibility, evaluate the verified billing row with only the
+  access-pause timestamp ignored. Active, trialing, past-due, paid-through cancellation, Exam Pass,
+  and paused Premium commitments all stop before rate limiting or Stripe work. Pricing now treats an
+  active pause as an existing plan, explains the resume date, and links to Billing Management instead
+  of presenting another checkout.
+- Regression coverage: the checkout route suite supplies an active recurring subscription with a
+  future pause, requires HTTP 409 `already_premium`, and proves no rate-limit or Stripe call occurs.
+  The real Pricing page test requires the paused-state explanation and management link, no purchase
+  action, and no checkout request.
+- Commit: `Block duplicate checkout during billing pause`.
+- Verification: the focused two-file/77-test billing route and Pricing page suite, complete
+  92-file/619-test Vitest suite, ESLint, strict 175-file analytics audit covering 284 interactive
+  controls, and the network-enabled 529-page production build passed. Exact-SHA deployment and
+  disposable production verification remain pending.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

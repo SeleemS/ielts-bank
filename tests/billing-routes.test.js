@@ -412,6 +412,28 @@ describe('POST /api/billing/checkout', () => {
     expect(res.statusCode).toBe(409);
   });
 
+  it('rejects a second recurring checkout while Premium access is paused', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = {
+      id: 'user-1',
+      email: 'a@b.com',
+      is_anonymous: false,
+      plan: 'premium',
+      plan_status: 'active',
+      plan_renews_at: '2099-01-20T00:00:00.000Z',
+      billing_pause_until: '2098-08-20T00:00:00.000Z',
+      stripe_customer_id: 'cus_existing',
+      stripe_subscription_id: 'sub_existing',
+    };
+
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' } });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody.code).toBe('already_premium');
+    expect(mockState.rpcCalls).toEqual([]);
+    expect(mockState.stripeCalls).toEqual({});
+  });
+
   it('rate-limits repeated checkout attempts before any Stripe call', async () => {
     mockState.authUser = { id: 'user-1' };
     mockState.userRow = {

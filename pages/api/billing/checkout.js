@@ -156,7 +156,11 @@ export default async function handler(req, res) {
       code: 'anonymous_user',
     });
   }
-  if (isPremiumRow(userRow)) {
+  // A billing pause intentionally blocks product access, so isPremiumRow on
+  // the stored row returns false. It must not make the learner eligible to buy
+  // a second recurring subscription. Ignore only the access-pause timestamp
+  // when deciding whether an existing paid commitment still owns this account.
+  if (isPremiumRow({ ...userRow, billing_pause_until: null })) {
     return res.status(409).json({ error: 'You already have Premium.', code: 'already_premium' });
   }
   const winBackEligible =
