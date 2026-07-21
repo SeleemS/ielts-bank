@@ -3500,6 +3500,39 @@ False positives are kept in the investigation notes so they are not rediscovered
   “The complete estimate is anonymous and free,” “Free, no sign-up,” or the obsolete “self-check
   your Writing and Speaking” description.
 
+## CA-133 — Revealed estimator overall was not persisted for the return journey
+
+- Status: `FIXED`
+- Area: Band estimator / authenticated reveal / local persistence / return journey
+- Severity: Medium
+- Evidence: the anonymous completion snapshot deliberately stores `overall: null` and
+  `writingLocked: true` because the client has not received the marked Writing band. After sign-in,
+  `EstimatorResults` fetched the authorized band and recomputed the correct overall for the current
+  render, but never updated the runner's `lastResult` or `ielts-estimator-result` local-storage row.
+  Returning to the intro therefore showed “Your last estimate: — overall” after a successful reveal,
+  even though the learner had unlocked and saved a real numeric estimate.
+- Fix: pass the revealed band and recomputed overall back to the runner through a stable callback.
+  A pure merge replaces the local Writing placeholder, writes the numeric overall, removes the lock
+  marker, preserves the rest of the completion snapshot, and writes the updated result through the
+  existing storage-safe helper. Only those two numeric results are persisted; criterion feedback,
+  summary, improvements, corrections, entitlement fields, and the full API payload remain in
+  component memory and are fetched again under server authorization when needed.
+- Regression coverage: the estimator results DOM suite requires the successful reveal callback to
+  receive Band 6 and the recomputed 6.5 overall for its measured/self-assessed mix. The flow suite
+  starts from a real locked result, requires the Writing band and overall to replace the nulls, and
+  proves `writingLocked` is absent afterward. Reveal gating, Free/Premium feedback boundaries,
+  loading/error states, step persistence, and all completion behavior remain covered.
+- Commit: `d8cdb792afdec51c304f502b9288e8e1ce5f2029`
+  (`fix: persist revealed estimator overall`).
+- Verification: the focused 3-file/26-test estimator lifecycle suite, complete 98-file/677-test
+  Vitest suite, ESLint, strict 181-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. Local HEAD and `origin/main` matched the exact
+  code SHA; GitHub's successful Vercel status tied it to deployment
+  `dpl_CgzxbeMx2Hg8EFxTbs2GQRbdU8F4`, which reached promoted `READY` on every canonical alias. Fresh
+  canonical HTML referenced `band-estimator-0559086ce6375f05.js`; direct promoted-chunk inspection
+  showed the compiled merge deleting `writingLocked`, replacing `bands.writing` and `overall`, and
+  passing only that merged completion result to the existing local-storage writer.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
