@@ -3533,6 +3533,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   showed the compiled merge deleting `writingLocked`, replacing `bands.writing` and `overall`, and
   passing only that merged completion result to the existing local-storage writer.
 
+## CA-134 — Anonymous estimator scorer trusted a caller-controlled task prompt
+
+- Status: `FIXED`
+- Area: Band estimator / anonymous Writing scorer / model spend / prompt integrity
+- Severity: High
+- Evidence: the public estimator presents one fixed short Writing question, but its browser request
+  also sent that question as a mutable `prompt` field. The server accepted any caller-supplied
+  string up to 600 characters and placed it directly in the OpenAI user message. A caller could
+  therefore reuse the anonymous, platform-funded scorer for unrelated questions or injected task
+  instructions, even though the endpoint's product contract and calibrated system prompt are
+  limited to the estimator's single diagnostic task. Length, origin, per-anonymous-ID, per-IP, and
+  global limits constrained volume but did not bind what the paid model was asked to assess.
+- Fix: make the API use `WRITING_SAMPLE_TASK.prompt` from the shared server import as the sole task
+  question and ignore any extra body `prompt`. The browser now sends only the anonymous UUID and
+  response text, so the mutable field is absent in normal traffic as well as ineffective at the
+  security boundary.
+- Regression coverage: the seven-case scorer route suite submits an explicit unrelated/injected
+  prompt, inspects the outbound OpenAI request, requires the canonical estimator question, and
+  proves the injected text is absent. Anonymous band non-disclosure, ID and word-count validation,
+  pre-model rate limiting, and fail-closed result persistence remain covered.
+- Commit: `602cf8e63806bdc33d5cc5e97ba58494ed525b12`
+  (`fix: bind estimator scoring to fixed task`).
+- Verification: the focused 1-file/7-test scorer suite, complete 98-file/678-test Vitest suite,
+  ESLint, strict 181-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. The verified base was the exact prior canonical production SHA;
+  local HEAD and `origin/main` then matched the code SHA above. GitHub's successful Vercel status
+  tied it to deployment `dpl_AFCcfafFLPS7VcEZniutkBTQ9KTe`, which reached promoted `READY` on every
+  canonical alias. Fresh canonical `/band-estimator` HTML referenced
+  `band-estimator-b9da531edd14f880.js`; direct promoted-chunk inspection showed the scorer body
+  serializing only `anon_id` and `essay`, with no prompt field. A same-origin production POST with
+  an invalid UUID and an injected prompt returned the expected HTTP 400 anonymous-ID rejection.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
