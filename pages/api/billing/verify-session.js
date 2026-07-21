@@ -6,6 +6,7 @@ export const config = { runtime: 'nodejs' };
 import { createClient } from '@supabase/supabase-js';
 import { originAllowed } from '../../../lib/apiSecurity';
 import { getStripe, handleStripeEvent } from '../../../lib/billing';
+import { fetchPremiumStatus } from '../../../lib/premium';
 
 const VERIFY_WINDOW_SECONDS = 10 * 60;
 const VERIFY_MAX_PER_WINDOW = 20;
@@ -92,6 +93,23 @@ export default async function handler(req, res) {
     );
     if (outcome.startsWith('error:')) {
       return res.status(503).json({ error: 'Activation is still processing.' });
+    }
+    if (!outcome.startsWith('activated ')) {
+      return res.status(409).json({
+        active: false,
+        error: 'This checkout did not activate Pro access.',
+      });
+    }
+    const premium = await fetchPremiumStatus(getAdmin(), user.id);
+    if (premium.error) {
+      console.error('verify-session entitlement readback error:', premium.error.message);
+      return res.status(503).json({ error: 'Activation is still processing.' });
+    }
+    if (!premium.isPremium) {
+      return res.status(409).json({
+        active: false,
+        error: 'Pro access is not active for this checkout.',
+      });
     }
     return res.status(200).json({ active: true, outcome });
   } catch (error) {

@@ -2745,6 +2745,33 @@ False positives are kept in the investigation notes so they are not rediscovered
   user were deleted, and readback found zero residual matching Auth users, `users`, `user_quotas`,
   or `billing-checkout` rate-limit rows.
 
+## CA-111 — Checkout return claimed activation without active entitlement
+
+- Status: `FIXED`
+- Area: Monetization / checkout return / entitlement reconciliation / purchase analytics
+- Severity: High
+- Evidence: the authenticated verification route returned `{ active: true }` after every owned,
+  completed, paid Checkout Session unless the shared event handler returned an `error:` string. An
+  unsupported Checkout mode returns `ignored: unsupported checkout`, while a supported Session can
+  reconcile a subscription whose current Stripe state maps to Free/inactive. Both paths therefore
+  produced HTTP 200 even though no active entitlement existed. Pricing trusted HTTP success alone,
+  showed `You're in`, and emitted `purchase_success` without checking the response's entitlement
+  value.
+- Fix: accept only a supported `activated ...` reconciliation result, then read the learner's
+  billing row back through the shared Premium entitlement rules. Return neutral retry/rejection
+  states for database failures or verified inactive access. Pricing now also requires both HTTP
+  success and an explicit `{ active: true }` response before showing activation or recording the
+  purchase.
+- Regression coverage: billing-route tests cover ignored sessions, an inactive reconciled
+  subscription, resolved and rejected entitlement-readback failures, and a verified active row.
+  Real Pricing component coverage proves that even HTTP 200 with `{ active: false }` cannot render
+  the activation checklist or emit `purchase_success`.
+- Commit: `Confirm entitlement after checkout return`.
+- Verification: the focused two-file/60-test billing and Pricing return suite, complete
+  92-file/598-test Vitest suite, ESLint, strict 175-file analytics audit covering 282 interactive
+  controls, and the network-enabled 529-page production build passed. Publication and post-deploy
+  checkout-return evidence are recorded after the isolated fix deploys.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

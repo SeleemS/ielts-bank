@@ -162,7 +162,10 @@ describe('pricing checkout return verification', () => {
 
   it('does not record or display a purchase when verification fails', async () => {
     testState.user = { id: 'user-1' };
-    global.fetch.mockResolvedValue({ ok: false });
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ active: false }),
+    });
 
     await renderPage();
 
@@ -178,7 +181,10 @@ describe('pricing checkout return verification', () => {
 
   it('shows activation and tracks the purchase only after server verification', async () => {
     testState.user = { id: 'user-1' };
-    global.fetch.mockResolvedValue({ ok: true });
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ active: true }),
+    });
 
     await renderPage();
 
@@ -194,6 +200,25 @@ describe('pricing checkout return verification', () => {
     expect(track).toHaveBeenCalledWith('purchase_success', {
       source: 'pricing',
     });
+  });
+
+  it('requires an explicit active entitlement even on an HTTP success', async () => {
+    testState.user = { id: 'user-1' };
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ active: false }),
+    });
+
+    await renderPage();
+
+    expect(container.textContent).not.toContain("You're in. Do this first:");
+    expect(container.textContent).toContain(
+      'Pro access could not be confirmed yet.'
+    );
+    expect(track).not.toHaveBeenCalledWith(
+      'purchase_success',
+      expect.anything()
+    );
   });
 });
 

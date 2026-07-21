@@ -381,8 +381,9 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
           body: JSON.stringify({ session_id: sessionId }),
         })
       )
-      .then((response) => {
-        if (response.ok) {
+      .then(async (response) => {
+        const body = await response.json().catch(() => ({}));
+        if (response.ok && body.active === true) {
           track('purchase_success', { source: upgrade || 'pricing' });
           setActivation('active');
         } else {

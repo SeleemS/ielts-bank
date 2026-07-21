@@ -718,7 +718,13 @@ describe('POST /api/billing/verify-session', () => {
     mockState.authUser = null;
     mockState.authError = null;
     mockState.authReject = null;
-    mockState.userRow = null;
+    mockState.userRow = {
+      plan: 'premium',
+      plan_status: 'active',
+      plan_renews_at: null,
+      plan_expires_at: null,
+      billing_pause_until: null,
+    };
     mockState.userError = null;
     mockState.userReject = null;
     mockState.rateLimit = true;
@@ -874,6 +880,81 @@ describe('POST /api/billing/verify-session', () => {
     });
     expect(mockState.stripeCalls.reconciliation.event.id).toBe('verify:cs_live_paid');
   });
+
+  it('does not claim activation when the shared handler ignores the checkout', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.retrievedSession = {
+      id: 'cs_live_unsupported',
+      client_reference_id: 'user-1',
+      metadata: { user_id: 'user-1' },
+      status: 'complete',
+      payment_status: 'paid',
+    };
+    mockState.reconciliationOutcome = 'ignored: unsupported checkout';
+
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_unsupported' },
+    });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody).toMatchObject({ active: false });
+  });
+
+  it('does not claim activation unless entitlement readback is Premium', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.retrievedSession = {
+      id: 'cs_live_inactive',
+      client_reference_id: 'user-1',
+      metadata: { user_id: 'user-1' },
+      status: 'complete',
+      payment_status: 'paid',
+    };
+    mockState.reconciliationOutcome = 'activated user user-1 (inactive)';
+    mockState.userRow = {
+      plan: 'free',
+      plan_status: 'inactive',
+      plan_renews_at: null,
+      plan_expires_at: null,
+      billing_pause_until: null,
+    };
+
+    const res = await callVerify({
+      headers: { authorization: 'Bearer tok' },
+      body: { session_id: 'cs_live_inactive' },
+    });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.jsonBody).toMatchObject({ active: false });
+  });
+
+  it.each(['resolved error', 'rejection'])(
+    'returns retryable processing state when entitlement readback has a %s',
+    async (failureMode) => {
+      mockState.authUser = { id: 'user-1' };
+      mockState.retrievedSession = {
+        id: 'cs_live_readback_error',
+        client_reference_id: 'user-1',
+        metadata: { user_id: 'user-1' },
+        status: 'complete',
+        payment_status: 'paid',
+      };
+      if (failureMode === 'resolved error') {
+        mockState.userError = new Error('database unavailable');
+      } else {
+        mockState.userReject = new Error('network unavailable');
+      }
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const res = await callVerify({
+        headers: { authorization: 'Bearer tok' },
+        body: { session_id: 'cs_live_readback_error' },
+      });
+
+      expect(res.statusCode).toBe(503);
+      expect(res.jsonBody.error).toMatch(/still processing/i);
+    }
+  );
 });
 
 // ---------------------------------------------------------------------------
