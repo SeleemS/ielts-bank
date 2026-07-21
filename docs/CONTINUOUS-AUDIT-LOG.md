@@ -3565,6 +3565,37 @@ False positives are kept in the investigation notes so they are not rediscovered
   serializing only `anon_id` and `essay`, with no prompt field. A same-origin production POST with
   an invalid UUID and an injected prompt returned the expected HTTP 400 anonymous-ID rejection.
 
+## CA-135 — Storage-denied browsers could not submit measured estimator Writing
+
+- Status: `FIXED`
+- Area: Band estimator / anonymous identity / storage failure / Writing submission
+- Severity: Medium
+- Evidence: the shared anonymous-ID helper wrapped its entire `localStorage` path in a try/catch and
+  returned `null` whenever storage access or persistence threw. That ID is not merely optional
+  analytics metadata: the anonymous Writing scorer requires a valid UUID so it can withhold and
+  later reveal the marked result. A storage-denied browser could write a valid 40–180-word sample,
+  but the client then sent `anon_id: null` and the API rejected the journey. The helper also trusted
+  any non-empty stored string, so one corrupted value caused every later scorer request to fail its
+  UUID validation until the visitor manually cleared site data.
+- Fix: validate persisted anonymous IDs against the same UUID shape accepted by the APIs, replace a
+  malformed value, and retain the generated UUID in module memory. If `localStorage` throws, the
+  helper now returns that stable in-page functional ID rather than null; later calls reuse it, and a
+  successful storage access keeps the persisted and in-memory identities synchronized.
+- Regression coverage: the analytics/helper suite forces both `localStorage.getItem` and
+  `setItem` to throw, requires two calls to return the same valid generated UUID, and proves only
+  one UUID was generated. A separate case seeds a corrupt value and requires a valid replacement to
+  be persisted. The focused anonymous scorer suite remains green against the same UUID contract.
+- Commit: `ee805f5c00055711db4cc734b6ea955271ebc38a`
+  (`fix: preserve estimator identity without storage`).
+- Verification: the focused 2-file/17-test helper/scorer run, complete 98-file/680-test Vitest
+  suite, ESLint, strict 181-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. The verified base was the exact prior canonical
+  production evidence SHA; local HEAD and `origin/main` then matched the code SHA above. GitHub's
+  successful Vercel status tied it to deployment `dpl_FDxDTWGMMVnjUyuuXKwuJKe9uKgY`, which reached
+  promoted `READY` on every canonical alias. Fresh canonical `/band-estimator` HTML referenced
+  `_app-4eb3c78124a2ed59.js`; direct promoted-chunk inspection showed the UUID-format check,
+  corrupted-value replacement, and catch path returning the stable generated fallback.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
