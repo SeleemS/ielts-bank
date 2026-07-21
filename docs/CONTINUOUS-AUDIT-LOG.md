@@ -3019,6 +3019,45 @@ False positives are kept in the investigation notes so they are not rediscovered
   disposable limiter rows were removed, and service-role read-back found zero matching `users` or
   rate-limit rows.
 
+## CA-118 — Billing Management offered actions the server rejects for non-active plans
+
+- Status: `FIXED`
+- Area: Monetization / cancellation return / payment recovery / Billing Management
+- Severity: Medium
+- Evidence: a period-end cancellation intentionally remains Premium through its paid-through date,
+  so `isPremium` is true while `plan_status` is `canceled`. Billing Management used only that
+  entitlement boolean to render monthly/six-month upgrade controls and labeled the state “Keep
+  Premium active,” but the change-plan API accepts only `active` or `trialing` rows. A canceled
+  learner returning from Stripe therefore saw contradictory renewal copy and buttons guaranteed to
+  fail with `no_active_subscription`. A `past_due` learner similarly saw a future “next renewal,”
+  upgrade buttons the API rejects, and a pause action that Stripe's active-only preflight rejects.
+  Exam Pass and historical-customer rows were also shown recurring-subscription cancellation and
+  switch-plan guidance even though neither has a recurring plan to cancel.
+- Fix: make Billing Management state-specific. Upgrade and switch-to-Exam-Pass choices now require
+  an active/trialing recurring SKU; the pause helper excludes canceled and past-due plans. Canceled
+  plans say Premium is ending and direct the learner to review the scheduled cancellation. Past-due
+  plans identify the failed payment and direct the learner to update payment details. Exam Pass and
+  historical billing accounts show invoice/history guidance and explicitly state that no active
+  recurring plan exists. The page header is now neutral across all account states.
+- Regression coverage: the status helper proves past-due messaging never promises a renewal and
+  that canceled/past-due plans cannot receive a pause action. Rendered Billing Management cases
+  verify canceled and past-due learners receive no upgrade controls, canceled learners receive no
+  pause or repeat-cancellation pitch, and an Exam Pass holder is never told to cancel a one-time
+  purchase. Existing true-pause and signed upgrade-confirmation cases remain covered.
+- Commit: `Align billing actions with plan state`.
+- Verification: the focused two-file/12-test helper and rendered Billing Management suite, complete
+  93-file/646-test Vitest suite, ESLint, strict 176-file analytics audit covering 284 interactive
+  controls, and the network-enabled 529-page production build passed. Local HEAD and `origin/main`
+  matched exact SHA `1f5fc515a8439849bd91f32de6a1562e9556d7d6`; GitHub's successful Vercel status
+  tied that SHA to deployment `dpl_7EW8nbEGcSCV5Gd51H34EjFX4CJS`, which reached promoted `READY`
+  on every canonical alias. A disposable confirmed production learner with paid-through
+  `plan_status: canceled`, monthly SKU, a future access end, and an inert owned Stripe Customer then
+  signed in through the real production dialog and opened Billing Management. The hydrated DOM
+  rendered exactly “Premium is ending” and “Review your canceled plan”; its only billing button was
+  “Continue to Stripe,” with no upgrade, pause, Exam Pass switch, or repeat-cancellation copy. The
+  learner signed out through the production account menu. Its Stripe Customer and Auth user were
+  deleted, and service-role read-back found zero matching `users`, `user_quotas`, or rate-limit rows.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
