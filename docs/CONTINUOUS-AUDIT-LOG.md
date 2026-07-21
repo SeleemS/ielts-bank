@@ -3249,11 +3249,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   removed the retained fixture and read back zero matching rows. The canonical production privacy
   page rendered the complete new 30-day estimator disclosure.
 
+## CA-125 — Privacy policy effective date predated its material estimator disclosure
+
+- Status: `FIXED`
+- Area: Privacy policy / disclosure accuracy / estimator retention
+- Severity: Low
+- Evidence: CA-124 materially changed the public policy to disclose anonymous estimator essay
+  storage and its 30-day deletion lifecycle on July 21, 2026, but the rendered page still said
+  “Last updated: July 18, 2026.” The page also states that policy changes become effective on the
+  displayed date, so the stale label misrepresented when the new collection and retention terms
+  became effective.
+- Fix: centralize the policy's last-updated value alongside its existing metadata contract, set it to
+  July 21, 2026, and render the exported value on the page rather than leaving an unrelated literal
+  embedded in the component.
+- Regression coverage: the privacy metadata suite now pins the effective date together with the
+  canonical, title, description, social-card parameters, and image-alt contract.
+- Commit: `dbb556742a3df1f8bbfd67032046e13004311a6f` (`fix: update privacy policy effective date`).
+- Verification: the focused 1-file/2-test privacy suite, complete 96-file/663-test Vitest suite,
+  ESLint, strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_KLxiJfnPiTT83U6su5CsL2zL9dAS`, which reached
+  promoted `READY` on every canonical alias. Fresh canonical production HTML rendered exactly “Last
+  updated: July 21, 2026.”
+
 ## Investigation notes
 
 - `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
   they remain an explicit follow-up audit surface because CA-120 can protect only consumers that
   observe the hook's loading contract. `AdUnit` was corrected in CA-121.
+
+- A live production query using only the public anonymous Supabase key attempted to select from
+  `estimator_writing_scores`. Postgres returned `42501`, and zero rows were exposed, confirming the
+  table's no-client-policy RLS and revoked grants are active in production.
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
   Direct DOM text verification confirmed that the live page renders normal quotation marks; no
