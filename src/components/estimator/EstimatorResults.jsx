@@ -316,6 +316,7 @@ export default function EstimatorResults({
   skipped = {},
   initialTargetBand = 7.0,
   onTargetBandChange,
+  onWritingRevealed,
   onRetake,
 }) {
   const { user } = useAuth();
@@ -364,14 +365,21 @@ export default function EstimatorResults({
         setRevealError(body.error || 'Could not unlock your Writing band.');
         return;
       }
+      const revealedOverall = overallEstimate({
+        reading: reading?.band,
+        listening: listening?.band,
+        writing: body.band,
+        speaking: speaking?.band,
+      }).overall;
       setRevealed(body);
+      onWritingRevealed?.({ band: body.band, overall: revealedOverall });
       emit('estimator_writing_revealed', { band: body.band });
     } catch {
       setRevealError('Could not unlock your Writing band. Please refresh and try again.');
     } finally {
       setRevealing(false);
     }
-  }, [signedIn, revealing, emit]);
+  }, [signedIn, revealing, emit, reading, listening, speaking, onWritingRevealed]);
 
   // Unlock automatically the moment a session exists — the visitor already
   // asked for this by creating the account.

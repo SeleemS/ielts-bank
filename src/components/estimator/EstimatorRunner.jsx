@@ -15,6 +15,7 @@ import {
   nextStep,
   progressLabel,
   buildResult,
+  mergeRevealedWritingResult,
 } from './flow';
 import MeasuredSection from './MeasuredSection';
 import SelfAssessmentStep from './SelfAssessmentStep';
@@ -324,6 +325,14 @@ export default function EstimatorRunner({
     startRun();
   };
 
+  const handleWritingRevealed = React.useCallback(({ band, overall }) => {
+    setLastResult((current) => {
+      const next = mergeRevealedWritingResult(current, { band, overall });
+      if (next !== current) writeLocal(RESULT_KEY, next);
+      return next;
+    });
+  }, []);
+
   // --- Render --------------------------------------------------------------
   if (step === 'reading') {
     return (
@@ -427,6 +436,7 @@ export default function EstimatorRunner({
           });
           setDetail((prev) => (prev ? { ...prev, targetBand: value } : prev));
         }}
+        onWritingRevealed={handleWritingRevealed}
         onRetake={handleRetake}
       />
     );

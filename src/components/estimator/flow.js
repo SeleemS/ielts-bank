@@ -113,6 +113,20 @@ export function buildResult({
   return result;
 }
 
+// Once an authenticated reveal returns the measured Writing band, replace the
+// local locked placeholder and the deliberately-null overall. Full feedback is
+// not persisted here; it remains server-authorized and is fetched on demand.
+export function mergeRevealedWritingResult(result, { band, overall } = {}) {
+  if (!result || typeof band !== 'number' || Number.isNaN(band)) return result;
+  const rest = { ...result };
+  delete rest.writingLocked;
+  return {
+    ...rest,
+    bands: { ...(result.bands || {}), writing: band },
+    overall: typeof overall === 'number' && !Number.isNaN(overall) ? overall : null,
+  };
+}
+
 // Count of scored questions actually attempted (measured sections that weren't
 // skipped), used in the honest results caption. Each measured section is 10 Qs.
 export function measuredQuestionCount({ reading = null, listening = null } = {}) {

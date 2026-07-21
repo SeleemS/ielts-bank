@@ -7,6 +7,7 @@ import {
   isMeasured,
   isSelfAssessed,
   buildResult,
+  mergeRevealedWritingResult,
   measuredQuestionCount,
   biggestGap,
 } from './flow';
@@ -102,6 +103,19 @@ describe('buildResult', () => {
   it('yields a null overall when fewer than two skills are present', () => {
     const result = buildResult({ reading: 6.0, skipped: { listening: true, writing: true, speaking: true } });
     expect(result.overall).toBeNull();
+  });
+
+  it('persists a revealed Writing band and overall without retaining the lock marker', () => {
+    const locked = buildResult({
+      reading: 6.5,
+      listening: 6,
+      writingLocked: true,
+    });
+    const revealed = mergeRevealedWritingResult(locked, { band: 6, overall: 6.5 });
+
+    expect(revealed.bands).toEqual({ reading: 6.5, listening: 6, writing: 6, speaking: null });
+    expect(revealed.overall).toBe(6.5);
+    expect(revealed).not.toHaveProperty('writingLocked');
   });
 });
 

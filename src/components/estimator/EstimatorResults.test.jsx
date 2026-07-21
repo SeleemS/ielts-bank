@@ -87,6 +87,7 @@ describe('EstimatorResults writing gate', () => {
 
   it('reveals the Writing band and overall once signed in', async () => {
     state.user = { id: 'user-1' };
+    const onWritingRevealed = vi.fn();
     global.fetch = vi.fn(async () => ({
       ok: true,
       json: async () => ({
@@ -105,7 +106,14 @@ describe('EstimatorResults writing gate', () => {
     }));
 
     act(() => {
-      root.render(<EstimatorResults {...baseProps} writing={{ locked: true }} overall={null} />);
+      root.render(
+        <EstimatorResults
+          {...baseProps}
+          writing={{ locked: true }}
+          overall={null}
+          onWritingRevealed={onWritingRevealed}
+        />
+      );
     });
     await flush();
 
@@ -119,6 +127,7 @@ describe('EstimatorResults writing gate', () => {
     expect(container.textContent).toContain('Coherence & Cohesion');
     expect(container.textContent).toContain('Your Band 6.0 sample has 5 fixable issues');
     expect(container.textContent).not.toContain('essay has 5 fixable issues');
+    expect(onWritingRevealed).toHaveBeenCalledWith({ band: 6, overall: 6.5 });
   });
 
   it('renders the complete estimator Writing report for Premium', async () => {
