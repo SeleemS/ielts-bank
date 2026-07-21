@@ -13,13 +13,13 @@ import { track } from '../lib/analytics';
 //     show the premium pitch.
 // The userId / remaining props are kept for call-site compatibility.
 export default function AiQuotaPanel({ open = false, onClose = () => {}, skill = 'speaking' }) {
-  const { isPremium } = usePlan();
+  const { isPremium, loading } = usePlan();
   const impressionRef = React.useRef(false);
 
   const skillLabel = skill === 'writing' ? 'Writing' : 'Speaking';
 
   React.useEffect(() => {
-    if (!open) {
+    if (!open || loading) {
       impressionRef.current = false;
       return;
     }
@@ -31,11 +31,11 @@ export default function AiQuotaPanel({ open = false, onClose = () => {}, skill =
       skill,
       premium: isPremium,
     });
-  }, [isPremium, open, skill]);
+  }, [isPremium, loading, open, skill]);
 
   return (
     <Modal
-      open={open}
+      open={open && !loading}
       onClose={onClose}
       title={isPremium ? 'You’ve hit a fair-use limit' : `AI ${skillLabel} scoring is a Premium feature`}
     >
