@@ -235,7 +235,14 @@ export default function SignInDialog({
           // Unconfirmed account: push them into the verify step instead of a
           // dead-end error.
           if (/email not confirmed/i.test(error.message || '')) {
-            await resendSignupEmail(trimmed);
+            const { error: resendError } = await resendSignupEmail(trimmed);
+            if (resendError) {
+              setErrorMsg(
+                resendError.message
+                  || 'Could not send a confirmation code. Please try again.'
+              );
+              return;
+            }
             setVerifySource('signup');
             setResendIn(30);
             setStep('verify');
@@ -303,7 +310,10 @@ export default function SignInDialog({
         : verifySource === 'recovery'
           ? await requestPasswordReset(email.trim())
           : await resendSignupEmail(email.trim());
-    if (error) setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+    if (error) {
+      setResendIn(0);
+      setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+    }
   };
 
   // "Forgot password?" — email a 6-digit recovery code, verified in the same

@@ -7,6 +7,7 @@ import { act } from 'react-dom/test-utils';
 const testState = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   signUpWithPassword: vi.fn(),
+  resendSignupEmail: vi.fn(),
   replace: vi.fn(),
 }));
 
@@ -23,7 +24,7 @@ vi.mock('../../lib/auth', () => ({
     signUpWithPassword: testState.signUpWithPassword,
     signInWithPassword: testState.signInWithPassword,
     verifyEmailOtp: vi.fn(),
-    resendSignupEmail: vi.fn(),
+    resendSignupEmail: testState.resendSignupEmail,
     requestPasswordReset: vi.fn(),
     updatePassword: vi.fn(),
   }),
@@ -72,6 +73,7 @@ async function renderDialog(initialMode) {
 
 beforeEach(() => {
   testState.signInWithPassword.mockResolvedValue({ error: null });
+  testState.resendSignupEmail.mockResolvedValue({ error: null });
   testState.signUpWithPassword.mockResolvedValue({
     data: { user: { identities: [{}] }, session: null },
     error: null,
@@ -84,6 +86,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  vi.useRealTimers();
   vi.clearAllMocks();
 });
 
@@ -123,5 +126,74 @@ describe('SignInDialog password validation', () => {
 
     setInput('#signin-password', '12345678');
     expect(submit.disabled).toBe(false);
+  });
+
+  it('does not claim a confirmation code was sent when automatic resend fails', async () => {
+    testState.signInWithPassword.mockResolvedValue({
+      error: new Error('Email not confirmed'),
+    });
+    testState.resendSignupEmail.mockResolvedValue({
+      error: new Error('Email service unavailable'),
+    });
+    await renderDialog('signin');
+    setInput('#signin-email', 'unconfirmed@example.com');
+    setInput('#signin-password', 'password123');
+
+    const submit = document.querySelector('[role="dialog"] button[type="submit"]');
+    await act(async () => {
+      submit.closest('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(testState.resendSignupEmail).toHaveBeenCalledWith(
+      'unconfirmed@example.com'
+    );
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain(
+      'Email service unavailable'
+    );
+    expect(document.querySelector('#signin-password')).not.toBeNull();
+    expect(document.querySelector('#signin-otp')).toBeNull();
+  });
+
+  it('allows an immediate retry when a manual resend fails', async () => {
+    vi.useFakeTimers();
+    await renderDialog('signup');
+    setInput('#signin-email', 'new-user@example.com');
+    setInput('#signin-password', 'password123');
+
+    const submit = document.querySelector('[role="dialog"] button[type="submit"]');
+    await act(async () => {
+      submit.closest('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    for (let second = 0; second < 30; second += 1) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1_000);
+      });
+    }
+
+    testState.resendSignupEmail.mockResolvedValue({
+      error: new Error('Temporary email outage'),
+    });
+    const resend = Array.from(document.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Resend code'
+    );
+    await act(async () => {
+      resend.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain(
+      'Temporary email outage'
+    );
+    expect(resend.disabled).toBe(false);
+    expect(resend.textContent).toBe('Resend code');
   });
 });

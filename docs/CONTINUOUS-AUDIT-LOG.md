@@ -2532,6 +2532,29 @@ False positives are kept in the investigation notes so they are not rediscovered
   live rejected-provider branch was not induced, so that branch is verified by the component's
   deterministic rejected-promise test. No auth session, account, or application data was changed.
 
+## CA-104 — Failed confirmation-email resends advanced or throttled the auth flow
+
+- Status: `FIXED`
+- Area: Authentication / email confirmation / failure recovery
+- Severity: Medium
+- Evidence: when password sign-in returned `Email not confirmed`, the shared auth dialog awaited a
+  confirmation-email resend but discarded its returned error and always advanced to the OTP step.
+  A provider rejection therefore told the learner to enter a code that had not been sent. The
+  manual resend path surfaced its provider error but left the optimistic 30-second cooldown active,
+  blocking an immediate retry after a failed send.
+- Fix: require the automatic resend to succeed before entering the verification step and show its
+  provider error on the existing password form otherwise. Preserve the double-click guard for a
+  manual resend, but reset the cooldown immediately when the provider returns an error.
+- Regression coverage: the actual dialog flow injects an unconfirmed-password response followed by
+  a failed automatic resend and requires the password form and provider error to remain visible.
+  A second case reaches the OTP step, expires the initial cooldown, rejects a manual resend, and
+  requires the error plus an immediately enabled `Resend code` action.
+- Commit: `Recover auth confirmation resend failures`.
+- Verification: the focused four-file/11-test auth suite, complete 92-file/581-test Vitest suite,
+  ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
+  production build passed. Publication and canonical verification are recorded after the isolated
+  fix deploys; no email was sent and no auth or application data was changed during local testing.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
