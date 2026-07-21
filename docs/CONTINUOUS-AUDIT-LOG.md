@@ -2419,6 +2419,31 @@ False positives are kept in the investigation notes so they are not rediscovered
   the active subscriber count remained zero. The authorized cron was not invoked, so no customer,
   email, payment, account, consent, content, or provider state changed.
 
+## CA-101 — Retired checkout SKUs remained purchasable through the API
+
+- Status: `FIXED — deployment verification pending`
+- Area: Pricing / Stripe Checkout / server-side catalog enforcement
+- Severity: High
+- Evidence: production deployment `dpl_Aiwe8j773oEZASWTxLsojZmyfBVP` and GitHub `main` both served
+  exact SHA `0959f10cac04c3d259c09e46c99aa1999533af33`. The pricing redesign at `01e82ee`
+  explicitly removed Annual and Exam Pass from the sales surface while retaining their Stripe and
+  webhook mappings for existing customers, but `/api/billing/checkout` still validated requests
+  against all four historical SKUs. A signed-in Free account could therefore POST `annual` or
+  `exam_pass` directly and create an unpublished Checkout Session. Read-only live Stripe inspection
+  confirmed the retired global Annual lookup remained active at $44.99/year, below the currently
+  advertised $49.99 six-month price. The four advertised global/PPP Monthly and 6 Months lookup
+  prices otherwise matched the page exactly.
+- Fix: restrict new Checkout Sessions to the advertised Monthly and 6 Months SKUs before account,
+  rate-limit, or Stripe work. Preserve Annual and Exam Pass lookup mapping, webhook entitlement
+  handling, and the existing-subscriber account upgrade path so historical customers are not
+  broken.
+- Regression coverage: the billing-route suite rejects `annual`, `exam_pass`, and an unknown SKU
+  with HTTP 400 before any account query, limiter mutation, or Stripe call, while the existing
+  global and PPP advertised-plan Checkout cases remain covered.
+- Commit: pending.
+- Verification: pending focused/full local verification, push, CI, exact-SHA Vercel promotion, and
+  production boundary probes.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.

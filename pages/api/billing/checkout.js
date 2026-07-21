@@ -1,5 +1,5 @@
 // pages/api/billing/checkout.js
-// Creates a Stripe Checkout Session for a subscription or 4-week Exam Pass.
+// Creates a Stripe Checkout Session for a currently advertised subscription.
 //   * signed-in, NON-anonymous users only (receipts + portal need an email);
 //   * price resolved server-side by lookup_key — PPP variant when the request
 //     geo (x-vercel-ip-country) is in the PPP list. Never client-chosen.
@@ -8,7 +8,12 @@ export const config = { runtime: 'nodejs' };
 
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
-import { getStripe, resolveLookupKey, isPppCountry, SKUS } from '../../../lib/billing';
+import {
+  CHECKOUT_SKUS,
+  getStripe,
+  resolveLookupKey,
+  isPppCountry,
+} from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
 import { planPricing } from '../../../src/lib/saleConfig';
 
@@ -95,7 +100,9 @@ export default async function handler(req, res) {
   if (!authUser) return res.status(401).json({ error: 'Sign in to upgrade.' });
 
   const sku = typeof req.body?.sku === 'string' ? req.body.sku : 'monthly';
-  if (!SKUS.includes(sku)) return res.status(400).json({ error: 'Unknown plan.' });
+  if (!CHECKOUT_SKUS.includes(sku)) {
+    return res.status(400).json({ error: 'Unknown plan.' });
+  }
   const offer = req.body?.offer === 'winback' ? 'winback' : null;
 
   const admin = getAdmin();
@@ -208,7 +215,6 @@ export default async function handler(req, res) {
     }
 
     const origin = siteOrigin(req);
-    const isExamPass = sku === 'exam_pass';
     const metadata = {
       user_id: userRow.id,
       sku,
@@ -234,7 +240,7 @@ export default async function handler(req, res) {
         : {};
 
     const session = await stripe.checkout.sessions.create({
-      mode: isExamPass ? 'payment' : 'subscription',
+      mode: 'subscription',
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
       allow_promotion_codes: !winBackEligible,
@@ -245,9 +251,7 @@ export default async function handler(req, res) {
       client_reference_id: userRow.id,
       metadata,
       ...tosConsent,
-      ...(isExamPass
-        ? { payment_intent_data: { metadata } }
-        : { subscription_data: { metadata } }),
+      subscription_data: { metadata },
       ...(process.env.STRIPE_AUTOMATIC_TAX === '1' ? { automatic_tax: { enabled: true } } : {}),
       success_url: `${origin}/pricing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?checkout=canceled`,

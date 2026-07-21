@@ -335,14 +335,19 @@ describe('POST /api/billing/checkout', () => {
     expect(mockState.stripeCalls).toEqual({});
   });
 
-  it('rejects unknown SKUs', async () => {
-    mockState.authUser = { id: 'user-1' };
-    const res = await callCheckout({
-      headers: { authorization: 'Bearer tok' },
-      body: { sku: 'lifetime' },
-    });
-    expect(res.statusCode).toBe(400);
-  });
+  it.each(['lifetime', 'annual', 'exam_pass'])(
+    'rejects unavailable new-purchase SKU %s before account or Stripe work',
+    async (sku) => {
+      mockState.authUser = { id: 'user-1' };
+      const res = await callCheckout({
+        headers: { authorization: 'Bearer tok' },
+        body: { sku },
+      });
+      expect(res.statusCode).toBe(400);
+      expect(mockState.rpcCalls).toEqual([]);
+      expect(mockState.stripeCalls).toEqual({});
+    }
+  );
 
   it('rejects anonymous accounts with a linkable error code', async () => {
     mockState.authUser = { id: 'user-1' };
@@ -550,31 +555,6 @@ describe('POST /api/billing/checkout', () => {
     expect(res.statusCode).toBe(500);
     expect(mockState.stripeCalls.customerDelete).toBeUndefined();
     expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
-  });
-
-  it('creates a non-renewing PPP Exam Pass payment with payment metadata', async () => {
-    mockState.authUser = { id: 'user-1' };
-    mockState.userRow = {
-      id: 'user-1',
-      email: 'a@b.com',
-      is_anonymous: false,
-      plan: 'free',
-      stripe_customer_id: 'cus_existing',
-    };
-    const res = await callCheckout({
-      headers: { authorization: 'Bearer tok', 'x-vercel-ip-country': 'IN' },
-      body: { sku: 'exam_pass' },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_exam_pass_ppp']);
-    const session = mockState.stripeCalls.sessionCreate;
-    expect(session.mode).toBe('payment');
-    expect(session.subscription_data).toBeUndefined();
-    expect(session.payment_intent_data.metadata).toEqual({
-      user_id: 'user-1',
-      sku: 'exam_pass',
-      ppp: '1',
-    });
   });
 
   it('rejects a win-back offer before the 30-day eligibility window', async () => {
