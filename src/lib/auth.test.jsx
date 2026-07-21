@@ -121,6 +121,7 @@ describe('AuthProvider sign out', () => {
 
     expect(container.textContent).toContain('signed out');
     expect(container.querySelector('output')?.textContent).toBe('success');
+    expect(testState.signOut).toHaveBeenCalledWith({ scope: 'local' });
     expect(setAnalyticsUser).toHaveBeenLastCalledWith(null, null);
   });
 

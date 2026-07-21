@@ -185,7 +185,9 @@ export function AuthProvider({ children }) {
   const signOut = React.useCallback(async () => {
     try {
       const supabase = getSupabase();
-      const { error } = await supabase.auth.signOut();
+      // Account settings promises to sign out only this device. Supabase's
+      // JavaScript default is global, so keep the scope explicit.
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
       if (error) return { error };
       setUser(null);
       setAnalyticsUser(null, null);

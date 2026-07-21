@@ -2590,6 +2590,28 @@ False positives are kept in the investigation notes so they are not rediscovered
   on sign-in. Post-request live readback found zero matching Auth users, profiles, or quota rows. No
   email was sent and no auth account or application data was created or changed.
 
+## CA-106 — “Sign out on this device” revoked every active session
+
+- Status: `FIXED`
+- Area: Authentication / sign-out / multi-device sessions
+- Severity: Medium
+- Evidence: dashboard Account Settings promises `Sign out safely on this device`, but AuthProvider
+  called Supabase `signOut()` without a scope. [Supabase's current JavaScript sign-out
+  reference](https://supabase.com/docs/reference/javascript/auth-signout) states that the default
+  scope is `global`, which terminates every active session for the user; current-session-only logout
+  requires `{ scope: 'local' }`. A learner signing out of one browser could therefore be
+  unexpectedly signed out on every other device.
+- Fix: pass the explicit local scope from the shared provider. Existing error recovery, local user
+  clearing, analytics identity clearing, and the dashboard control remain unchanged.
+- Regression coverage: the provider's successful sign-out case now requires the exact
+  `signOut({ scope: 'local' })` call in addition to the existing local user/analytics cleanup. The
+  rejected-provider case continues to require session preservation and a retryable error.
+- Commit: `Keep sign-out scoped to this device`.
+- Verification: the focused five-file/15-test auth/account suite, complete 92-file/582-test Vitest
+  suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  529-page production build passed. Publication and a disposable two-session production check are
+  recorded after the isolated fix deploys. No session or account was changed locally.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
