@@ -3663,6 +3663,37 @@ False positives are kept in the investigation notes so they are not rediscovered
   failure-aware helper result, `auth_session` telemetry and retry message before the unchanged
   missing-token sign-in branch.
 
+## CA-138 — Saved Speaking recordings could be scored twice from rapid clicks
+
+- Status: `FIXED`
+- Area: Speaking practice / post-upgrade return / duplicate submission / AI quota and cost
+- Severity: High
+- Evidence: the “Score my saved recording” handler did not set loading state or claim an in-flight
+  guard before awaiting `getSession()`. The button therefore remained active throughout that async
+  gap. Two rapid clicks could start two session reads and then two `scoreAudioPath` calls for the
+  same private object before either request removed it, consuming the owner's limiter/quota and
+  transcription plus scoring spend twice and potentially writing duplicate results. The eventual
+  React loading state could disable later clicks but could not cancel handlers already admitted.
+- Fix: add a synchronous ref-backed single-flight claim before the first await, immediately enter
+  loading state, and ignore every additional saved-score submission while that claim is held. A
+  `finally` block releases the claim and loading state after valid scoring, auth dependency failure,
+  or verified missing session, so a genuine later retry remains possible.
+- Regression coverage: the pending-session helper suite requires the first claim to succeed, a
+  second claim against the active ref to fail, and a new claim to succeed only after explicit
+  release. Existing token, no-session, and auth-error recovery cases plus the complete recorded
+  Speaking route suite remain green.
+- Commit: `d0c9ad43902e351c60b1c55e4e4b2a04e8349c30`
+  (`fix: prevent duplicate saved speaking scores`).
+- Verification: the focused 2-file/25-test helper/route run, complete 99-file/686-test Vitest suite,
+  ESLint, strict 183-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. The verified base was the exact prior canonical production
+  evidence SHA; local HEAD and `origin/main` then matched the code SHA above. GitHub's successful
+  Vercel status tied it to deployment `dpl_8rxnnsY5YmAQz1grqT5JpyvFhYxv`, which reached promoted
+  `READY` on every canonical alias. Fresh canonical Speaking detail HTML referenced
+  `speakingquestion/%5Bid%5D-a5412425f8e7d646.js`; direct promoted-chunk inspection showed the
+  synchronous ref claim before loading/session lookup, the guarded scorer call, and claim/loading
+  release in `finally`.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
