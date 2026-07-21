@@ -199,7 +199,7 @@ Give an INDICATIVE IELTS Writing band and return the structured JSON.`;
     // Store the band server-side keyed by anon_id. The band is deliberately
     // NOT in the response — the anonymous client only learns it was scored.
     try {
-      await getAdmin().from('estimator_writing_scores').insert({
+      const { error } = await getAdmin().from('estimator_writing_scores').insert({
         anon_id: anonId,
         essay,
         word_count: words,
@@ -207,6 +207,7 @@ Give an INDICATIVE IELTS Writing band and return the structured JSON.`;
         result: { overallBand: band, ...result },
         model: ai.model,
       });
+      if (error) throw error;
     } catch (e) {
       console.error('estimator writing store failed:', e.message);
       return res.status(503).json({ error: 'Could not save your result. Please try again.' });

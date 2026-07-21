@@ -7,6 +7,7 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 const state = {
   rateLimitResponses: [],
   inserts: [],
+  insertError: null,
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -21,7 +22,7 @@ vi.mock('@supabase/supabase-js', () => ({
     from: (table) => ({
       insert: (values) => {
         state.inserts.push({ table, values });
-        return Promise.resolve({ error: null });
+        return Promise.resolve({ error: state.insertError });
       },
     }),
   }),
@@ -45,6 +46,7 @@ let handler;
 beforeEach(async () => {
   state.rateLimitResponses = [];
   state.inserts = [];
+  state.insertError = null;
   global.fetch = vi.fn(async () => ({
     ok: true,
     status: 200,
@@ -123,5 +125,15 @@ describe('POST /api/estimator/score-writing', () => {
     expect(res.statusCode).toBe(429);
     expect(global.fetch).not.toHaveBeenCalled();
     expect(state.inserts.find((i) => i.table === 'estimator_writing_scores')).toBeFalsy();
+  });
+
+  it('fails closed when the scored result cannot be stored', async () => {
+    state.insertError = { message: 'database unavailable' };
+    const res = mockRes();
+    await handler(mockReq({ anon_id: ANON, essay: PARAGRAPH }), res);
+
+    expect(res.statusCode).toBe(503);
+    expect(res.body).toEqual({ error: 'Could not save your result. Please try again.' });
+    expect(res.body).not.toHaveProperty('scored');
   });
 });
