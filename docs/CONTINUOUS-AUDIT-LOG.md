@@ -3302,11 +3302,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   `42501` and zero rows. The estimator row, learner, profile, attempt, and score were deleted, and
   service-role read-back found zero matching rows in all four audited data groups.
 
+## CA-127 — Quota modal pitched Premium before the learner's plan was verified
+
+- Status: `FIXED`
+- Area: Auth transition / AI quota / Premium messaging / conversion telemetry
+- Severity: Medium
+- Evidence: `AiQuotaPanel` consumed only `usePlan().isPremium`, one of the loading-ignorant
+  consumers recorded after CA-120. If a quota response opened the modal while a signed-in owner's
+  plan query was still loading, the default false entitlement rendered “AI Writing/Speaking scoring
+  is a Premium feature,” displayed an upgrade link to an existing Premium learner, and emitted a
+  `premium_gate` impression with `premium: false`. The UI could later switch to the correct fair-use
+  message, but the misleading pitch and false analytics event had already occurred.
+- Fix: keep the quota modal closed while owner-plan verification is loading, reset its impression
+  guard during that unresolved state, and render plus attribute the modal only after the verified
+  Free or Premium result is available.
+- Regression coverage: the new two-case component suite begins with an open modal and unresolved
+  plan, proves there is no dialog, purchase copy, or telemetry, then resolves a Premium owner and
+  requires only the fair-use message plus one correctly attributed Premium impression. A verified
+  Free owner still receives the upgrade path and a Free impression.
+- Commit: `810b6e091a57aaf9d5e1948eb340cafeb416b0b4` (`fix: defer quota modal until plan verification`).
+- Verification: the focused 1-file/2-test quota-modal suite, complete 97-file/666-test Vitest suite,
+  ESLint, strict 181-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_Fdrw4RNfUKz6CjCV7FCfSN4TXB2P`, which reached
+  promoted `READY` on every canonical alias.
+
 ## Investigation notes
 
-- `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
-  they remain an explicit follow-up audit surface because CA-120 can protect only consumers that
-  observe the hook's loading contract. `AdUnit` was corrected in CA-121.
+- `EstimatorResults` consumes `usePlan().isPremium` without honoring `loading`; it remains an
+  explicit follow-up audit surface because CA-120 can protect only consumers that observe the
+  hook's loading contract. `AdUnit` was corrected in CA-121 and `AiQuotaPanel` in CA-127.
 
 - A live production query using only the public anonymous Supabase key attempted to select from
   `estimator_writing_scores`. Postgres returned `42501`, and zero rows were exposed, confirming the
