@@ -6,8 +6,10 @@ const ATTRIBUTION_KEY = 'ielts-attribution';
 const SESSION_ID_KEY = 'ielts-analytics-session-id';
 const SEQUENCE_KEY = 'ielts-analytics-sequence';
 export const GA_MEASUREMENT_ID = 'G-1KRYZZY68X';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 let analyticsAccessToken = null;
 let pageViewId = null;
+let volatileAnonId = null;
 const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
 
 function fallbackUuid() {
@@ -24,13 +26,21 @@ export function getAnonId() {
   if (typeof window === 'undefined') return null;
   try {
     let value = window.localStorage.getItem(ANON_ID_KEY);
-    if (!value) {
-      value = window.crypto?.randomUUID?.() || fallbackUuid();
+    if (!UUID_RE.test(value || '')) {
+      value = volatileAnonId || window.crypto?.randomUUID?.() || fallbackUuid();
+      volatileAnonId = value;
       window.localStorage.setItem(ANON_ID_KEY, value);
     }
+    volatileAnonId = value;
     return value;
   } catch {
-    return null;
+    // This ID is also the functional key for anonymous estimator scoring, so a
+    // storage-denied browser must retain a stable in-page fallback rather than
+    // silently turning the scorer request into anon_id: null.
+    if (!volatileAnonId) {
+      volatileAnonId = window.crypto?.randomUUID?.() || fallbackUuid();
+    }
+    return volatileAnonId;
   }
 }
 
@@ -227,4 +237,5 @@ export function trackPageView(url, signedIn = false) {
 export function resetAnalyticsForTests() {
   analyticsAccessToken = null;
   pageViewId = null;
+  volatileAnonId = null;
 }

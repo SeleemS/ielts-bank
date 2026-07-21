@@ -58,6 +58,33 @@ describe('dual analytics tracking', () => {
     expect(window.sessionStorage.setItem).toHaveBeenCalled();
   });
 
+  it('keeps a stable functional anonymous ID when local storage is denied', () => {
+    window.localStorage = {
+      getItem: vi.fn(() => {
+        throw new Error('storage denied');
+      }),
+      setItem: vi.fn(() => {
+        throw new Error('storage denied');
+      }),
+    };
+
+    const first = getAnonId();
+    const second = getAnonId();
+
+    expect(first).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(second).toBe(first);
+    expect(uuid).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaces a corrupted stored anonymous ID with a valid UUID', () => {
+    window.localStorage = storage({ 'ielts-anon-id': 'not-a-uuid' });
+
+    const value = getAnonId();
+
+    expect(value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/i);
+    expect(window.localStorage.setItem).toHaveBeenCalledWith('ielts-anon-id', value);
+  });
+
   it('sends the same enriched event to GA4 and the first-party endpoint', () => {
     track('ui_interaction', { element_id: 'pricing_cta' });
 
