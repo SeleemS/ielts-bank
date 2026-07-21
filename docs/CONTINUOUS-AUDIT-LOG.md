@@ -2421,7 +2421,7 @@ False positives are kept in the investigation notes so they are not rediscovered
 
 ## CA-101 — Retired checkout SKUs remained purchasable through the API
 
-- Status: `FIXED — deployment verification pending`
+- Status: `FIXED`
 - Area: Pricing / Stripe Checkout / server-side catalog enforcement
 - Severity: High
 - Evidence: production deployment `dpl_Aiwe8j773oEZASWTxLsojZmyfBVP` and GitHub `main` both served
@@ -2440,9 +2440,19 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Regression coverage: the billing-route suite rejects `annual`, `exam_pass`, and an unknown SKU
   with HTTP 400 before any account query, limiter mutation, or Stripe call, while the existing
   global and PPP advertised-plan Checkout cases remain covered.
-- Commit: pending.
-- Verification: pending focused/full local verification, push, CI, exact-SHA Vercel promotion, and
-  production boundary probes.
+- Commit: `d04ef52` (`Block retired checkout plans`).
+- Verification: focused three-file/79-test billing and pricing coverage, the complete
+  89-file/556-test Vitest suite, ESLint, the strict 172-file analytics audit covering 282
+  interactive controls, and the 529-page production build passed. The first sandboxed build failed
+  only because Google Fonts DNS was unavailable; the network-enabled rerun passed. A concurrent,
+  separately scoped consent commit advanced `main` immediately afterward, so production was
+  re-baselined before live verification. Vercel deployment
+  `dpl_6amvqQQUMgvX9Sef7pJqeiJgmmzH` reached promoted `READY` from exact Git SHA
+  `2cad189ba0a5e691a6c8d9b1d3f2738411cdfdf6`, which contains CA-101 as its direct parent. A
+  disposable confirmed production Auth user then received HTTP 400 `Unknown plan.` for both
+  `annual` and `exam_pass`. The user was deleted immediately; follow-up checks found no Auth user,
+  profile row, or quota row. No Stripe customer, Checkout Session, payment, subscription, or
+  entitlement was created or changed.
 
 ## Investigation notes
 
