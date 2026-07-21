@@ -2569,10 +2569,10 @@ False positives are kept in the investigation notes so they are not rediscovered
   documents it as a sign-in fallback for accounts from the magic-link era, but the shared helper
   called `signInWithOtp()` without `shouldCreateUser`. The installed `@supabase/auth-js` source sends
   `create_user: true` by default, so entering a new email through the sign-in control could create a
-  fresh Auth account outside the explicit signup and onboarding path. [Supabase's current OTP
-  reference](https://supabase.com/docs/reference/javascript/auth-signinwithotp) identifies the API
-  as a sign-in method, while the installed client contract explicitly requires
-  `shouldCreateUser: false` to prevent implicit signup.
+  fresh Auth account outside the explicit signup and onboarding path. [Supabase's current
+  passwordless-email guide](https://supabase.com/docs/guides/auth/auth-email-passwordless) states
+  that missing users are automatically signed up by default and requires `shouldCreateUser: false`
+  to prevent it; the installed client source has the same contract.
 - Fix: pass `shouldCreateUser: false` only in the existing-user email-code helper while preserving
   its email callback URL. Explicit password signup, confirmation resend, and recovery OTP flows are
   unchanged.
@@ -2582,8 +2582,13 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Restrict email-code sign-in to existing users`.
 - Verification: the focused four-file/12-test auth suite, complete 92-file/582-test Vitest suite,
   ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
-  production build passed. Publication and a no-user-created live provider check are recorded after
-  the isolated fix deploys. No email, auth account, or application data was changed locally.
+  production build passed. GitHub's Vercel status tied exact SHA
+  `36d8dc396fb55b8e74f4d892ac173c8ffae3fa64` to deployment
+  `dpl_F2K7h3foH4ZEKGS2QVPta7jAXVSq`, which reached promoted `READY` on the canonical aliases. A
+  unique audit email was confirmed absent, entered through the deployed `Email me a one-time code
+  instead` control, and received the provider's `Signups not allowed for otp` error while remaining
+  on sign-in. Post-request live readback found zero matching Auth users, profiles, or quota rows. No
+  email was sent and no auth account or application data was created or changed.
 
 ## Investigation notes
 
