@@ -7,14 +7,20 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
-const state = { user: null, isPremium: false };
+const state = { user: null, isPremium: false, planLoading: false, planError: null };
 
 vi.mock('../../lib/analytics', () => ({
   track: vi.fn(),
   getAnonId: () => '11111111-1111-4111-8111-111111111111',
 }));
 vi.mock('../../lib/auth', () => ({ useAuth: () => ({ user: state.user }) }));
-vi.mock('../../lib/usePlan', () => ({ usePlan: () => ({ isPremium: state.isPremium }) }));
+vi.mock('../../lib/usePlan', () => ({
+  usePlan: () => ({
+    isPremium: state.isPremium,
+    loading: state.planLoading,
+    error: state.planError,
+  }),
+}));
 vi.mock('../auth/SignInDialog', () => ({ default: () => null }));
 vi.mock('../NewsletterSignup', () => ({ default: () => null }));
 vi.mock('next/link', () => ({
@@ -42,6 +48,8 @@ const baseProps = {
 beforeEach(() => {
   state.user = null;
   state.isPremium = false;
+  state.planLoading = false;
+  state.planError = null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -145,6 +153,48 @@ describe('EstimatorResults writing gate', () => {
     expect(container.textContent).toContain('A controlled short response.');
     expect(container.textContent).toContain('students use phones');
     expect(container.textContent).not.toContain('Unlock full feedback — Premium');
+  });
+
+  it('withholds Free conversion copy until a signed-in Premium plan is verified', () => {
+    state.user = { id: 'user-1' };
+    state.planLoading = true;
+    act(() => {
+      root.render(
+        <EstimatorResults {...baseProps} writing={{ points: 3, band: { min: 5.5, max: 6.5 } }} overall={6} />
+      );
+    });
+
+    expect(container.textContent).toContain('Checking your plan…');
+    expect(container.textContent).not.toContain('Get your real Writing band');
+    expect(container.textContent).not.toContain('Meet the AI examiner');
+
+    state.planLoading = false;
+    state.isPremium = true;
+    act(() => {
+      root.render(
+        <EstimatorResults {...baseProps} writing={{ points: 3, band: { min: 5.5, max: 6.5 } }} overall={6} />
+      );
+    });
+
+    expect(container.textContent).not.toContain('Checking your plan…');
+    expect(container.textContent).toContain('Score your writing');
+    expect(container.textContent).toContain('Meet your examiner');
+    expect(container.textContent).not.toContain('Get your real Writing band');
+  });
+
+  it('does not turn a plan lookup error into verified-Free conversion copy', () => {
+    state.user = { id: 'user-1' };
+    state.planError = 'Could not verify your current plan. Please refresh and try again.';
+    act(() => {
+      root.render(
+        <EstimatorResults {...baseProps} writing={{ points: 3, band: { min: 5.5, max: 6.5 } }} overall={6} />
+      );
+    });
+
+    expect(container.textContent).toContain('Your plan could not be verified');
+    expect(container.textContent).toContain(state.planError);
+    expect(container.textContent).not.toContain('Get your real Writing band');
+    expect(container.textContent).not.toContain('Meet the AI examiner');
   });
 
   it('still shows a self-assessed range when the visitor skipped the sample', () => {

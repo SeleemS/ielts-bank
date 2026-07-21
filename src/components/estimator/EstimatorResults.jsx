@@ -319,7 +319,7 @@ export default function EstimatorResults({
   onRetake,
 }) {
   const { user } = useAuth();
-  const { isPremium } = usePlan();
+  const { isPremium, loading: planLoading, error: planError } = usePlan();
   const signedIn = Boolean(user?.id);
   const [targetBand, setTargetBand] = React.useState(initialTargetBand);
   const [signInOpen, setSignInOpen] = React.useState(false);
@@ -621,32 +621,58 @@ export default function EstimatorResults({
 
       {/* (d) Conversion block */}
       <div className="space-y-3">
-        <CtaCard
-          icon={PenLine}
-          tone="primary"
-          title={isPremium ? 'Score your writing' : 'Get your real Writing band'}
-          body={
-            isPremium
-              ? 'Submit an essay and get an examiner-style band with criterion feedback.'
-              : 'Self-ratings run about half a band optimistic. Get your real Writing band from AI scoring.'
-          }
-          actionLabel={isPremium ? 'Score my writing' : 'Get my Writing band'}
-          href="/ielts-writing-checker"
-          onClick={ctaClick('writing_checker')}
-        />
-        <CtaCard
-          icon={Mic}
-          tone="primary"
-          title={isPremium ? 'Meet your examiner' : 'Meet the AI examiner'}
-          body={
-            isPremium
-              ? 'Practise a full speaking test with the AI examiner and get a band.'
-              : 'Get your Speaking measured in a realistic mock interview with the AI examiner.'
-          }
-          actionLabel={isPremium ? 'Start speaking' : 'Meet the examiner'}
-          href="/speaking-examiner"
-          onClick={ctaClick('speaking_examiner')}
-        />
+        {signedIn && (planLoading || planError) ? (
+          <div
+            role={planError ? 'alert' : 'status'}
+            aria-live="polite"
+            className="flex items-start gap-3 rounded-xl border border-border bg-card p-5 text-sm shadow-sm"
+          >
+            {planLoading ? (
+              <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-accent" />
+            ) : (
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            )}
+            <div>
+              <div className="font-bold text-foreground">
+                {planLoading ? 'Checking your plan…' : 'Your plan could not be verified'}
+              </div>
+              <p className="mt-0.5 text-muted-foreground">
+                {planLoading
+                  ? 'Your personalised Writing and Speaking next steps will appear in a moment.'
+                  : planError}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <CtaCard
+              icon={PenLine}
+              tone="primary"
+              title={isPremium ? 'Score your writing' : 'Get your real Writing band'}
+              body={
+                isPremium
+                  ? 'Submit an essay and get an examiner-style band with criterion feedback.'
+                  : 'Self-ratings run about half a band optimistic. Get your real Writing band from AI scoring.'
+              }
+              actionLabel={isPremium ? 'Score my writing' : 'Get my Writing band'}
+              href="/ielts-writing-checker"
+              onClick={ctaClick('writing_checker')}
+            />
+            <CtaCard
+              icon={Mic}
+              tone="primary"
+              title={isPremium ? 'Meet your examiner' : 'Meet the AI examiner'}
+              body={
+                isPremium
+                  ? 'Practise a full speaking test with the AI examiner and get a band.'
+                  : 'Get your Speaking measured in a realistic mock interview with the AI examiner.'
+              }
+              actionLabel={isPremium ? 'Start speaking' : 'Meet the examiner'}
+              href="/speaking-examiner"
+              onClick={ctaClick('speaking_examiner')}
+            />
+          </>
+        )}
 
         {!signedIn && !stillLocked ? (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
