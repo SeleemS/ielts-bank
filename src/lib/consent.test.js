@@ -6,6 +6,7 @@ import {
   consentAwareVercelEvent,
   globalPrivacyControlEnabled,
   normalizeOptionalConsent,
+  optionalDefaultsOn,
   readOptionalConsent,
   writeOptionalConsent,
 } from './consent';
@@ -50,12 +51,12 @@ describe('optional analytics consent', () => {
     expect(globalPrivacyControlEnabled()).toBe(false);
   });
 
-  it('defaults analytics and Vercel events to ON (opt-out) with no explicit choice', () => {
+  it('fails closed when no explicit choice or valid region default exists', () => {
     const event = { url: 'https://www.ielts-bank.com/' };
 
-    expect(readOptionalConsent()).toBe('granted');
-    expect(analyticsConsentGranted()).toBe(true);
-    expect(consentAwareVercelEvent(event)).toBe(event);
+    expect(readOptionalConsent()).toBe('denied');
+    expect(analyticsConsentGranted()).toBe(false);
+    expect(consentAwareVercelEvent(event)).toBeNull();
   });
 
   it('blocks analytics after an explicit opt-out', () => {
@@ -63,6 +64,26 @@ describe('optional analytics consent', () => {
 
     expect(readOptionalConsent()).toBe('denied');
     expect(analyticsConsentGranted()).toBe(false);
+  });
+
+  it('follows the region default when the visitor has not chosen', () => {
+    window.__ieltsConsentDefault = 'denied'; // EU/EEA/UK/Switzerland -> opt-in
+    expect(readOptionalConsent()).toBe('denied');
+    expect(analyticsConsentGranted()).toBe(false);
+    expect(optionalDefaultsOn()).toBe(false);
+
+    window.__ieltsConsentDefault = 'granted'; // elsewhere -> opt-out
+    expect(readOptionalConsent()).toBe('granted');
+    expect(analyticsConsentGranted()).toBe(true);
+    expect(optionalDefaultsOn()).toBe(true);
+  });
+
+  it('lets an explicit grant override an opt-in region default', () => {
+    window.__ieltsConsentDefault = 'denied';
+    window.__ieltsOptionalConsent = 'granted';
+
+    expect(readOptionalConsent()).toBe('granted');
+    expect(analyticsConsentGranted()).toBe(true);
   });
 
   it('persists an explicit grant and allows consent-aware events', () => {
@@ -103,14 +124,20 @@ describe('optional analytics consent', () => {
     expect(window.__ieltsOptionalConsent).toBe('denied');
   });
 
-  it('sets the pre-tag document default to granted until an explicit opt-out', () => {
+  it('sets a geo-aware pre-tag document default from the region cookie', () => {
     const documentSource = readFileSync(
       new URL('../../pages/_document.js', import.meta.url),
       'utf8'
     );
 
     expect(documentSource).toContain(
-      "var optional = (gpc || saved === 'denied') ? 'denied' : 'granted';"
+      "var regionDefault = readCookie('ib_consent_default');"
+    );
+    expect(documentSource).toContain(
+      'window.__ieltsConsentDefault = regionDefault;'
+    );
+    expect(documentSource).toContain(
+      "? regionDefault : 'denied';"
     );
     expect(documentSource).toContain(
       'var gpc = navigator.globalPrivacyControl === true;'

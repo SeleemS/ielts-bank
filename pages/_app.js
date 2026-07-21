@@ -16,7 +16,10 @@ import { startSessionHeartbeat } from '../src/lib/sessionHeartbeat';
 import ConsentManager from '../src/components/ConsentManager';
 import InteractionTelemetry from '../src/components/InteractionTelemetry';
 import OfferReminderModal from '../src/components/OfferReminderModal';
-import { adsAllowedForPath } from '../src/lib/adPolicy';
+import {
+  adsAllowedForConsent,
+  adsAllowedForPath,
+} from '../src/lib/adPolicy';
 import { syncAdSenseScript } from '../src/lib/adsenseLoader';
 import {
   consentAwareVercelEvent,
@@ -64,6 +67,7 @@ function MyApp({ Component, pageProps }) {
     setOptionalConsent(readOptionalConsent());
   }, []);
   const analyticsEnabled = optionalConsent === 'granted';
+  const advertisingEnabled = adsAllowedForConsent(optionalConsent);
   return (
     <AuthProvider>
       <Head>
@@ -83,8 +87,10 @@ function MyApp({ Component, pageProps }) {
       <AppTelemetry router={router} enabled={analyticsEnabled} />
       <InteractionTelemetry />
       <div className={`${inter.variable} font-sans`}>
-      {/* Google AdSense */}
-      <AdSenseScript enabled={adsAllowed && adsOnPublicHost} />
+      {/* Google AdSense: never load optional advertising before consent. */}
+      <AdSenseScript
+        enabled={adsAllowed && adsOnPublicHost && advertisingEnabled}
+      />
 
       {/* Google Analytics 4 (gtag.js), proxied first-party via /gt rewrites
           in next.config.js so ad blockers don't drop the script or hits */}

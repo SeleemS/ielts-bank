@@ -4,13 +4,16 @@ import {
   readOptionalConsent,
   writeOptionalConsent,
   consentDecided,
+  optionalDefaultsOn,
 } from '../lib/consent';
 
-// Opt-out notice banner mirroring the granted-by-default Google Consent Mode
-// defaults set in pages/_document.js: optional analytics/ads are ON by default;
-// this banner discloses that and lets the visitor opt out. GPC is always
-// honored. Choice persists in localStorage and the banner can be reopened any
-// time via the floating "Privacy choices" button.
+// Consent banner mirroring the geo-aware Google Consent Mode defaults set in
+// pages/_document.js. In opt-out regions optional analytics/ads are ON by
+// default and this discloses that + offers a one-click opt-out; in
+// EU/EEA/UK/Switzerland or when geo is unavailable (opt-in), they are off until
+// the visitor accepts. GPC is always honored.
+// Choice persists in localStorage and the banner reopens via the floating
+// "Privacy choices" button.
 
 function updateConsent(choice) {
   const gtag = window.gtag;
@@ -29,8 +32,8 @@ function updateConsent(choice) {
 export default function ConsentManager({ onConsentChange }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    // Push the effective state (granted by default, denied on opt-out/GPC) into
-    // Consent Mode, and show the notice until the visitor has decided.
+    // Push the effective region-aware state into Consent Mode and show the
+    // notice until the visitor has decided.
     updateConsent(readOptionalConsent());
     if (!consentDecided()) setOpen(true);
   }, []);
@@ -52,9 +55,9 @@ export default function ConsentManager({ onConsentChange }) {
         >
           <h2 className="font-bold text-foreground">Your privacy choices</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            We use analytics and advertising to improve the site and keep practice free — these are
-            on by default. You can opt out of optional analytics and personalized-ad storage anytime.
-            Essential storage always stays on.
+            {optionalDefaultsOn()
+              ? 'We use analytics and advertising to improve the site and keep practice free — these are on by default. You can opt out of optional analytics and personalized-ad storage anytime. Essential storage always stays on.'
+              : 'We’d like to use optional analytics and advertising to improve the site and keep practice free. They stay off until you accept — you can accept or reject below. Essential storage always stays on.'}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button

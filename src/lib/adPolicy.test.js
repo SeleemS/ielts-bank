@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adsAllowedForPath } from './adPolicy';
+import { adsAllowedForConsent, adsAllowedForPath } from './adPolicy';
 
 describe('AdSense route policy', () => {
   it('keeps acquisition, account, checkout, and protected practice flows ad-free', () => {
@@ -32,5 +32,12 @@ describe('AdSense route policy', () => {
     ]) {
       expect(adsAllowedForPath(path), path).toBe(true);
     }
+  });
+
+  it('loads optional advertising only after consent is granted', () => {
+    expect(adsAllowedForConsent('granted')).toBe(true);
+    expect(adsAllowedForConsent('denied')).toBe(false);
+    expect(adsAllowedForConsent(null)).toBe(false);
+    expect(adsAllowedForConsent(undefined)).toBe(false);
   });
 });

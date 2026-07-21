@@ -12,9 +12,12 @@ export default function Document() {
         {/* Allow large image previews in Google Search / Discover. */}
         <meta name="robots" content="max-image-preview:large" />
         {/* Google Consent Mode defaults — must run before gtag.js/AdSense load.
-            OPT-OUT model: optional storage defaults to GRANTED and stays on
-            until the visitor explicitly opts out through ConsentManager, or the
-            browser sends Global Privacy Control (always honored). */}
+            GEO-AWARE: EU/EEA/UK/Switzerland visitors default to DENIED
+            (opt-in), other known countries default to GRANTED (opt-out), and a
+            missing/invalid region cookie fails closed to DENIED. The region
+            default comes from the `ib_consent_default` cookie set per request
+            by middleware.js. Global Privacy Control and an explicit saved
+            choice always override it. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -22,13 +25,26 @@ export default function Document() {
               function gtag(){dataLayer.push(arguments);}
               window.gtag = window.gtag || gtag;
               (function(){
+                function readCookie(name){
+                  try {
+                    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+                    return m ? decodeURIComponent(m[1]) : null;
+                  } catch (e) { return null; }
+                }
+                var regionDefault = readCookie('ib_consent_default');
+                regionDefault = (regionDefault === 'granted' || regionDefault === 'denied') ? regionDefault : 'denied';
+                window.__ieltsConsentDefault = regionDefault;
                 var saved = null;
                 try { saved = localStorage.getItem('ib_consent_v1'); } catch (e) {}
                 var gpc = navigator.globalPrivacyControl === true;
                 window.__ieltsOptionalConsent =
                   gpc ? 'denied' :
                   (saved === 'granted' || saved === 'denied' ? saved : null);
-                var optional = (gpc || saved === 'denied') ? 'denied' : 'granted';
+                var optional =
+                  gpc ? 'denied' :
+                  saved === 'granted' ? 'granted' :
+                  saved === 'denied' ? 'denied' :
+                  regionDefault;
                 gtag('consent', 'default', {
                   analytics_storage: optional, ad_storage: optional, ad_user_data: optional,
                   ad_personalization: optional, functionality_storage: 'granted',

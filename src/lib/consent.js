@@ -35,13 +35,32 @@ export function readStoredConsent(storage) {
   }
 }
 
-// Effective consent used for tracking decisions. OPT-OUT model: optional
-// analytics and advertising are ON by default and stay on until the visitor
-// explicitly opts out — EXCEPT when the browser sends Global Privacy Control,
-// which is always honored (a legal requirement in several US states).
+// The region-aware default set by pages/_document.js from the `ib_consent_default`
+// cookie (middleware.js): 'denied' for opt-in regions
+// (EU/EEA/UK/Switzerland), 'granted' for other known countries. Falls back to
+// 'denied' when the cookie is missing or invalid so a geo miss fails closed.
+export function optionalConsentDefault() {
+  if (typeof window !== 'undefined') {
+    const value = normalizeOptionalConsent(window.__ieltsConsentDefault);
+    if (value) return value;
+  }
+  return 'denied';
+}
+
+// Whether optional storage is ON by default for this visitor's region (opt-out).
+// Used for the banner copy; false in EU/EEA/UK/Switzerland or unknown regions.
+export function optionalDefaultsOn() {
+  return optionalConsentDefault() === 'granted';
+}
+
+// Effective consent used for tracking decisions. GEO-AWARE opt-out: optional
+// analytics/advertising default ON only for a known non-required country and
+// stay in the region default until the visitor explicitly chooses — EXCEPT when
+// the browser sends Global Privacy Control, which is always honored (required
+// in several US states).
 export function readOptionalConsent(storage) {
   if (globalPrivacyControlEnabled()) return 'denied';
-  return readStoredConsent(storage) || 'granted';
+  return readStoredConsent(storage) || optionalConsentDefault();
 }
 
 // Whether the visitor's choice is settled (GPC signal or an explicit click), so

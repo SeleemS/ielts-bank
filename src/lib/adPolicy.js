@@ -4,3 +4,7 @@ const AD_FREE_ROUTE =
 export function adsAllowedForPath(asPath = '') {
   return !AD_FREE_ROUTE.test(String(asPath));
 }
+
+export function adsAllowedForConsent(optionalConsent) {
+  return optionalConsent === 'granted';
+}
