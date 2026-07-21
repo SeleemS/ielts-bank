@@ -2454,6 +2454,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   profile row, or quota row. No Stripe customer, Checkout Session, payment, subscription, or
   entitlement was created or changed.
 
+## CA-102 — Optional analytics and advertising default on in consent-required regions
+
+- Status: `OPEN — OWNER-DIRECTED RISK`
+- Area: Privacy / consent / Google Analytics / AdSense / regulatory and provider policy
+- Severity: High
+- Evidence: commit `2cad189` deliberately reversed CA-029's denied-until-granted model. The exact
+  production bootstrap served from `49eebd5` defaults `analytics_storage`, `ad_storage`,
+  `ad_user_data`, and `ad_personalization` to `granted` whenever Global Privacy Control is absent
+  and no stored rejection exists. Fresh live browser inspection opened the `Cookie consent`
+  control, whose deployed disclosure states that analytics and advertising “are on by default.”
+  The implementation has no EEA/UK/Switzerland region-specific denial path or certified-CMP
+  integration. Google currently requires legally valid consent for relevant storage and personal
+  data use in those regions and requires a certified TCF-integrated CMP for personalized ads;
+  Google's own Consent Mode implementation example defaults all four optional states to `denied`.
+  Current ICO guidance likewise says non-essential cookies must not be set before a user's clear,
+  positive action.
+- Sources: [Google EU consent policy](https://support.google.com/adsense/answer/10961068),
+  [Google CMP requirement](https://support.google.com/adsense/answer/13554116),
+  [Google Consent Mode setup](https://developers.google.com/tag-platform/security/guides/consent),
+  and [ICO cookie guidance](https://ico.org.uk/media/for-organisations/guide-to-pecr/cookies-and-similar-technologies-2-4.pdf).
+- Resolution boundary: the commit message records that a compliant geo-aware default was proposed
+  and explicitly declined as founder-directed. The audit therefore preserves this as an open
+  provider-policy and jurisdictional risk rather than silently reverting the requested business
+  decision. Recommended resolution is a Google-certified CMP or, at minimum, region-scoped
+  denied-until-granted behavior for EEA, UK, and Switzerland while retaining the chosen opt-out
+  model only where it is lawful and policy-compatible.
+- Verification: exact local/remote/canonical production SHA alignment was confirmed before the
+  browser check. No consent choice was submitted and no account, analytics preference, payment,
+  or application data was changed.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
