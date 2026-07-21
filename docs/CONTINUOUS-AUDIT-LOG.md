@@ -3765,6 +3765,42 @@ False positives are kept in the investigation notes so they are not rediscovered
   submission awaiting the failure-aware resolver, the `from_pending: false` auth-session telemetry,
   and the retry message before upload work.
 
+## CA-141 — Writing auth outages were misreported as sign-in requirements
+
+- Status: `FIXED`
+- Area: Writing question / standalone Writing Checker / auth verification / scorer boundary
+- Severity: Medium
+- Evidence: both Writing scoring clients wrapped `getSession()` in a catch that deliberately
+  continued without an access token, and neither inspected a resolved Supabase `error`. During a
+  client-construction, resolved, or rejected auth dependency failure, each page therefore sent the
+  full essay to the scorer without authorization. The server correctly returned HTTP 401, but the
+  browser interpreted that response as a verified expired/missing session, opened sign-in, and
+  described reauthentication as the recovery even though the learner's page auth state remained
+  linked. The essay stayed in memory, but an unnecessary scorer request and false auth journey
+  replaced the truthful retry path on both public Writing surfaces.
+- Fix: add a shared browser-session result helper that returns a token, a verified no-session
+  result, or a contained dependency error without collapsing those states. Both Writing callers now
+  stop before the scorer on an auth error, retain the current essay, emit explicit `auth_session`
+  telemetry, and ask the learner to refresh and retry. A verified missing session still reaches the
+  existing server-401/sign-in flow, while a valid token continues unchanged.
+- Regression coverage: the shared helper suite covers a valid linked token, verified missing
+  session, client-construction throw, resolved Supabase error, and rejected session lookup. The
+  Writing API route suite remains green, and the production build compiles the shared helper into
+  both otherwise independent Writing page bundles.
+- Commit: `39846014f02d2562512c2a064d8b6cdb578eb35e`
+  (`fix: surface writing auth outages`).
+- Verification: the focused 2-file/20-test session/route run, complete 100-file/694-test Vitest
+  suite, ESLint, strict 185-file analytics audit covering 291 interactive controls and 105 explicit
+  track calls, and the network-enabled 529-page production build passed. Immediately before commit,
+  a fresh fetch proved local HEAD and `origin/main` both matched the exact prior canonical evidence
+  SHA `542845e3129dc1f0d02b0d3a9088367089ca3a4e`; after push they both matched the code SHA above.
+  GitHub's successful Vercel status tied that SHA to deployment
+  `dpl_HBqtzR3WsS1zxHr28p8mb7NdziXt`, which reached promoted `READY` on every canonical alias.
+  Fresh canonical pages referenced `ielts-writing-checker-d948107e5b26b2ac.js` and
+  `writingquestion/%5Bid%5D-e8d64363676b3c58.js`; direct promoted-chunk inspection showed both
+  callers awaiting the shared resolver and returning from the `auth_session` retry branch before
+  constructing their scorer request.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
