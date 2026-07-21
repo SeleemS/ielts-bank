@@ -3730,6 +3730,41 @@ False positives are kept in the investigation notes so they are not rediscovered
   `speakingquestion/%5Bid%5D-dc5cec6d216b6197.js`; direct promoted-chunk inspection showed
   `resume_saved` sent only for the saved path and the terminal 400/403/404/413/422 pointer cleanup.
 
+## CA-140 — Fresh Speaking auth outages were misreported as signed-out sessions
+
+- Status: `FIXED`
+- Area: Speaking practice / fresh recording / auth verification / retry recovery
+- Severity: Medium
+- Evidence: the fresh-recording submission path destructured only `data` from Supabase
+  `getSession()`. When the auth dependency returned its documented resolved `{ data, error }`
+  failure shape, the page discarded the error, treated the absent token as a verified missing
+  session, and opened sign-in. The learner was already represented by the authenticated page state,
+  their in-memory recording remained valid, and signing in again could not repair an auth-service
+  outage. Rejected session reads reached a retry message, so equivalent dependency failures produced
+  contradictory recovery paths. The saved-recording journey already handled both shapes correctly.
+- Fix: generalize the failure-aware recorded-Speaking token resolver and use it before every fresh
+  upload as well as every saved retry. A resolved or rejected auth error now retains the in-page
+  recording, emits explicit `auth_session` error telemetry, and asks the learner to refresh and
+  retry. Only a successful lookup with no session opens sign-in; valid tokens continue to the
+  unchanged owner-only upload and scoring path.
+- Regression coverage: the shared resolver suite distinguishes a valid linked-session token, a
+  verified missing session, client-construction failure, resolved Supabase auth error, and rejected
+  session lookup. The complete recorded-Speaking route suite remains green, and the production
+  build compiles both page callers of the resolver.
+- Commit: `2df576cad58c1bdae35d53ebc6a78fe08f173bb5`
+  (`fix: surface fresh speaking auth outages`).
+- Verification: the focused 2-file/30-test session/route run, complete 99-file/691-test Vitest
+  suite, ESLint, strict 183-file analytics audit covering 291 interactive controls and 103 explicit
+  track calls, and the network-enabled 529-page production build passed. Immediately before commit,
+  a fresh fetch proved local HEAD and `origin/main` both matched the exact prior canonical evidence
+  SHA `748ae6e8bc5a2fa84b073025d49c19b614ff4502`; after push they both matched the code SHA above.
+  GitHub's successful Vercel status tied that SHA to deployment
+  `dpl_6dcUGQtZgoWgVDUk6sGcXgb43msz`, which reached promoted `READY` on every canonical alias.
+  Fresh canonical Speaking detail HTML referenced
+  `speakingquestion/%5Bid%5D-e24716177571c879.js`; direct promoted-chunk inspection showed the fresh
+  submission awaiting the failure-aware resolver, the `from_pending: false` auth-session telemetry,
+  and the retry message before upload work.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
