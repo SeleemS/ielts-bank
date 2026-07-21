@@ -3801,6 +3801,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   callers awaiting the shared resolver and returning from the `auth_session` retry branch before
   constructing their scorer request.
 
+## CA-142 — Estimator reveal auth outages appeared as sign-in failures
+
+- Status: `FIXED`
+- Area: Band estimator / authenticated Writing reveal / auth verification / retry recovery
+- Severity: Medium
+- Evidence: the signed-in estimator reveal read only `data` from `getSession()` and ignored a
+  resolved Supabase auth error. It then called the protected reveal API without a token; the route
+  correctly returned HTTP 401 `Sign in to reveal your Writing band`, and the client displayed that
+  false recovery instruction to an already linked user. Rejected lookups reached a generic retry
+  message, so equivalent dependency failures behaved differently. Any reveal error also disables
+  the automatic effect until a manual retry, making the misleading state persistent.
+- Fix: resolve the session through the shared three-state browser helper before calling the reveal
+  API. Auth dependency failures now emit dedicated `auth_session` reveal telemetry, retain the
+  withheld result, skip the API request, and show a truthful refresh-and-retry message. A valid
+  recovered token continues through the existing manual unlock action; a genuinely missing session
+  remains protected by the route's HTTP 401 contract.
+- Regression coverage: the estimator DOM suite reproduces a resolved auth outage, requires zero
+  reveal fetches, and proves both the locked result and enabled retry action remain visible. It then
+  restores a valid session, clicks that same control, requires exactly one request with the recovered
+  Bearer token, and verifies the Writing band unlocks. Shared session outcomes and the protected
+  reveal API remain covered alongside it.
+- Commit: `4b6c4fb1423ed2a7cfc90ba9d0d1aef44a81a5c8`
+  (`fix: recover estimator reveal auth outages`).
+- Verification: the focused 3-file/22-test estimator/session/route run, complete
+  100-file/695-test Vitest suite, ESLint, strict 185-file analytics audit covering 291 interactive
+  controls and 105 explicit track calls, and the network-enabled 529-page production build passed.
+  Immediately before commit, a fresh fetch proved local HEAD and `origin/main` both matched the
+  exact prior canonical evidence SHA `69834b39e8bac3086980cfdc1b044e262bd2dc43`; after push they
+  both matched the code SHA above. GitHub's successful Vercel status tied that SHA to deployment
+  `dpl_5GegVngqM218Zb6FuGYYn1811ZdB`, which reached promoted `READY` on every canonical alias.
+  A final direct canonical chunk fetch could not run because the external Codex execution-approval
+  quota was exhausted after deployment verification; no browser/app failure was observed, and this
+  unavailable check is not represented as completed evidence.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
