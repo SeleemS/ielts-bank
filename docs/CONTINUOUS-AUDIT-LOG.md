@@ -2734,8 +2734,16 @@ False positives are kept in the investigation notes so they are not rediscovered
   suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
   network-enabled 529-page production build passed. Read-only live Stripe queries found exactly one
   active USD recurring licensed price for all four advertised global/PPP lookup keys, with amounts
-  and monthly interval counts matching the pricing page. Publication and post-deploy route evidence
-  are recorded after the isolated fix deploys; no Stripe or account mutation occurred.
+  and monthly interval counts matching the pricing page. GitHub's successful Vercel status tied
+  exact SHA `17e85b36752e3f99dbd494b5a0764d575e725d88` to production deployment
+  `dpl_8TcteT4drZG1hLs9X81t9WakBiGz`, which reached promoted `READY` on every canonical alias. One
+  disposable confirmed learner then called the deployed global monthly checkout route. It returned
+  HTTP 200 and created one open, unpaid subscription-mode Checkout Session whose client reference,
+  learner/SKU metadata, and non-PPP selection matched the request. Stripe readback found exactly one
+  active USD 1,499-cent recurring licensed line item billed monthly with interval count one. No card
+  details or payment were submitted. The session was expired, its exact Stripe customer and Auth
+  user were deleted, and readback found zero residual matching Auth users, `users`, `user_quotas`,
+  or `billing-checkout` rate-limit rows.
 
 ## Investigation notes
 
