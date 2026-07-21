@@ -3464,6 +3464,42 @@ False positives are kept in the investigation notes so they are not rediscovered
   referenced `band-estimator-049ed9793748e730.js`, and that promoted chunk contained the completion
   and unavailable-section barrier literals.
 
+## CA-132 — Estimator disclosures described the obsolete anonymous Writing flow
+
+- Status: `FIXED`
+- Area: Band estimator / account disclosure / SEO / FAQ schema / flow contract
+- Severity: Medium
+- Evidence: the page accurately disclosed near the Writing step that the marked sample's band and
+  overall require a free account, but its “Do I need an account?” FAQ said the complete estimate was
+  anonymous and that visitors could create an account afterward to score Writing. The default flow
+  now scores Writing before that reveal gate, so the two adjacent public answers directly
+  contradicted each other. The search, Open Graph, and Twitter description also said users would
+  self-check Writing and promised “Free, no sign-up,” while the default is a genuinely marked sample
+  with a free-account reveal. The flow constants still classified Writing exclusively as
+  self-assessed, preserving the same obsolete contract internally.
+- Fix: centralize the FAQ so visible content and FAQ JSON-LD share one source. The account answer now
+  explains both valid journeys: anonymous completion through the Writing self-check, or a marked
+  sample whose band and overall require a free account with no payment. The 159-character metadata
+  description now states marked Writing, “Free to start,” and the reveal sign-up. Writing is
+  classified as hybrid—measured by default and self-assessed through its explicit fallback—without
+  duplicating it in ordered skill iteration; scoring/result behavior is unchanged.
+- Regression coverage: a new FAQ contract suite pins the anonymous fallback, marked-sample gate,
+  and removal of both contradictory phrases. The SEO suite requires marked Writing, free-to-start,
+  and reveal language while rejecting the obsolete self-check/no-sign-up claims. Flow tests require
+  Writing to satisfy both measured and self-assessed classifications. Existing canonical/social-card
+  parameters, step order, result assembly, skip handling, and scoring suites remain green.
+- Commit: `394109731daee51a3fd0201a2fd70b10cf3116fc`
+  (`fix: align estimator account disclosures`).
+- Verification: the focused 3-file/16-test FAQ/SEO/flow suite, complete 98-file/676-test Vitest
+  suite, ESLint, strict 181-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. Local HEAD and `origin/main` matched the exact
+  code SHA; GitHub's successful Vercel status tied it to deployment
+  `dpl_FKJGUjkbProHgMdjLS51jje782RZ`, which reached promoted `READY` on every canonical alias. Fresh
+  canonical server-rendered HTML contained the corrected 159-character description and exactly two
+  copies of the corrected account answer—visible FAQ plus FAQ JSON-LD. It contained zero copies of
+  “The complete estimate is anonymous and free,” “Free, no sign-up,” or the obsolete “self-check
+  your Writing and Speaking” description.
+
 ## Investigation notes
 
 - The three loading-ignorant `usePlan` consumers found during the owner-transition audit are now
