@@ -3058,6 +3058,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   learner signed out through the production account menu. Its Stripe Customer and Auth user were
   deleted, and service-role read-back found zero matching `users`, `user_quotas`, or rate-limit rows.
 
+## CA-119 — Trialing subscriptions were offered an active-only billing pause
+
+- Status: `FIXED`
+- Area: Monetization / trial lifecycle / pause eligibility / Billing Management
+- Severity: Low
+- Evidence: the Billing Management pause helper treated both `active` and `trialing` Premium rows as
+  pause-eligible. The pause API's provider preflight intentionally requires
+  `subscription.status === 'active'`, so a trialing learner saw a one-time pause action that could
+  only consume a request, retrieve Stripe state, and fail with “This subscription cannot be paused
+  automatically.” The upgrade API does accept `trialing`, so hiding all billing actions would also
+  have been incorrect.
+- Fix: require exact `plan_status: active` for the pause offer while continuing to allow legitimate
+  trial-state upgrade choices. Server authorization and provider preflight remain unchanged and
+  authoritative.
+- Regression coverage: the status helper now explicitly rejects `trialing` pause eligibility, and
+  the rendered Billing Management test proves a trialing monthly learner has no “Pause once” button
+  while retaining the valid six-month upgrade action.
+- Commit: `Hide pause action during trials`.
+- Verification: the focused two-file/13-test helper and rendered Billing Management suite, complete
+  93-file/647-test Vitest suite, ESLint, strict 176-file analytics audit covering 284 interactive
+  controls, and the network-enabled 529-page production build passed. Local HEAD and `origin/main`
+  matched exact SHA `6246087c8af0d0ce72973a3d8225380a8222e064`; GitHub's Vercel status tied that
+  SHA to deployment `dpl_8SooMA9dzwSgwYbq7qaKEFiJGkGw`, which reached canonical `READY`. A
+  disposable confirmed production learner with a monthly trial-state profile then signed in through
+  the real dialog and opened Billing Management. The hydrated DOM contained exactly the valid
+  “Upgrade to 6 months” and “Upgrade to annual” buttons and no pause button. The learner signed out
+  through the production account menu. No Stripe customer or subscription was created; the Auth
+  user was deleted, and service-role read-back found zero matching `users`, `user_quotas`, or
+  rate-limit rows.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
