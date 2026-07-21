@@ -2699,9 +2699,14 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Keep historical exam dates editable`.
 - Verification: the focused one-file/five-test Account Settings suite, complete 92-file/586-test
   Vitest suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
-  network-enabled 529-page production build passed. Publication and a disposable-user production
-  check are recorded after the isolated fix deploys. No profile or account was changed during local
-  verification.
+  network-enabled 529-page production build passed. GitHub's Vercel status tied exact SHA
+  `8e7da5ae53ae9b5b94663ef9c3b59226fcd4f81c` to deployment
+  `dpl_23uxT4CWJEwvawD7XWqx38mWpmzc`, which reached promoted `READY` on the canonical aliases. A
+  disposable confirmed learner with `exam_date = 2020-01-15` opened deployed Settings; the field
+  retained that value with no native `min`, and changing only the display name produced the visible
+  saved state. Provider readback found the new display name and the same historical date. The new
+  past-date rejection is verified by the real-component no-write test. The exact Auth user was then
+  deleted, with zero residual Auth users, `users` rows, or `user_quotas` rows.
 
 ## Investigation notes
 
