@@ -3088,7 +3088,45 @@ False positives are kept in the investigation notes so they are not rediscovered
   user was deleted, and service-role read-back found zero matching `users`, `user_quotas`, or
   rate-limit rows.
 
+## CA-120 — Signing in briefly exposed the stale Free-plan UI before owner verification
+
+- Status: `FIXED`; loading-ignorant consumers remain a separately logged follow-up surface
+- Area: Auth transition / billing state / checkout gating / stale cross-account UI
+- Severity: Medium
+- Evidence: the signed-out `usePlan` effect settled the shared hook at `loading: false` with a Free
+  plan. When Auth subsequently resolved a signed-in user, the owner-row query started without
+  restoring the loading flag. Billing Management, Pricing, mock tests, Speaking Examiner, and the
+  offer reminder therefore received a render window in which Auth was complete but plan state still
+  represented the signed-out visitor. The production CA-118 and CA-119 browser exercises observed
+  this twice: the first authenticated Billing Management DOM said “Premium is not active,” then a
+  later snapshot changed to the real canceled or trialing state. On Pricing, the same race could
+  momentarily expose checkout actions to an existing paid learner.
+- Fix: immediately restore `loading: true` and clear stale plan errors whenever a non-null owner ID
+  starts a plan query. Consumers that already honor the loading contract now keep billing actions
+  blocked until the new owner's row resolves. The existing inactive state remains correct after a
+  genuinely signed-out effect, and database failures still fail closed with the explicit plan error.
+- Regression coverage: a deferred-query hook case first settles signed out, rerenders with a newly
+  authenticated user, requires `loading: true` while the owner query is unresolved, then releases
+  Premium state only after the query resolves. Existing resolved-error and verified-Premium cases,
+  plus Billing Management and Pricing integration suites, remain green.
+- Commit: `Restore plan loading after sign-in`.
+- Verification: the focused three-file/21-test hook, Billing Management, and Pricing suite; complete
+  93-file/649-test Vitest suite; ESLint; strict 178-file analytics audit covering 287 interactive
+  controls; and the network-enabled 529-page production build passed. Local HEAD and `origin/main`
+  matched exact SHA `d1d466adfeea2daa90b9a779e0e15b8c4e863a91`; GitHub's successful Vercel
+  status tied that SHA to deployment `dpl_5fvvQj9VRbQrqsEh9UXhm9fCc9qU`, which reached promoted
+  `READY` on every canonical alias. A disposable confirmed production learner with a paid-through
+  canceled profile signed in through the real dialog. On direct authenticated navigation to Billing
+  Management, the first DOM snapshot remained at “Loading billing…”; the next resolved directly to
+  “Premium is ending” and the correct non-renewal date, with no false inactive render. The learner
+  signed out through the production account menu. No Stripe object was created; the Auth user was
+  deleted, and service-role read-back found zero matching `users`, `user_quotas`, or rate-limit rows.
+
 ## Investigation notes
+
+- `AdUnit`, `EstimatorResults`, and `AiQuotaPanel` consume `usePlan().isPremium` without honoring
+  `loading`; they remain an explicit follow-up audit surface because CA-120 can protect only consumers
+  that observe the hook's loading contract.
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
   Direct DOM text verification confirmed that the live page renders normal quotation marks; no
