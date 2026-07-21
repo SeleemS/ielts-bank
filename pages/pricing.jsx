@@ -39,7 +39,6 @@ import {
   planPricing,
   money,
   maxSavings,
-  maxPercentOff,
 } from '../src/lib/saleConfig';
 
 const PAGE_TITLE = PRICING_SEO.title;
@@ -121,15 +120,15 @@ const TESTIMONIALS = [];
 const PRICING_FAQS = [
   {
     q: 'Is there really a money-back guarantee?',
-    a: 'Yes. If Premium is not right for you, ask within 14 days of your first purchase and we will refund it — no forms and no questions. The full terms are on the billing and refund page.',
+    a: 'Yes. If Pro is not right for you, ask within 14 days of your first purchase and we will refund it — no forms and no questions. The full terms are on the billing and refund page.',
   },
   {
     q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel whenever you like from your account and you keep Premium access until the end of the period you have already paid for. There are no cancellation fees.',
+    a: 'Yes. Cancel whenever you like from your account and you keep Pro access until the end of the period you have already paid for. There are no cancellation fees.',
   },
   {
-    q: 'What is free, and what needs Premium?',
-    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score. Premium adds full AI Writing reports on all four criteria, AI Speaking scoring, live AI examiner minutes, timed full mocks, trend insights, and an ad-free experience.',
+    q: 'What is free, and what needs Pro?',
+    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score. Pro adds full AI Writing reports on all four criteria, AI Speaking scoring, live AI examiner minutes, timed full mocks, trend insights, and an ad-free experience.',
   },
   {
     q: 'How accurate are the AI band scores?',
@@ -295,8 +294,8 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
   const [examDate, setExamDate] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
   const [answeredCount, setAnsweredCount] = React.useState(0);
-  // Pro billing cadence selected by the toggle; 6-month leads (best value).
-  const [cadence, setCadence] = React.useState('6month');
+  // Pro billing cadence selected by the toggle; defaults to Monthly.
+  const [cadence, setCadence] = React.useState('monthly');
   // Whether the Summer Sale chrome renders. Defaults to SALE.active for a
   // matching SSR/first paint, then refined on the client (and flipped off by
   // the countdown's onExpire) to avoid any Date-based hydration mismatch.
@@ -327,7 +326,6 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
     monthlyPricing && sixMonthPricing
       ? Math.round((1 - sixMonthPricing.sale / (monthlyPricing.sale * 6)) * 100)
       : 0;
-  const saleBestPercentOff = maxPercentOff(regionalPricing);
   const saleBestSavings = maxSavings(regionalPricing);
 
   React.useEffect(() => {
@@ -485,7 +483,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
         <header className="mx-auto max-w-3xl text-center">
           <Badge variant="emerald" className="mb-4">
             <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            IELTS-Bank Premium
+            IELTS-Bank Pro
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
             Know exactly what is holding your IELTS band back
@@ -495,7 +493,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             feedback, live examiner practice, timed mocks, and trend insights.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
               <ShieldCheck className="h-4 w-4 text-accent" />
               14-day money-back guarantee
             </span>
@@ -526,14 +524,14 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
             {authLoading || (user?.id && sessionId && activation !== 'delayed') ? (
               <>
                 <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
-                Confirming Premium access…
+                Confirming Pro access…
               </>
             ) : !sessionId ? (
               'This checkout return is missing its verification reference. Open Pricing from your account and try again.'
             ) : !user?.id ? (
-              'Sign in with the account used at checkout to confirm Premium access.'
+              'Sign in with the account used at checkout to confirm Pro access.'
             ) : (
-              'Premium access could not be confirmed yet. If checkout completed, wait a moment and refresh while signed in to the purchasing account.'
+              'Pro access could not be confirmed yet. If checkout completed, wait a moment and refresh while signed in to the purchasing account.'
             )}
           </div>
         ) : null}
@@ -555,7 +553,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
 
         {isPremium ? (
           <div className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
-            <p className="text-lg font-semibold">Your Premium tools are active ✨</p>
+            <p className="text-lg font-semibold">Your Pro tools are active ✨</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {expiresAt
                 ? `Your Exam Pass is active until ${new Date(expiresAt).toLocaleDateString()}.`
@@ -585,7 +583,7 @@ export default function PricingPage({ regionalPricing = false, country = '' }) {
                       <Sparkles className="h-3.5 w-3.5" /> {SALE.name}
                     </span>
                     <p className="mt-2.5 text-lg font-extrabold tracking-tight text-amber-950 dark:text-amber-50 sm:text-xl">
-                      Up to {saleBestPercentOff}% off Premium — save up to {money(saleBestSavings)}
+                      Up to {SALE.headlinePercentOff}% off Pro — save up to {money(saleBestSavings)}
                     </p>
                     <p className="mt-1 text-sm font-medium text-amber-900/80 dark:text-amber-100/80">
                       {SALE.tagline}

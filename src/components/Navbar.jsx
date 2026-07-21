@@ -33,7 +33,7 @@ const NAV_LINKS = [
   { label: 'Speaking', href: '/speakingquestion', icon: Mic },
   { label: 'Mock Tests', href: '/mock-test', icon: ClipboardCheck },
   { label: 'Blog', href: '/blog', icon: Newspaper },
-  { label: 'Premium', href: '/pricing', icon: Sparkles },
+  { label: 'Pro', href: '/pricing', icon: Sparkles },
 ];
 
 function BrandMark() {

@@ -151,7 +151,7 @@ describe('pricing checkout return verification', () => {
 
     expect(container.textContent).not.toContain("You're in. Do this first:");
     expect(container.textContent).toContain(
-      'Sign in with the account used at checkout to confirm Premium access.'
+      'Sign in with the account used at checkout to confirm Pro access.'
     );
     expect(global.fetch).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('pricing checkout return verification', () => {
 
     expect(container.textContent).not.toContain("You're in. Do this first:");
     expect(container.textContent).toContain(
-      'Premium access could not be confirmed yet.'
+      'Pro access could not be confirmed yet.'
     );
     expect(track).not.toHaveBeenCalledWith(
       'purchase_success',
@@ -206,12 +206,12 @@ describe('pricing authentication handoff', () => {
 
     await renderPage();
 
-    // Single Pro plan; the toggle defaults to the 6-month (best value) cadence.
+    // Single Pro plan; the toggle defaults to the Monthly cadence.
     expect(
       [...container.querySelectorAll('main button[aria-label]')].map(
         (button) => button.getAttribute('aria-label')
       )
-    ).toEqual(['Choose 6 months plan']);
+    ).toEqual(['Choose Monthly plan']);
   });
 
   it('stays on pricing and resumes the plan selected before sign-in', async () => {
@@ -250,7 +250,7 @@ describe('pricing authentication handoff', () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-access-token',
       },
-      body: JSON.stringify({ sku: '6month', offer: '' }),
+      body: JSON.stringify({ sku: 'monthly', offer: '' }),
     });
   });
 

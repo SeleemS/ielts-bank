@@ -1,5 +1,5 @@
 // src/lib/saleConfig.js
-// Single source of truth for the current Premium pricing + the Summer Sale.
+// Single source of truth for the current Pro pricing + the Summer Sale.
 //
 // IMPORTANT — how prices actually get charged:
 //   The `sale` amounts below are the REAL prices. Stripe charges whatever its
@@ -27,7 +27,11 @@ export const SALE = {
   // timezones. Change this one line to extend or end the promotion.
   endsAt: '2026-07-31T23:59:59-04:00',
   // Short line reused on the pricing hero and in the reminder modal.
-  tagline: 'Premium at its lowest price of the year.',
+  tagline: 'Pro at its lowest price of the year.',
+  // Marketing headline percentage for the sale banner ("Up to N% off Pro").
+  // This is a deliberate promotional figure, NOT the computed per-plan discount
+  // (the accurate per-plan "% off" still comes from planPricing() on each card).
+  headlinePercentOff: 40,
 };
 
 export function saleEndsAtMs() {
