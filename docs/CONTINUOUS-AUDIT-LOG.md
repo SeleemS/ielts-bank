@@ -3983,6 +3983,60 @@ False positives are kept in the investigation notes so they are not rediscovered
   idempotency key, so a manual retry could duplicate provider work or a saved attempt. This is
   queued as the next isolated examiner-scoring audit item rather than represented as solved here.
 
+## CA-147 — Retried live-examiner scores could duplicate provider work and attempts
+
+- Status: `FIXED`
+- Area: Live Speaking Examiner / score retry / request idempotency / attempt persistence
+- Severity: High
+- Evidence: CA-146 made a completed transcript recoverable, but every retry still invoked
+  `/api/score/speaking-realtime` as new work. If the first request reached OpenAI and committed its
+  attempt while the browser lost the response, the saved transcript's retry could charge for the
+  same rubric score again and insert a second attempt. The route had no stable journey identifier,
+  atomic work claim, completed-result replay, or persistence uniqueness constraint.
+- Fix: generate one RFC 4122 version-4 request ID when a scorable interview ends, store it with the
+  tab-scoped pending transcript, migrate pre-idempotency pending transcripts on load, and send the
+  same ID on every retry. The server validates the ID and transcript bound before mutation, then
+  uses a private Supabase ledger with a row-locked lease to return `claimed`, `busy`, `replay`, or
+  `conflict`. Completed responses are retained for 24 hours; failed work is immediately reclaimable;
+  processing leases become reclaimable after two minutes; and the existing daily cleanup job calls
+  a service-role-only expiry RPC. A unique partial index on the attempt response's request ID blocks
+  duplicate saved attempts. Cached clients that predate the request ID remain supported while they
+  age out rather than failing at deployment.
+- Database security: the ledger has RLS enabled and no table privileges for `anon`,
+  `authenticated`, or `service_role`. Its four public-schema `SECURITY DEFINER` RPCs use an empty
+  fixed `search_path`; execute is revoked from public client roles and granted only to
+  `service_role`. Inputs are bounded at both route and database layers. The exact migration was
+  applied as one explicit transaction before the code deployment.
+- Regression coverage: route tests reject malformed IDs and oversized transcripts before claims or
+  limits; contain claim failures; stop busy/conflict work; replay without rate limits, provider, or
+  persistence; preserve the request ID in attempts; retry ambiguous completion once; withhold an
+  unconfirmed result; and release provider failures. Recovery tests require stable IDs, migrate a
+  legacy saved transcript, preserve the exact retry body, and treat HTTP 202 as retryable rather
+  than success. Cleanup tests cover exact counts plus resolved and rejected RPC failures, while a
+  migration contract suite requires the private ledger, bounds, leases, grants, fixed search paths,
+  expiry cleanup, and attempt uniqueness.
+- Commit: `9c5d4dc1ed18883066f95103e45dd49d541d4daa`
+  (`fix: make examiner score retries idempotent`).
+- Verification: the focused 4-file/69-test route/recovery/cleanup/migration run, complete
+  102-file/743-test Vitest suite, ESLint, strict 187-file analytics audit covering 293 interactive
+  controls and 107 explicit track calls, and the network-enabled 530-page production build passed.
+  Immediately before commit, a fresh fetch proved local HEAD and `origin/main` both matched exact
+  canonical evidence SHA `fef2f47a761da093e68715ee40269d6e75a96bfb`; GitHub and Vercel tied it
+  to promoted READY deployment `dpl_5vVym5vUAdAX6psRxA7scgv1iz2z`. After push, GitHub's successful
+  Vercel status tied the code SHA above to deployment `dpl_HkXJvHPTCcort7LzCHH8NhscxnEp`, which
+  reached READY and owned every canonical alias. Canonical `/speaking-examiner` returned HTTP 200
+  and referenced `speaking-examiner-21ac929a62e621d2.js`; direct chunk inspection found the stable
+  `requestId`, tab-storage key, and realtime-score API markers. A valid same-origin signed-out score
+  probe returned HTTP 401 before claim/provider work; no microphone, paid realtime session, quota,
+  provider score, attempt, or charge was created during the HTTP smoke check.
+- Live database proof: post-migration metadata showed the ledger RLS enabled, its primary key and
+  attempt de-duplication index unique and valid, all four functions security-definer with empty
+  search paths, client execute privileges false, service-role execute true, and even service-role
+  direct table select false. An isolated production probe passed claim, duplicate-busy, completion,
+  replay, transcript-conflict, failure-release, immediate reclaim, and expiry-cleanup branches, then
+  removed every probe row. Supabase's combined security and performance advisors reported no
+  warnings.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
