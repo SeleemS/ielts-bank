@@ -17,6 +17,45 @@ import {
 
 const CHANGE_WINDOW_SECONDS = 10 * 60;
 const CHANGE_MAX_PER_WINDOW = 10;
+const UPGRADE_PRICE_CONTRACTS = {
+  '6month': {
+    global: { amountMinor: 4999, interval: 'month', intervalCount: 6 },
+    ppp: { amountMinor: 1499, interval: 'month', intervalCount: 6 },
+  },
+  annual: {
+    global: { amountMinor: 4499, interval: 'year', intervalCount: 1 },
+    ppp: { amountMinor: 1999, interval: 'year', intervalCount: 1 },
+  },
+};
+
+function upgradePriceMismatch(price, targetSku, ppp) {
+  const expected = UPGRADE_PRICE_CONTRACTS[targetSku]?.[ppp ? 'ppp' : 'global'];
+  const valid =
+    Boolean(expected) &&
+    price?.active === true &&
+    price?.currency === 'usd' &&
+    price?.unit_amount === expected.amountMinor &&
+    price?.billing_scheme === 'per_unit' &&
+    price?.type === 'recurring' &&
+    price?.recurring?.interval === expected.interval &&
+    price?.recurring?.interval_count === expected.intervalCount &&
+    price?.recurring?.usage_type === 'licensed';
+  return valid
+    ? null
+    : {
+        expectedAmountMinor: expected?.amountMinor ?? null,
+        expectedInterval: expected?.interval ?? null,
+        expectedIntervalCount: expected?.intervalCount ?? null,
+        actualAmountMinor: price?.unit_amount ?? null,
+        actualCurrency: price?.currency ?? null,
+        actualBillingScheme: price?.billing_scheme ?? null,
+        actualType: price?.type ?? null,
+        actualInterval: price?.recurring?.interval ?? null,
+        actualIntervalCount: price?.recurring?.interval_count ?? null,
+        actualUsageType: price?.recurring?.usage_type ?? null,
+        active: price?.active ?? null,
+      };
+}
 
 let _admin = null;
 function getAdmin() {
@@ -140,15 +179,28 @@ export default async function handler(req, res) {
 
     // Preserve the subscription's original pricing region. Request headers
     // cannot be used to switch an existing customer between PPP/global prices.
-    const targetLookupKey = resolveLookupKey(
-      targetSku,
-      subscriptionIsPpp(subscription) ? 'IN' : ''
-    );
-    const prices = await stripe.prices.list({ lookup_keys: [targetLookupKey], limit: 1 });
+    const ppp = subscriptionIsPpp(subscription);
+    const targetLookupKey = resolveLookupKey(targetSku, ppp ? 'IN' : '');
+    const prices = await stripe.prices.list({
+      lookup_keys: [targetLookupKey],
+      active: true,
+      limit: 2,
+    });
     const targetPrice = prices.data[0];
-    if (!targetPrice) {
-      console.error('change-plan: missing price for lookup key', targetLookupKey);
+    if (!targetPrice || prices.data.length !== 1) {
+      console.error('change-plan: expected one active price for lookup key', targetLookupKey);
       return res.status(500).json({ error: 'Pricing unavailable. Please try again later.' });
+    }
+    const priceMismatch = upgradePriceMismatch(targetPrice, targetSku, ppp);
+    if (priceMismatch) {
+      console.error('change-plan PRICE MISMATCH:', {
+        targetSku,
+        targetLookupKey,
+        ...priceMismatch,
+      });
+      return res.status(503).json({
+        error: 'Pricing is being updated. Please try again later.',
+      });
     }
 
     const updated = await stripe.subscriptions.update(
@@ -162,7 +214,7 @@ export default async function handler(req, res) {
           ...(subscription.metadata || {}),
           user_id: user.id,
           sku: targetSku,
-          ppp: subscriptionIsPpp(subscription) ? '1' : '0',
+          ppp: ppp ? '1' : '0',
         },
         expand: ['items.data.price', 'latest_invoice'],
       },

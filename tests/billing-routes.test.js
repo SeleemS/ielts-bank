@@ -135,20 +135,23 @@ const mockState = {
 
 function priceForLookupKey(lookupKey) {
   const priceShape = {
-    premium_monthly: { unit_amount: 1499, interval_count: 1 },
-    premium_6month: { unit_amount: 4999, interval_count: 6 },
-    premium_monthly_ppp: { unit_amount: 399, interval_count: 1 },
-    premium_6month_ppp: { unit_amount: 1499, interval_count: 6 },
-  }[lookupKey] || { unit_amount: 7999, interval_count: 12 };
+    premium_monthly: { unit_amount: 1499, interval: 'month', interval_count: 1 },
+    premium_6month: { unit_amount: 4999, interval: 'month', interval_count: 6 },
+    premium_annual: { unit_amount: 4499, interval: 'year', interval_count: 1 },
+    premium_monthly_ppp: { unit_amount: 399, interval: 'month', interval_count: 1 },
+    premium_6month_ppp: { unit_amount: 1499, interval: 'month', interval_count: 6 },
+    premium_annual_ppp: { unit_amount: 1999, interval: 'year', interval_count: 1 },
+  }[lookupKey] || { unit_amount: 7999, interval: 'year', interval_count: 1 };
   return {
     id: 'price_mock_1',
     lookup_key: lookupKey,
     active: true,
     currency: 'usd',
+    billing_scheme: 'per_unit',
     type: 'recurring',
     unit_amount: priceShape.unit_amount,
     recurring: {
-      interval: 'month',
+      interval: priceShape.interval,
       interval_count: priceShape.interval_count,
       usage_type: 'licensed',
     },
@@ -975,6 +978,8 @@ describe('POST /api/billing/change-plan', () => {
     mockState.rpcCalls = [];
     mockState.stripeCalls = {};
     mockState.subscriptionUpdateError = null;
+    mockState.priceOverride = null;
+    mockState.priceList = null;
     mockState.userRow = {
       id: 'user-1',
       plan: 'premium',
@@ -1030,7 +1035,11 @@ describe('POST /api/billing/change-plan', () => {
     const res = await callChangePlan();
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody.changed).toBe(true);
-    expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual(['premium_annual']);
+    expect(mockState.stripeCalls.pricesList).toEqual({
+      lookup_keys: ['premium_annual'],
+      active: true,
+      limit: 2,
+    });
     expect(mockState.stripeCalls.subscriptionUpdate).toMatchObject({
       id: 'sub_existing',
       args: {
@@ -1050,6 +1059,38 @@ describe('POST /api/billing/change-plan', () => {
     expect(mockState.stripeCalls.pricesList.lookup_keys).toEqual([
       'premium_6month_ppp',
     ]);
+  });
+
+  it.each([
+    ['amount', { unit_amount: 9999 }],
+    ['currency', { currency: 'cad' }],
+    ['active state', { active: false }],
+    ['billing scheme', { billing_scheme: 'tiered' }],
+    ['price type', { type: 'one_time', recurring: null }],
+    ['billing interval', { recurring: { interval: 'month', interval_count: 1, usage_type: 'licensed' } }],
+    ['interval count', { recurring: { interval: 'year', interval_count: 2, usage_type: 'licensed' } }],
+    ['usage type', { recurring: { interval: 'year', interval_count: 1, usage_type: 'metered' } }],
+  ])('stops before changing the subscription when target %s drifts', async (_field, override) => {
+    mockState.priceOverride = override;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callChangePlan();
+
+    expect(res.statusCode).toBe(503);
+    expect(res.jsonBody.error).toMatch(/pricing is being updated/i);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
+  });
+
+  it('stops before changing the subscription when a lookup key is ambiguous', async () => {
+    const annual = priceForLookupKey('premium_annual');
+    mockState.priceList = [annual, { ...annual, id: 'price_duplicate' }];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callChangePlan();
+
+    expect(res.statusCode).toBe(500);
+    expect(res.jsonBody.error).toMatch(/pricing unavailable/i);
+    expect(mockState.stripeCalls.subscriptionUpdate).toBeUndefined();
   });
 
   it('leaves the old plan active while an upgrade invoice needs payment', async () => {

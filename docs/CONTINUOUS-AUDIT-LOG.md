@@ -2781,6 +2781,35 @@ False positives are kept in the investigation notes so they are not rediscovered
   consuming a limited live promotion by the dependency-injected route cases and real Pricing
   component test described above.
 
+## CA-112 — Subscription upgrade trusted an unverified Stripe price
+
+- Status: `FIXED`
+- Area: Monetization / existing-subscriber upgrade / Stripe price integrity / global and PPP plans
+- Severity: High
+- Evidence: the plan-change route resolved the target lookup key with `limit: 1`, accepted the
+  first returned Price without requiring it to be active or unique, and immediately submitted that
+  Price to a prorated subscription update. It did not validate the amount, currency, billing
+  scheme, recurring type, interval/count, or licensed usage. A stale, duplicated, or misconfigured
+  6-month/annual lookup could therefore invoice a different price or cadence than the product's
+  intended billing contract. Stripe's [Price object](https://docs.stripe.com/api/prices/object?lang=nodejs)
+  exposes those charge-defining fields, and [price listing](https://docs.stripe.com/api/prices/list?lang=node)
+  supports active lookup-key filtering.
+- Fix: request active Prices with enough result capacity to detect ambiguity, require exactly one,
+  and fail closed before `subscriptions.update` unless every charge-defining field matches the
+  global or PPP contract: 6 months at USD 49.99/14.99 billed every six months, or annual at USD
+  44.99/19.99 billed yearly, always per-unit recurring licensed usage.
+- Regression coverage: the route suite requires the exact active lookup query for a normal annual
+  upgrade, preserves the subscription's original PPP region, and independently injects wrong
+  amount, currency, active state, billing scheme, price type, interval, interval count, usage type,
+  and duplicate results. Every mismatch must stop before any subscription update.
+- Commit: `Validate subscription upgrade prices`.
+- Verification: the focused one-file/62-test billing route suite, complete 92-file/607-test Vitest
+  suite, ESLint, strict 175-file analytics audit covering 282 interactive controls, and the
+  network-enabled 529-page production build passed. Read-only live Stripe queries found exactly one
+  active USD per-unit recurring licensed Price for each global/PPP 6-month and annual lookup key,
+  with amounts and cadence matching the enforced contract. Publication and post-deploy route
+  evidence are recorded after the isolated fix deploys; no subscription or payment was mutated.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
