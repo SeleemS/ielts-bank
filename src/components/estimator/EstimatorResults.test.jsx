@@ -81,7 +81,19 @@ describe('EstimatorResults writing gate', () => {
     state.user = { id: 'user-1' };
     global.fetch = vi.fn(async () => ({
       ok: true,
-      json: async () => ({ band: 6, wordCount: 104, criteria: {}, premium: false }),
+      json: async () => ({
+        band: 6,
+        wordCount: 104,
+        criteria: {
+          taskResponse: {
+            band: 6,
+            strengths: ['A clear position'],
+            improvements: ['Develop the example'],
+          },
+        },
+        lockedIssueCount: 5,
+        premium: false,
+      }),
     }));
 
     act(() => {
@@ -94,6 +106,45 @@ describe('EstimatorResults writing gate', () => {
     expect(container.textContent).toContain('indicative');
     expect(container.textContent).not.toContain('Reveal my band');
     expect(container.textContent).toMatch(/Your plan to reach/i);
+    expect(container.textContent).toContain('Your Writing feedback');
+    expect(container.textContent).toContain('A clear position');
+    expect(container.textContent).toContain('Coherence & Cohesion');
+    expect(container.textContent).toContain('Your Band 6.0 sample has 5 fixable issues');
+    expect(container.textContent).not.toContain('essay has 5 fixable issues');
+  });
+
+  it('renders the complete estimator Writing report for Premium', async () => {
+    state.user = { id: 'user-1' };
+    state.isPremium = true;
+    global.fetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        band: 7,
+        wordCount: 102,
+        criteria: {
+          taskResponse: { band: 7, strengths: ['Clear position'], improvements: ['Develop one example'] },
+          coherenceCohesion: { band: 7, strengths: ['Logical flow'], improvements: ['Vary transitions'] },
+          lexicalResource: { band: 7, strengths: ['Precise vocabulary'], improvements: ['Check collocation'] },
+          grammaticalRange: { band: 7, strengths: ['Complex sentences'], improvements: ['Check articles'] },
+        },
+        summary: 'A controlled short response.',
+        improvements: ['Prioritise precision.'],
+        correctedExamples: [
+          { original: 'student uses phones', suggestion: 'students use phones' },
+        ],
+        premium: true,
+      }),
+    }));
+
+    act(() => {
+      root.render(<EstimatorResults {...baseProps} writing={{ locked: true }} overall={null} />);
+    });
+    await flush();
+
+    expect(container.textContent).toContain('Precise vocabulary');
+    expect(container.textContent).toContain('A controlled short response.');
+    expect(container.textContent).toContain('students use phones');
+    expect(container.textContent).not.toContain('Unlock full feedback — Premium');
   });
 
   it('still shows a self-assessed range when the visitor skipped the sample', () => {

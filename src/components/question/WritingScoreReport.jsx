@@ -74,7 +74,14 @@ function issueCount(result) {
   );
 }
 
-export default function WritingScoreReport({ task, result, sample = false }) {
+export default function WritingScoreReport({
+  task,
+  result,
+  sample = false,
+  sourceLabel,
+  submissionLabel = 'essay',
+  analyticsSource = 'score_tease',
+}) {
   const criteriaMeta = task === 1 ? TASK1_CRITERIA : TASK2_CRITERIA;
   const criteria = result.criteria || {};
   const improvements = Array.isArray(result.improvements) ? result.improvements : [];
@@ -88,18 +95,20 @@ export default function WritingScoreReport({ task, result, sample = false }) {
     if (!isTeaser || trackedRef.current) return;
     trackedRef.current = true;
     track('premium_gate', {
-      source: 'score_tease',
+      source: analyticsSource,
       stage: 'impression',
       skill: 'writing',
       band: result.overallBand,
     });
-  }, [isTeaser, result.overallBand]);
+  }, [analyticsSource, isTeaser, result.overallBand]);
 
   return (
     <div className="space-y-5">
       <BandHero
         band={result.overallBand}
-        subtitle={`Writing Task ${task}${result.wordCount ? ` · ${result.wordCount} words` : ''}`}
+        subtitle={
+          sourceLabel || `Writing Task ${task}${result.wordCount ? ` · ${result.wordCount} words` : ''}`
+        }
       />
 
       <div className="space-y-3">
@@ -126,7 +135,7 @@ export default function WritingScoreReport({ task, result, sample = false }) {
       {isTeaser ? (
         <LockedPlaceholder
           label="Examiner summary, improvement plan & corrected examples"
-          hint="Unlock Premium for the examiner summary, a prioritised plan to raise your band, and line-by-line corrected examples from your essay."
+          hint={`Unlock Premium for the examiner summary, a prioritised plan to raise your band, and line-by-line corrected examples from your ${submissionLabel}.`}
         />
       ) : (
         <>
@@ -172,7 +181,7 @@ export default function WritingScoreReport({ task, result, sample = false }) {
             <Lock className="h-5 w-5" />
           </span>
           <h3 className="mt-3 text-base font-bold text-foreground">
-            Your Band {formatBand(result.overallBand)} essay has{' '}
+            Your Band {formatBand(result.overallBand)} {submissionLabel} has{' '}
             {result.lockedIssueCount ?? issueCount(result)} fixable issues
           </h3>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
@@ -184,7 +193,7 @@ export default function WritingScoreReport({ task, result, sample = false }) {
               href="/pricing?upgrade=writing"
               onClick={() =>
                 track('paywall_upgrade_click', {
-                  source: 'score_tease',
+                  source: analyticsSource,
                   skill: 'writing',
                   band: result.overallBand,
                 })

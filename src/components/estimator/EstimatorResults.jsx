@@ -10,6 +10,7 @@ import { getSupabase } from '../../../lib/supabase';
 import NewsletterSignup from '../NewsletterSignup';
 import SignInDialog from '../auth/SignInDialog';
 import { BandHero } from '../question/ScoreUI';
+import WritingScoreReport from '../question/WritingScoreReport';
 import { formatBand, overallEstimate } from './score';
 import { ESTIMATOR_VERSION } from '../../../lib/estimatorConfig';
 import { biggestGap } from './flow';
@@ -538,6 +539,32 @@ export default function EstimatorResults({
           {['reading', 'listening', 'writing', 'speaking'].map((skill) => renderCard(skill))}
         </div>
       </div>
+
+      {revealed ? (
+        <div>
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Your Writing feedback
+          </h3>
+          <WritingScoreReport
+            task={2}
+            sourceLabel={`Indicative short Writing sample${
+              revealed.wordCount ? ` · ${revealed.wordCount} words` : ''
+            }`}
+            submissionLabel="sample"
+            analyticsSource="estimator_score_tease"
+            result={{
+              overallBand: revealed.band,
+              wordCount: revealed.wordCount,
+              criteria: revealed.criteria || {},
+              summary: revealed.summary || '',
+              improvements: revealed.improvements || [],
+              correctedExamples: revealed.correctedExamples || [],
+              free: revealed.premium !== true,
+              lockedIssueCount: revealed.lockedIssueCount,
+            }}
+          />
+        </div>
+      ) : null}
 
       {/* (c) Target-band selector + gap */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
