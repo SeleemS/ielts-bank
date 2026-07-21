@@ -3217,6 +3217,38 @@ False positives are kept in the investigation notes so they are not rediscovered
   without duplicating history. The estimator row, Auth user, profile, attempt, and score were deleted;
   service-role read-back found zero matching rows in all four audited data groups.
 
+## CA-124 — Anonymous estimator essays had no deletion path
+
+- Status: `FIXED`
+- Area: Band estimator / privacy / data retention / scheduled cleanup
+- Severity: High
+- Evidence: the reveal route intentionally ignores estimator samples after 30 days, but the newly
+  deployed table stored full anonymous essay text indefinitely and the authenticated daily cleanup
+  handled only stale rate-limit rows and Speaking uploads. An expired sample could therefore no
+  longer provide any product function while its browser-linked writing remained in production. The
+  privacy policy described signed-in Writing history and Speaking-recording cleanup but did not
+  disclose this anonymous estimator storage or a retention period.
+- Fix: extend the existing authenticated daily cleanup with an exact-count deletion of
+  `estimator_writing_scores` rows older than 30 days, fail the run explicitly if that database
+  cleanup cannot be verified, and report `estimatorResultsRemoved` in the cron response. The privacy
+  policy now discloses the random browser identifier, post-sign-up reveal purpose, 30-day maximum,
+  and scheduled deletion of the separate estimator copy.
+- Regression coverage: the 18-case cleanup suite now covers the exact 30-day `created_at` cutoff,
+  count reporting, resolved database errors, rejected database calls, and prevention of downstream
+  Storage work after an unverified estimator cleanup. Existing method/auth/configuration guards,
+  rate-limit deletion, recursive and paginated Storage traversal, bounded removal, and all failure
+  paths remain covered with the expanded response contract.
+- Commit: `dff30b9c0d750772b3f8089cc758ffc9f3a22de6` (`fix: expire anonymous estimator samples`).
+- Verification: the focused 1-file/18-test cleanup suite, complete 96-file/663-test Vitest suite,
+  ESLint, strict 180-file analytics audit covering 291 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched the exact code SHA; GitHub's
+  successful Vercel status tied it to deployment `dpl_8TraJeGKkPxW2gW4uyUDZvtokW9e`, which reached
+  promoted `READY` on every canonical alias. A live service-role proof inserted one disposable
+  31-day-old sample and one current sample, then exercised the same exact-count cutoff semantics:
+  one row was removed, the expired sample was absent, and the current sample remained. Final cleanup
+  removed the retained fixture and read back zero matching rows. The canonical production privacy
+  page rendered the complete new 30-day estimator disclosure.
+
 ## Investigation notes
 
 - `EstimatorResults` and `AiQuotaPanel` consume `usePlan().isPremium` without honoring `loading`;
