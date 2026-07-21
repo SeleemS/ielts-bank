@@ -50,12 +50,19 @@ describe('optional analytics consent', () => {
     expect(globalPrivacyControlEnabled()).toBe(false);
   });
 
-  it('defaults analytics and Vercel events to blocked', () => {
+  it('defaults analytics and Vercel events to ON (opt-out) with no explicit choice', () => {
     const event = { url: 'https://www.ielts-bank.com/' };
 
-    expect(readOptionalConsent()).toBeNull();
+    expect(readOptionalConsent()).toBe('granted');
+    expect(analyticsConsentGranted()).toBe(true);
+    expect(consentAwareVercelEvent(event)).toBe(event);
+  });
+
+  it('blocks analytics after an explicit opt-out', () => {
+    window.__ieltsOptionalConsent = 'denied';
+
+    expect(readOptionalConsent()).toBe('denied');
     expect(analyticsConsentGranted()).toBe(false);
-    expect(consentAwareVercelEvent(event)).toBeNull();
   });
 
   it('persists an explicit grant and allows consent-aware events', () => {
@@ -96,14 +103,14 @@ describe('optional analytics consent', () => {
     expect(window.__ieltsOptionalConsent).toBe('denied');
   });
 
-  it('sets the pre-tag document default to denied until a stored grant exists', () => {
+  it('sets the pre-tag document default to granted until an explicit opt-out', () => {
     const documentSource = readFileSync(
       new URL('../../pages/_document.js', import.meta.url),
       'utf8'
     );
 
     expect(documentSource).toContain(
-      "var optional = saved === 'granted' && !gpc ? 'granted' : 'denied';"
+      "var optional = (gpc || saved === 'denied') ? 'denied' : 'granted';"
     );
     expect(documentSource).toContain(
       'var gpc = navigator.globalPrivacyControl === true;'

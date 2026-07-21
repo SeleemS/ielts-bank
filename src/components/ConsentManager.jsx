@@ -3,11 +3,14 @@ import NextLink from 'next/link';
 import {
   readOptionalConsent,
   writeOptionalConsent,
+  consentDecided,
 } from '../lib/consent';
 
-// Cookie-consent banner mirroring the denied-until-granted Google Consent Mode
-// defaults set in pages/_document.js. Choice persists in localStorage and can
-// be reopened any time via the floating "Privacy choices" button.
+// Opt-out notice banner mirroring the granted-by-default Google Consent Mode
+// defaults set in pages/_document.js: optional analytics/ads are ON by default;
+// this banner discloses that and lets the visitor opt out. GPC is always
+// honored. Choice persists in localStorage and the banner can be reopened any
+// time via the floating "Privacy choices" button.
 
 function updateConsent(choice) {
   const gtag = window.gtag;
@@ -26,8 +29,10 @@ function updateConsent(choice) {
 export default function ConsentManager({ onConsentChange }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    const saved = readOptionalConsent();
-    if (saved) updateConsent(saved); else setOpen(true);
+    // Push the effective state (granted by default, denied on opt-out/GPC) into
+    // Consent Mode, and show the notice until the visitor has decided.
+    updateConsent(readOptionalConsent());
+    if (!consentDecided()) setOpen(true);
   }, []);
   const choose = (choice) => {
     const resolvedChoice = writeOptionalConsent(choice);
@@ -47,9 +52,9 @@ export default function ConsentManager({ onConsentChange }) {
         >
           <h2 className="font-bold text-foreground">Your privacy choices</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            We use analytics to improve the site and advertising to keep practice free. You can
-            accept or reject optional analytics and personalized-ad storage. Essential storage
-            remains on.
+            We use analytics and advertising to improve the site and keep practice free — these are
+            on by default. You can opt out of optional analytics and personalized-ad storage anytime.
+            Essential storage always stays on.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button

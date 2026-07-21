@@ -20,8 +20,10 @@ function browserStorage(storage) {
   }
 }
 
-export function readOptionalConsent(storage) {
-  if (globalPrivacyControlEnabled()) return 'denied';
+// The visitor's EXPLICIT stored choice, or null if they have not chosen. This
+// does NOT apply the opt-out default — it answers "did the visitor decide?",
+// which is what the banner uses to know whether to keep showing.
+export function readStoredConsent(storage) {
   if (typeof window !== 'undefined') {
     const current = normalizeOptionalConsent(window.__ieltsOptionalConsent);
     if (current) return current;
@@ -31,6 +33,21 @@ export function readOptionalConsent(storage) {
   } catch {
     return null;
   }
+}
+
+// Effective consent used for tracking decisions. OPT-OUT model: optional
+// analytics and advertising are ON by default and stay on until the visitor
+// explicitly opts out — EXCEPT when the browser sends Global Privacy Control,
+// which is always honored (a legal requirement in several US states).
+export function readOptionalConsent(storage) {
+  if (globalPrivacyControlEnabled()) return 'denied';
+  return readStoredConsent(storage) || 'granted';
+}
+
+// Whether the visitor's choice is settled (GPC signal or an explicit click), so
+// the notice/opt-out banner can stay hidden.
+export function consentDecided(storage) {
+  return globalPrivacyControlEnabled() || readStoredConsent(storage) !== null;
 }
 
 export function writeOptionalConsent(choice, storage) {

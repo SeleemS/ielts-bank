@@ -139,8 +139,19 @@ describe('dual analytics tracking', () => {
     expect(isInternalAnalyticsPath('/pricing?upgrade=writing')).toBe(false);
   });
 
-  it('does not create identifiers or send analytics without an explicit grant', () => {
+  it('tracks by default (opt-out) when the visitor has not opted out', () => {
     window.__ieltsOptionalConsent = null;
+    window.localStorage = storage();
+    window.sessionStorage = storage();
+
+    track('ui_interaction', { element_id: 'pricing_cta' });
+
+    expect(window.gtag).toHaveBeenCalled();
+    expect(window.fetch).toHaveBeenCalled();
+  });
+
+  it('does not create identifiers or send analytics after an explicit opt-out', () => {
+    window.__ieltsOptionalConsent = 'denied';
     window.localStorage = storage();
     window.sessionStorage = storage();
 
