@@ -2977,6 +2977,48 @@ False positives are kept in the investigation notes so they are not rediscovered
   No billing object was created or mutated during that attempt. The remaining success-path gap is
   explicit until a scoped cron credential or Stripe sandbox is available.
 
+## CA-117 — Customer Portal trusted an unverified database-to-Stripe customer pointer
+
+- Status: `FIXED`
+- Area: Monetization / Customer Portal / object ownership / billing-data authorization
+- Severity: Medium
+- Evidence: the authenticated portal route looked up only the learner's service-role
+  `stripe_customer_id` and passed that identifier directly into Stripe session creation. Stripe's
+  current [Customer Portal session API](https://docs.stripe.com/api/customer_portal/sessions/create?lang=node)
+  scopes a session to the supplied Customer, and the resulting hosted UI can manage that customer's
+  subscriptions and billing details. A stale or corrupted application mapping could therefore open
+  another customer's invoices, payment methods, tax details, and cancellation controls without any
+  provider-side ownership check. Read-only production reconciliation found no existing exposure:
+  all seven stored customer IDs were unique and present, all seven Customer `metadata.user_id`
+  values matched the application learner, and all three stored subscriptions matched both the
+  customer and learner with zero anomalies.
+- Fix: retrieve the Stripe Customer after authentication and rate limiting but before portal session
+  creation. The route now requires a live, non-deleted Customer whose provider-side `user_id`
+  metadata exactly matches the authenticated learner. Missing, deleted, unmapped, or mismatched
+  customers fail closed with HTTP 409 `billing_account_mismatch` and no portal session. Stripe setup,
+  retrieval, configuration, and session outages now return a retryable HTTP 503 rather than a
+  misleading generic server failure. Stripe's current
+  [Customer retrieval behavior](https://docs.stripe.com/api/customers/object) documents the
+  `deleted: true` response that the guard handles explicitly.
+- Regression coverage: the portal suite now verifies the customer lookup precedes session creation,
+  rejects a different owner, absent owner metadata, deleted customer, and missing customer, and
+  distinguishes provider unavailability from durable mapping failures. Existing method, origin,
+  authentication, database-failure, rate-limit, fixed-return-URL, and successful-session cases remain
+  covered.
+- Commit: `Verify Stripe portal customer ownership`.
+- Verification: the focused 17-test portal suite, complete 93-file/642-test Vitest suite, ESLint,
+  strict 176-file analytics audit covering 284 interactive controls, and the network-enabled
+  529-page production build passed. Local HEAD and `origin/main` matched exact SHA
+  `fd0f45c1c95b2b1ccaec78c67c93d8eeb2115b6c`; GitHub's successful Vercel status tied that SHA to
+  deployment `dpl_AkztHPuGJL1mzzBpWD2X2XRHqKku`, which reached promoted `READY` on every canonical
+  alias. A disposable confirmed production learner was then linked to a Customer carrying a
+  deliberately different owner: the deployed route returned HTTP 409 `billing_account_mismatch`
+  with no session URL. After changing only that Customer's metadata to the exact learner ID, the
+  same authenticated request returned HTTP 200 and a short-lived `billing.stripe.com` portal URL.
+  The test created no subscription or charge. Its Stripe Customer and Auth user were deleted, the
+  disposable limiter rows were removed, and service-role read-back found zero matching `users` or
+  rate-limit rows.
+
 ## Investigation notes
 
 - Footer trademark quotation marks initially appeared escaped in serialized browser output.
