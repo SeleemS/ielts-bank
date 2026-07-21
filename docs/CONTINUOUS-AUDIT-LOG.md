@@ -2552,8 +2552,13 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Recover auth confirmation resend failures`.
 - Verification: the focused four-file/11-test auth suite, complete 92-file/581-test Vitest suite,
   ESLint, strict 175-file analytics audit covering 282 interactive controls, and the 529-page
-  production build passed. Publication and canonical verification are recorded after the isolated
-  fix deploys; no email was sent and no auth or application data was changed during local testing.
+  production build passed. GitHub's Vercel status tied exact SHA
+  `2637517e5e2710d3ad23eb0aedea7a5a3b90e5bf` to deployment
+  `dpl_PLHCB3Z5sQj6aJ2KeH3ABgDzbnfV`, which reached promoted `READY` on the canonical aliases. The
+  canonical HTML referenced that exact deployment, and its fetched client chunks contained both
+  automatic and manual resend recovery messages. A real provider failure was not induced in
+  production; both rejected-provider transitions are verified by deterministic dialog tests. No
+  email was sent and no auth or application data was changed.
 
 ## Investigation notes
 
