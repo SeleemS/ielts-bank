@@ -3835,6 +3835,40 @@ False positives are kept in the investigation notes so they are not rediscovered
   quota was exhausted after deployment verification; no browser/app failure was observed, and this
   unavailable check is not represented as completed evidence.
 
+## CA-143 — Pricing checkout auth outages reopened sign-in for linked users
+
+- Status: `FIXED`
+- Area: Pricing / checkout start / authenticated session verification / retry recovery
+- Severity: Medium
+- Evidence: after `useAuth()` had already identified a learner, the Pricing checkout action read
+  only `data` from Supabase `getSession()`. A resolved `{ data, error }` dependency failure was
+  therefore collapsed into a verified missing session and reopened the sign-in dialog. A rejected
+  session read instead reached the generic “Could not start checkout” branch. Neither outcome
+  created a Stripe Checkout session, but equivalent auth outages produced contradictory and
+  misleading recovery journeys before the billing boundary.
+- Fix: resolve checkout authorization through the shared three-state browser-session helper. Both
+  resolved and rejected auth failures now stop before `/api/billing/checkout`, keep the learner on
+  Pricing, and show an accessible refresh-and-retry alert. Only a successful no-session result opens
+  sign-in, while a valid token continues through the unchanged authenticated checkout request.
+- Regression coverage: the Pricing DOM suite reproduces both resolved and rejected session
+  failures for an already linked user, requires no sign-in dialog and zero checkout API requests,
+  and asserts the truthful retry alert. Existing coverage still proves signed-out plan selection is
+  resumed after authentication and a valid token reaches the checkout API with the selected SKU.
+- Commit: `195758ac9112621819691dd1c86c863ff6a6dbc2`
+  (`fix: distinguish pricing auth outages from sign-out`).
+- Verification: the focused 2-file/14-test Pricing/session run, complete 100-file/697-test Vitest
+  suite, ESLint, strict 185-file analytics audit covering 291 interactive controls and 105 explicit
+  track calls, and the network-enabled 530-page production build passed. Immediately before commit,
+  a fresh fetch proved local HEAD and `origin/main` both matched exact prior canonical production
+  evidence SHA `ffc89a97f4f577b6b7ac9a7230c633a65ab3d505`; after push they both matched the code
+  SHA above. GitHub's successful Vercel status tied it to deployment
+  `dpl_A64J1cW5rXJEDu7EW8RzqzsCjwiv`, which reached promoted `READY` on every canonical alias.
+  A fresh in-app browser load of canonical `/pricing` rendered the complete signed-out plan journey
+  and its single plan-specific checkout action. Canonical HTML referenced
+  `pricing-a9b4062c220ea1e8.js`, and direct promoted-chunk inspection found the exact new
+  session-verification retry message. No paid purchase or Stripe session was initiated during this
+  deployment smoke check.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added
