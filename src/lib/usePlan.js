@@ -40,6 +40,10 @@ export function usePlan() {
       return undefined;
     }
     let active = true;
+    // The prior effect may have completed in the signed-out state. Restore the
+    // loading barrier before querying the newly authenticated owner so billing
+    // consumers never render stale Free or previous-account actions.
+    setState((current) => ({ ...current, loading: true, error: null }));
     getSupabase()
       .from('users')
       .select('plan, plan_sku, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, billing_pause_used_at, stripe_customer_id')

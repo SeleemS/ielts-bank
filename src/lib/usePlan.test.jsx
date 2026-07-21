@@ -5,12 +5,13 @@ import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 const testState = vi.hoisted(() => ({
+  user: { id: 'user-1', email: 'audit@example.com' },
   result: { data: null, error: null },
 }));
 
 vi.mock('./auth', () => ({
   useAuth: () => ({
-    user: { id: 'user-1', email: 'audit@example.com' },
+    user: testState.user,
   }),
 }));
 vi.mock('../../lib/supabase', () => ({
@@ -18,7 +19,7 @@ vi.mock('../../lib/supabase', () => ({
     from: () => ({
       select: () => ({
         eq: () => ({
-          maybeSingle: async () => testState.result,
+          maybeSingle: () => Promise.resolve(testState.result),
         }),
       }),
     }),
@@ -56,6 +57,8 @@ async function renderHook() {
 }
 
 beforeEach(() => {
+  testState.user = { id: 'user-1', email: 'audit@example.com' };
+  testState.result = { data: null, error: null };
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -68,6 +71,45 @@ afterEach(() => {
 });
 
 describe('usePlan query failures', () => {
+  it('restores loading while a newly signed-in owner query is unresolved', async () => {
+    testState.user = null;
+    await act(async () => {
+      root.render(<Harness />);
+      await Promise.resolve();
+    });
+    expect(JSON.parse(container.querySelector('output').textContent).loading).toBe(false);
+
+    let resolveQuery;
+    testState.result = new Promise((resolve) => {
+      resolveQuery = resolve;
+    });
+    testState.user = { id: 'user-1', email: 'audit@example.com' };
+    await act(async () => {
+      root.render(<Harness />);
+      await Promise.resolve();
+    });
+
+    const pending = JSON.parse(container.querySelector('output').textContent);
+    expect(pending.loading).toBe(true);
+    expect(pending.error).toBeNull();
+
+    await act(async () => {
+      resolveQuery({
+        data: {
+          plan: 'premium',
+          plan_status: 'active',
+          plan_renews_at: '2026-10-01T00:00:00.000Z',
+        },
+        error: null,
+      });
+      await Promise.resolve();
+    });
+
+    const settled = JSON.parse(container.querySelector('output').textContent);
+    expect(settled.loading).toBe(false);
+    expect(settled.isPremium).toBe(true);
+  });
+
   it('exposes a resolved Supabase error instead of silently reporting Free', async () => {
     testState.result = {
       data: null,
