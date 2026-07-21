@@ -17,6 +17,7 @@ import SignInDialog from '../components/auth/SignInDialog';
 import { ScoringProgress } from '../components/question/ScoreUI';
 import WritingScoreReport from '../components/question/WritingScoreReport';
 import { syncLocalAttempts } from '../lib/progress';
+import { getSessionAccess } from '../lib/sessionAccess';
 
 import { SITE_URL } from '../../lib/site';
 import {
@@ -150,13 +151,20 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
       // Attach the current linked account's access token. The server rejects
       // missing and anonymous-auth tokens before consuming the lifetime sample.
       const headers = { 'Content-Type': 'application/json' };
-      try {
-        const { data } = await getSupabase().auth.getSession();
-        const accessToken = data?.session?.access_token;
-        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-      } catch {
-        /* not signed in / auth unavailable — the server returns 401 */
+      const session = await getSessionAccess(getSupabase);
+      if (session.error) {
+        track('ai_score_result', {
+          skill: 'writing',
+          slug: storageKey,
+          outcome: 'error',
+          error_type: 'auth_session',
+          task,
+          signed_in: Boolean(user),
+        });
+        setErrorMsg('Could not verify your session. Please refresh and try again.');
+        return;
       }
+      if (session.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
 
       const response = await fetch(SCORE_API, {
         method: 'POST',

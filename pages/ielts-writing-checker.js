@@ -29,6 +29,7 @@ import { getAnonId, track } from '../src/lib/analytics';
 import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import { ScoringProgress } from '../src/components/question/ScoreUI';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
+import { getSessionAccess } from '../src/lib/sessionAccess';
 
 import { WRITING_CHECKER_SEO } from '../lib/writingCheckerSeo';
 import { WRITING_PROMPT_MAX_CHARS } from '../lib/writingLimits';
@@ -207,13 +208,20 @@ export default function WritingCheckerPage() {
     let scored = false;
     try {
       const headers = { 'Content-Type': 'application/json' };
-      try {
-        const { data } = await getSupabase().auth.getSession();
-        const accessToken = data?.session?.access_token;
-        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-      } catch {
-        /* not signed in / auth unavailable */
+      const session = await getSessionAccess(getSupabase);
+      if (session.error) {
+        track('ai_score_result', {
+          skill: 'writing',
+          slug: CHECKER_SLUG,
+          outcome: 'error',
+          error_type: 'auth_session',
+          task: apiTask,
+          signed_in: Boolean(user),
+        });
+        setErrorMsg('Could not verify your session. Please refresh and try again.');
+        return;
       }
+      if (session.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
 
       // Prepend the task-type label to the free-form prompt so the model knows
       // whether this is Academic Task 1, General Training Task 1, or Task 2.
