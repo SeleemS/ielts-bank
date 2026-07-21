@@ -3327,6 +3327,36 @@ False positives are kept in the investigation notes so they are not rediscovered
   successful Vercel status tied it to deployment `dpl_Fdrw4RNfUKz6CjCV7FCfSN4TXB2P`, which reached
   promoted `READY` on every canonical alias.
 
+## CA-128 — Estimator discarded the Writing feedback returned after reveal
+
+- Status: `FIXED`
+- Area: Band estimator / post-sign-up reward / Free entitlement / Premium report
+- Severity: High
+- Evidence: `/api/estimator/reveal` intentionally returned the overall Writing band plus the first
+  full criterion to a Free learner, and all four criteria, examiner summary, improvement plan, and
+  corrected examples to Premium. `EstimatorResults` stored that response but passed only `band` and
+  `wordCount` into a small card. Both account types therefore saw only the indicative band; the Free
+  criterion and entire paid report were discarded despite being securely delivered, undermining the
+  sign-up reward and withholding a Premium entitlement the API had already authorized.
+- Fix: render the revealed payload through the existing secure Writing report component. Estimator
+  copy now identifies a short sample rather than an essay and uses estimator-specific paywall
+  attribution. A Free response renders Task Response in full while the absent API fields remain
+  label-only Premium placeholders; no locked feedback is placed in the DOM. A Premium response
+  renders all criteria, summary, improvements, and corrected examples.
+- Regression coverage: the focused estimator/report suites verify the Free criterion is visible,
+  locked criterion labels and the sample-specific upgrade count render, paid feedback text is absent
+  from the Free DOM, and the Premium response renders Lexical feedback, summary, corrections, and no
+  upgrade control. Existing shared full-essay Free/Premium report behavior remains green.
+- Commit: `5dd2d1dbcce94fef2081de7d79f9c169f953dd80` (`fix: render revealed estimator writing feedback`).
+- Verification: the focused 2-file/6-test estimator/report suite, complete 97-file/667-test Vitest
+  suite, ESLint, strict 181-file analytics audit covering 291 interactive controls, and the
+  network-enabled 529-page production build passed. Local HEAD and `origin/main` matched the exact
+  code SHA; GitHub's successful Vercel status tied it to deployment
+  `dpl_8zmBt6goyCicmNGJDBveQJjjgDmn`, which reached promoted `READY` on every canonical alias. The
+  fresh canonical `/band-estimator` HTML referenced page chunk
+  `band-estimator-e962375b6f064956.js`; that promoted chunk contained the new “Your Writing
+  feedback,” “Indicative short Writing sample,” secure unlock, and estimator attribution literals.
+
 ## Investigation notes
 
 - `EstimatorResults` consumes `usePlan().isPremium` without honoring `loading`; it remains an
