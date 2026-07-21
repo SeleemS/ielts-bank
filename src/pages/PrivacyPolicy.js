@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
-import { PRIVACY_SEO } from '../../lib/privacySeo';
+import { PRIVACY_LAST_UPDATED, PRIVACY_SEO } from '../../lib/privacySeo';
 
 const PrivacyPolicy = () => {
   return (
@@ -44,7 +44,9 @@ const PrivacyPolicy = () => {
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">Last updated: July 18, 2026</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Last updated: {PRIVACY_LAST_UPDATED}
+          </p>
 
           <Card className="mt-6">
             <CardContent className="space-y-5 pt-6 text-[15px] leading-8 text-slate-700">
