@@ -425,6 +425,28 @@ export default async function handler(req, res) {
   }
 
   // --- 3. Rate limit BEFORE any OpenAI spend -------------------------------
+  // Check the owner bucket before the shared circuit breaker. Both calls
+  // increment, so an owner already at their cap must not reduce global access.
+  const userLimit = await checkLimit(
+    'speaking-score',
+    userId,
+    PER_USER_WINDOW_SECONDS,
+    PER_USER_MAX
+  );
+  if (userLimit.error) {
+    console.error('rate-limit check failed:', userLimit.error.message);
+    await cleanupRecording(audioPath);
+    return res
+      .status(503)
+      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+  }
+  if (!userLimit.allowed) {
+    await cleanupRecording(audioPath);
+    return res.status(429).json({
+      error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
+    });
+  }
+
   const dayKey = new Date().toISOString().slice(0, 10);
   const globalLimit = await checkLimit(
     'speaking-score-global',
@@ -444,26 +466,6 @@ export default async function handler(req, res) {
     return res.status(429).json({
       error:
         'AI scoring is temporarily unavailable due to high demand. Please try again later.',
-    });
-  }
-
-  const userLimit = await checkLimit(
-    'speaking-score',
-    userId,
-    PER_USER_WINDOW_SECONDS,
-    PER_USER_MAX
-  );
-  if (userLimit.error) {
-    console.error('rate-limit check failed:', userLimit.error.message);
-    await cleanupRecording(audioPath);
-    return res
-      .status(503)
-      .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-  }
-  if (!userLimit.allowed) {
-    await cleanupRecording(audioPath);
-    return res.status(429).json({
-      error: `You have reached the limit of ${PER_USER_MAX} speaking scorings per day. Please try again tomorrow.`,
     });
   }
 

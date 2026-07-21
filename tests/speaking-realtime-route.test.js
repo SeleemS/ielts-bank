@@ -227,7 +227,10 @@ describe('POST /api/score/speaking-realtime access gate', () => {
     const res = await callRoute({ body: validTranscriptBody() });
 
     expect(res.statusCode).toBe(503);
-    expect(state.rpcCalls).toHaveLength(1);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'realtime-score-ip',
+      'realtime-score-global',
+    ]);
   });
 
   it('returns 429 only for a verified per-IP limit', async () => {
@@ -238,7 +241,6 @@ describe('POST /api/score/speaking-realtime access gate', () => {
 
     expect(res.statusCode).toBe(429);
     expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
-      'realtime-score-global',
       'realtime-score-ip',
     ]);
   });

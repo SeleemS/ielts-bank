@@ -344,6 +344,25 @@ export default async function handler(req, res) {
   try {
     const ip = clientIp(req);
 
+    // Check the caller-specific bucket first. The RPC increments atomically, so
+    // a request already blocked here must never consume shared daily capacity.
+    const ipLimit = await checkLimit(
+      'writing-score',
+      ip,
+      PER_IP_WINDOW_SECONDS,
+      PER_IP_MAX
+    );
+    if (ipLimit.error) {
+      return res
+        .status(503)
+        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    }
+    if (!ipLimit.allowed) {
+      return res.status(429).json({
+        error: `You have reached the limit of ${PER_IP_MAX} scorings per hour. Please try again later.`,
+      });
+    }
+
     const dayKey = new Date().toISOString().slice(0, 10);
     const globalLimit = await checkLimit(
       'writing-score-global',
@@ -360,23 +379,6 @@ export default async function handler(req, res) {
       return res.status(429).json({
         error:
           'AI scoring is temporarily unavailable due to high demand. Please try again later.',
-      });
-    }
-
-    const ipLimit = await checkLimit(
-      'writing-score',
-      ip,
-      PER_IP_WINDOW_SECONDS,
-      PER_IP_MAX
-    );
-    if (ipLimit.error) {
-      return res
-        .status(503)
-        .json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-    }
-    if (!ipLimit.allowed) {
-      return res.status(429).json({
-        error: `You have reached the limit of ${PER_IP_MAX} scorings per hour. Please try again later.`,
       });
     }
   } catch (e) {

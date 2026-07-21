@@ -290,7 +290,10 @@ describe('POST /api/score/speaking quota safety', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(503);
-    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'speaking-score',
+      'speaking-score-global',
+    ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
@@ -300,7 +303,10 @@ describe('POST /api/score/speaking quota safety', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(503);
-    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'speaking-score',
+      'speaking-score-global',
+    ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
@@ -309,7 +315,10 @@ describe('POST /api/score/speaking quota safety', () => {
     const res = await callRoute();
 
     expect(res.statusCode).toBe(429);
-    expect(state.rpcCalls.map(({ name }) => name)).toEqual(['check_rate_limit']);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'speaking-score',
+      'speaking-score-global',
+    ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
   });
 
@@ -320,7 +329,6 @@ describe('POST /api/score/speaking quota safety', () => {
 
     expect(res.statusCode).toBe(503);
     expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
-      'speaking-score-global',
       'speaking-score',
     ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);
@@ -332,7 +340,6 @@ describe('POST /api/score/speaking quota safety', () => {
 
     expect(res.statusCode).toBe(429);
     expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
-      'speaking-score-global',
       'speaking-score',
     ]);
     expect(state.removedPaths).toEqual(['premium-user/recording.webm']);

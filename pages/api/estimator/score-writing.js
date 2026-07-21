@@ -112,21 +112,23 @@ export default async function handler(req, res) {
 
   // --- Abuse controls BEFORE calling OpenAI -------------------------------
   try {
-    const dayKey = new Date().toISOString().slice(0, 10);
-    const global = await checkLimit('estimator-writing-global', dayKey, GLOBAL_WINDOW, GLOBAL_MAX);
-    if (global.error) return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-    if (!global.allowed) return res.status(429).json({ error: 'The estimator is busy right now. Please try again later.' });
+    // Start at the narrowest identity. Each RPC increments its bucket, so a
+    // locally blocked visitor must not burn IP or global availability.
+    const anonLimit = await checkLimit('estimator-writing-anon', anonId, PER_ANON_WINDOW, PER_ANON_MAX);
+    if (anonLimit.error) return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    if (!anonLimit.allowed) {
+      return res.status(429).json({ error: 'You have used your estimator writing checks for today. Create a free account to score more essays.', code: 'anon_daily_cap' });
+    }
 
     const ip = clientIp(req);
     const ipLimit = await checkLimit('estimator-writing-ip', ip, PER_IP_WINDOW, PER_IP_MAX);
     if (ipLimit.error) return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
     if (!ipLimit.allowed) return res.status(429).json({ error: 'Too many attempts. Please wait a little and try again.' });
 
-    const anonLimit = await checkLimit('estimator-writing-anon', anonId, PER_ANON_WINDOW, PER_ANON_MAX);
-    if (anonLimit.error) return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
-    if (!anonLimit.allowed) {
-      return res.status(429).json({ error: 'You have used your estimator writing checks for today. Create a free account to score more essays.', code: 'anon_daily_cap' });
-    }
+    const dayKey = new Date().toISOString().slice(0, 10);
+    const global = await checkLimit('estimator-writing-global', dayKey, GLOBAL_WINDOW, GLOBAL_MAX);
+    if (global.error) return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
+    if (!global.allowed) return res.status(429).json({ error: 'The estimator is busy right now. Please try again later.' });
   } catch {
     return res.status(503).json({ error: 'Scoring is temporarily unavailable. Please try again later.' });
   }

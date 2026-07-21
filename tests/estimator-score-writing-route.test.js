@@ -7,13 +7,15 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 
 const state = {
   rateLimitResponses: [],
+  rpcCalls: [],
   inserts: [],
   insertError: null,
 };
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
-    rpc: async (name) => {
+    rpc: async (name, args) => {
+      state.rpcCalls.push({ name, args });
       if (name === 'check_rate_limit') {
         const r = state.rateLimitResponses.shift();
         return r === undefined ? { data: true, error: null } : r;
@@ -46,6 +48,7 @@ let handler;
 
 beforeEach(async () => {
   state.rateLimitResponses = [];
+  state.rpcCalls = [];
   state.inserts = [];
   state.insertError = null;
   global.fetch = vi.fn(async () => ({
@@ -134,13 +137,51 @@ describe('POST /api/estimator/score-writing', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('returns 429 when a rate limit is hit, before calling the model', async () => {
-    state.rateLimitResponses = [{ data: false, error: null }]; // global cap tripped
+  it('stops at the anonymous cap without consuming IP or global capacity', async () => {
+    state.rateLimitResponses = [{ data: false, error: null }];
     const res = mockRes();
     await handler(mockReq({ anon_id: ANON, essay: PARAGRAPH }), res);
     expect(res.statusCode).toBe(429);
+    expect(res.body.code).toBe('anon_daily_cap');
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'estimator-writing-anon',
+    ]);
     expect(global.fetch).not.toHaveBeenCalled();
     expect(state.inserts.find((i) => i.table === 'estimator_writing_scores')).toBeFalsy();
+  });
+
+  it('stops at the IP cap without consuming global capacity', async () => {
+    state.rateLimitResponses = [
+      { data: true, error: null },
+      { data: false, error: null },
+    ];
+    const res = mockRes();
+    await handler(mockReq({ anon_id: ANON, essay: PARAGRAPH }), res);
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'estimator-writing-anon',
+      'estimator-writing-ip',
+    ]);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('checks global capacity only after the visitor and IP are eligible', async () => {
+    state.rateLimitResponses = [
+      { data: true, error: null },
+      { data: true, error: null },
+      { data: false, error: null },
+    ];
+    const res = mockRes();
+    await handler(mockReq({ anon_id: ANON, essay: PARAGRAPH }), res);
+
+    expect(res.statusCode).toBe(429);
+    expect(state.rpcCalls.map(({ args }) => args.p_bucket)).toEqual([
+      'estimator-writing-anon',
+      'estimator-writing-ip',
+      'estimator-writing-global',
+    ]);
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('fails closed when the scored result cannot be stored', async () => {

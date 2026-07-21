@@ -153,20 +153,8 @@ export default async function handler(req, res) {
     });
   }
 
-  const dayKey = new Date().toISOString().slice(0, 10);
-  const globalLimit = await checkLimit(
-    'realtime-score-global',
-    dayKey,
-    GLOBAL_WINDOW_SECONDS,
-    GLOBAL_MAX
-  );
-  if (globalLimit.error || !globalLimit.allowed) {
-    if (globalLimit.error) {
-      console.error('global check_rate_limit error:', globalLimit.error.message);
-    }
-    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
-  }
-
+  // Reject an already-capped caller before incrementing the shared daily
+  // circuit breaker; check_rate_limit mutates its counter on every invocation.
   const ipLimit = await checkLimit(
     'realtime-score-ip',
     clientIp(req),
@@ -179,6 +167,20 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
     }
     return res.status(429).json({ error: 'Too many scoring requests. Please wait a while.' });
+  }
+
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const globalLimit = await checkLimit(
+    'realtime-score-global',
+    dayKey,
+    GLOBAL_WINDOW_SECONDS,
+    GLOBAL_MAX
+  );
+  if (globalLimit.error || !globalLimit.allowed) {
+    if (globalLimit.error) {
+      console.error('global check_rate_limit error:', globalLimit.error.message);
+    }
+    return res.status(503).json({ error: 'Scoring is temporarily unavailable.' });
   }
 
   const rendered = turns
