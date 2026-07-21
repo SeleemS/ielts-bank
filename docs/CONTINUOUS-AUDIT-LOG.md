@@ -2847,8 +2847,15 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Commit: `Require confirmation for plan upgrade charges`.
 - Verification: the focused two-file/72-test billing route and Billing page suite, complete
   92-file/615-test Vitest suite, ESLint, strict 175-file analytics audit covering 284 interactive
-  controls, and the network-enabled 529-page production build passed. Publication and post-deploy
-  non-mutating evidence are recorded after the isolated fix deploys.
+  controls, and the network-enabled 529-page production build passed. GitHub's successful Vercel
+  status tied exact SHA `74ccc678b9158fc0a09cc0a6c3e6af25ea53fa96` to production deployment
+  `dpl_GfdvLaomJ81f3ZCpU1QuVoXnttCj`, which reached promoted `READY` on every canonical alias. A
+  disposable confirmed Free learner then submitted the deployed legacy SKU-only annual request; it
+  returned HTTP 409 `no_active_subscription`, and provider readback confirmed the plan remained
+  Free with no Stripe customer or subscription identifier. The exact Auth user was deleted, with
+  zero residual matching Auth users, `users`, `user_quotas`, or rate-limit rows. Active-subscriber
+  preview/confirm behavior is covered without altering a live subscription by the signed route and
+  real-component cases above.
 
 ## Investigation notes
 
