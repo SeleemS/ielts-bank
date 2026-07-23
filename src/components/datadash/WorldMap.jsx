@@ -14,8 +14,11 @@ export default function WorldMap({ countries, activeCountries }) {
     for (const row of countries || []) map[row.c] = row;
     return map;
   }, [countries]);
+  // Color by ENGAGED visitors (>=3 events) — raw visitor counts are inflated
+  // by JS-executing crawlers that GA/Vercel filter out. Raw stays in tooltip.
+  const metric = (row) => row.engaged ?? row.visitors;
   const max = React.useMemo(
-    () => Math.max(1, ...(countries || []).map((row) => row.visitors)),
+    () => Math.max(1, ...(countries || []).map((row) => metric(row))),
     [countries]
   );
   const activeByCode = React.useMemo(() => {
@@ -43,7 +46,8 @@ export default function WorldMap({ countries, activeCountries }) {
         </div>
         {stats ? (
           <>
-            <TipRow label="Visitors" value={fmtNum(stats.visitors)} />
+            <TipRow label="Engaged (≥3 events)" value={fmtNum(stats.engaged ?? stats.visitors)} />
+            <TipRow label="All visitors (incl. bots)" value={fmtNum(stats.visitors)} />
             <TipRow label="Events" value={fmtNum(stats.events)} />
             <TipRow label="Engaged time" value={fmtDurShort(stats.engaged_secs)} />
             <TipRow label="Submits" value={fmtNum(stats.submits)} />
@@ -65,7 +69,7 @@ export default function WorldMap({ countries, activeCountries }) {
             <path
               key={country.id + country.name}
               d={country.d}
-              fill={stats ? seqColor(stats.visitors, max) : T.surfaceRaised}
+              fill={stats ? seqColor(metric(stats), max) : T.surfaceRaised}
               stroke={T.surface}
               strokeWidth="0.6"
               onMouseMove={(evt) => hover(evt, country)}
@@ -98,7 +102,7 @@ export default function WorldMap({ countries, activeCountries }) {
               <span key={step} className="h-2 w-5" style={{ background: step }} />
             ))}
           </div>
-          <span>{fmtNum(max)} visitors</span>
+          <span>{fmtNum(max)} engaged visitors</span>
         </div>
         <div className="flex items-center gap-1.5 text-[10px]" style={{ color: T.muted }}>
           <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} />

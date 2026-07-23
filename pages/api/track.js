@@ -6,6 +6,11 @@ import { clientIp, originAllowed } from '../../lib/apiSecurity';
 const EVENT_RE = /^[a-z][a-z0-9_]{1,63}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const INTERNAL_PATH_RE = /^\/(?:api|_next|gt|data)(?:\/|$)/;
+// JS-executing crawlers and AI agents were ~40% of "visitors" (Jul 2026 audit:
+// 244 of 251 US anons left ≤3 events, none practiced). GA/Vercel filter these;
+// first-party telemetry should too. Missing UA stays allowed (privacy proxies).
+const BOT_UA_RE =
+  /bot\b|crawl|spider|scrape|slurp|headless|phantomjs|selenium|puppeteer|playwright|python|aiohttp|httpx|scrapy|curl\/|wget|libwww|okhttp|go-http|node-fetch|axios\/|undici|lighthouse|pagespeed|pingdom|uptimerobot|statuscake|facebookexternalhit|whatsapp|telegrambot|slackbot|discordbot|bingpreview|semrush|ahrefs|petalbot|mj12/i;
 const SKILLS = new Set(['reading', 'writing', 'listening', 'speaking']);
 
 let adminClient = null;
@@ -92,6 +97,10 @@ export default async function handler(req, res) {
   }
   const eventPath = typeof body.path === 'string' ? body.path.trim() : '';
   if (INTERNAL_PATH_RE.test(eventPath.split(/[?#]/, 1)[0])) {
+    return res.status(202).json({ ok: true, ignored: true });
+  }
+  const userAgent = String(req.headers['user-agent'] || '');
+  if (BOT_UA_RE.test(userAgent)) {
     return res.status(202).json({ ok: true, ignored: true });
   }
 

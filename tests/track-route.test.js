@@ -126,3 +126,49 @@ describe('POST /api/track rate-limit outcomes', () => {
     });
   });
 });
+
+describe('POST /api/track bot filtering', () => {
+  beforeEach(() => {
+    state.limitResponse = { data: true, error: null };
+    state.limitReject = null;
+    state.tableCalls = [];
+  });
+
+  async function callWithUserAgent(userAgent) {
+    const { default: handler } = await import('../pages/api/track');
+    const res = makeRes();
+    const req = makeReq();
+    if (userAgent != null) req.headers['user-agent'] = userAgent;
+    await handler(req, res);
+    return res;
+  }
+
+  it.each([
+    'Mozilla/5.0 (compatible; GPTBot/1.1; +https://openai.com/gptbot)',
+    'Mozilla/5.0 (compatible; ClaudeBot/1.0)',
+    'python-requests/2.32.0',
+    'curl/8.6.0',
+    'Mozilla/5.0 (X11; Linux x86_64) HeadlessChrome/125.0.0.0',
+    'Mozilla/5.0 (compatible; SemrushBot/7~bl)',
+  ])('ignores crawler UA without storing: %s', async (userAgent) => {
+    const res = await callWithUserAgent(userAgent);
+    expect(res.statusCode).toBe(202);
+    expect(res.jsonBody.ignored).toBe(true);
+    expect(state.tableCalls).toEqual([]);
+  });
+
+  it('stores events from a real browser UA', async () => {
+    const res = await callWithUserAgent(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+    );
+    expect(res.statusCode).toBe(202);
+    expect(res.jsonBody.ignored).toBeUndefined();
+    expect(state.tableCalls).toHaveLength(1);
+  });
+
+  it('still stores events when the UA header is missing', async () => {
+    const res = await callWithUserAgent(null);
+    expect(res.statusCode).toBe(202);
+    expect(state.tableCalls).toHaveLength(1);
+  });
+});

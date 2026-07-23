@@ -236,7 +236,13 @@ export default function DataDashboard() {
                 value={live ? fmtNum(live.active_now) : '–'}
                 sub={live ? `${fmtNum(live.last_hour_visitors)} visitors last hour` : ' '}
               />
-              <StatTile label={`Visitors · ${rangeLabel}`} value={fmtNum(totals.visitors)} delta={deltaFor('visitors')?.text} deltaGood={deltaFor('visitors')?.good} />
+              <StatTile
+                label={`Visitors · ${rangeLabel}`}
+                value={fmtNum(totals.visitors)}
+                delta={deltaFor('visitors')?.text}
+                deltaGood={deltaFor('visitors')?.good}
+                sub={totals.engaged_visitors != null ? `${fmtNum(totals.engaged_visitors)} engaged (≥3 events)` : undefined}
+              />
               <StatTile label="Engaged time" value={fmtDurShort(engagedSecs)} sub="active heartbeat time" />
               <StatTile label="Practice submits" value={fmtNum(totals.submits)} delta={deltaFor('submits')?.text} deltaGood={deltaFor('submits')?.good} />
               <StatTile label="Sign-ups" value={fmtNum(totals.signups)} delta={deltaFor('signups')?.text} deltaGood={deltaFor('signups')?.good} />
@@ -253,7 +259,7 @@ export default function DataDashboard() {
             <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
               <Card
                 title="AROUND THE WORLD"
-                subtitle={`Visitors by country · ${rangeLabel.toLowerCase()} · pulses are sessions active in the last 5 minutes`}
+                subtitle={`Engaged visitors (≥3 events) by country · ${rangeLabel.toLowerCase()} · pulses are sessions active in the last 5 minutes`}
                 className="xl:col-span-2"
               >
                 <WorldMap countries={data?.countries} activeCountries={live?.active_countries} />
@@ -325,12 +331,12 @@ export default function DataDashboard() {
 
             {/* Countries / acquisition / sessions */}
             <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12">
-              <Card title="TOP COUNTRIES" subtitle="By visitors · sign-ups alongside" className="xl:col-span-4">
+              <Card title="TOP COUNTRIES" subtitle="By engaged visitors (≥3 events) · sign-ups alongside" className="xl:col-span-4">
                 <HBarList
                   rows={(data?.countries || []).slice(0, 9).map((row) => ({
                     label: countryName(row.c),
                     icon: flagEmoji(row.c),
-                    value: row.visitors,
+                    value: row.engaged ?? row.visitors,
                     sub: row.signups,
                   }))}
                   subFmt={(signups) => (signups ? `${signups} ↑` : '')}
