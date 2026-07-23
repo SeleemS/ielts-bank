@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Head from 'next/head';
 import { DM_Sans } from 'next/font/google';
+import { Wifi, Users, Timer, ListChecks, UserPlus, CreditCard } from 'lucide-react';
 import {
   T, fmtNum, fmtMoney, fmtDurShort, countryName, flagEmoji, pct,
 } from '../src/components/datadash/theme';
@@ -243,30 +244,48 @@ export default function DataDashboard() {
                 label="Online now"
                 value={live ? fmtNum(live.active_now) : '–'}
                 sub={live ? `${fmtNum(live.last_hour_visitors)} last hour` : ''}
+                icon={Wifi}
+                tint={T.live}
+                live={Boolean(live?.active_now)}
               />
               <StatTile
                 label={`Visitors · ${rangeLabel}`}
                 value={fmtNum(totals.visitors)}
                 deltaPct={delta('visitors')}
                 sub={totals.engaged_visitors != null ? `${fmtNum(totals.engaged_visitors)} engaged` : ''}
+                icon={Users}
+                tint={T.line}
               />
               <StatTile
                 label="Avg session"
                 value={fmtDurShort(totals.avg_session_secs)}
                 sub={`median ${fmtDurShort(totals.median_session_secs)}`}
+                icon={Timer}
+                tint="#9085E9"
               />
-              <StatTile label="Practice submits" value={fmtNum(totals.submits)} deltaPct={delta('submits')} />
+              <StatTile
+                label="Questions answered"
+                value={fmtNum(totals.questions_answered)}
+                deltaPct={delta('questions_answered')}
+                sub={`${fmtNum(totals.submits)} full submits`}
+                icon={ListChecks}
+                tint={T.mapHigh}
+              />
               <StatTile
                 label="Sign-ups"
                 value={fmtNum(totals.signups)}
                 deltaPct={delta('signups')}
                 sub={live?.registered_users != null ? `${fmtNum(live.registered_users)} registered all-time` : ''}
+                icon={UserPlus}
+                tint={T.up}
               />
               <StatTile
                 label="Purchases"
                 value={fmtNum(totals.purchases)}
                 deltaPct={delta('purchases')}
                 sub={totals.revenue_minor > 0 ? `${fmtMoney(totals.revenue_minor)} gross` : ''}
+                icon={CreditCard}
+                tint={T.accent}
               />
             </div>
 
@@ -316,7 +335,7 @@ export default function DataDashboard() {
                 </div>
                 {/* Happening-now overlay (stacks below the globe on small screens) */}
                 <div
-                  className="relative mt-3 rounded-xl border p-3 lg:absolute lg:bottom-3 lg:right-3 lg:top-3 lg:mt-0 lg:w-[300px]"
+                  className="relative mt-3 flex flex-col rounded-xl border p-3 lg:absolute lg:bottom-3 lg:right-3 lg:top-3 lg:mt-0 lg:w-[300px]"
                   style={{ background: 'rgba(22,27,35,0.88)', borderColor: T.border, backdropFilter: 'blur(6px)' }}
                 >
                   <div className="mb-1.5 flex items-center justify-between">
@@ -344,7 +363,9 @@ export default function DataDashboard() {
                       {fmtNum(live?.last_hour_events || 0)} events · last 60 min
                     </div>
                   </div>
-                  <LiveFeed feed={live?.feed} maxHeight={340} />
+                  <div className="min-h-0 flex-1">
+                    <LiveFeed feed={live?.feed} fill maxHeight={340} />
+                  </div>
                 </div>
               </div>
             </Card>
@@ -381,7 +402,7 @@ export default function DataDashboard() {
 
             {/* Rhythm + time allocation */}
             <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-12">
-              <Card title="Weekly rhythm" subtitle="Events by hour of week" className="xl:col-span-7">
+              <Card title="Weekly rhythm" subtitle="Events by hour · always the last 7 days" className="xl:col-span-7">
                 <HourHeatmap cells={data?.hour_heatmap} />
               </Card>
               <Card title="Where time goes" subtitle="Engaged time by section (60s heartbeats)" className="xl:col-span-5">
@@ -437,10 +458,10 @@ export default function DataDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(data?.top_pages || []).map((page) => (
-                      <tr key={page.path} className="border-t" style={{ borderColor: T.divider }}>
+                    {(breakdowns.pages_top || []).map((page) => (
+                      <tr key={page.label} className="border-t" style={{ borderColor: T.divider }}>
                         <td className="max-w-[440px] truncate py-1.5 pr-2" style={{ color: T.muted }}>
-                          {page.path}
+                          {page.label}
                         </td>
                         <td className="py-1.5 pr-2 text-right tabular-nums font-semibold" style={{ color: T.ink }}>
                           {fmtNum(page.views)}

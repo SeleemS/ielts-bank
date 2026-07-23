@@ -1,7 +1,7 @@
 import * as React from 'react';
 import worldBorders from '../../lib/data/worldBorders.json';
 import countryLatLng from '../../lib/data/countryLatLng.json';
-import { T, countryName } from './theme';
+import { T, countryName, flagEmoji } from './theme';
 import { aliasFor, avatarUrl } from './aliases';
 
 // The live vector globe itself — a plain canvas renderer (real country
@@ -14,6 +14,7 @@ const DEG = Math.PI / 180;
 const THETA = 0.22; // fixed camera tilt
 const BASE_SPEED = 0.055; // rad/sec — slow cruise (~2 min per revolution)
 const LINGER_SPEED = 0.008; // rad/sec — near-pause while live visitors are in view
+const FAST_SPEED = 0.16; // rad/sec — hustle across empty ocean (nothing in view)
 
 // ?debugpin appends fake visitors — demo/verify pin placement when nobody is
 // online. The page is private, so this leaks nothing.
@@ -90,7 +91,7 @@ function fillRingIfVisible(ctx, ring, phi, cx, cy, radius) {
   ctx.fill();
 }
 
-function drawGlobe(ctx, size, phi, liveCountries, signupDots) {
+function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, maxSignups) {
   const cx = size / 2;
   const cy = size / 2;
   const radius = size * 0.44;
@@ -133,13 +134,26 @@ function drawGlobe(ctx, size, phi, liveCountries, signupDots) {
     strokeRing(ctx, ring, phi, cx, cy, radius);
   }
 
-  // Country fills + borders; live-visitor countries glow green.
+  // Country fills + borders. Sign-up countries wear shades of blue scaled by
+  // their count; live-visitor countries glow green on top of everything.
   for (const country of worldBorders) {
     const live = country.a2 && liveCountries.has(country.a2);
-    ctx.fillStyle = live ? 'rgba(62,207,142,0.13)' : 'rgba(120,140,168,0.10)';
+    const signups = (country.a2 && signupsByCountry[country.a2]) || 0;
+    if (live) {
+      ctx.fillStyle = 'rgba(62,207,142,0.13)';
+    } else if (signups > 0) {
+      const t = Math.sqrt(signups / Math.max(1, maxSignups));
+      ctx.fillStyle = `rgba(90,169,230,${(0.10 + 0.34 * t).toFixed(3)})`;
+    } else {
+      ctx.fillStyle = 'rgba(120,140,168,0.10)';
+    }
     for (const ring of country.rings) fillRingIfVisible(ctx, ring, phi, cx, cy, radius);
-    ctx.strokeStyle = live ? 'rgba(62,207,142,0.75)' : 'rgba(139,147,161,0.38)';
-    ctx.lineWidth = live ? 1.2 : 0.7;
+    ctx.strokeStyle = live
+      ? 'rgba(62,207,142,0.75)'
+      : signups > 0
+        ? 'rgba(127,196,255,0.55)'
+        : 'rgba(139,147,161,0.38)';
+    ctx.lineWidth = live ? 1.2 : signups > 0 ? 0.9 : 0.7;
     for (const ring of country.rings) strokeRing(ctx, ring, phi, cx, cy, radius);
   }
 
@@ -165,6 +179,16 @@ function drawGlobe(ctx, size, phi, liveCountries, signupDots) {
       ctx.textBaseline = 'middle';
       ctx.fillText(String(dot.n), px, py + 0.5);
     }
+    // Country flag rides beside the dot (fades with the horizon like pins).
+    if (dot.flag && z > 0.25) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, z * 1.6);
+      ctx.font = `${Math.round(11 * Math.min(1, 0.7 + z * 0.4))}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dot.flag, px + r + 3, py + 0.5);
+      ctx.restore();
+    }
   }
 }
 
@@ -178,6 +202,19 @@ function nearestMarkerDistance(markers, phi) {
     const delta = Math.abs(((marker.at[1] * DEG + phi + Math.PI) % (2 * Math.PI)) - Math.PI);
     if (delta < best) best = delta;
   }
+  return best;
+}
+
+// Angular distance from the center meridian to the nearest point of interest
+// anywhere on the sphere (visible or not) — live markers and sign-up dots.
+function nearestInterestDistance(markers, signupDots, phi) {
+  let best = Infinity;
+  const check = (lng) => {
+    const delta = Math.abs(((lng * DEG + phi + Math.PI) % (2 * Math.PI)) - Math.PI);
+    if (delta < best) best = delta;
+  };
+  for (const marker of markers) check(marker.at[1]);
+  for (const dot of signupDots) check(dot.lng);
   return best;
 }
 
@@ -263,7 +300,15 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
       lat: countryLatLng[row.c][0],
       lng: countryLatLng[row.c][1],
       n: row.signups,
+      flag: flagEmoji(row.c),
     }));
+  const signupShadeRef = React.useRef({ byCountry: {}, max: 1 });
+  signupShadeRef.current = {
+    byCountry: Object.fromEntries(
+      (countries || []).filter((row) => row.signups > 0).map((row) => [row.c, row.signups])
+    ),
+    max: Math.max(1, ...(countries || []).map((row) => row.signups || 0)),
+  };
 
   // Render loop: adaptive rotation + globe draw + DOM pin positioning.
   React.useEffect(() => {
@@ -282,12 +327,26 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
       const dt = lastTime == null ? 0 : Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
       if (!pausedRef.current && !dragRef.current) {
-        const distance = nearestMarkerDistance(markersRef.current, phiRef.current);
-        const target = distance < 0.55 ? LINGER_SPEED : distance < 1.1 ? BASE_SPEED * 0.45 : BASE_SPEED;
+        // Linger near live visitors, cruise near sign-up regions, hustle
+        // across empty ocean (e.g. the Pacific).
+        const liveDistance = nearestMarkerDistance(markersRef.current, phiRef.current);
+        const interestDistance = nearestInterestDistance(
+          markersRef.current, signupDotsRef.current, phiRef.current
+        );
+        const target = liveDistance < 0.55
+          ? LINGER_SPEED
+          : liveDistance < 1.1
+            ? BASE_SPEED * 0.45
+            : interestDistance > 1.35
+              ? FAST_SPEED
+              : BASE_SPEED;
         speedRef.current += (target - speedRef.current) * Math.min(1, dt * 2.5);
         phiRef.current += speedRef.current * dt;
       }
-      drawGlobe(ctx, size, phiRef.current, liveCountriesRef.current, signupDotsRef.current);
+      drawGlobe(
+        ctx, size, phiRef.current, liveCountriesRef.current, signupDotsRef.current,
+        signupShadeRef.current.byCountry, signupShadeRef.current.max
+      );
 
       const layer = pinLayerRef.current;
       if (layer) {

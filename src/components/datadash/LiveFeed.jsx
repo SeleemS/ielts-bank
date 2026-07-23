@@ -44,7 +44,9 @@ const VERB = {
 // Rolling feed of the latest meaningful events (heartbeats / raw clicks are
 // filtered server-side). Visitors appear as stable anonymized aliases; rows
 // that arrived since the previous poll slide in and carry an orange dot.
-export default function LiveFeed({ feed, maxHeight = 420 }) {
+// `fill` stretches the list to its parent (which must be a sized flex child);
+// otherwise the list scrolls within maxHeight.
+export default function LiveFeed({ feed, maxHeight = 420, fill = false }) {
   const seenRef = React.useRef(new Set());
   const newKeys = React.useMemo(() => {
     const fresh = new Set();
@@ -59,7 +61,10 @@ export default function LiveFeed({ feed, maxHeight = 420 }) {
   }, [feed]);
 
   return (
-    <div className="space-y-0.5 overflow-y-auto pr-1" style={{ maxHeight }}>
+    <div
+      className="space-y-0.5 overflow-y-auto pr-1"
+      style={fill ? { height: '100%', maxHeight: '100%' } : { maxHeight }}
+    >
       {(feed || []).map((item, index) => {
         const alias = aliasFor(item.vh || item.country || 'anon');
         const goal = GOAL_EVENTS.has(item.event);

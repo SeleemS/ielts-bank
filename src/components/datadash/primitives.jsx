@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { Card as ShadcnCard, CardContent } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
 import { T, fmtNum, fmtMoney } from './theme';
 
 export function Panel({ children, className = '', style }) {
@@ -45,22 +47,51 @@ export function Delta({ pctChange, invert = false }) {
   );
 }
 
-export function StatTile({ label, value, deltaPct, invert, sub }) {
+// KPI metric card (shadcn Card + Badge, dashboard palette): tinted icon chip,
+// number-forward value, pill delta, muted context line, hover lift.
+export function StatTile({ label, value, deltaPct, invert, sub, icon: Icon, tint = T.line, live }) {
+  const good = deltaPct != null && (invert ? deltaPct <= 0 : deltaPct >= 0);
   return (
-    <Panel className="px-4 py-3">
-      <div className="whitespace-nowrap text-[11px] font-semibold" style={{ color: T.muted }}>
-        {label}
-      </div>
-      <div className="mt-0.5 flex items-baseline gap-2">
-        <span className="text-[26px] font-bold leading-8 tracking-tight" style={{ color: T.ink }}>
-          {value}
-        </span>
-        <Delta pctChange={deltaPct} invert={invert} />
-      </div>
-      <div className="mt-0.5 h-4 truncate text-[11px]" style={{ color: T.faint }}>
-        {sub || ''}
-      </div>
-    </Panel>
+    <ShadcnCard
+      className="group border shadow-none transition-all duration-200 hover:-translate-y-0.5"
+      style={{ background: T.panel, borderColor: T.border }}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <span className="whitespace-nowrap text-[11px] font-semibold" style={{ color: T.muted }}>
+            {label}
+          </span>
+          {Icon ? (
+            <span
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110"
+              style={{ background: `${tint}1f`, color: tint }}
+            >
+              {live ? <LiveDot size={9} /> : <Icon size={16} strokeWidth={2.2} />}
+            </span>
+          ) : null}
+        </div>
+        <div className="-mt-2 flex items-baseline gap-2">
+          <span className="text-[27px] font-bold leading-9 tracking-tight" style={{ color: T.ink }}>
+            {value}
+          </span>
+          {deltaPct != null && Number.isFinite(deltaPct) && (
+            <Badge
+              variant="outline"
+              className="border-transparent px-1.5 py-0 text-[10px] font-bold"
+              style={{
+                background: good ? 'rgba(78,166,122,0.14)' : 'rgba(201,106,106,0.14)',
+                color: good ? T.up : T.down,
+              }}
+            >
+              {deltaPct >= 0 ? '↑' : '↓'} {Math.abs(Math.round(deltaPct))}%
+            </Badge>
+          )}
+        </div>
+        <div className="mt-0.5 h-4 truncate text-[11px]" style={{ color: T.faint }}>
+          {sub || ''}
+        </div>
+      </CardContent>
+    </ShadcnCard>
   );
 }
 
