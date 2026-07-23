@@ -43,28 +43,47 @@ export default async function handler(req, res) {
   }
   if (!requestAuthorized(req)) return res.status(401).json({ error: 'Unauthorized.' });
 
-  const range = RANGES.has(req.query.range) ? req.query.range : '7';
+  const range = RANGES.has(req.query.range) ? req.query.range : '30';
+  // offset = how many whole periods to step back (the header's ‹ › stepper).
+  const offset = Math.min(24, Math.max(0, Number.parseInt(req.query.offset, 10) || 0));
   const now = new Date();
   let from;
+  let to = now;
   let bucket = 'day';
   if (range === 'today') {
-    from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const dayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    from = new Date(dayStart - offset * 86400000);
+    to = offset === 0 ? now : new Date(dayStart - (offset - 1) * 86400000);
     bucket = 'hour';
   } else if (range === 'all') {
     from = new Date(EPOCH);
   } else {
-    from = new Date(now.getTime() - Number(range) * 24 * 60 * 60 * 1000);
-    if (range === '7') bucket = 'day';
+    const lenMs = Number(range) * 86400000;
+    from = new Date(now.getTime() - (offset + 1) * lenMs);
+    to = offset === 0 ? now : new Date(now.getTime() - offset * lenMs);
+  }
+  // Explicit granularity override; hourly is capped to short windows.
+  if (req.query.bucket === 'hour' && to.getTime() - from.getTime() <= 8 * 86400000) {
+    bucket = 'hour';
+  } else if (req.query.bucket === 'day') {
+    bucket = 'day';
   }
 
   try {
     const { data, error } = await admin().rpc('dashboard_overview', {
       p_from: from.toISOString(),
-      p_to: now.toISOString(),
+      p_to: to.toISOString(),
       p_bucket: bucket,
     });
     if (error) throw error;
-    return res.status(200).json({ range, bucket, from: from.toISOString(), data });
+    return res.status(200).json({
+      range,
+      bucket,
+      offset,
+      from: from.toISOString(),
+      to: to.toISOString(),
+      data,
+    });
   } catch (error) {
     const fallback = fixture('fixture-overview.json');
     if (fallback) return res.status(200).json({ range, bucket, from: from.toISOString(), data: fallback, fixture: true });

@@ -222,6 +222,44 @@ export function setAnalyticsUser(userId, accessToken = null) {
   window.gtag('set', { user_id: userId || null });
 }
 
+// Coarse UA buckets for the /data dashboard's Browser/OS/Device panel.
+// Order matters: Edge/Opera/Samsung UAs also contain "Chrome"; Chrome UAs
+// contain "Safari".
+export function deviceInfo(ua, maxTouchPoints = 0) {
+  const browser = /edg\//i.test(ua)
+    ? 'Edge'
+    : /opr\/|opera/i.test(ua)
+      ? 'Opera'
+      : /samsungbrowser/i.test(ua)
+        ? 'Samsung Internet'
+        : /firefox\//i.test(ua)
+          ? 'Firefox'
+          : /chrome|crios/i.test(ua)
+            ? 'Chrome'
+            : /safari/i.test(ua)
+              ? 'Safari'
+              : 'Other';
+  // iPadOS 13+ reports a Mac UA but exposes multi-touch.
+  const iPadOs = /macintosh/i.test(ua) && maxTouchPoints > 1;
+  const os = /windows/i.test(ua)
+    ? 'Windows'
+    : /iphone|ipad|ipod/i.test(ua) || iPadOs
+      ? 'iOS'
+      : /android/i.test(ua)
+        ? 'Android'
+        : /macintosh|mac os/i.test(ua)
+          ? 'macOS'
+          : /linux/i.test(ua)
+            ? 'Linux'
+            : 'Other';
+  const device = /ipad|tablet/i.test(ua) || iPadOs
+    ? 'Tablet'
+    : /mobi|iphone|android.*mobile/i.test(ua)
+      ? 'Mobile'
+      : 'Desktop';
+  return { browser, os, device };
+}
+
 export function trackPageView(url, signedIn = false) {
   if (typeof window === 'undefined') return;
   if (!analyticsConsentGranted()) return;
@@ -231,6 +269,7 @@ export function trackPageView(url, signedIn = false) {
     page_path: url,
     page_title: document.title,
     signed_in: signedIn,
+    ...deviceInfo(window.navigator?.userAgent || '', window.navigator?.maxTouchPoints || 0),
   });
 }
 
