@@ -7,7 +7,7 @@ import {
 import {
   Panel, Card, StatTile, RankedList, LiveDot, Sparkline,
 } from '../src/components/datadash/primitives';
-import FlatMap from '../src/components/datadash/FlatMap';
+import GlobeStage, { Starfield, withDebugPins } from '../src/components/datadash/GlobeStage';
 import TrafficChart from '../src/components/datadash/TrafficChart';
 import Funnel from '../src/components/datadash/Funnel';
 import HourHeatmap from '../src/components/datadash/HourHeatmap';
@@ -147,6 +147,20 @@ export default function DataDashboard() {
   const breakdowns = data?.breakdowns || {};
   const [showGlobe, setShowGlobe] = React.useState(false);
 
+  // Size the embedded globe to the space left of the happening-now panel.
+  const stageWrapRef = React.useRef(null);
+  const [stageSize, setStageSize] = React.useState(480);
+  React.useEffect(() => {
+    const el = stageWrapRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => {
+      setStageSize(Math.max(300, Math.min(el.clientWidth * 0.96, 560)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [authed]);
+  const activeVisitors = React.useMemo(() => withDebugPins(live?.active), [live]);
+
   const showDeltas = dash.range !== 'all' && (prev.visitors || 0) > 0;
   const delta = (key) => (showDeltas ? change(totals[key] || 0, prev[key] || 0) : null);
   const rangeLabel = RANGES.find((r) => r.key === dash.range)?.label || '';
@@ -256,10 +270,10 @@ export default function DataDashboard() {
               />
             </div>
 
-            {/* Full-bleed world map with the live feed floating over it */}
+            {/* The live globe, embedded — feed floats over the starfield */}
             <Card
               title="Around the world"
-              subtitle={`Engaged visitors (≥3 events) by country · ${rangeLabel.toLowerCase()} · pulses are sessions active in the last 5 minutes`}
+              subtitle={`Live globe · sign-ups (blue) for ${rangeLabel.toLowerCase()} · green pins are sessions active in the last 5 minutes`}
               className="mb-3"
               right={
                 <div className="flex items-center gap-2">
@@ -273,17 +287,36 @@ export default function DataDashboard() {
                     onClick={() => setShowGlobe(true)}
                     className="flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold"
                     style={{ borderColor: T.border, background: T.panelHover, color: T.ink }}
+                    title="Open full screen"
                   >
-                    🌐 Live globe
+                    ⛶ Expand
                   </button>
                 </div>
               }
             >
-              <div className="relative lg:pr-[324px]">
-                <FlatMap big countries={data?.countries} activeCountries={live?.active_countries} />
-                {/* Happening-now overlay (stacks below the map on small screens) */}
+              <div
+                className="relative overflow-hidden rounded-xl border p-3 lg:pr-[324px]"
+                style={{ background: T.space, borderColor: T.divider }}
+              >
+                <Starfield />
+                <div ref={stageWrapRef} className="relative flex items-center justify-center">
+                  <GlobeStage active={activeVisitors} countries={data?.countries} size={stageSize} />
+                </div>
                 <div
-                  className="mt-3 rounded-xl border p-3 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[310px]"
+                  className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-3 text-[10px]"
+                  style={{ color: T.faint }}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} /> live now
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.line }} /> sign-ups
+                  </span>
+                  <span>drag to spin</span>
+                </div>
+                {/* Happening-now overlay (stacks below the globe on small screens) */}
+                <div
+                  className="relative mt-3 rounded-xl border p-3 lg:absolute lg:bottom-3 lg:right-3 lg:top-3 lg:mt-0 lg:w-[300px]"
                   style={{ background: 'rgba(22,27,35,0.88)', borderColor: T.border, backdropFilter: 'blur(6px)' }}
                 >
                   <div className="mb-1.5 flex items-center justify-between">
