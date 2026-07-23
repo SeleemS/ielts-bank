@@ -42,21 +42,45 @@ const VERB = {
 };
 
 // Rolling feed of the latest meaningful events (heartbeats / raw clicks are
-// filtered server-side). Visitors appear as stable anonymized aliases.
-export default function LiveFeed({ feed }) {
+// filtered server-side). Visitors appear as stable anonymized aliases; rows
+// that arrived since the previous poll slide in and carry an orange dot.
+export default function LiveFeed({ feed, maxHeight = 420 }) {
+  const seenRef = React.useRef(new Set());
+  const newKeys = React.useMemo(() => {
+    const fresh = new Set();
+    for (const item of feed || []) {
+      const key = `${item.at}${item.vh}${item.event}`;
+      if (!seenRef.current.has(key)) fresh.add(key);
+    }
+    return fresh;
+  }, [feed]);
+  React.useEffect(() => {
+    for (const item of feed || []) seenRef.current.add(`${item.at}${item.vh}${item.event}`);
+  }, [feed]);
+
   return (
-    <div className="max-h-[420px] space-y-0.5 overflow-y-auto pr-1">
+    <div className="space-y-0.5 overflow-y-auto pr-1" style={{ maxHeight }}>
       {(feed || []).map((item, index) => {
         const alias = aliasFor(item.vh || item.country || 'anon');
         const goal = GOAL_EVENTS.has(item.event);
         const verb = VERB[item.event] || `${item.event.replaceAll('_', ' ')} at`;
         const target = item.slug || item.path || '/';
+        const isNew = newKeys.has(`${item.at}${item.vh}${item.event}`);
         return (
           <div
             key={`${item.at}-${index}`}
-            className="rounded-md px-1.5 py-[5px] text-[12px] leading-snug"
-            style={goal ? { background: 'rgba(232,121,79,0.08)' } : undefined}
+            className="relative rounded-md px-1.5 py-[5px] text-[12px] leading-snug"
+            style={{
+              background: goal ? 'rgba(232,121,79,0.08)' : undefined,
+              animation: isNew ? 'dashSlideIn 0.5s ease' : undefined,
+            }}
           >
+            {isNew && (
+              <span
+                className="absolute right-1 top-1.5 h-1.5 w-1.5 rounded-full"
+                style={{ background: T.accent }}
+              />
+            )}
             <span className="font-bold" style={{ color: alias.color }}>{alias.name}</span>
             <span style={{ color: T.faint }}> {flagEmoji(item.country)} </span>
             <span style={{ color: goal ? T.accent : T.muted }} className={goal ? 'font-semibold' : undefined}>

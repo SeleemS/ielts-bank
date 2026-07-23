@@ -7,7 +7,7 @@ import { useTip, TipBox, TipRow } from './primitives';
 // scales mapBase → mapHigh by engaged visitors; hover shows the DataFast-style
 // mini card (visitors / revenue / revenue-per-visitor / conversion); green
 // pulses mark countries with sessions active in the last 5 minutes.
-export default function FlatMap({ countries, activeCountries, tall = false }) {
+export default function FlatMap({ countries, activeCountries, tall = false, big = false }) {
   const { tip, show, hide } = useTip();
   const wrapRef = React.useRef(null);
 
@@ -64,7 +64,21 @@ export default function FlatMap({ countries, activeCountries, tall = false }) {
 
   return (
     <div ref={wrapRef} className="relative">
-      <svg viewBox={worldMap.viewBox} className={`w-full ${tall ? '' : 'max-h-[300px]'}`} role="img" aria-label="Visitors by country">
+      <svg
+        viewBox={worldMap.viewBox}
+        className={`w-full ${tall || big ? '' : 'max-h-[300px]'}`}
+        role="img"
+        aria-label="Visitors by country"
+      >
+        <defs>
+          <filter id="liveGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         {worldMap.countries.map((country) => {
           const stats = byCode[country.id];
           return (
@@ -79,17 +93,26 @@ export default function FlatMap({ countries, activeCountries, tall = false }) {
             />
           );
         })}
-        {(activeCountries || []).map((row) => {
+        {(activeCountries || []).map((row, index) => {
           const at = worldMap.centroids[row.c];
           if (!at) return null;
-          const r = Math.min(9, 4 + row.n * 1.5);
+          const r = Math.min(10, 5 + row.n * 1.5);
+          const stagger = `${(index % 4) * 0.4}s`;
           return (
             <g key={row.c} pointerEvents="none">
-              <circle cx={at[0]} cy={at[1]} r={r} fill={T.live} opacity="0.25">
-                <animate attributeName="r" values={`${r};${r + 7};${r}`} dur="2.2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.3;0;0.3" dur="2.2s" repeatCount="indefinite" />
+              {/* Two staggered expanding rings + a glowing core = the "sonar" pulse. */}
+              <circle cx={at[0]} cy={at[1]} r={r} fill="none" stroke={T.live} strokeWidth="1.4">
+                <animate attributeName="r" values={`${r * 0.4};${r + 12}`} dur="2.4s" begin={stagger} repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity" values="0.7;0" dur="2.4s" begin={stagger} repeatCount="indefinite" />
               </circle>
-              <circle cx={at[0]} cy={at[1]} r={3} fill={T.live} stroke={T.panel} strokeWidth="1.4" />
+              <circle cx={at[0]} cy={at[1]} r={r} fill="none" stroke={T.live} strokeWidth="1">
+                <animate attributeName="r" values={`${r * 0.4};${r + 12}`} dur="2.4s" begin={`${(index % 4) * 0.4 + 1.2}s`} repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity" values="0.5;0" dur="2.4s" begin={`${(index % 4) * 0.4 + 1.2}s`} repeatCount="indefinite" />
+              </circle>
+              <circle cx={at[0]} cy={at[1]} r={r * 0.55} fill={T.live} opacity="0.18">
+                <animate attributeName="opacity" values="0.28;0.1;0.28" dur="2.4s" begin={stagger} repeatCount="indefinite" />
+              </circle>
+              <circle cx={at[0]} cy={at[1]} r={3.4} fill={T.live} stroke={T.panel} strokeWidth="1.4" filter="url(#liveGlow)" />
             </g>
           );
         })}

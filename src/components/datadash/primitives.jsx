@@ -138,6 +138,28 @@ export function RankedList({ rows, maxRows = 9, valueFmt = fmtNum, emptyLabel = 
   );
 }
 
+// Tiny live sparkline (events per minute, last hour) with a glowing endpoint.
+export function Sparkline({ points, width = 200, height = 34 }) {
+  const values = (points || []).map((pt) => pt.events || 0);
+  if (!values.length) return null;
+  const max = Math.max(1, ...values);
+  const stepX = values.length > 1 ? width / (values.length - 1) : width;
+  const yAt = (value) => height - 3 - (height - 8) * (value / max);
+  const line = values.map((value, i) => `${i ? 'L' : 'M'}${(i * stepX).toFixed(1)},${yAt(value).toFixed(1)}`).join('');
+  const lastX = (values.length - 1) * stepX;
+  const lastY = yAt(values[values.length - 1]);
+  return (
+    <svg width={width} height={height} aria-hidden className="block">
+      <path d={`${line}L${lastX},${height}L0,${height}Z`} fill={T.line} opacity="0.08" />
+      <path d={line} fill="none" stroke={T.line} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx={lastX} cy={lastY} r="4.5" fill={T.live} opacity="0.25">
+        <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx={lastX} cy={lastY} r="2.4" fill={T.live} />
+    </svg>
+  );
+}
+
 export function useTip() {
   const [tip, setTip] = React.useState(null);
   const show = React.useCallback((x, y, content) => setTip({ x, y, content }), []);

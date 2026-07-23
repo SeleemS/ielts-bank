@@ -5,7 +5,7 @@ import {
   T, fmtNum, fmtMoney, fmtDurShort, countryName, flagEmoji, pct,
 } from '../src/components/datadash/theme';
 import {
-  Panel, Card, StatTile, RankedList, LiveDot,
+  Panel, Card, StatTile, RankedList, LiveDot, Sparkline,
 } from '../src/components/datadash/primitives';
 import FlatMap from '../src/components/datadash/FlatMap';
 import TrafficChart from '../src/components/datadash/TrafficChart';
@@ -164,6 +164,16 @@ export default function DataDashboard() {
         <title>Data · IELTS Bank</title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
       </Head>
+      <style jsx global>{`
+        @keyframes dashSlideIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dashGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(62, 207, 142, 0); }
+          50% { box-shadow: 0 0 12px 1px rgba(62, 207, 142, 0.35); }
+        }
+      `}</style>
 
       {authed === null && (
         <div className="flex min-h-screen items-center justify-center text-[13px]" style={{ color: T.faint }}>
@@ -215,21 +225,31 @@ export default function DataDashboard() {
 
           <div style={{ opacity: refreshing && data ? 0.55 : 1, transition: 'opacity 200ms' }}>
             {/* KPI row */}
-            <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
               <StatTile
                 label="Online now"
                 value={live ? fmtNum(live.active_now) : '–'}
-                sub={live ? `${fmtNum(live.last_hour_visitors)} visitors last hour` : ''}
+                sub={live ? `${fmtNum(live.last_hour_visitors)} last hour` : ''}
               />
               <StatTile
                 label={`Visitors · ${rangeLabel}`}
                 value={fmtNum(totals.visitors)}
                 deltaPct={delta('visitors')}
-                sub={totals.engaged_visitors != null ? `${fmtNum(totals.engaged_visitors)} engaged (≥3 events)` : ''}
+                sub={totals.engaged_visitors != null ? `${fmtNum(totals.engaged_visitors)} engaged` : ''}
               />
-              <StatTile label="Engaged time" value={fmtDurShort(engagedSecs)} sub="active heartbeat time" />
+              <StatTile label="Engaged time" value={fmtDurShort(engagedSecs)} sub="heartbeat time" />
+              <StatTile
+                label="Avg session"
+                value={fmtDurShort(totals.avg_session_secs)}
+                sub={`median ${fmtDurShort(totals.median_session_secs)}`}
+              />
               <StatTile label="Practice submits" value={fmtNum(totals.submits)} deltaPct={delta('submits')} />
               <StatTile label="Sign-ups" value={fmtNum(totals.signups)} deltaPct={delta('signups')} />
+              <StatTile
+                label="Registered users"
+                value={live?.registered_users != null ? fmtNum(live.registered_users) : '–'}
+                sub={totals.signups ? `+${fmtNum(totals.signups)} in range` : 'all time'}
+              />
               <StatTile
                 label="Purchases"
                 value={fmtNum(totals.purchases)}
@@ -238,13 +258,19 @@ export default function DataDashboard() {
               />
             </div>
 
-            {/* World map + live column */}
-            <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
-              <Card
-                title="Around the world"
-                subtitle={`Engaged visitors (≥3 events) by country · ${rangeLabel.toLowerCase()} · pulses are sessions active in the last 5 minutes`}
-                className="xl:col-span-2"
-                right={
+            {/* Full-bleed world map with the live feed floating over it */}
+            <Card
+              title="Around the world"
+              subtitle={`Engaged visitors (≥3 events) by country · ${rangeLabel.toLowerCase()} · pulses are sessions active in the last 5 minutes`}
+              className="mb-3"
+              right={
+                <div className="flex items-center gap-2">
+                  <span
+                    className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-widest"
+                    style={{ borderColor: 'rgba(62,207,142,0.4)', color: T.live, animation: 'dashGlow 2.4s ease-in-out infinite' }}
+                  >
+                    <LiveDot size={6} /> LIVE
+                  </span>
                   <button
                     onClick={() => setShowGlobe(true)}
                     className="flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold"
@@ -252,33 +278,45 @@ export default function DataDashboard() {
                   >
                     🌐 Live globe
                   </button>
-                }
-              >
-                <FlatMap countries={data?.countries} activeCountries={live?.active_countries} />
-              </Card>
-              <Card
-                title="Happening now"
-                subtitle="Latest activity · anonymized · heartbeats filtered"
-                right={
-                  live?.active_countries?.length ? (
-                    <div className="flex max-w-[150px] flex-wrap justify-end gap-1">
-                      {live.active_countries.slice(0, 4).map((c) => (
-                        <span
-                          key={c.c}
-                          title={countryName(c.c)}
-                          className="rounded-full border px-1.5 py-0.5 text-[10px]"
-                          style={{ borderColor: T.border, color: T.muted }}
-                        >
-                          {flagEmoji(c.c)} {c.n}
-                        </span>
-                      ))}
+                </div>
+              }
+            >
+              <div className="relative lg:pr-[324px]">
+                <FlatMap big countries={data?.countries} activeCountries={live?.active_countries} />
+                {/* Happening-now overlay (stacks below the map on small screens) */}
+                <div
+                  className="mt-3 rounded-xl border p-3 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[310px]"
+                  style={{ background: 'rgba(22,27,35,0.88)', borderColor: T.border, backdropFilter: 'blur(6px)' }}
+                >
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: T.muted }}>
+                      Happening now
+                    </span>
+                    {live?.active_countries?.length ? (
+                      <div className="flex max-w-[140px] flex-wrap justify-end gap-1">
+                        {live.active_countries.slice(0, 3).map((c) => (
+                          <span
+                            key={c.c}
+                            title={countryName(c.c)}
+                            className="rounded-full border px-1.5 py-0.5 text-[10px]"
+                            style={{ borderColor: T.border, color: T.muted }}
+                          >
+                            {flagEmoji(c.c)} {c.n}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="mb-2 border-b pb-2" style={{ borderColor: T.divider }}>
+                    <Sparkline points={live?.per_minute} width={280} height={34} />
+                    <div className="mt-0.5 text-[10px]" style={{ color: T.faint }}>
+                      {fmtNum(live?.last_hour_events || 0)} events · last 60 min
                     </div>
-                  ) : null
-                }
-              >
-                <LiveFeed feed={live?.feed} />
-              </Card>
-            </div>
+                  </div>
+                  <LiveFeed feed={live?.feed} maxHeight={340} />
+                </div>
+              </div>
+            </Card>
 
             {/* Traffic + funnel */}
             <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-12">
