@@ -10,7 +10,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 let analyticsAccessToken = null;
 let pageViewId = null;
 let volatileAnonId = null;
-const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
+const INTERNAL_PATH_RE = /^\/(?:api|_next|gt|data)(?:\/|$)/;
 
 function fallbackUuid() {
   const bytes = new Uint8Array(16);

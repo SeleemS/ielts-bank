@@ -117,8 +117,28 @@ export function AuthProvider({ children }) {
       setUser(session?.user ?? null);
       setAnalyticsUser(session?.user?.id || null, session?.access_token || null);
       if (event === 'SIGNED_IN') {
-        track('login', { method: 'email', signed_in: true }, { accessToken: session?.access_token });
+        // Supabase re-emits SIGNED_IN on every tab focus / session restore,
+        // which inflated `login` events ~10x (avg 8.7 per session in the
+        // Jul-2026 audit). Track at most one login per browser tab session;
+        // the flag clears on SIGNED_OUT so a genuine re-login still counts.
+        let alreadyTracked = false;
+        try {
+          alreadyTracked = window.sessionStorage.getItem('ielts-login-tracked') === '1';
+          if (!alreadyTracked) window.sessionStorage.setItem('ielts-login-tracked', '1');
+        } catch {
+          // Storage denied: fall back to tracking (over-count beats losing logins).
+        }
+        if (!alreadyTracked) {
+          track('login', { method: 'email', signed_in: true }, { accessToken: session?.access_token });
+        }
         backfillLocalAttempts(session?.user?.id);
+      }
+      if (event === 'SIGNED_OUT') {
+        try {
+          window.sessionStorage.removeItem('ielts-login-tracked');
+        } catch {
+          // Best-effort only.
+        }
       }
       setLoading(false);
     });

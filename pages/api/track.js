@@ -5,7 +5,7 @@ import { clientIp, originAllowed } from '../../lib/apiSecurity';
 
 const EVENT_RE = /^[a-z][a-z0-9_]{1,63}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const INTERNAL_PATH_RE = /^\/(?:api|_next|gt)(?:\/|$)/;
+const INTERNAL_PATH_RE = /^\/(?:api|_next|gt|data)(?:\/|$)/;
 const SKILLS = new Set(['reading', 'writing', 'listening', 'speaking']);
 
 let adminClient = null;
