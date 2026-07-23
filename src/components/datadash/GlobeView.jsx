@@ -6,10 +6,15 @@ import GlobeStage, { Starfield, withDebugPins } from './GlobeStage';
 import FlatMap from './FlatMap';
 
 const GOAL_EVENTS = new Set([
-  'purchase_success', 'subscription_activated', 'checkout_start', 'signup_verified',
-  'signup_start', 'login', 'writing_submit', 'speaking_submit', 'attempt_submit',
-  'paywall_upgrade_click',
+  'checkout_start', 'signup_start', 'login', 'writing_submit', 'speaking_submit',
+  'attempt_submit', 'paywall_upgrade_click',
 ]);
+
+const KEY_EVENTS = {
+  purchase_success: { label: '💰 PAYMENT', color: T.accent },
+  subscription_activated: { label: '💰 PAYMENT', color: T.accent },
+  signup_verified: { label: '🎉 SIGN-UP', color: T.live },
+};
 
 function ToolbarButton({ title, onClick, active, children }) {
   return (
@@ -57,10 +62,14 @@ const VERB = {
 function FeedRow({ item, isNew }) {
   const alias = aliasFor(item.vh || item.country || 'anon');
   const goal = GOAL_EVENTS.has(item.event);
+  const key = KEY_EVENTS[item.event];
   const verb = VERB[item.event] || `performed ${item.event.replaceAll('_', ' ')} at`;
   const target = item.slug || item.path || '/';
   return (
-    <div className="relative flex items-start gap-2 rounded-lg px-2 py-1.5">
+    <div
+      className="relative flex items-start gap-2 rounded-lg px-2 py-1.5"
+      style={key ? { background: `${key.color}1a`, borderLeft: `2px solid ${key.color}` } : undefined}
+    >
       <span className="mt-0.5"><EventIcon goal={goal} /></span>
       <div className="min-w-0 flex-1 text-[12px] leading-snug">
         <span className="font-bold" style={{ color: item.name ? T.ink : alias.color }}>
@@ -73,6 +82,12 @@ function FeedRow({ item, isNew }) {
         </span>
         <div className="text-[10px]" style={{ color: T.faint }}>{timeAgo(item.at)}</div>
       </div>
+      {key && (
+        <span className="mt-0.5 shrink-0 rounded px-1 py-px text-[9px] font-extrabold tracking-wide"
+          style={{ background: `${key.color}26`, color: key.color }}>
+          {key.label}
+        </span>
+      )}
       {isNew && <span className="absolute right-1.5 top-2 h-1.5 w-1.5 rounded-full" style={{ background: T.accent }} />}
     </div>
   );

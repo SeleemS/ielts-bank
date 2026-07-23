@@ -1,8 +1,9 @@
 import * as React from 'react';
 import worldBorders from '../../lib/data/worldBorders.json';
 import countryLatLng from '../../lib/data/countryLatLng.json';
-import { T, countryName, flagEmoji } from './theme';
+import { T, countryName, flagEmoji, fmtNum, fmtMoney, fmtDurShort, pct } from './theme';
 import { aliasFor, avatarUrl } from './aliases';
+import { useTip, TipBox, TipRow } from './primitives';
 
 // The live vector globe itself — a plain canvas renderer (real country
 // borders, graticule, atmosphere) with DOM avatar pins riding the rotation.
@@ -43,6 +44,60 @@ function markerLatLng(visitor) {
   if (!base) return null;
   const [dLat, dLng] = jitter(visitor.vh || '');
   return [base[0] + dLat, base[1] + dLng];
+}
+
+// Precomputed ring bounding boxes for pointer hit-testing.
+const COUNTRY_HIT = worldBorders.map((country) => ({
+  a2: country.a2,
+  rings: country.rings.map((ring) => {
+    let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
+    for (const [lng, lat] of ring) {
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+    return { ring, minLng, maxLng, minLat, maxLat };
+  }),
+}));
+
+function pointInRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Which country sits under a lat/lng (bbox pre-filter, then even-odd test).
+function countryAt(lat, lng) {
+  for (const country of COUNTRY_HIT) {
+    for (const entry of country.rings) {
+      if (lng < entry.minLng || lng > entry.maxLng || lat < entry.minLat || lat > entry.maxLat) continue;
+      if (pointInRing(lng, lat, entry.ring)) return country.a2;
+    }
+  }
+  return null;
+}
+
+// Inverse of project(): canvas pixel → [lat, lng] on the front hemisphere.
+function unproject(px, py, size, phi) {
+  const radius = size * 0.44;
+  const x = (px - size / 2) / radius;
+  const yv = -(py - size / 2) / radius;
+  const r2 = x * x + yv * yv;
+  if (r2 > 1) return null;
+  const zv = Math.sqrt(1 - r2);
+  const y3 = yv * Math.cos(THETA) + zv * Math.sin(THETA);
+  const z3 = zv * Math.cos(THETA) - yv * Math.sin(THETA);
+  const lat = Math.asin(Math.max(-1, Math.min(1, y3))) / DEG;
+  let lng = (Math.atan2(x, z3) - phi) / DEG;
+  lng = ((lng + 180) % 360 + 360) % 360 - 180;
+  return [lat, lng];
 }
 
 // Orthographic projection. Center longitude = −phi; +phi spins the globe
@@ -91,7 +146,7 @@ function fillRingIfVisible(ctx, ring, phi, cx, cy, radius) {
   ctx.fill();
 }
 
-function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, maxSignups) {
+function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, maxSignups, hoverA2) {
   const cx = size / 2;
   const cy = size / 2;
   const radius = size * 0.44;
@@ -147,13 +202,17 @@ function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, 
     } else {
       ctx.fillStyle = 'rgba(120,140,168,0.10)';
     }
+    const hovered = hoverA2 && country.a2 === hoverA2;
+    if (hovered) ctx.fillStyle = 'rgba(231,227,220,0.12)';
     for (const ring of country.rings) fillRingIfVisible(ctx, ring, phi, cx, cy, radius);
-    ctx.strokeStyle = live
-      ? 'rgba(62,207,142,0.75)'
-      : signups > 0
-        ? 'rgba(127,196,255,0.55)'
-        : 'rgba(139,147,161,0.38)';
-    ctx.lineWidth = live ? 1.2 : signups > 0 ? 0.9 : 0.7;
+    ctx.strokeStyle = hovered
+      ? 'rgba(231,227,220,0.8)'
+      : live
+        ? 'rgba(62,207,142,0.75)'
+        : signups > 0
+          ? 'rgba(127,196,255,0.55)'
+          : 'rgba(139,147,161,0.38)';
+    ctx.lineWidth = hovered || live ? 1.2 : signups > 0 ? 0.9 : 0.7;
     for (const ring of country.rings) strokeRing(ctx, ring, phi, cx, cy, radius);
   }
 
@@ -281,6 +340,21 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
   const pausedRef = React.useRef(paused);
   pausedRef.current = paused;
   const dragRef = React.useRef(null);
+  const hoverRef = React.useRef(null);
+  const { tip, show, hide } = useTip();
+
+  const statsByCountry = React.useMemo(() => {
+    const map = {};
+    for (const row of countries || []) map[row.c] = row;
+    return map;
+  }, [countries]);
+  const onlineByCountry = React.useMemo(() => {
+    const map = {};
+    for (const visitor of active || []) {
+      if (visitor.c) map[visitor.c] = (map[visitor.c] || 0) + 1;
+    }
+    return map;
+  }, [active]);
 
   const activeMarkers = React.useMemo(
     () =>
@@ -333,19 +407,22 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
         const interestDistance = nearestInterestDistance(
           markersRef.current, signupDotsRef.current, phiRef.current
         );
-        const target = liveDistance < 0.55
-          ? LINGER_SPEED
-          : liveDistance < 1.1
-            ? BASE_SPEED * 0.45
-            : interestDistance > 1.35
-              ? FAST_SPEED
-              : BASE_SPEED;
+        // Freeze while the pointer is reading a country's tooltip.
+        const target = hoverRef.current
+          ? 0
+          : liveDistance < 0.55
+            ? LINGER_SPEED
+            : liveDistance < 1.1
+              ? BASE_SPEED * 0.45
+              : interestDistance > 1.35
+                ? FAST_SPEED
+                : BASE_SPEED;
         speedRef.current += (target - speedRef.current) * Math.min(1, dt * 2.5);
         phiRef.current += speedRef.current * dt;
       }
       drawGlobe(
         ctx, size, phiRef.current, liveCountriesRef.current, signupDotsRef.current,
-        signupShadeRef.current.byCountry, signupShadeRef.current.max
+        signupShadeRef.current.byCountry, signupShadeRef.current.max, hoverRef.current
       );
 
       const layer = pinLayerRef.current;
@@ -373,11 +450,58 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
     dragRef.current = { startX: evt.clientX, startPhi: phiRef.current };
   };
   const onPointerMove = (evt) => {
-    if (!dragRef.current) return;
-    phiRef.current = dragRef.current.startPhi + (evt.clientX - dragRef.current.startX) * 0.005;
+    if (dragRef.current) {
+      phiRef.current = dragRef.current.startPhi + (evt.clientX - dragRef.current.startX) * 0.005;
+      hoverRef.current = null;
+      hide();
+      return;
+    }
+    // Country hover: unproject the pointer, hit-test borders, show details.
+    const bounds = evt.currentTarget.getBoundingClientRect();
+    const px = evt.clientX - bounds.left;
+    const py = evt.clientY - bounds.top;
+    const hit = unproject(px, py, size, phiRef.current);
+    const a2 = hit ? countryAt(hit[0], hit[1]) : null;
+    hoverRef.current = a2;
+    if (!a2) {
+      hide();
+      return;
+    }
+    const stats = statsByCountry[a2];
+    const online = onlineByCountry[a2] || 0;
+    show(
+      px,
+      py,
+      <div>
+        <div className="mb-1.5 flex items-center gap-1.5 text-[12px] font-bold" style={{ color: T.ink }}>
+          <span>{flagEmoji(a2)}</span>
+          <span>{countryName(a2)}</span>
+          {online ? (
+            <span className="font-semibold" style={{ color: T.live }}>· {online} online</span>
+          ) : null}
+        </div>
+        {stats ? (
+          <>
+            <TipRow swatch={T.line} label="Engaged (≥3 events)" value={fmtNum(stats.engaged ?? stats.visitors)} />
+            <TipRow swatch={T.line} label="Sign-ups" value={fmtNum(stats.signups || 0)} />
+            <TipRow swatch={T.accent} label="Revenue" value={fmtMoney(stats.revenue_minor || 0)} />
+            <TipRow label="Engaged time" value={fmtDurShort(stats.engaged_secs || 0)} />
+            <TipRow label="Submits" value={fmtNum(stats.submits || 0)} />
+            <TipRow label="Sign-up rate" value={pct(stats.signups || 0, Math.max(1, stats.engaged ?? stats.visitors))} />
+          </>
+        ) : (
+          <div style={{ color: T.faint }}>No visits in this range</div>
+        )}
+      </div>
+    );
   };
   const endDrag = () => {
     dragRef.current = null;
+  };
+  const onLeave = () => {
+    endDrag();
+    hoverRef.current = null;
+    hide();
   };
 
   return (
@@ -387,7 +511,7 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
-      onPointerLeave={endDrag}
+      onPointerLeave={onLeave}
     >
       <canvas ref={canvasRef} style={{ width: size, height: size }} />
       <div ref={pinLayerRef} className="pointer-events-none absolute inset-0">
@@ -416,6 +540,7 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
           );
         })}
       </div>
+      <TipBox tip={tip ? { ...tip, bound: size } : null} />
     </div>
   );
 }

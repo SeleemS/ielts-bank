@@ -2,10 +2,14 @@ import * as React from 'react';
 import { T, flagEmoji, timeAgo } from './theme';
 import { aliasFor } from './aliases';
 
-const GOAL_EVENTS = new Set([
-  'purchase_success', 'subscription_activated', 'checkout_start', 'signup_verified',
-  'paywall_upgrade_click',
-]);
+const GOAL_EVENTS = new Set(['checkout_start', 'paywall_upgrade_click']);
+
+// Marquee moments get a loud row: colored left border + badge.
+const KEY_EVENTS = {
+  purchase_success: { label: '💰 PAYMENT', color: T.accent },
+  subscription_activated: { label: '💰 PAYMENT', color: T.accent },
+  signup_verified: { label: '🎉 SIGN-UP', color: T.live },
+};
 
 const VERB = {
   page_view: 'visited',
@@ -68,6 +72,7 @@ export default function LiveFeed({ feed, maxHeight = 420, fill = false }) {
       {(feed || []).map((item, index) => {
         const alias = aliasFor(item.vh || item.country || 'anon');
         const goal = GOAL_EVENTS.has(item.event);
+        const key = KEY_EVENTS[item.event];
         const verb = VERB[item.event] || `${item.event.replaceAll('_', ' ')} at`;
         const target = item.slug || item.path || '/';
         const isNew = newKeys.has(`${item.at}${item.vh}${item.event}`);
@@ -76,10 +81,19 @@ export default function LiveFeed({ feed, maxHeight = 420, fill = false }) {
             key={`${item.at}-${index}`}
             className="relative rounded-md px-1.5 py-[5px] text-[12px] leading-snug"
             style={{
-              background: goal ? 'rgba(232,121,79,0.08)' : undefined,
+              background: key ? `${key.color}1a` : goal ? 'rgba(232,121,79,0.08)' : undefined,
+              borderLeft: key ? `2px solid ${key.color}` : undefined,
               animation: isNew ? 'dashSlideIn 0.5s ease' : undefined,
             }}
           >
+            {key && (
+              <span
+                className="float-right ml-1.5 mt-0.5 rounded px-1 py-px text-[9px] font-extrabold tracking-wide"
+                style={{ background: `${key.color}26`, color: key.color }}
+              >
+                {key.label}
+              </span>
+            )}
             {isNew && (
               <span
                 className="absolute right-1 top-1.5 h-1.5 w-1.5 rounded-full"
