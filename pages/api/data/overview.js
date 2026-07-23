@@ -8,7 +8,7 @@ import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { requestAuthorized, setPrivateHeaders } from '../../../lib/dataDashAuth';
 
-const RANGES = new Set(['today', '7', '30', '90', 'all']);
+const RANGES = new Set(['today', '7', '28', '30', '90', 'all']);
 // The table's first row is 2026-07-17; 'all' just needs to predate it.
 const EPOCH = '2026-07-01T00:00:00.000Z';
 
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   }
   if (!requestAuthorized(req)) return res.status(401).json({ error: 'Unauthorized.' });
 
-  const range = RANGES.has(req.query.range) ? req.query.range : '30';
+  const range = RANGES.has(req.query.range) ? req.query.range : '7';
   // offset = how many whole periods to step back (the header's ‹ › stepper).
   const offset = Math.min(24, Math.max(0, Number.parseInt(req.query.offset, 10) || 0));
   const now = new Date();

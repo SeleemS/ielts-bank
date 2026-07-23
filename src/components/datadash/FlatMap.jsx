@@ -94,6 +94,22 @@ export default function FlatMap({ countries, activeCountries, tall = false }) {
           );
         })}
       </svg>
+      {!tall && (
+        <div className="mt-1 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-[10px]" style={{ color: T.faint }}>
+            <span>0</span>
+            <span
+              className="h-2 w-24 rounded-sm"
+              style={{ background: `linear-gradient(to right, ${T.mapBase}, ${T.mapHigh})` }}
+            />
+            <span>{fmtNum(max)} engaged visitors</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px]" style={{ color: T.faint }}>
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} />
+            active right now
+          </div>
+        </div>
+      )}
       <TipBox tip={tip ? { ...tip, bound: wrapRef.current?.clientWidth } : null} />
     </div>
   );

@@ -12,6 +12,29 @@ export function Panel({ children, className = '', style }) {
   );
 }
 
+export function Card({ title, subtitle, right, children, className = '' }) {
+  return (
+    <Panel className={className}>
+      {(title || right) && (
+        <header className="flex items-start justify-between gap-3 px-4 pt-3.5 pb-1">
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest" style={{ color: T.muted }}>
+              {title}
+            </h2>
+            {subtitle ? (
+              <p className="mt-0.5 text-[11px]" style={{ color: T.faint }}>
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
+          {right}
+        </header>
+      )}
+      <div className="px-4 pb-4 pt-2">{children}</div>
+    </Panel>
+  );
+}
+
 export function Delta({ pctChange, invert = false }) {
   if (pctChange == null || !Number.isFinite(pctChange)) return null;
   const good = invert ? pctChange <= 0 : pctChange >= 0;
@@ -19,6 +42,25 @@ export function Delta({ pctChange, invert = false }) {
     <span className="text-[11px] font-semibold" style={{ color: good ? T.up : T.down }}>
       {Math.abs(Math.round(pctChange))}% {pctChange >= 0 ? '↑' : '↓'}
     </span>
+  );
+}
+
+export function StatTile({ label, value, deltaPct, invert, sub }) {
+  return (
+    <Panel className="px-4 py-3">
+      <div className="whitespace-nowrap text-[11px] font-semibold" style={{ color: T.muted }}>
+        {label}
+      </div>
+      <div className="mt-0.5 flex items-baseline gap-2">
+        <span className="text-[26px] font-bold leading-8 tracking-tight" style={{ color: T.ink }}>
+          {value}
+        </span>
+        <Delta pctChange={deltaPct} invert={invert} />
+      </div>
+      <div className="mt-0.5 h-4 truncate text-[11px]" style={{ color: T.faint }}>
+        {sub || ''}
+      </div>
+    </Panel>
   );
 }
 
@@ -34,52 +76,10 @@ export function LiveDot({ size = 7 }) {
   );
 }
 
-// Segmented tab row (active tab gets the #1D2530 fill, per spec).
-export function Tabs({ tabs, active, onChange }) {
-  return (
-    <div className="flex items-center gap-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => onChange(tab.key)}
-          className="rounded-lg px-2.5 py-1 text-[12px] font-semibold transition-colors"
-          style={
-            active === tab.key
-              ? { background: T.divider, color: T.ink }
-              : { color: T.muted }
-          }
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function SortToggle({ mode, onChange, hasRevenue }) {
-  if (!hasRevenue) {
-    return (
-      <span className="text-[11px] font-medium" style={{ color: T.faint }}>
-        Visitors ⇅
-      </span>
-    );
-  }
-  return (
-    <button
-      onClick={() => onChange(mode === 'visitors' ? 'revenue' : 'visitors')}
-      className="text-[11px] font-medium hover:underline underline-offset-2"
-      style={{ color: T.muted }}
-      title="Toggle sort"
-    >
-      {mode === 'visitors' ? 'Visitors' : 'Revenue'} ⇅
-    </button>
-  );
-}
-
-// The workhorse row (spec §6): a ~26px rounded pill holding two stacked
-// horizontal bars — full-width teal-blue "visitors" bar behind, shorter rust
-// "revenue" bar on top — label + icon above the bars (z-front), value right.
-export function RankedList({ rows, maxRows = 5, valueFmt = fmtNum, emptyLabel = 'No data yet' }) {
+// The ranked pill row (DataFast aesthetic): full teal-blue value bar behind,
+// short rust revenue bar on top when revenue exists; label + icon ride above
+// the bars, value (+ muted suffix) right-aligned.
+export function RankedList({ rows, maxRows = 9, valueFmt = fmtNum, emptyLabel = 'No data yet' }) {
   const shown = rows.slice(0, maxRows);
   if (!shown.length) {
     return (
@@ -99,7 +99,7 @@ export function RankedList({ rows, maxRows = 5, valueFmt = fmtNum, emptyLabel = 
           style={{ background: T.panelHover }}
           title={
             row.revenue
-              ? `${row.label} — ${valueFmt(row.value)} visitors · ${fmtMoney(row.revenue)} revenue`
+              ? `${row.label} — ${valueFmt(row.value)} · ${fmtMoney(row.revenue)} revenue`
               : `${row.label} — ${valueFmt(row.value)}`
           }
         >
@@ -123,6 +123,11 @@ export function RankedList({ rows, maxRows = 5, valueFmt = fmtNum, emptyLabel = 
               {row.revenue > 0 ? (
                 <span className="ml-1.5 font-medium" style={{ color: T.accent }}>
                   {fmtMoney(row.revenue)}
+                </span>
+              ) : null}
+              {row.suffix ? (
+                <span className="ml-1.5 font-normal" style={{ color: T.faint }}>
+                  {row.suffix}
                 </span>
               ) : null}
             </span>
