@@ -116,6 +116,8 @@ describe('SignInDialog password validation', () => {
 
   it('keeps the eight-character client minimum for new accounts', async () => {
     await renderDialog('signup');
+    setInput('#signup-first-name', 'new');
+    setInput('#signup-last-name', 'user');
     setInput('#signin-email', 'new-user@example.com');
     setInput('#signin-password', '123456');
 
@@ -126,6 +128,34 @@ describe('SignInDialog password validation', () => {
 
     setInput('#signin-password', '12345678');
     expect(submit.disabled).toBe(false);
+  });
+
+  it('requires first and last name for new accounts and title-cases them', async () => {
+    await renderDialog('signup');
+    setInput('#signin-email', 'new-user@example.com');
+    setInput('#signin-password', '12345678');
+
+    const submit = document.querySelector('[role="dialog"] button[type="submit"]');
+    expect(submit.disabled).toBe(true);
+
+    setInput('#signup-first-name', 'seleem');
+    expect(submit.disabled).toBe(true);
+    setInput('#signup-last-name', 'shaalan');
+    expect(submit.disabled).toBe(false);
+
+    testState.signUpWithPassword.mockResolvedValue({ data: { user: { identities: [{}] } }, error: null });
+    await act(async () => {
+      submit.closest('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      );
+      await Promise.resolve();
+    });
+
+    expect(testState.signUpWithPassword).toHaveBeenCalledWith(
+      'new-user@example.com',
+      '12345678',
+      { full_name: 'Seleem Shaalan', first_name: 'Seleem', last_name: 'Shaalan' }
+    );
   });
 
   it('does not claim a confirmation code was sent when automatic resend fails', async () => {
@@ -187,6 +217,8 @@ describe('SignInDialog password validation', () => {
   it('allows an immediate retry when a manual resend fails', async () => {
     vi.useFakeTimers();
     await renderDialog('signup');
+    setInput('#signup-first-name', 'New');
+    setInput('#signup-last-name', 'User');
     setInput('#signin-email', 'new-user@example.com');
     setInput('#signin-password', 'password123');
 

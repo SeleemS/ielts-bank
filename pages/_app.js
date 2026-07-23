@@ -121,7 +121,11 @@ function MyApp({ Component, pageProps }) {
         {/* Global Summer Sale reminder — self-gates to signed-in, non-premium
             users and only fires every few graded submits (see the component). */}
         <OfferReminderModal />
-        <ConsentManager onConsentChange={setOptionalConsent} />
+        {/* The private /data dashboard is operator-only and excluded from
+            telemetry — no consent banner there. */}
+        {router.pathname !== '/data' && (
+          <ConsentManager onConsentChange={setOptionalConsent} />
+        )}
         {analyticsEnabled && <Analytics beforeSend={consentAwareVercelEvent} />}
       </div>
     </AuthProvider>

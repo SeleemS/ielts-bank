@@ -81,7 +81,10 @@ export default function LiveFeed({ feed, maxHeight = 420 }) {
                 style={{ background: T.accent }}
               />
             )}
-            <span className="font-bold" style={{ color: alias.color }}>{alias.name}</span>
+            {/* Signed-in users with a profile name show their real name. */}
+            <span className="font-bold" style={{ color: item.name ? T.ink : alias.color }}>
+              {item.name || alias.name}
+            </span>
             <span style={{ color: T.faint }}> {flagEmoji(item.country)} </span>
             <span style={{ color: goal ? T.accent : T.muted }} className={goal ? 'font-semibold' : undefined}>
               {verb}{' '}

@@ -149,7 +149,6 @@ export default function DataDashboard() {
 
   const showDeltas = dash.range !== 'all' && (prev.visitors || 0) > 0;
   const delta = (key) => (showDeltas ? change(totals[key] || 0, prev[key] || 0) : null);
-  const engagedSecs = (data?.areas || []).reduce((sum, area) => sum + (area.secs || 0), 0);
   const rangeLabel = RANGES.find((r) => r.key === dash.range)?.label || '';
 
   const logout = async () => {
@@ -225,7 +224,7 @@ export default function DataDashboard() {
 
           <div style={{ opacity: refreshing && data ? 0.55 : 1, transition: 'opacity 200ms' }}>
             {/* KPI row */}
-            <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
+            <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
               <StatTile
                 label="Online now"
                 value={live ? fmtNum(live.active_now) : '–'}
@@ -237,18 +236,17 @@ export default function DataDashboard() {
                 deltaPct={delta('visitors')}
                 sub={totals.engaged_visitors != null ? `${fmtNum(totals.engaged_visitors)} engaged` : ''}
               />
-              <StatTile label="Engaged time" value={fmtDurShort(engagedSecs)} sub="heartbeat time" />
               <StatTile
                 label="Avg session"
                 value={fmtDurShort(totals.avg_session_secs)}
                 sub={`median ${fmtDurShort(totals.median_session_secs)}`}
               />
               <StatTile label="Practice submits" value={fmtNum(totals.submits)} deltaPct={delta('submits')} />
-              <StatTile label="Sign-ups" value={fmtNum(totals.signups)} deltaPct={delta('signups')} />
               <StatTile
-                label="Registered users"
-                value={live?.registered_users != null ? fmtNum(live.registered_users) : '–'}
-                sub={totals.signups ? `+${fmtNum(totals.signups)} in range` : 'all time'}
+                label="Sign-ups"
+                value={fmtNum(totals.signups)}
+                deltaPct={delta('signups')}
+                sub={live?.registered_users != null ? `${fmtNum(live.registered_users)} registered all-time` : ''}
               />
               <StatTile
                 label="Purchases"
@@ -318,14 +316,30 @@ export default function DataDashboard() {
               </div>
             </Card>
 
-            {/* Traffic + funnel */}
-            <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-12">
-              <Card
-                title="Traffic over time"
-                subtitle={overview?.bucket === 'hour' ? 'Hourly · UTC' : 'Daily · UTC'}
-                className="xl:col-span-7"
-              >
-                <TrafficChart series={data?.series} bucket={overview?.bucket} />
+            {/* Countries + acquisition + funnel */}
+            <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12">
+              <Card title="Top countries" subtitle="Engaged visitors · revenue in coral" className="xl:col-span-4">
+                <RankedList
+                  rows={(data?.countries || []).slice(0, 9).map((row) => ({
+                    label: countryName(row.c),
+                    icon: flagEmoji(row.c),
+                    value: row.engaged ?? row.visitors,
+                    revenue: row.revenue_minor || 0,
+                    suffix: row.signups ? `${row.signups} ↑` : '',
+                  }))}
+                  maxRows={9}
+                />
+              </Card>
+              <Card title="Acquisition" subtitle="First-touch source → sign-up rate" className="xl:col-span-3">
+                <RankedList
+                  rows={(breakdowns.referrers || []).map((row) => ({
+                    label: row.label,
+                    value: row.visitors,
+                    revenue: row.revenue_minor || 0,
+                    suffix: pct(row.signups || 0, Math.max(1, row.visitors)) + ' ↑',
+                  }))}
+                  maxRows={8}
+                />
               </Card>
               <Card title="Conversion funnel" subtitle="Distinct visitors reaching each stage" className="xl:col-span-5">
                 <Funnel funnel={data?.funnel} />
@@ -350,30 +364,14 @@ export default function DataDashboard() {
               </Card>
             </div>
 
-            {/* Countries / acquisition / sessions */}
-            <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12">
-              <Card title="Top countries" subtitle="Engaged visitors · revenue in coral" className="xl:col-span-4">
-                <RankedList
-                  rows={(data?.countries || []).slice(0, 9).map((row) => ({
-                    label: countryName(row.c),
-                    icon: flagEmoji(row.c),
-                    value: row.engaged ?? row.visitors,
-                    revenue: row.revenue_minor || 0,
-                    suffix: row.signups ? `${row.signups} ↑` : '',
-                  }))}
-                  maxRows={9}
-                />
-              </Card>
-              <Card title="Acquisition" subtitle="First-touch source → sign-up rate" className="xl:col-span-4">
-                <RankedList
-                  rows={(breakdowns.referrers || []).map((row) => ({
-                    label: row.label,
-                    value: row.visitors,
-                    revenue: row.revenue_minor || 0,
-                    suffix: pct(row.signups || 0, Math.max(1, row.visitors)) + ' ↑',
-                  }))}
-                  maxRows={8}
-                />
+            {/* Traffic + session length */}
+            <div className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-12">
+              <Card
+                title="Traffic over time"
+                subtitle={overview?.bucket === 'hour' ? 'Hourly · UTC' : 'Daily · UTC'}
+                className="xl:col-span-8"
+              >
+                <TrafficChart series={data?.series} bucket={overview?.bucket} />
               </Card>
               <Card
                 title="Session length"

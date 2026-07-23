@@ -105,6 +105,8 @@ export default function SignInDialog({
   const [verifySource, setVerifySource] = React.useState('signup');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
   const [code, setCode] = React.useState('');
   const [goal, setGoal] = React.useState('');
   const [band, setBand] = React.useState('');
@@ -201,17 +203,27 @@ export default function SignInDialog({
 
   const close = closeDialog;
 
+  // "seleem shaalan" -> "Seleem Shaalan" (hyphens/apostrophes kept intact).
+  const titleCase = (value) =>
+    value.trim().replace(/\S+/g, (word) => word.charAt(0).toUpperCase() + word.slice(1));
+
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
     const trimmed = email.trim();
-    if (!trimmed || !password || (mode === 'signup' && password.length < 8)) return;
+    const first = titleCase(firstName);
+    const last = titleCase(lastName);
+    if (!trimmed || !password || (mode === 'signup' && (password.length < 8 || !first || !last))) return;
     setBusy(true);
     setErrorMsg('');
     setNotice('');
     try {
       if (mode === 'signup') {
         track('signup_start', { method: 'password', trigger, signed_in: false });
-        const { data, error } = await signUpWithPassword(trimmed, password);
+        const { data, error } = await signUpWithPassword(trimmed, password, {
+          full_name: `${first} ${last}`,
+          first_name: first,
+          last_name: last,
+        });
         if (error) {
           setErrorMsg(error.message || 'Could not create your account. Please try again.');
           return;
@@ -607,6 +619,38 @@ export default function SignInDialog({
           </p>
         )}
         <form onSubmit={handleAccountSubmit} className="flex flex-col gap-3">
+          {mode === 'signup' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signup-first-name">First name</Label>
+                <Input
+                  id="signup-first-name"
+                  type="text"
+                  autoComplete="given-name"
+                  autoCapitalize="words"
+                  required
+                  placeholder="First name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="signup-last-name">Last name</Label>
+                <Input
+                  id="signup-last-name"
+                  type="text"
+                  autoComplete="family-name"
+                  autoCapitalize="words"
+                  required
+                  placeholder="Last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="signin-email">Email</Label>
             <Input
@@ -648,7 +692,8 @@ export default function SignInDialog({
               busy
               || !email.trim()
               || !password
-              || (mode === 'signup' && password.length < 8)
+              || (mode === 'signup'
+                && (password.length < 8 || !firstName.trim() || !lastName.trim()))
             }
           >
             {busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Sign in'}

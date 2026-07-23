@@ -76,7 +76,7 @@ function fillRingIfVisible(ctx, ring, phi, cx, cy, radius) {
   ctx.fill();
 }
 
-function drawGlobe(ctx, size, phi, liveCountries) {
+function drawGlobe(ctx, size, phi, liveCountries, signupDots) {
   const cx = size / 2;
   const cy = size / 2;
   const radius = size * 0.44;
@@ -127,6 +127,30 @@ function drawGlobe(ctx, size, phi, liveCountries) {
     ctx.strokeStyle = live ? 'rgba(62,207,142,0.75)' : 'rgba(139,147,161,0.38)';
     ctx.lineWidth = live ? 1.2 : 0.7;
     for (const ring of country.rings) strokeRing(ctx, ring, phi, cx, cy, radius);
+  }
+
+  // Sign-up origins: glowing blue dots sized by sign-ups in the selected range.
+  for (const dot of signupDots) {
+    const [x, y, z] = project(dot.lat, dot.lng, phi, THETA);
+    if (z <= 0.03) continue;
+    const px = cx + x * radius;
+    const py = cy - y * radius;
+    const r = Math.min(7, 2.5 + Math.sqrt(dot.n) * 1.4) * Math.min(1, 0.6 + z * 0.5);
+    ctx.save();
+    ctx.shadowColor = 'rgba(90,169,230,0.9)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = 'rgba(90,169,230,0.95)';
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    if (dot.n >= 3) {
+      ctx.fillStyle = '#0B0E13';
+      ctx.font = '700 8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(dot.n), px, py + 0.5);
+    }
   }
 }
 
@@ -250,7 +274,9 @@ function FeedRow({ item, isNew }) {
     <div className="relative flex items-start gap-2 rounded-lg px-2 py-1.5">
       <span className="mt-0.5"><EventIcon goal={goal} /></span>
       <div className="min-w-0 flex-1 text-[12px] leading-snug">
-        <span className="font-bold" style={{ color: alias.color }}>{alias.name}</span>
+        <span className="font-bold" style={{ color: item.name ? T.ink : alias.color }}>
+          {item.name || alias.name}
+        </span>
         <span style={{ color: T.muted }}> from {flagEmoji(item.country)} </span>
         <span style={{ color: goal ? T.ink : T.muted }}>{verb} </span>
         <span className="break-all font-mono text-[11px]" style={{ color: T.ink }}>
@@ -307,6 +333,15 @@ export default function GlobeView({ realtime, countries, onClose }) {
   markersRef.current = activeMarkers;
   const liveCountriesRef = React.useRef(new Set());
   liveCountriesRef.current = new Set(active.map((visitor) => visitor.c).filter(Boolean));
+  // Sign-up origin dots from the selected range's per-country stats.
+  const signupDotsRef = React.useRef([]);
+  signupDotsRef.current = (countries || [])
+    .filter((row) => row.signups > 0 && countryLatLng[row.c])
+    .map((row) => ({
+      lat: countryLatLng[row.c][0],
+      lng: countryLatLng[row.c][1],
+      n: row.signups,
+    }));
 
   const newKeys = React.useMemo(() => {
     const fresh = new Set();
@@ -357,7 +392,7 @@ export default function GlobeView({ realtime, countries, onClose }) {
         speedRef.current += (target - speedRef.current) * Math.min(1, dt * 2.5);
         phiRef.current += speedRef.current * dt;
       }
-      drawGlobe(ctx, size, phiRef.current, liveCountriesRef.current);
+      drawGlobe(ctx, size, phiRef.current, liveCountriesRef.current, signupDotsRef.current);
 
       const layer = pinLayerRef.current;
       if (layer) {
@@ -431,7 +466,7 @@ export default function GlobeView({ realtime, countries, onClose }) {
                     data-lng={at[1]}
                     className="absolute left-0 top-0 will-change-transform"
                     style={{ opacity: 0 }}
-                    title={`${alias.name} · ${countryName(visitor.c)}`}
+                    title={`${visitor.name || alias.name} · ${countryName(visitor.c)}`}
                   >
                     <span
                       className="relative flex items-center justify-center rounded-full"
@@ -503,6 +538,14 @@ export default function GlobeView({ realtime, countries, onClose }) {
             )}
           </div>
         ))}
+        <div className="mt-2.5 flex items-center gap-3 border-t pt-2 text-[10px]" style={{ borderColor: T.divider, color: T.faint }}>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} /> live now
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.line }} /> sign-ups
+          </span>
+        </div>
       </div>
 
       {/* Real-time event feed — bottom left */}

@@ -166,13 +166,19 @@ export function AuthProvider({ children }) {
     }, 'Could not send the sign-in code. Please try again.');
   }, []);
 
-  const signUpWithPassword = React.useCallback(async (email, password) => {
+  // `metadata` (e.g. { full_name, first_name, last_name }) lands in
+  // raw_user_meta_data; the handle_new_user trigger mirrors full_name into
+  // public.users.display_name.
+  const signUpWithPassword = React.useCallback(async (email, password, metadata = null) => {
     return recoverAuthCall(async () => {
       const supabase = getSupabase();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: callbackUrl() },
+        options: {
+          emailRedirectTo: callbackUrl(),
+          ...(metadata ? { data: metadata } : {}),
+        },
       });
       return { data, error };
     }, 'Could not create your account. Please try again.', { data: null });
