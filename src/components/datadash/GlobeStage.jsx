@@ -146,7 +146,7 @@ function fillRingIfVisible(ctx, ring, phi, cx, cy, radius) {
   ctx.fill();
 }
 
-function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, maxSignups, hoverA2) {
+function drawGlobe(ctx, size, phi, liveCountries, signupsByCountry, maxSignups, hoverA2) {
   const cx = size / 2;
   const cy = size / 2;
   const radius = size * 0.44;
@@ -216,39 +216,6 @@ function drawGlobe(ctx, size, phi, liveCountries, signupDots, signupsByCountry, 
     for (const ring of country.rings) strokeRing(ctx, ring, phi, cx, cy, radius);
   }
 
-  // Sign-up origins: glowing blue dots sized by sign-ups in the selected range.
-  for (const dot of signupDots) {
-    const [x, y, z] = project(dot.lat, dot.lng, phi, THETA);
-    if (z <= 0.03) continue;
-    const px = cx + x * radius;
-    const py = cy - y * radius;
-    const r = Math.min(7, 2.5 + Math.sqrt(dot.n) * 1.4) * Math.min(1, 0.6 + z * 0.5);
-    ctx.save();
-    ctx.shadowColor = 'rgba(90,169,230,0.9)';
-    ctx.shadowBlur = 8;
-    ctx.fillStyle = 'rgba(90,169,230,0.95)';
-    ctx.beginPath();
-    ctx.arc(px, py, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    if (dot.n >= 3) {
-      ctx.fillStyle = '#0B0E13';
-      ctx.font = '700 8px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(String(dot.n), px, py + 0.5);
-    }
-    // Country flag rides beside the dot (fades with the horizon like pins).
-    if (dot.flag && z > 0.25) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, z * 1.6);
-      ctx.font = `${Math.round(11 * Math.min(1, 0.7 + z * 0.4))}px sans-serif`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(dot.flag, px + r + 3, py + 0.5);
-      ctx.restore();
-    }
-  }
 }
 
 // How close (radians) the nearest visible live marker sits to the screen
@@ -367,6 +334,8 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
   markersRef.current = activeMarkers;
   const liveCountriesRef = React.useRef(new Set());
   liveCountriesRef.current = new Set((active || []).map((visitor) => visitor.c).filter(Boolean));
+  // Sign-up locations (not drawn — countries are shaded instead) feed the
+  // rotation pacing so the globe still slows near sign-up regions.
   const signupDotsRef = React.useRef([]);
   signupDotsRef.current = (countries || [])
     .filter((row) => row.signups > 0 && countryLatLng[row.c])
@@ -374,7 +343,6 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
       lat: countryLatLng[row.c][0],
       lng: countryLatLng[row.c][1],
       n: row.signups,
-      flag: flagEmoji(row.c),
     }));
   const signupShadeRef = React.useRef({ byCountry: {}, max: 1 });
   signupShadeRef.current = {
@@ -421,7 +389,7 @@ export default function GlobeStage({ active, countries, size, paused = false }) 
         phiRef.current += speedRef.current * dt;
       }
       drawGlobe(
-        ctx, size, phiRef.current, liveCountriesRef.current, signupDotsRef.current,
+        ctx, size, phiRef.current, liveCountriesRef.current,
         signupShadeRef.current.byCountry, signupShadeRef.current.max, hoverRef.current
       );
 

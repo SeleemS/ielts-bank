@@ -94,25 +94,6 @@ export default function FlatMap({ countries, activeCountries, tall = false, big 
             />
           );
         })}
-        {/* Sign-up origins: blue markers sized by sign-ups in range. */}
-        {(countries || [])
-          .filter((row) => row.signups > 0)
-          .map((row) => {
-            const at = worldMap.centroids[row.c];
-            if (!at) return null;
-            const r = Math.min(8, 2.5 + Math.sqrt(row.signups) * 1.6);
-            return (
-              <g key={`s${row.c}`} pointerEvents="none">
-                <circle cx={at[0]} cy={at[1] + 0.5} r={r} fill={T.line} opacity="0.85" filter="url(#liveGlow)" />
-                <circle cx={at[0]} cy={at[1] + 0.5} r={r} fill="none" stroke={T.panel} strokeWidth="1" />
-                {row.signups >= 3 && (
-                  <text x={at[0]} y={at[1] + 3} fontSize="7" fontWeight="700" textAnchor="middle" fill="#0B0E13">
-                    {row.signups}
-                  </text>
-                )}
-              </g>
-            );
-          })}
         {(activeCountries || []).map((row, index) => {
           const at = worldMap.centroids[row.c];
           if (!at) return null;
@@ -147,15 +128,9 @@ export default function FlatMap({ countries, activeCountries, tall = false, big 
             />
             <span>{fmtNum(max)} engaged visitors</span>
           </div>
-          <div className="flex items-center gap-3 text-[10px]" style={{ color: T.faint }}>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.line }} />
-              sign-ups
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} />
-              active right now
-            </span>
+          <div className="flex items-center gap-1.5 text-[10px]" style={{ color: T.faint }}>
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} />
+            active right now
           </div>
         </div>
       )}

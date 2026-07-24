@@ -214,7 +214,11 @@ export default function GlobeView({ realtime, countries, onClose }) {
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.live }} /> live now
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full" style={{ background: T.line }} /> sign-ups
+            <span
+              className="inline-block h-2 w-6 rounded-sm"
+              style={{ background: `linear-gradient(to right, rgba(90,169,230,0.15), rgba(90,169,230,0.55))` }}
+            />
+            sign-ups
           </span>
         </div>
       </div>
