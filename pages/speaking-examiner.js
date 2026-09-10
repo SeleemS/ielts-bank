@@ -5,7 +5,11 @@
 // keep the transcript-only score. docs/MONETIZATION.md §9.
 import React from 'react';
 import { createRealtimeAudioRecorder, uploadRealtimeAudio } from '../src/lib/realtimeAudioRecorder';
+import { connectLiveExaminer } from '../src/lib/liveExaminerTransport';
+import { createLiveTranscriptAssembler } from '../src/lib/liveTranscript';
 function audioAssessmentEnabled() { return process.env.NEXT_PUBLIC_REALTIME_AUDIO_ASSESSMENT === 'true'; }
+// Read at call time, not module load: tests flip the flag per case.
+function liveExaminerEnabled() { return process.env.NEXT_PUBLIC_LIVE_EXAMINER === 'true'; }
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { Mic, PhoneOff, Sparkles, Clock, CheckCircle2, Headphones, MessageSquare, Gauge } from 'lucide-react';
@@ -165,6 +169,12 @@ export default function SpeakingExaminerPage() {
   const scoreAttemptRef = React.useRef(false);
   const connectionGenerationRef = React.useRef(0);
   const micFailsafeRef = React.useRef(null);
+  // Live (gpt-live-1) transport state — unused on the Realtime path.
+  const liveTransportRef = React.useRef(null);
+  const liveAssemblerRef = React.useRef(null);
+  const liveSessionIdRef = React.useRef(null);
+  const liveUnmuteRequestedRef = React.useRef(false);
+  const sessionTransportRef = React.useRef('realtime');
 
   React.useEffect(() => {
     const saved = loadPendingRealtimeScore(getBrowserSessionStorage());
@@ -213,6 +223,16 @@ export default function SpeakingExaminerPage() {
   function teardown() {
     recorderRef.current?.dispose();
     recorderRef.current = null;
+    // A Live session keeps billing until it is closed server-side; fire the
+    // close handshake without blocking teardown (the cron sweep is the backstop).
+    const liveTransport = liveTransportRef.current;
+    liveTransportRef.current = null;
+    if (liveTransport) {
+      try {
+        void Promise.resolve(liveTransport.close({ reason: 'teardown' })).catch(() => {});
+      } catch {}
+    }
+    liveAssemblerRef.current = null;
     // Invalidate pending permission/mint/SDP work before releasing resources.
     connectionGenerationRef.current += 1;
     if (micFailsafeRef.current) clearTimeout(micFailsafeRef.current);
@@ -335,6 +355,25 @@ export default function SpeakingExaminerPage() {
     }
   }
 
+  // Live emits bare fragments with no turn boundaries: the assembler owns the
+  // grouping, and captions/word count/auto-end all read the assembled turns.
+  function pushLiveFragment(role, fragment) {
+    const assembler = liveAssemblerRef.current;
+    if (!assembler) return;
+    const turns = assembler.push(role, fragment).map((t) => ({ role: t.role, text: t.text }));
+    transcriptRef.current = turns;
+    setCaptions(turns);
+    setCandidateWords(
+      turns
+        .filter((t) => t.role === 'candidate')
+        .reduce((n, t) => n + t.text.split(/\s+/).filter(Boolean).length, 0)
+    );
+    const lastExaminer = [...turns].reverse().find((t) => t.role === 'examiner');
+    if (lastExaminer && /that is the end of the speaking/i.test(lastExaminer.text) && !autoEndRef.current) {
+      autoEndRef.current = setTimeout(() => endInterview({ reason: 'examiner_closed' }), 2500);
+    }
+  }
+
   async function startSession(mode) {
     setError('');
     if (!user) {
@@ -357,7 +396,10 @@ export default function SpeakingExaminerPage() {
     setResult(null);
     endedRef.current = false;
     autoEndRef.current = null;
-    track('realtime_session_start', { mode });
+    liveSessionIdRef.current = null;
+    liveUnmuteRequestedRef.current = false;
+    sessionTransportRef.current = liveExaminerEnabled() ? 'live' : 'realtime';
+    track('realtime_session_start', { mode, transport: sessionTransportRef.current });
     const generation = ++connectionGenerationRef.current;
     const isCurrent = () => generation === connectionGenerationRef.current;
 
@@ -365,7 +407,7 @@ export default function SpeakingExaminerPage() {
       const auth = await resolveSpeakingAuthAction(getSupabase);
       if (!isCurrent()) return;
       if (auth.state === 'retry') {
-        track('realtime_session_error', { mode, stage: 'start', error_type: 'auth_session' });
+        track('realtime_session_error', { mode, stage: 'start', error_type: 'auth_session', transport: sessionTransportRef.current });
         setError('Could not verify your session. Please refresh and try again.');
         setPhase('idle');
         return;
@@ -393,6 +435,12 @@ export default function SpeakingExaminerPage() {
         const recorder = await createRealtimeAudioRecorder(mic);
         if (!isCurrent()) { recorder.dispose(); return; }
         recorderRef.current = recorder;
+      }
+
+      // 2a. Live (gpt-live-1): one round trip mints and exchanges SDP.
+      if (liveExaminerEnabled()) {
+        await startLiveSession({ mode, mic, headers, isCurrent });
+        return;
       }
 
       // 2. Mint the metered session token.
@@ -521,10 +569,98 @@ export default function SpeakingExaminerPage() {
     }
   }
 
-  async function endInterview() {
+  // gpt-live-1 path: our server performs the SDP exchange, the examiner greets
+  // itself (no response.create), and turn assembly happens client-side.
+  async function startLiveSession({ mode, mic, headers, isCurrent }) {
+    liveAssemblerRef.current = createLiveTranscriptAssembler();
+    const unmuteMic = () => {
+      if (!isCurrent() || liveUnmuteRequestedRef.current) return;
+      if (micFailsafeRef.current) clearTimeout(micFailsafeRef.current);
+      micFailsafeRef.current = null;
+      liveUnmuteRequestedRef.current = true;
+      liveTransportRef.current?.unmute();
+    };
+
+    let transport;
+    try {
+      transport = await connectLiveExaminer({
+        mic,
+        mode,
+        headers,
+        audioAssessment: audioAssessmentEnabled(),
+        isCurrent,
+        onRemoteStream: (stream) => {
+          if (!isCurrent() || !stream) return;
+          if (audioRef.current) {
+            audioRef.current.srcObject = stream;
+            // iOS Safari can ignore autoPlay for a late srcObject assignment.
+            audioRef.current.play().catch(() => {});
+          }
+          analyserExamRef.current = attachAnalyser(stream);
+        },
+        onStarted: ({ sessionId }) => {
+          liveSessionIdRef.current = sessionId;
+        },
+        onTranscript: (role, fragment) => {
+          // The examiner's first words mean the greeting is under way.
+          if (role === 'examiner') unmuteMic();
+          pushLiveFragment(role, fragment);
+        },
+        onClosed: ({ reason }) => {
+          // 'close_requested' is our own hangup; anything else ended the test.
+          if (reason !== 'close_requested' && isCurrent()) endInterview({ reason });
+        },
+        onError: (err) => {
+          console.error('live event error:', err?.message || err);
+        },
+      });
+    } catch (e) {
+      if (!isCurrent()) return;
+      if (typeof e?.status === 'number') {
+        teardown();
+        setPhase('idle');
+        setError(e.payload?.error || 'Could not start the session.');
+        minutes.refresh();
+        return;
+      }
+      throw e;
+    }
+    if (!isCurrent()) {
+      try { await transport.close({ reason: 'abandoned' }); } catch {}
+      return;
+    }
+    liveTransportRef.current = transport;
+    pcRef.current = transport.pc;
+
+    const mint = transport.mint;
+    assessmentRef.current = mint.assessment || null;
+    if (audioAssessmentEnabled() && !mint.assessment) throw new Error('assessment-not-enabled');
+
+    if (liveUnmuteRequestedRef.current) transport.unmute();
+    else micFailsafeRef.current = setTimeout(unmuteMic, 9000);
+
+    setSecondsLeft(mint.durationSeconds);
+    timerRef.current = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          endInterview({ reason: 'timer' });
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+
+    recorderRef.current?.start();
+    setPhase('live');
+    startVisualizer();
+    minutes.refresh();
+  }
+
+  async function endInterview(options) {
     if (endedRef.current) return;
     endedRef.current = true;
     setPhase('scoring');
+    const endReason = typeof options?.reason === 'string' ? options.reason : 'close_requested';
     let audioBlobs;
     const recorder = recorderRef.current;
     recorderRef.current = null;
@@ -535,6 +671,13 @@ export default function SpeakingExaminerPage() {
       setError('The recording could not be recovered, so pronunciation was not assessed.');
       return;
     }
+    // Stop the Live meter before scoring: closing costs a round trip we would
+    // rather pay now than leave to the server-side deadline sweep.
+    const liveTransport = liveTransportRef.current;
+    liveTransportRef.current = null;
+    if (liveTransport) {
+      try { await liveTransport.close({ reason: endReason }); } catch {}
+    }
     teardown();
     const transcript = transcriptRef.current;
     // Timer/data-channel callbacks were created before the mode state render.
@@ -543,6 +686,7 @@ export default function SpeakingExaminerPage() {
     track('realtime_session_end', {
       mode: sessionMode,
       turns: transcript.length,
+      transport: sessionTransportRef.current,
     });
 
     const candidateWords = transcript
@@ -621,6 +765,7 @@ export default function SpeakingExaminerPage() {
         mode: pending.mode,
         stage: 'score',
         error_type: errorType,
+        transport: sessionTransportRef.current,
       });
       if (outcome.status === 'auth_error') {
         setError(`Could not verify your session. ${recovery}`);
@@ -719,6 +864,10 @@ export default function SpeakingExaminerPage() {
             {error}
           </div>
         ) : null}
+
+        {liveExaminerEnabled() && phase === 'idle' ? <p className="mt-4 rounded-lg border p-4 text-sm text-muted-foreground">
+          Powered by the full-duplex examiner: it can listen while it speaks, so you can interject naturally.
+        </p> : null}
 
         {audioAssessmentEnabled() && phase === 'idle' ? <p className="mt-4 rounded-lg border p-4 text-sm text-muted-foreground">
           Your microphone audio will be recorded and sent to OpenAI for feedback on all four speaking criteria, including pronunciation.

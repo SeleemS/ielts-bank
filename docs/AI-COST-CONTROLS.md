@@ -26,6 +26,13 @@ Tracked features:
 | Speaking | `speaking_score` | exact chat input/cached/output tokens |
 | Speaking | `speaking_realtime_score` | exact chat input/cached/output tokens |
 | Speaking | `speaking_realtime` | conservative reserved-duration estimate |
+| Speaking | `speaking_live` / `session_reservation` | reserved-duration estimate at $0.05/min plus a $0.10 backend allowance |
+| Speaking | `speaking_live` / `session_usage` | client-reported session seconds at $0.05/min, capped at reserved duration + 30 s |
+
+`gpt-live-1` bills wall-clock session time per second with no rounding, so
+silence costs the same as speech and a WebRTC create bills 15 seconds up front.
+Both rows are marked estimated; see
+[the gpt-live-1 examiner review](live-speaking-2026-09-10/REVIEW.md).
 
 Cost recording is fail-soft because a ledger outage after the provider has
 returned must not withhold a paid result. Database monitoring should alert on
