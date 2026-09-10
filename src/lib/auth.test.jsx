@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 const testState = vi.hoisted(() => ({
+  sessionUser: null,
   signOut: vi.fn(),
   signUp: vi.fn(),
   signInWithPassword: vi.fn(),
@@ -20,7 +21,7 @@ vi.mock('../../lib/supabase', () => ({
       getSession: async () => ({
         data: {
           session: {
-            user: { id: 'user-1', email: 'audit@example.com' },
+            user: testState.sessionUser,
             access_token: 'access-token',
           },
         },
@@ -97,6 +98,7 @@ async function clickSignOut() {
 }
 
 beforeEach(() => {
+  testState.sessionUser = { id: 'user-1', email: 'audit@example.com' };
   currentAuth = null;
   testState.signUp.mockResolvedValue({ data: { user: null, session: null }, error: null });
   testState.signInWithPassword.mockResolvedValue({ error: null });
@@ -152,7 +154,6 @@ describe('AuthProvider rejected-call recovery', () => {
       [testState.verifyOtp, () => currentAuth.verifyEmailOtp('audit@example.com', '123456')],
       [testState.resend, () => currentAuth.resendSignupEmail('audit@example.com')],
       [testState.resetPasswordForEmail, () => currentAuth.requestPasswordReset('audit@example.com')],
-      [testState.updateUser, () => currentAuth.updatePassword('password123')],
     ];
 
     for (const [providerCall, invoke] of cases) {
@@ -172,5 +173,53 @@ describe('AuthProvider rejected-call recovery', () => {
     expect(fallback.error).toEqual(
       new Error('Could not sign you in. Please try again.')
     );
+  });
+});
+
+describe('password recovery identity binding', () => {
+  async function verifyRecovery(email = 'audit@example.com') {
+    testState.verifyOtp.mockResolvedValueOnce({
+      error: null,
+      data: { user: { id: 'user-1', email }, session: { access_token: 'verified-recovery-token' } },
+    });
+    return currentAuth.verifyEmailOtp(email, '123456', 'recovery');
+  }
+  afterEach(() => vi.unstubAllGlobals());
+  it('cannot update a password from an ordinary signed-in session', async () => {
+    await renderProvider();
+    const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock);
+    const result = await currentAuth.updatePassword('new-password123', 'audit@example.com');
+    expect(result.error.message).toContain('Verify a password reset code');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('uses the verified recovery token and consumes it after a successful update', async () => {
+    await renderProvider();
+    expect((await verifyRecovery()).error).toBeNull();
+    const fetchMock = vi.fn().mockResolvedValue({ok:true,json:async()=>({id:'user-1'})});
+    vi.stubGlobal('fetch',fetchMock);
+    expect((await currentAuth.updatePassword('new-password123','audit@example.com')).error).toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/auth/v1/user'),expect.objectContaining({
+      method:'PUT',headers:expect.objectContaining({Authorization:'Bearer verified-recovery-token'}),
+      body:JSON.stringify({password:'new-password123'}),
+    }));
+    expect((await currentAuth.updatePassword('another-password123','audit@example.com')).error).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+  it('rejects a session switch to another account before password submission', async () => {
+    await renderProvider(); await verifyRecovery();
+    testState.sessionUser = {id:'other-user',email:'other@example.com'};
+    const fetchMock=vi.fn();vi.stubGlobal('fetch',fetchMock);
+    const result=await currentAuth.updatePassword('new-password123','audit@example.com');
+    expect(result.error.message).toContain('account changed');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('rejects a mismatched target email and preserves retry on a network failure', async () => {
+    await renderProvider();await verifyRecovery();
+    const fetchMock=vi.fn().mockRejectedValue(new Error('Network unavailable'));vi.stubGlobal('fetch',fetchMock);
+    expect((await currentAuth.updatePassword('new-password123','other@example.com')).error).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect((await currentAuth.updatePassword('new-password123','audit@example.com')).error.message).toBe('Network unavailable');
+    fetchMock.mockResolvedValue({ok:true,json:async()=>({id:'user-1'})});
+    expect((await currentAuth.updatePassword('new-password123','audit@example.com')).error).toBeNull();
   });
 });

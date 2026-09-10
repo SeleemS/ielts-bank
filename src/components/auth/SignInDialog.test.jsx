@@ -9,6 +9,10 @@ const testState = vi.hoisted(() => ({
   signUpWithPassword: vi.fn(),
   resendSignupEmail: vi.fn(),
   replace: vi.fn(),
+  verifyEmailOtp: vi.fn(),
+  requestPasswordReset: vi.fn(),
+  updatePassword: vi.fn(),
+  user: null,
 }));
 
 vi.mock('next/router', () => ({
@@ -19,13 +23,13 @@ vi.mock('next/router', () => ({
 }));
 vi.mock('../../lib/auth', () => ({
   useAuth: () => ({
-    user: null,
+    user: testState.user,
     signUpWithPassword: testState.signUpWithPassword,
     signInWithPassword: testState.signInWithPassword,
-    verifyEmailOtp: vi.fn(),
+    verifyEmailOtp: testState.verifyEmailOtp,
     resendSignupEmail: testState.resendSignupEmail,
-    requestPasswordReset: vi.fn(),
-    updatePassword: vi.fn(),
+    requestPasswordReset: testState.requestPasswordReset,
+    updatePassword: testState.updatePassword,
   }),
 }));
 vi.mock('../../../lib/supabase', () => ({
@@ -71,6 +75,10 @@ async function renderDialog(initialMode) {
 }
 
 beforeEach(() => {
+  testState.user = null;
+  testState.verifyEmailOtp.mockResolvedValue({error:null});
+  testState.requestPasswordReset.mockResolvedValue({error:null});
+  testState.updatePassword.mockResolvedValue({error:null});
   testState.signInWithPassword.mockResolvedValue({ error: null });
   testState.resendSignupEmail.mockResolvedValue({ error: null });
   testState.signUpWithPassword.mockResolvedValue({
@@ -187,8 +195,8 @@ describe('SignInDialog password validation', () => {
     expect(document.querySelector('[role="alert"]')?.textContent).toContain(
       'Email service unavailable'
     );
-    expect(document.querySelector('#signin-password')).not.toBeNull();
-    expect(document.querySelector('#signin-otp')).toBeNull();
+    expect(document.querySelector('#signin-password')).toBeNull();
+    expect(document.querySelector('#signin-otp')).not.toBeNull();
   });
 
   it('uses the stable invalid-credentials code instead of exposing provider text', async () => {
@@ -231,7 +239,7 @@ describe('SignInDialog password validation', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    for (let second = 0; second < 30; second += 1) {
+    for (let second = 0; second < 60; second += 1) {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1_000);
       });
@@ -255,4 +263,75 @@ describe('SignInDialog password validation', () => {
     expect(resend.disabled).toBe(false);
     expect(resend.textContent).toBe('Resend code');
   });
+});
+
+async function submitForm() {
+  await act(async () => { document.querySelector('form').dispatchEvent(new Event('submit', {bubbles:true,cancelable:true})); await Promise.resolve(); });
+}
+async function startSignup() {
+  await renderDialog('signup');setInput('#signup-first-name','New');setInput('#signup-last-name','User');
+  setInput('#signin-email','audit@example.com');setInput('#signin-password','password123');await submitForm();
+}
+async function advanceCooldown() {
+  for(let i=0;i<60;i++) await act(async()=>{await vi.advanceTimersByTimeAsync(1000);});
+}
+async function clickText(text) {
+  await act(async()=>{Array.from(document.querySelectorAll('button')).find(b=>b.textContent===text).click();await Promise.resolve();});
+}
+it('retains verification after returning from email and supports explicit change email',async()=> {
+  await startSignup();await act(async()=>{root.render(<SignInDialog open={false} onOpenChange={vi.fn()}/>);});await renderDialog('signup');
+  expect(document.querySelector('#signin-otp')).not.toBeNull();await clickText('Change email or go back');expect(document.querySelector('#signin-email')).not.toBeNull();
+});
+it('does not advance on an unrelated cross-tab session',async()=> {
+  await startSignup();testState.user={id:'other-user'};await renderDialog('signup');expect(document.querySelector('#signin-otp')).not.toBeNull();
+});
+it.each(['123 456','١٢٣٤٥٦','۱۲۳۴۵۶','12-34-56'])('normalizes formatted or localized OTP %s before submitting',async(code)=> {
+  await startSignup();expect(document.querySelector('#signin-otp').getAttribute('maxlength')).toBeNull();setInput('#signin-otp',code);await submitForm();
+  expect(testState.verifyEmailOtp).toHaveBeenCalledWith('audit@example.com','123456','signup');
+});
+it('rejects excess digits instead of silently verifying a truncated code',async()=> {
+  await startSignup();setInput('#signin-otp','12345678');expect(document.querySelector('button[type=submit]').disabled).toBe(true);await submitForm();expect(testState.verifyEmailOtp).not.toHaveBeenCalled();
+});
+it.each([
+  [{message:'Failed to fetch'},'Check your connection'],
+  [{status:429,message:'Too many requests'},'wait a minute'],
+  [{code:'otp_expired',message:'Token expired'},'invalid or has expired']
+])('explains verification failure %j',async(error,copy)=> {
+  await startSignup();testState.verifyEmailOtp.mockResolvedValue({error});setInput('#signin-otp','123456');await submitForm();expect(document.querySelector('[role=alert]').textContent).toContain(copy);
+});
+it('prevents resend while verification is pending',async()=> {
+  vi.useFakeTimers();await startSignup();await advanceCooldown();let finish;testState.verifyEmailOtp.mockImplementation(()=>new Promise(r=>{finish=r;}));
+  setInput('#signin-otp','123456');await submitForm();const resend=Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Resend code');expect(resend.disabled).toBe(true);await clickText('Resend code');expect(testState.resendSignupEmail).not.toHaveBeenCalled();
+  await act(async()=>{finish({error:null});await Promise.resolve();});
+});
+it('prevents verification during resend',async()=> {
+  vi.useFakeTimers();await startSignup();await advanceCooldown();let finish;testState.resendSignupEmail.mockImplementation(()=>new Promise(r=>{finish=r;}));setInput('#signin-otp','123456');await clickText('Resend code');await submitForm();expect(testState.verifyEmailOtp).not.toHaveBeenCalled();
+  await act(async()=>{finish({error:null});await Promise.resolve();});expect(document.querySelector('#signin-otp').value).toBe('');
+});
+it.each([true,false])('recovery completes with intended email and redirectOnFinish=%s',async(redirect)=> {
+  await act(async()=>{root.render(<SignInDialog open initialMode="signin" redirectOnFinish={redirect} onOpenChange={vi.fn()}/>);});setInput('#signin-email','audit@example.com');await clickText('Forgot password?');setInput('#signin-otp','123456');await submitForm();
+  setInput('#signin-newpass','newpassword123');await submitForm();expect(testState.updatePassword).toHaveBeenCalledWith('newpassword123','audit@example.com');
+  if(redirect) expect(testState.replace).toHaveBeenCalledWith('/dashboard');else expect(testState.replace).not.toHaveBeenCalled();
+});
+
+it('suppresses same-tick duplicate verification before React renders busy',async()=> {
+  await startSignup();let finish;testState.verifyEmailOtp.mockImplementation(()=>new Promise(r=>{finish=r;}));setInput('#signin-otp','123456');
+  await act(async()=>{const form=document.querySelector('form');form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await Promise.resolve();});
+  expect(testState.verifyEmailOtp).toHaveBeenCalledTimes(1);await act(async()=>{finish({error:null});await Promise.resolve();});
+});
+it('retains verified recovery step on close and reopen without another reset email',async()=> {
+  await renderDialog('signin');setInput('#signin-email','audit@example.com');await clickText('Forgot password?');setInput('#signin-otp','123456');await submitForm();
+  await act(async()=>{root.render(<SignInDialog open={false} onOpenChange={vi.fn()}/>);});await renderDialog('signin');expect(document.querySelector('#signin-newpass')).not.toBeNull();expect(testState.requestPasswordReset).toHaveBeenCalledTimes(1);
+});
+it('keeps resend cooldown on provider rate limit',async()=> {
+  vi.useFakeTimers();await startSignup();await advanceCooldown();testState.resendSignupEmail.mockResolvedValue({error:{status:429,message:'Too many requests'}});await clickText('Resend code');
+  expect(Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Resend code in 60s').disabled).toBe(true);
+});
+
+it('lets failed recovery start over without automatically sending another reset email',async()=> {
+  await renderDialog('signin');setInput('#signin-email','audit@example.com');await clickText('Forgot password?');setInput('#signin-otp','123456');await submitForm();
+  testState.updatePassword.mockResolvedValue({error:new Error('Recovery session has expired. Request a new code.')});setInput('#signin-newpass','newpassword123');await submitForm();
+  expect(document.querySelector('[role=alert]').textContent).toContain('expired');await clickText('Request a new reset code');
+  expect(document.querySelector('#signin-newpass')).toBeNull();expect(document.querySelector('#signin-password').value).toBe('');expect(document.querySelector('#signin-email').value).toBe('audit@example.com');expect(testState.requestPasswordReset).toHaveBeenCalledTimes(1);
+  await clickText('Forgot password?');expect(testState.requestPasswordReset).toHaveBeenCalledTimes(2);expect(document.querySelector('#signin-otp').value).toBe('');
 });

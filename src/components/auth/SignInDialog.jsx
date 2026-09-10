@@ -55,6 +55,24 @@ function matchesAuthError(error, code, legacyMessagePattern) {
   return error?.code === code || legacyMessagePattern.test(error?.message || '');
 }
 
+function normalizeOtp(value) {
+  return value.replace(/[٠-٩۰-۹]/g, (digit) => String(digit.charCodeAt(0) - (digit >= '۰' ? 0x6f0 : 0x660))).replace(/\D/g, '');
+}
+
+function verificationError(error) {
+  const message = error?.message || '';
+  if (error?.status === 429 || /rate|too many|over_request/i.test(`${error?.code} ${message}`)) {
+    return 'Too many attempts. Please wait a minute before trying again.';
+  }
+  if (/fetch|network|connection|timeout|timed out/i.test(message) || error?.name === 'AuthRetryableFetchError') {
+    return 'We couldn’t connect to verify your code. Check your connection and try again.';
+  }
+  if (error?.code === 'otp_expired' || /expired/i.test(message)) {
+    return 'That code is invalid or has expired. Enter the latest code or request a new one.';
+  }
+  return message || 'That code didn’t work. Check the latest email or resend a fresh one.';
+}
+
 // Merge goal + target band + the two email opt-ins into the signed-in user's
 // row. Fails soft — the worst outcome is an unanswered onboarding question.
 async function saveProfile(userId, { goal, band, examDate, studyPlanEmails, marketingEmails }) {
@@ -134,6 +152,18 @@ export default function SignInDialog({
   const [notice, setNotice] = React.useState('');
   const [resendIn, setResendIn] = React.useState(0);
   const dialogRef = React.useRef(null);
+  const authInFlight = React.useRef(false);
+  const wasOpen = React.useRef(false);
+  const beginAuth = () => {
+    if (authInFlight.current) return false;
+    authInFlight.current = true;
+    setBusy(true);
+    return true;
+  };
+  const endAuth = () => {
+    authInFlight.current = false;
+    setBusy(false);
+  };
 
   const finishStandardAuth = React.useCallback(() => {
     onOpenChange?.(false);
@@ -162,9 +192,12 @@ export default function SignInDialog({
 
   React.useEffect(() => setMounted(true), []);
 
-  // Reset whenever the dialog is (re)opened.
+  // Preserve unfinished code verification/recovery when returning from email.
   React.useEffect(() => {
-    if (open) {
+    const opening = open && !wasOpen.current;
+    wasOpen.current = open;
+    if (opening) {
+      if (step === 'verify' || step === 'newpass' || authInFlight.current) return;
       setMode(initialMode === 'signin' ? 'signin' : 'signup');
       setStep('account');
       setVerifySource('signup');
@@ -183,7 +216,7 @@ export default function SignInDialog({
       setNotice('');
       track('signin_gate_shown', { trigger, signed_in: false });
     }
-  }, [open, trigger, initialMode]);
+  }, [open, trigger, initialMode, step]);
 
   // Scroll lock while the dialog is active. Escape, focus containment, and
   // trigger restoration are handled by useDialogFocus.
@@ -195,22 +228,6 @@ export default function SignInDialog({
       document.body.style.overflow = prev;
     };
   }, [open]);
-
-  // Safety net: if a session appears in another tab while we sit on the
-  // verify step (e.g. an old emailed link), supabase-js syncs it here —
-  // continue without requiring the code.
-  React.useEffect(() => {
-    if (open && step === 'verify' && user?.id) {
-      setErrorMsg('');
-      if (verifySource === 'recovery') {
-        setPassword('');
-        setStep('newpass');
-      } else {
-        track('signup_verified', { trigger, method: 'link' });
-        setStep('about');
-      }
-    }
-  }, [open, step, user?.id, verifySource, trigger, finishStandardAuth]);
 
   // Resend cooldown ticker.
   React.useEffect(() => {
@@ -233,7 +250,7 @@ export default function SignInDialog({
     const first = titleCase(firstName);
     const last = titleCase(lastName);
     if (!trimmed || !password || (mode === 'signup' && (password.length < 8 || !first || !last))) return;
-    setBusy(true);
+    if (!beginAuth()) return;
     setErrorMsg('');
     setNotice('');
     try {
@@ -262,7 +279,7 @@ export default function SignInDialog({
           return;
         }
         setVerifySource('signup');
-        setResendIn(30);
+        setResendIn(60);
         setStep('verify');
       } else {
         track('login_start', { method: 'password', trigger, signed_in: false });
@@ -277,10 +294,10 @@ export default function SignInDialog({
                 resendError.message
                   || 'Could not send a confirmation code. Please try again.'
               );
-              return;
             }
             setVerifySource('signup');
-            setResendIn(30);
+            setCode('');
+            setResendIn(60);
             setStep('verify');
             return;
           }
@@ -295,15 +312,15 @@ export default function SignInDialog({
         finishStandardAuth();
       }
     } finally {
-      setBusy(false);
+      endAuth();
     }
   };
 
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
     const token = code.trim();
-    if (token.length < 6) return;
-    setBusy(true);
+    if (token.length !== 6) return;
+    if (!beginAuth()) return;
     setErrorMsg('');
     try {
       const { error } = await verifyEmailOtp(
@@ -312,7 +329,7 @@ export default function SignInDialog({
         verifySource === 'recovery' ? 'recovery' : 'signup'
       );
       if (error) {
-        setErrorMsg('That code didn’t work. Check the latest email or resend a fresh one.');
+        setErrorMsg(verificationError(error));
         return;
       }
       if (verifySource === 'recovery') {
@@ -326,28 +343,33 @@ export default function SignInDialog({
       track('signup_verified', { trigger, method: 'otp' });
       setStep('about');
     } finally {
-      setBusy(false);
+      endAuth();
     }
   };
 
   const handleResend = async () => {
-    if (resendIn > 0) return;
-    setResendIn(30);
+    if (resendIn > 0 || !beginAuth()) return;
+    setResendIn(60);
     setErrorMsg('');
-    const { error } =
-      verifySource === 'recovery'
+    try {
+      const { error } = verifySource === 'recovery'
         ? await requestPasswordReset(email.trim())
         : await resendSignupEmail(email.trim());
-    if (error) {
-      setResendIn(0);
-      setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+      if (error) {
+        if (error.status !== 429 && !/rate|too many/i.test(`${error.code} ${error.message}`)) setResendIn(0);
+        setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+      } else {
+        setCode('');
+      }
+    } finally {
+      endAuth();
     }
   };
 
   // "Forgot password?" — email a 6-digit recovery code, verified in the same
   // modal, then the user sets a new password on the recovered session.
   const handleForgotPassword = async () => {
-    setBusy(true);
+    if (!beginAuth()) return;
     setErrorMsg('');
     try {
       track('password_reset_start', { trigger, signed_in: false });
@@ -357,29 +379,30 @@ export default function SignInDialog({
         return;
       }
       setVerifySource('recovery');
-      setResendIn(30);
+      setResendIn(60);
       setCode('');
       setStep('verify');
     } finally {
-      setBusy(false);
+      endAuth();
     }
   };
 
   const handleNewPasswordSubmit = async (e) => {
     e.preventDefault();
     if (password.length < 8) return;
-    setBusy(true);
+    if (!beginAuth()) return;
     setErrorMsg('');
     try {
-      const { error } = await updatePassword(password);
+      const { error } = await updatePassword(password, email.trim());
       if (error) {
         setErrorMsg(error.message || 'Could not update your password. Please try again.');
         return;
       }
       track('password_reset_success', { trigger });
-      close();
+      setStep('account');
+      finishStandardAuth();
     } finally {
-      setBusy(false);
+      endAuth();
     }
   };
 
@@ -436,7 +459,7 @@ export default function SignInDialog({
           <ShieldCheck className="h-5 w-5 text-primary" />,
           verifySource === 'recovery' ? 'Reset your password' : 'Confirm your email',
           <>
-            Enter the 6-digit code we sent to{' '}
+            Enter the 6-digit email code for{' '}
             <span className="font-medium text-foreground">{email.trim()}</span>.
           </>
         )}
@@ -448,11 +471,10 @@ export default function SignInDialog({
               data-dialog-initial-focus
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={6}
               placeholder="123456"
               className="text-center text-lg font-semibold tracking-[0.5em]"
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => setCode(normalizeOtp(e.target.value))}
               disabled={busy}
               autoFocus
             />
@@ -462,16 +484,25 @@ export default function SignInDialog({
               {errorMsg}
             </p>
           )}
-          <Button type="submit" variant="accent" className="w-full" disabled={busy || code.length < 6}>
+          <Button type="submit" variant="accent" className="w-full" disabled={busy || code.length !== 6}>
             {busy ? 'Verifying…' : verifySource === 'recovery' ? 'Continue' : 'Verify email'}
           </Button>
           <button
             type="button"
             onClick={handleResend}
-            disabled={resendIn > 0}
+            disabled={busy || resendIn > 0}
             className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:cursor-default disabled:opacity-60 disabled:hover:no-underline"
           >
             {resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
+          </button>
+          <button type="button" disabled={busy} className="text-sm underline" onClick={() => {
+            setStep('account');
+            setCode('');
+            setPassword('');
+            setErrorMsg('');
+            setNotice('');
+          }}>
+            Change email or go back
           </button>
         </form>
       </>
@@ -509,6 +540,16 @@ export default function SignInDialog({
           <Button type="submit" variant="accent" className="w-full" disabled={busy || password.length < 8}>
             {busy ? 'Saving…' : 'Save new password'}
           </Button>
+          <button type="button" disabled={busy} className="text-sm underline" onClick={() => {
+            setMode('signin');
+            setStep('account');
+            setPassword('');
+            setCode('');
+            setErrorMsg('');
+            setNotice('Check your email address, then choose Forgot password? to request a new reset code.');
+          }}>
+            Request a new reset code
+          </button>
         </form>
       </>
     );

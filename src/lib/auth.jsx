@@ -75,6 +75,7 @@ function callbackUrl() {
 export function AuthProvider({ children }) {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const recoverySessionRef = React.useRef(null);
 
   React.useEffect(() => {
     let active = true;
@@ -191,8 +192,26 @@ export function AuthProvider({ children }) {
   const verifyEmailOtp = React.useCallback(async (email, token, type = 'signup') => {
     return recoverAuthCall(async () => {
       const supabase = getSupabase();
+      if (type === 'recovery') recoverySessionRef.current = null;
       const primary = await supabase.auth.verifyOtp({ email, token, type });
-      if (!primary.error) return { error: null };
+      if (!primary.error) {
+        if (type === 'recovery') {
+          const session = primary.data?.session;
+          const verifiedUser = primary.data?.user || session?.user;
+          if (!session?.access_token || !verifiedUser?.id ||
+              verifiedUser.email?.trim().toLowerCase() !== email.trim().toLowerCase()) {
+            return { error: new Error('Please request a new reset code for this email address.') };
+          }
+          // Retain only in memory. Password updates use this specific verified
+          // token, never a different account's session arriving in another tab.
+          recoverySessionRef.current = {
+            accessToken: session.access_token,
+            userId: verifiedUser.id,
+            email: verifiedUser.email.trim().toLowerCase(),
+          };
+        }
+        return { error: null };
+      }
       const altType = type === 'signup' ? 'email' : type === 'email' ? 'signup' : null;
       if (!altType) return { error: primary.error };
       const secondary = await supabase.auth.verifyOtp({ email, token, type: altType });
@@ -205,6 +224,7 @@ export function AuthProvider({ children }) {
   // verifyEmailOtp(type 'recovery'), after which updatePassword sets the new
   // password on the recovered session.
   const requestPasswordReset = React.useCallback(async (email) => {
+    recoverySessionRef.current = null;
     return recoverAuthCall(async () => {
       const supabase = getSupabase();
       const { error } = await supabase.auth.resetPasswordForEmail(email);
@@ -212,11 +232,35 @@ export function AuthProvider({ children }) {
     }, 'Could not send the reset code. Please try again.');
   }, []);
 
-  const updatePassword = React.useCallback(async (password) => {
+  const updatePassword = React.useCallback(async (password, email) => {
     return recoverAuthCall(async () => {
+      const recovery = recoverySessionRef.current;
+      if (!recovery || recovery.email !== String(email || '').trim().toLowerCase()) {
+        return { error: new Error('Verify a password reset code for this email first.') };
+      }
       const supabase = getSupabase();
-      const { error } = await supabase.auth.updateUser({ password });
-      return { error };
+      const current = await supabase.auth.getSession();
+      if (current.error || current.data?.session?.user?.id !== recovery.userId) {
+        recoverySessionRef.current = null;
+        return { error: new Error('Your signed-in account changed. Request a new password reset code.') };
+      }
+      // Binding the HTTP request to the verified token also closes the race
+      // between checking the shared session and submitting a password update.
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${recovery.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        return { error: new Error(data.msg || data.message || 'Could not update your password. Please try again.') };
+      }
+      recoverySessionRef.current = null;
+      return { error: null };
     }, 'Could not update your password. Please try again.');
   }, []);
 
@@ -233,6 +277,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signOut = React.useCallback(async () => {
+    recoverySessionRef.current = null;
     try {
       const supabase = getSupabase();
       // Account settings promises to sign out only this device. Supabase's
