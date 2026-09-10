@@ -26,7 +26,6 @@ vi.mock('next/router', () => ({
 vi.mock('../src/lib/auth', () => ({
   useAuth: () => ({
     user: testState.user,
-    signInWithEmail: vi.fn(),
     signUpWithPassword: testState.signUpWithPassword,
     signInWithPassword: vi.fn(),
     verifyEmailOtp: vi.fn(),

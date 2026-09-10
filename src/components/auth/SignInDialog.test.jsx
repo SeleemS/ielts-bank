@@ -20,7 +20,6 @@ vi.mock('next/router', () => ({
 vi.mock('../../lib/auth', () => ({
   useAuth: () => ({
     user: null,
-    signInWithEmail: vi.fn(),
     signUpWithPassword: testState.signUpWithPassword,
     signInWithPassword: testState.signInWithPassword,
     verifyEmailOtp: vi.fn(),
@@ -93,6 +92,8 @@ afterEach(() => {
 describe('SignInDialog password validation', () => {
   it('lets the authentication service evaluate an existing six-character password', async () => {
     await renderDialog('signin');
+    expect(document.body.textContent).not.toContain('Email me a one-time code instead');
+    expect(document.body.textContent).toContain('Forgot password?');
     setInput('#signin-email', 'legacy-user@example.com');
     setInput('#signin-password', '123456');
 
@@ -210,7 +211,7 @@ describe('SignInDialog password validation', () => {
     });
 
     expect(document.querySelector('[role="alert"]')?.textContent).toBe(
-      'Email or password is incorrect. If you signed up before we added passwords, use the emailed code option below.'
+      'Email or password is incorrect. If you’ve forgotten your password, reset it below.'
     );
   });
 

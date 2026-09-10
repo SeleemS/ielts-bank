@@ -6,7 +6,6 @@ import { act } from 'react-dom/test-utils';
 
 const testState = vi.hoisted(() => ({
   signOut: vi.fn(),
-  signInWithOtp: vi.fn(),
   signUp: vi.fn(),
   signInWithPassword: vi.fn(),
   verifyOtp: vi.fn(),
@@ -29,7 +28,6 @@ vi.mock('../../lib/supabase', () => ({
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
-      signInWithOtp: testState.signInWithOtp,
       signUp: testState.signUp,
       signInWithPassword: testState.signInWithPassword,
       verifyOtp: testState.verifyOtp,
@@ -100,7 +98,6 @@ async function clickSignOut() {
 
 beforeEach(() => {
   currentAuth = null;
-  testState.signInWithOtp.mockResolvedValue({ error: null });
   testState.signUp.mockResolvedValue({ data: { user: null, session: null }, error: null });
   testState.signInWithPassword.mockResolvedValue({ error: null });
   testState.verifyOtp.mockResolvedValue({ error: null });
@@ -142,22 +139,6 @@ describe('AuthProvider sign out', () => {
     expect(testState.signOut).toHaveBeenCalledWith({ scope: 'local' });
     expect(setAnalyticsUser).toHaveBeenLastCalledWith(null, null);
   });
-
-  it('does not create a new account from the existing-user email-code path', async () => {
-    await renderProvider();
-
-    await act(async () => {
-      await currentAuth.signInWithEmail('existing@example.com');
-    });
-
-    expect(testState.signInWithOtp).toHaveBeenCalledWith({
-      email: 'existing@example.com',
-      options: {
-        emailRedirectTo: expect.stringMatching(/\/auth\/callback$/),
-        shouldCreateUser: false,
-      },
-    });
-  });
 });
 
 describe('AuthProvider rejected-call recovery', () => {
@@ -166,7 +147,6 @@ describe('AuthProvider rejected-call recovery', () => {
     await renderProvider();
 
     const cases = [
-      [testState.signInWithOtp, () => currentAuth.signInWithEmail('audit@example.com')],
       [testState.signUp, () => currentAuth.signUpWithPassword('audit@example.com', 'password123')],
       [testState.signInWithPassword, () => currentAuth.signInWithPassword('audit@example.com', 'password123')],
       [testState.verifyOtp, () => currentAuth.verifyEmailOtp('audit@example.com', '123456')],

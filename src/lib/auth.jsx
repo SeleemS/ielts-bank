@@ -8,7 +8,6 @@
 //   useAuth() -> {
 //     user,                              // Supabase user object or null (user.id, user.email)
 //     loading,                           // true until the initial session resolves
-//     signInWithEmail(email): Promise<{error}>,          // magic link (fallback)
 //     signUpWithPassword(email, password): Promise<{data, error}>,
 //     signInWithPassword(email, password): Promise<{error}>,
 //     verifyEmailOtp(email, token): Promise<{error}>,          // 6-digit signup code
@@ -158,22 +157,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signInWithEmail = React.useCallback(async (email) => {
-    return recoverAuthCall(async () => {
-      const supabase = getSupabase();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: callbackUrl(),
-          // This helper powers the existing-account "one-time code instead"
-          // sign-in path. Supabase otherwise creates a user by default.
-          shouldCreateUser: false,
-        },
-      });
-      return { error };
-    }, 'Could not send the sign-in code. Please try again.');
-  }, []);
-
   // `metadata` (e.g. { full_name, first_name, last_name }) lands in
   // raw_user_meta_data; the handle_new_user trigger mirrors full_name into
   // public.users.display_name.
@@ -270,7 +253,6 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       loading,
-      signInWithEmail,
       signUpWithPassword,
       signInWithPassword,
       verifyEmailOtp,
@@ -282,7 +264,6 @@ export function AuthProvider({ children }) {
     [
       user,
       loading,
-      signInWithEmail,
       signUpWithPassword,
       signInWithPassword,
       verifyEmailOtp,
@@ -304,7 +285,6 @@ export function useAuth() {
     return {
       user: null,
       loading: true,
-      signInWithEmail: async () => ({ error: new Error('AuthProvider missing') }),
       signUpWithPassword: async () => ({ error: new Error('AuthProvider missing') }),
       signInWithPassword: async () => ({ error: new Error('AuthProvider missing') }),
       verifyEmailOtp: async () => ({ error: new Error('AuthProvider missing') }),

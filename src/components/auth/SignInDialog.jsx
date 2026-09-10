@@ -39,10 +39,9 @@ import {
 //                 Supabase email templates must render {{ .Token }}).
 //   3. about    — goal, target band, and optional exam date saved to the
 //                 users row. Skippable.
-// Existing users signing in with a password skip 2–3 entirely. Accounts from
-// the magic-link era (no password) sign in via an emailed one-time code. All
-// successful signup and sign-in paths finish on /dashboard, unless the caller
-// passes redirectOnFinish={false} to stay on the current page.
+// Existing users signing in with a password skip 2–3 entirely. All successful
+// signup and sign-in paths finish on /dashboard, unless the caller passes
+// redirectOnFinish={false} to stay on the current page.
 
 const GOALS = [
   { key: 'study', label: 'Study abroad', icon: GraduationCap },
@@ -100,7 +99,6 @@ export default function SignInDialog({
   const router = useRouter();
   const {
     user,
-    signInWithEmail,
     signUpWithPassword,
     signInWithPassword,
     verifyEmailOtp,
@@ -114,8 +112,7 @@ export default function SignInDialog({
   const [step, setStep] = React.useState('account'); // account | verify | newpass | about
   // What triggered the verify step — decides how "Resend code" re-sends and
   // where verification continues: 'signup' -> confirmation email -> about,
-  // 'signin' -> one-time sign-in code -> done, 'recovery' -> password reset
-  // code -> choose a new password.
+  // 'recovery' -> password reset code -> choose a new password.
   const [verifySource, setVerifySource] = React.useState('signup');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -205,10 +202,7 @@ export default function SignInDialog({
   React.useEffect(() => {
     if (open && step === 'verify' && user?.id) {
       setErrorMsg('');
-      if (verifySource === 'signin') {
-        track('login_success', { method: 'email_otp', trigger });
-        finishStandardAuth();
-      } else if (verifySource === 'recovery') {
+      if (verifySource === 'recovery') {
         setPassword('');
         setStep('newpass');
       } else {
@@ -292,7 +286,7 @@ export default function SignInDialog({
           }
           setErrorMsg(
             matchesAuthError(error, 'invalid_credentials', /invalid login credentials/i)
-              ? 'Email or password is incorrect. If you signed up before we added passwords, use the emailed code option below.'
+              ? 'Email or password is incorrect. If you’ve forgotten your password, reset it below.'
               : error.message || 'Could not sign you in. Please try again.'
           );
           return;
@@ -315,16 +309,10 @@ export default function SignInDialog({
       const { error } = await verifyEmailOtp(
         email.trim(),
         token,
-        verifySource === 'signin' ? 'email' : verifySource === 'recovery' ? 'recovery' : 'signup'
+        verifySource === 'recovery' ? 'recovery' : 'signup'
       );
       if (error) {
         setErrorMsg('That code didn’t work. Check the latest email or resend a fresh one.');
-        return;
-      }
-      if (verifySource === 'signin') {
-        // Existing account signing in with a code — no onboarding questions.
-        track('login_success', { method: 'email_otp', trigger });
-        finishStandardAuth();
         return;
       }
       if (verifySource === 'recovery') {
@@ -347,11 +335,9 @@ export default function SignInDialog({
     setResendIn(30);
     setErrorMsg('');
     const { error } =
-      verifySource === 'signin'
-        ? await signInWithEmail(email.trim())
-        : verifySource === 'recovery'
-          ? await requestPasswordReset(email.trim())
-          : await resendSignupEmail(email.trim());
+      verifySource === 'recovery'
+        ? await requestPasswordReset(email.trim())
+        : await resendSignupEmail(email.trim());
     if (error) {
       setResendIn(0);
       setErrorMsg(error.message || 'Could not resend the email. Please try again.');
@@ -392,27 +378,6 @@ export default function SignInDialog({
       }
       track('password_reset_success', { trigger });
       close();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // Passwordless sign-in for magic-link-era accounts: email a one-time code,
-  // verified in the same modal (no link round-trip).
-  const handleEmailCode = async () => {
-    setBusy(true);
-    setErrorMsg('');
-    try {
-      track('login_start', { method: 'email_otp', trigger, signed_in: false });
-      const { error } = await signInWithEmail(email.trim());
-      if (error) {
-        setErrorMsg(error.message || 'Could not send the code. Please try again.');
-        return;
-      }
-      setVerifySource('signin');
-      setResendIn(30);
-      setCode('');
-      setStep('verify');
     } finally {
       setBusy(false);
     }
@@ -469,11 +434,7 @@ export default function SignInDialog({
       <>
         {header(
           <ShieldCheck className="h-5 w-5 text-primary" />,
-          verifySource === 'signin'
-            ? 'Enter your sign-in code'
-            : verifySource === 'recovery'
-              ? 'Reset your password'
-              : 'Confirm your email',
+          verifySource === 'recovery' ? 'Reset your password' : 'Confirm your email',
           <>
             Enter the 6-digit code we sent to{' '}
             <span className="font-medium text-foreground">{email.trim()}</span>.
@@ -502,13 +463,7 @@ export default function SignInDialog({
             </p>
           )}
           <Button type="submit" variant="accent" className="w-full" disabled={busy || code.length < 6}>
-            {busy
-              ? 'Verifying…'
-              : verifySource === 'signin'
-                ? 'Sign in'
-                : verifySource === 'recovery'
-                  ? 'Continue'
-                  : 'Verify email'}
+            {busy ? 'Verifying…' : verifySource === 'recovery' ? 'Continue' : 'Verify email'}
           </Button>
           <button
             type="button"
@@ -814,14 +769,6 @@ export default function SignInDialog({
                 }}
               >
                 New here? Create an account
-              </button>
-              <button
-                type="button"
-                disabled={busy || !email.trim()}
-                className="font-medium underline-offset-4 hover:text-foreground hover:underline disabled:opacity-60"
-                onClick={handleEmailCode}
-              >
-                Email me a one-time code instead
               </button>
               <button
                 type="button"
