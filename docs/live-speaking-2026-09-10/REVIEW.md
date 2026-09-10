@@ -167,3 +167,7 @@ the strength of the flat rate looking tidy.
 - [ ] Decide whether Live and the audio-assessment pilot may be enabled together, given the stacked
       cost noted above.
 - [ ] Leave allowances unchanged until measured cost exists.
+
+## Live check, 10 September 2026 (after model access was enabled)
+
+A synthetic primary-WebSocket session using the exact mint-route session config (minus the WebRTC-only data-channel lockdown, which the API confirmed is rejected on WebSocket) was accepted by `gpt-live-1`: voice `vesper`, Responses delegation to `gpt-5.1`, examiner greeted unprompted ("Hello, I'm your examiner. This is…"), closed with `close_requested`. Raw result in `synthetic-session.json`. This confirms the contract, not the interview quality; a real microphone session is still required.
