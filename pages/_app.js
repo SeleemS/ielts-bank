@@ -14,7 +14,7 @@ import {
   trackPageView,
 } from '../src/lib/analytics';
 import { startSessionHeartbeat } from '../src/lib/sessionHeartbeat';
-// Client-only chrome (consent banner, delegated-click telemetry, sale reminder
+// Client-only behavior (privacy synchronization, delegated-click telemetry, sale reminder
 // modal): none of it renders meaningful SSR output, so load it as separate
 // async chunks instead of inside the critical _app bundle every page parses
 // before hydration.
@@ -140,7 +140,7 @@ function MyApp({ Component, pageProps }) {
             users and only fires every few graded submits (see the component). */}
         <OfferReminderModal />
         {/* The private /data dashboard is operator-only and excluded from
-            telemetry — no consent banner there. */}
+            telemetry — no privacy synchronization needed there. */}
         {router.pathname !== '/data' && (
           <ConsentManager onConsentChange={setOptionalConsent} />
         )}

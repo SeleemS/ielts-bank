@@ -87,18 +87,7 @@ export default function Footer() {
           <FooterColumn title="Practice" links={PRACTICE_LINKS} />
           <FooterColumn title="Tools" links={TOOLS_LINKS} />
           <FooterColumn title="Resources" links={RESOURCE_LINKS} />
-          <FooterColumn title="Legal" links={LEGAL_LINKS}>
-            <li>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event('ib:open-consent'))}
-                className="inline-block py-1 text-sm text-slate-300 transition-colors hover:text-white"
-                data-analytics-id="privacy_choices_footer"
-              >
-                Privacy choices
-              </button>
-            </li>
-          </FooterColumn>
+          <FooterColumn title="Legal" links={LEGAL_LINKS} />
         </div>
 
         <Separator className="my-10 bg-white/10" />

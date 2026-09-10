@@ -106,7 +106,7 @@ const PrivacyPolicy = () => {
               <div>
                 <h2 className="mb-1 text-base font-semibold text-foreground">6. Cookies and Consent Management</h2>
                 <p>
-                  Where required by law (including in the European Economic Area, the United Kingdom, and certain US states), we will request your consent before setting non-essential cookies or serving personalized advertising. You may accept or decline optional cookies via the consent banner, and you can change or withdraw your choice at any time through the &quot;Privacy choices&quot; control on our site or by adjusting your browser&apos;s cookie settings. Declining non-essential cookies does not prevent you from using the site; you may still see non-personalized ads.
+                  Optional analytics and advertising are enabled by default. Existing saved opt-outs are respected. You can enable Global Privacy Control in a supporting browser to disable optional tracking. Essential storage supports functions such as signing in. The site does not display a cookie-consent popup.
                 </p>
                 <p className="mt-2">
                   Local storage also keeps in-progress answers, timer state and preferences so practice can survive a refresh. IP addresses may be processed temporarily for abuse prevention and rate limiting; old rate-limit rows are removed automatically.

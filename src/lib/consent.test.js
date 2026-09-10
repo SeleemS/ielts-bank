@@ -51,12 +51,12 @@ describe('optional analytics consent', () => {
     expect(globalPrivacyControlEnabled()).toBe(false);
   });
 
-  it('fails closed when no explicit choice or valid region default exists', () => {
+  it('enables analytics by default without recording an explicit choice', () => {
     const event = { url: 'https://www.ielts-bank.com/' };
-
-    expect(readOptionalConsent()).toBe('denied');
-    expect(analyticsConsentGranted()).toBe(false);
-    expect(consentAwareVercelEvent(event)).toBeNull();
+    expect(readOptionalConsent()).toBe('granted');
+    expect(analyticsConsentGranted()).toBe(true);
+    expect(consentAwareVercelEvent(event)).toBe(event);
+    expect(window.localStorage.getItem('ib_consent_v1')).toBeNull();
   });
 
   it('blocks analytics after an explicit opt-out', () => {
@@ -66,13 +66,13 @@ describe('optional analytics consent', () => {
     expect(analyticsConsentGranted()).toBe(false);
   });
 
-  it('follows the region default when the visitor has not chosen', () => {
+  it('uses the enabled site default without an explicit choice', () => {
     window.__ieltsConsentDefault = 'denied'; // EU/EEA/UK/Switzerland -> opt-in
-    expect(readOptionalConsent()).toBe('denied');
-    expect(analyticsConsentGranted()).toBe(false);
-    expect(optionalDefaultsOn()).toBe(false);
+    expect(readOptionalConsent()).toBe('granted');
+    expect(analyticsConsentGranted()).toBe(true);
+    expect(optionalDefaultsOn()).toBe(true);
 
-    window.__ieltsConsentDefault = 'granted'; // elsewhere -> opt-out
+    window.__ieltsConsentDefault = 'granted'; // stale pre-removal default
     expect(readOptionalConsent()).toBe('granted');
     expect(analyticsConsentGranted()).toBe(true);
     expect(optionalDefaultsOn()).toBe(true);
@@ -124,20 +124,17 @@ describe('optional analytics consent', () => {
     expect(window.__ieltsOptionalConsent).toBe('denied');
   });
 
-  it('sets a geo-aware pre-tag document default from the region cookie', () => {
+  it('sets an enabled pre-tag default while preserving explicit opt-outs', () => {
     const documentSource = readFileSync(
       new URL('../../pages/_document.js', import.meta.url),
       'utf8'
     );
 
     expect(documentSource).toContain(
-      "var regionDefault = readCookie('ib_consent_default');"
+      "var regionDefault = 'granted';"
     );
     expect(documentSource).toContain(
       'window.__ieltsConsentDefault = regionDefault;'
-    );
-    expect(documentSource).toContain(
-      "? regionDefault : 'denied';"
     );
     expect(documentSource).toContain(
       'var gpc = navigator.globalPrivacyControl === true;'

@@ -11,13 +11,8 @@ export default function Document() {
         <meta name="theme-color" content="#000000" />
         {/* Allow large image previews in Google Search / Discover. */}
         <meta name="robots" content="max-image-preview:large" />
-        {/* Google Consent Mode defaults — must run before gtag.js/AdSense load.
-            GEO-AWARE: EU/EEA/UK/Switzerland visitors default to DENIED
-            (opt-in), other known countries default to GRANTED (opt-out), and a
-            missing/invalid region cookie fails closed to DENIED. The region
-            default comes from the `ib_consent_default` cookie set per request
-            by middleware.js. Global Privacy Control and an explicit saved
-            choice always override it. */}
+        {/* Optional tracking defaults on; saved opt-outs and GPC still win.
+            Initialize before analytics or advertising scripts can load. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -25,14 +20,7 @@ export default function Document() {
               function gtag(){dataLayer.push(arguments);}
               window.gtag = window.gtag || gtag;
               (function(){
-                function readCookie(name){
-                  try {
-                    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-                    return m ? decodeURIComponent(m[1]) : null;
-                  } catch (e) { return null; }
-                }
-                var regionDefault = readCookie('ib_consent_default');
-                regionDefault = (regionDefault === 'granted' || regionDefault === 'denied') ? regionDefault : 'denied';
+                var regionDefault = 'granted';
                 window.__ieltsConsentDefault = regionDefault;
                 var saved = null;
                 try { saved = localStorage.getItem('ib_consent_v1'); } catch (e) {}

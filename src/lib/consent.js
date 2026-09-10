@@ -21,8 +21,7 @@ function browserStorage(storage) {
 }
 
 // The visitor's EXPLICIT stored choice, or null if they have not chosen. This
-// does NOT apply the opt-out default — it answers "did the visitor decide?",
-// which is what the banner uses to know whether to keep showing.
+// does NOT apply the site default — it answers whether the visitor decided.
 export function readStoredConsent(storage) {
   if (typeof window !== 'undefined') {
     const current = normalizeOptionalConsent(window.__ieltsOptionalConsent);
@@ -35,36 +34,23 @@ export function readStoredConsent(storage) {
   }
 }
 
-// The region-aware default set by pages/_document.js from the `ib_consent_default`
-// cookie (middleware.js): 'denied' for opt-in regions
-// (EU/EEA/UK/Switzerland), 'granted' for other known countries. Falls back to
-// 'denied' when the cookie is missing or invalid so a geo miss fails closed.
+// Site default without a popup; explicit opt-outs and GPC take precedence.
 export function optionalConsentDefault() {
-  if (typeof window !== 'undefined') {
-    const value = normalizeOptionalConsent(window.__ieltsConsentDefault);
-    if (value) return value;
-  }
-  return 'denied';
+  return 'granted';
 }
 
-// Whether optional storage is ON by default for this visitor's region (opt-out).
-// Used for the banner copy; false in EU/EEA/UK/Switzerland or unknown regions.
+// Whether optional storage is enabled by default.
 export function optionalDefaultsOn() {
   return optionalConsentDefault() === 'granted';
 }
 
-// Effective consent used for tracking decisions. GEO-AWARE opt-out: optional
-// analytics/advertising default ON only for a known non-required country and
-// stay in the region default until the visitor explicitly chooses — EXCEPT when
-// the browser sends Global Privacy Control, which is always honored (required
-// in several US states).
+// Existing explicit preferences and Global Privacy Control are preserved.
 export function readOptionalConsent(storage) {
   if (globalPrivacyControlEnabled()) return 'denied';
   return readStoredConsent(storage) || optionalConsentDefault();
 }
 
-// Whether the visitor's choice is settled (GPC signal or an explicit click), so
-// the notice/opt-out banner can stay hidden.
+// Whether the visitor has an explicit preference or browser privacy signal.
 export function consentDecided(storage) {
   return globalPrivacyControlEnabled() || readStoredConsent(storage) !== null;
 }

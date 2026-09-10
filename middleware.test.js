@@ -34,13 +34,13 @@ describe('geo-aware consent middleware', () => {
   });
 
   it.each(['DE', 'GB', 'NO', 'CH'])(
-    'sets denied for consent-required country %s',
+    'sets the enabled site default for country %s',
     (country) => {
       const response = middleware(request({ country }));
 
       expect(response.cookies.set).toHaveBeenCalledWith(
         'ib_consent_default',
-        'denied',
+        'granted',
         expect.objectContaining({ path: '/', sameSite: 'lax' })
       );
     }
@@ -57,13 +57,13 @@ describe('geo-aware consent middleware', () => {
   });
 
   it.each([undefined, '', 'unknown'])(
-    'fails closed when geo is unavailable or malformed (%s)',
+    'uses the site default when geo is unavailable or malformed (%s)',
     (country) => {
       const response = middleware(request({ country }));
 
       expect(response.cookies.set).toHaveBeenCalledWith(
         'ib_consent_default',
-        'denied',
+        'granted',
         expect.any(Object)
       );
     }
@@ -71,7 +71,7 @@ describe('geo-aware consent middleware', () => {
 
   it('does not rewrite unchanged consent-default and country cookies', () => {
     const response = middleware(
-      request({ country: 'CH', cookie: 'denied', countryCookie: 'CH' })
+      request({ country: 'CH', cookie: 'granted', countryCookie: 'CH' })
     );
 
     expect(nextResponse.next).toHaveBeenCalledTimes(1);

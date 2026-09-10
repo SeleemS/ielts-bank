@@ -1,12 +1,5 @@
-// src/lib/consentRegions.js
-// Countries where optional analytics/advertising require PRIOR OPT-IN consent
-// (GDPR/ePrivacy and Google's publisher consent policy): the EU/EEA, UK, and
-// Switzerland. Visitors geolocated to these countries get the
-// denied-by-default (opt-in) consent flow; other known countries default to
-// opt-out. Missing geo data fails closed. The visitor's country is resolved per
-// request from Vercel edge geo in middleware.js.
-//
-// Pure data + one helper so it stays importable from the edge runtime.
+// Country classification also used for onboarding email preferences.
+// The site tracking default is independent of this classification.
 export const CONSENT_REQUIRED_COUNTRIES = new Set([
   // EU-27
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
@@ -25,8 +18,8 @@ export function isConsentRequiredCountry(countryCode) {
   );
 }
 
-export function consentDefaultForCountry(countryCode) {
-  const normalized = String(countryCode || '').trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) return 'denied';
-  return isConsentRequiredCountry(normalized) ? 'denied' : 'granted';
+// Optional tracking is enabled by default without a popup. Existing explicit
+// opt-outs and Global Privacy Control still override this default.
+export function consentDefaultForCountry() {
+  return 'granted';
 }

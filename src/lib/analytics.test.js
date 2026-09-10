@@ -190,7 +190,7 @@ describe('dual analytics tracking', () => {
     expect(isInternalAnalyticsPath('/pricing?upgrade=writing')).toBe(false);
   });
 
-  it('tracks by default in an opt-out region when the visitor has not opted out', () => {
+  it('tracks by default when no explicit opt-out exists', () => {
     window.__ieltsOptionalConsent = null;
     window.__ieltsConsentDefault = 'granted';
     window.localStorage = storage();

@@ -1,13 +1,6 @@
 // middleware.js
-// Geo-aware consent default. EU/EEA/UK/Switzerland visitors get opt-in
-// (analytics/ads denied until they accept); other known countries get opt-out
-// (tracked until they opt out). Missing or malformed geo data fails closed.
-//
-// Most pages are statically generated, so _document.js alone can't see the
-// visitor's country. This edge middleware resolves it per request from Vercel's
-// geo header and stashes the resulting default in a readable cookie that the
-// pre-tag consent script (pages/_document.js) reads BEFORE any analytics/ads
-// load. Global Privacy Control and an explicit banner choice still override it.
+// Optional tracking defaults on; explicit opt-outs and GPC are honored by
+// the client. Keep the country cookie for pricing and other display needs.
 import { NextResponse } from 'next/server';
 import { consentDefaultForCountry } from './src/lib/consentRegions';
 
