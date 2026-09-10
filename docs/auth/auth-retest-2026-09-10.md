@@ -1,6 +1,6 @@
 # Authentication retest — 10 September 2026
 
-Status snapshot: **frontend commit `1153610` is live. Vercel deployment `dpl_5angph7US4gDSUuy55mqoqy9AT3W` is Ready and aliases www.ielts-bank.com; live callback error guidance and its sign-in modal were verified. The mailbox signup guard is live; friendly pre-create hook verification is pending.** This report records production Auth API operations beginning at 19:36:35 UTC and a separate local frontend regression run. These results do not establish that every device, account flow, or email provider works.
+Status snapshot: **frontend commit `1153610` is live. Vercel deployment `dpl_5angph7US4gDSUuy55mqoqy9AT3W` is Ready and aliases www.ielts-bank.com; live callback error guidance and its sign-in modal were verified. The mailbox signup guard is live; the friendly pre-create hook is enabled and verified with a 422 duplicate response.** This report records production Auth API operations beginning at 19:36:35 UTC and a separate local frontend regression run. These results do not establish that every device, account flow, or email provider works.
 
 ## Production API results
 
@@ -39,9 +39,11 @@ Commit `1153610` includes:
 ## Remaining checks and unresolved items
 
 - **Email design resolved at provider:** the user confirmed the designed recovery email. A fresh signup at 19:44:36 UTC used the new subject and card in Resend (email `162ebbd3-7ff4-4ed3-97e9-9449bea99be7`). Earlier signup emails fell within Supabase’s ten-minute per-template cache window following the 19:28:57 UTC update. The user supplied that code and confirmed the signup design. No additional template change was needed.
-- **Mailbox guard:** migration applied and recorded after the final signup/resend tests. A new plus alias was rejected and a read-only database check confirmed no account was created. Existing QA login still succeeded. All three QA accounts are confirmed and have profile/quota rows. Actual isolated PostgreSQL tests separately covered concurrency, rollback, email changes, and historical duplicates. The friendly pre-create hook is pending.
+- **Mailbox guard:** migration applied and recorded after the final signup/resend tests. A new plus alias was rejected and a read-only database check confirmed no account was created. Existing QA login still succeeded. All three QA accounts are confirmed and have profile/quota rows. Actual isolated PostgreSQL tests separately covered concurrency, rollback, email changes, and historical duplicates. The friendly pre-create hook was enabled after confirming no prior hook; the live duplicate response is 422 with “An account for this mailbox already exists. Sign in or reset your password.” Existing login still passed afterward.
 - Verify the deployed frontend commit and retest browser signup, verification, resend, recovery, and login end to end, including the expired-link recovery UI.
 - Verify real-browser cross-tab identity changes, close/reopen recovery, browser restart persistence, mobile code entry, and browser network interruption.
 - Assess natural token expiry, additional mailbox providers, spam placement, and delivery timing separately; these are not covered by the current log.
 
-Evidence source: sanitized operation fields from the local test runner's `results.jsonl`, plus the local regression run. No secrets file was inspected or included. This is an interim report for the parent task to update after deployment and remaining live checks.
+Three authorized QA accounts remain available; they are grandfathered by the guard. New aliases sharing their base mailbox are blocked. Case and plus tags are normalized for account uniqueness, while actual delivery addresses remain unchanged. Independent email addresses can still create accounts; this is not universal multi-account detection.
+
+Evidence source: sanitized operation fields from the local test runner's `results.jsonl`, plus the local regression run. No secrets file was inspected or included. Remaining browser/device/provider coverage is explicitly listed above; do not interpret this report as exhaustive proof.
