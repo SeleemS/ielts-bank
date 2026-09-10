@@ -39,7 +39,7 @@ vi.mock('../../lib/fonts', () => ({
   inter: { variable: '' },
 }));
 
-import SignInDialog, { emailSendCooldownSeconds } from './SignInDialog';
+import SignInDialog, { emailSendCooldownSeconds, isEmailSendCapError } from './SignInDialog';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -277,9 +277,35 @@ async function submitAccountForm() {
 describe('SignInDialog email send rate limit', () => {
   it('parses the provider cooldown and ignores unrelated errors', () => {
     expect(emailSendCooldownSeconds(rateLimitError(47))).toBe(47);
-    expect(emailSendCooldownSeconds({ code: 'over_email_send_rate_limit' })).toBe(60);
     expect(emailSendCooldownSeconds(new Error('Email service unavailable'))).toBeNull();
     expect(emailSendCooldownSeconds(null)).toBeNull();
+    // The project-wide cap shares the code but sends nothing.
+    const cap = Object.assign(new Error('Email rate limit exceeded'), {
+      code: 'over_email_send_rate_limit',
+    });
+    expect(emailSendCooldownSeconds(cap)).toBeNull();
+    expect(isEmailSendCapError(cap)).toBe(true);
+    expect(isEmailSendCapError(rateLimitError(47))).toBe(false);
+    expect(isEmailSendCapError(new Error('Email service unavailable'))).toBe(false);
+  });
+
+  it('reports an exhausted hourly email cap honestly instead of claiming a code was sent', async () => {
+    testState.signUpWithPassword.mockResolvedValue({
+      data: null,
+      error: Object.assign(new Error('Email rate limit exceeded'), {
+        code: 'over_email_send_rate_limit',
+      }),
+    });
+    await renderDialog('signup');
+    setInput('#signup-first-name', 'New');
+    setInput('#signup-last-name', 'User');
+    setInput('#signin-email', 'learner@example.com');
+    setInput('#signin-password', 'password123');
+
+    await submitAccountForm();
+
+    expect(document.querySelector('#signin-otp')).toBeNull();
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('no code was sent');
   });
 
   it('continues to verification when a repeated signup hits the send window', async () => {

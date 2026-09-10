@@ -56,22 +56,32 @@ function matchesAuthError(error, code, legacyMessagePattern) {
   return error?.code === code || legacyMessagePattern.test(error?.message || '');
 }
 
-// Supabase refuses to email the same address twice within its send window
-// (`over_email_send_rate_limit`, "For security purposes, you can only request
-// this after N seconds"). That is not a failure to create the account: a code
-// is already on its way (or sitting in spam), so the flow should continue to
-// the verification step with the provider's own countdown instead of showing
-// the raw message as a dead end. Returns the remaining seconds, or null when
-// the error is something else.
+// Supabase refuses to email the same address twice within its per-user
+// interval ("For security purposes, you can only request this after N
+// seconds"). That is not a failure to create the account: a code is already
+// on its way (or sitting in spam), so the flow should continue to the
+// verification step with the provider's own countdown instead of showing the
+// raw message as a dead end. Returns the remaining seconds, or null when the
+// error is something else.
 const SEND_RATE_LIMIT_PATTERN = /only request this after\s+(\d+)\s*seconds?/i;
-const DEFAULT_SEND_WINDOW_SECONDS = 60;
 export function emailSendCooldownSeconds(error) {
   if (!error) return null;
   const match = SEND_RATE_LIMIT_PATTERN.exec(error.message || '');
-  if (match) return Math.max(1, parseInt(match[1], 10) || DEFAULT_SEND_WINDOW_SECONDS);
-  if (error.code === 'over_email_send_rate_limit') return DEFAULT_SEND_WINDOW_SECONDS;
-  return null;
+  if (!match) return null;
+  return Math.max(1, parseInt(match[1], 10) || 60);
 }
+
+// The same `over_email_send_rate_limit` code is also returned when the
+// project-wide hourly email cap is exhausted ("Email rate limit exceeded").
+// Nothing was sent in that case, so it must read as an honest, temporary
+// failure rather than a claim that a code is on its way.
+export function isEmailSendCapError(error) {
+  if (!error || emailSendCooldownSeconds(error)) return false;
+  return matchesAuthError(error, 'over_email_send_rate_limit', /email rate limit exceeded/i);
+}
+const SEND_CAP_MESSAGE =
+  'Our email service has hit its hourly sending limit, so no code was sent. '
+  + 'Please try again in a few minutes.';
 
 const ALREADY_SENT_NOTICE =
   'We already emailed you a code in the last minute, so a new one can’t be sent just yet. '
@@ -301,7 +311,11 @@ export default function SignInDialog({
             enterVerifyStep('signup', cooldown, ALREADY_SENT_NOTICE);
             return;
           }
-          setErrorMsg(error.message || 'Could not create your account. Please try again.');
+          setErrorMsg(
+            isEmailSendCapError(error)
+              ? SEND_CAP_MESSAGE
+              : error.message || 'Could not create your account. Please try again.'
+          );
           return;
         }
         // Supabase obfuscates existing accounts: user comes back with no
@@ -333,8 +347,10 @@ export default function SignInDialog({
                 return;
               }
               setErrorMsg(
-                resendError.message
-                  || 'Could not send a confirmation code. Please try again.'
+                isEmailSendCapError(resendError)
+                  ? SEND_CAP_MESSAGE
+                  : resendError.message
+                    || 'Could not send a confirmation code. Please try again.'
               );
               return;
             }
@@ -414,7 +430,11 @@ export default function SignInDialog({
         return;
       }
       setResendIn(0);
-      setErrorMsg(error.message || 'Could not resend the email. Please try again.');
+      setErrorMsg(
+        isEmailSendCapError(error)
+          ? SEND_CAP_MESSAGE
+          : error.message || 'Could not resend the email. Please try again.'
+      );
     }
   };
 
@@ -432,7 +452,11 @@ export default function SignInDialog({
           enterVerifyStep('recovery', cooldown, ALREADY_SENT_NOTICE);
           return;
         }
-        setErrorMsg(error.message || 'Could not send the reset code. Please try again.');
+        setErrorMsg(
+          isEmailSendCapError(error)
+            ? SEND_CAP_MESSAGE
+            : error.message || 'Could not send the reset code. Please try again.'
+        );
         return;
       }
       enterVerifyStep('recovery');
@@ -473,7 +497,11 @@ export default function SignInDialog({
           enterVerifyStep('signin', cooldown, ALREADY_SENT_NOTICE);
           return;
         }
-        setErrorMsg(error.message || 'Could not send the code. Please try again.');
+        setErrorMsg(
+          isEmailSendCapError(error)
+            ? SEND_CAP_MESSAGE
+            : error.message || 'Could not send the code. Please try again.'
+        );
         return;
       }
       enterVerifyStep('signin');

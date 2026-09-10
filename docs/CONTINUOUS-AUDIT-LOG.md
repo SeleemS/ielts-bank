@@ -4069,25 +4069,37 @@ False positives are kept in the investigation notes so they are not rediscovered
 - Verification: focused 3-file/16-test auth run, complete 151-file/1560-test Vitest suite and
   ESLint passed. The strict analytics audit reports one pre-existing uncaptured `onPointerDown`
   handler in `src/components/datadash/GlobeStage.jsx`, unrelated to this change.
-- Owner action (`OWNER`, not verifiable from the repository): the client fix removes the misleading
-  message, but a code that never arrives is a delivery problem on the Supabase Auth side, which
-  this codebase does not configure. `docs/audit-2026-09-06` records that signup OTP receipt has
-  never been verified end-to-end with a real external inbox. Check, in the Supabase dashboard:
-  1. Authentication → Emails → SMTP settings: custom SMTP must be enabled. Supabase's built-in
-     mailer is limited to a handful of emails per hour and, for projects without custom SMTP,
-     only delivers to addresses belonging to the project's own team members, which matches the
-     report exactly (owner tests work, a stranger's Gmail receives nothing). The project already
-     holds a Resend API key for lifecycle mail (`RESEND_API_KEY`); Resend's SMTP endpoint
-     (`smtp.resend.com`, port 465, username `resend`, password = API key, a verified sending
-     domain) is the smallest change.
-  2. Authentication → Rate limits: raise the per-hour email send limit once custom SMTP is on
-     (the default applies only to the built-in mailer path but confirm the configured value).
-  3. Authentication → Emails → Templates: `Confirm signup`, `Magic Link` and `Reset Password`
-     must render `{{ .Token }}` (the dialog is OTP-only, per CA-104 and MONETIZATION-PROGRESS §7).
-  4. Authentication → Users: look up the reporter's address; an unconfirmed user row with a recent
-     `confirmation_sent_at` and no delivery is the signature of this failure. Delete that row or
-     ask them to retry after SMTP is fixed, then reply to the contact message.
-  5. Auth logs (Logs → Auth) for `mailer` errors around 2026-09-10 01:00 UTC.
+- Follow-up (same day): the client also distinguishes the project-wide hourly cap, which
+  returns the same `over_email_send_rate_limit` code with "Email rate limit exceeded" but sends
+  nothing. That case now reads as an honest temporary failure ("no code was sent, try again in a
+  few minutes") rather than the already-sent notice. Helper contract and a dialog case cover it.
+- Owner findings from the Supabase dashboard (screenshots supplied 2026-09-10): custom SMTP is
+  enabled through Resend (`smtp.resend.com:465`, sender `auth@tryhalfstack.com`, 60-second
+  per-user interval); the `Confirm sign up` template renders `{{ .Token }}`; the project-wide
+  email limit is 30 emails/hour. Public DNS for `tryhalfstack.com` carries the Resend domain
+  verification TXT, the `resend._domainkey` DKIM key, SPF on `send.tryhalfstack.com`, and a DMARC
+  `p=quarantine` policy, so the sending domain itself is correctly provisioned. The built-in-mailer
+  hypothesis is therefore ruled out.
+- Owner action (`OWNER`, not verifiable from the repository):
+  1. Resend dashboard → Emails: filter by the reporter's address. Delivered means Gmail filed it
+     (spam or Promotions); bounced or suppressed means the address is on Resend's suppression list
+     and must be removed; no attempt at all means Supabase never reached Resend (see 2 and 3).
+  2. The 30 emails/hour project-wide cap is low for a public site: every signup, resend, code
+     sign-in and password reset counts, and bot or repeated attempts in a busy hour lock out real
+     learners with the same error code. Raise it (Resend's free tier allows 100/day, 3,000/month;
+     a paid plan more) to a value that matches signup volume.
+  3. Supabase → Logs → Auth around 2026-09-10 01:00 UTC: SMTP authentication failures mean the
+     stored SMTP password no longer matches the current Resend API key (`docs/PROGRESS.md` lists
+     credential rotation as an open owner task). Re-enter the key and send a password-reset code
+     to an external, non-team inbox to prove end-to-end receipt, which `docs/audit-2026-09-06`
+     records as never having been done.
+  4. Authentication → Users: an unconfirmed row for the reporter with a recent
+     `confirmation_sent_at` confirms the attempts reached Supabase. Delete it or have them retry
+     once delivery is proven, then answer the contact message.
+  5. Deliverability: the sender is `IELTS Bank <auth@tryhalfstack.com>` while the site is
+     `ielts-bank.com`, and `ielts-bank.com` publishes no DMARC record. Moving auth mail to a
+     verified `ielts-bank.com` sender (or subdomain) with DKIM and DMARC reduces Gmail spam
+     placement for a brand/domain mismatch.
 
 ## Investigation notes
 
