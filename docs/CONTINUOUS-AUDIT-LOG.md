@@ -4037,6 +4037,58 @@ False positives are kept in the investigation notes so they are not rediscovered
   removed every probe row. Supabase's combined security and performance advisors reported no
   warnings.
 
+## CA-148 — Repeated signups inside the email send window dead-ended on a raw provider message
+
+- Status: `FIXED` (client flow) / `OWNER` (email delivery configuration, see below)
+- Area: Authentication / signup confirmation codes / email delivery
+- Severity: High (a learner reported being unable to create an account at all)
+- Trigger: contact-form message from a prospective learner, 2026-09-10: every signup attempt "says
+  it has already sent a code", no code ever arrives, and their inbox is otherwise healthy.
+- Evidence: Supabase Auth refuses to email one address twice inside its send window and returns
+  `over_email_send_rate_limit` ("For security purposes, you can only request this after N
+  seconds"). The shared auth dialog surfaced that text verbatim as a signup failure and stayed on
+  the account form, so anyone who retried after a code failed to arrive was told the account could
+  not be created even though it already existed and a code had been issued. The same raw message
+  leaked from the unconfirmed-password sign-in resend, the manual `Resend code` action (which also
+  dropped its cooldown to zero), the passwordless code and the password-reset paths. The verify
+  step gave no delivery guidance (spam or junk folder, arrival delay) and had no way back to
+  correct a mistyped address, so a typo left the learner waiting for a code that could never come.
+- Fix: a shared `emailSendCooldownSeconds()` recognises the provider's send-window rejection by
+  stable code or legacy message and extracts the remaining seconds. Every send path (signup,
+  unconfirmed sign-in resend, manual resend, passwordless code, password reset) now continues to
+  the verification step with the provider's own countdown on `Resend code` and a status notice that
+  a code was already emailed moments ago with a spam/junk hint, instead of a dead-end error. The
+  verify step always states that codes can take a minute and to check spam or junk, and offers
+  `Wrong address? Use a different email` back to the account form. Unrelated provider errors keep
+  the CA-104 behaviour (error shown, immediate retry allowed).
+- Regression coverage: the dialog suite adds a helper contract test plus four flow cases: a
+  rate-limited repeated signup reaches the OTP step with a 47-second countdown and no alert; a
+  rate-limited automatic resend after `email_not_confirmed` does the same with the provider's
+  seconds; a rate-limited manual resend keeps the countdown rather than reporting failure; and the
+  new back action returns to the account form with the typed address preserved.
+- Verification: focused 3-file/16-test auth run, complete 151-file/1560-test Vitest suite and
+  ESLint passed. The strict analytics audit reports one pre-existing uncaptured `onPointerDown`
+  handler in `src/components/datadash/GlobeStage.jsx`, unrelated to this change.
+- Owner action (`OWNER`, not verifiable from the repository): the client fix removes the misleading
+  message, but a code that never arrives is a delivery problem on the Supabase Auth side, which
+  this codebase does not configure. `docs/audit-2026-09-06` records that signup OTP receipt has
+  never been verified end-to-end with a real external inbox. Check, in the Supabase dashboard:
+  1. Authentication → Emails → SMTP settings: custom SMTP must be enabled. Supabase's built-in
+     mailer is limited to a handful of emails per hour and, for projects without custom SMTP,
+     only delivers to addresses belonging to the project's own team members, which matches the
+     report exactly (owner tests work, a stranger's Gmail receives nothing). The project already
+     holds a Resend API key for lifecycle mail (`RESEND_API_KEY`); Resend's SMTP endpoint
+     (`smtp.resend.com`, port 465, username `resend`, password = API key, a verified sending
+     domain) is the smallest change.
+  2. Authentication → Rate limits: raise the per-hour email send limit once custom SMTP is on
+     (the default applies only to the built-in mailer path but confirm the configured value).
+  3. Authentication → Emails → Templates: `Confirm signup`, `Magic Link` and `Reset Password`
+     must render `{{ .Token }}` (the dialog is OTP-only, per CA-104 and MONETIZATION-PROGRESS §7).
+  4. Authentication → Users: look up the reporter's address; an unconfirmed user row with a recent
+     `confirmation_sent_at` and no delivery is the signature of this failure. Delete that row or
+     ask them to retry after SMTP is fixed, then reply to the contact message.
+  5. Auth logs (Logs → Auth) for `mailer` errors around 2026-09-10 01:00 UTC.
+
 ## Investigation notes
 
 - Exact deployed commit `c9606360a6b523ad4b3dbe2720e3ce2f253b96e0` added

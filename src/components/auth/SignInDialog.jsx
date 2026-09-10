@@ -56,6 +56,27 @@ function matchesAuthError(error, code, legacyMessagePattern) {
   return error?.code === code || legacyMessagePattern.test(error?.message || '');
 }
 
+// Supabase refuses to email the same address twice within its send window
+// (`over_email_send_rate_limit`, "For security purposes, you can only request
+// this after N seconds"). That is not a failure to create the account: a code
+// is already on its way (or sitting in spam), so the flow should continue to
+// the verification step with the provider's own countdown instead of showing
+// the raw message as a dead end. Returns the remaining seconds, or null when
+// the error is something else.
+const SEND_RATE_LIMIT_PATTERN = /only request this after\s+(\d+)\s*seconds?/i;
+const DEFAULT_SEND_WINDOW_SECONDS = 60;
+export function emailSendCooldownSeconds(error) {
+  if (!error) return null;
+  const match = SEND_RATE_LIMIT_PATTERN.exec(error.message || '');
+  if (match) return Math.max(1, parseInt(match[1], 10) || DEFAULT_SEND_WINDOW_SECONDS);
+  if (error.code === 'over_email_send_rate_limit') return DEFAULT_SEND_WINDOW_SECONDS;
+  return null;
+}
+
+const ALREADY_SENT_NOTICE =
+  'We already emailed you a code in the last minute, so a new one can’t be sent just yet. '
+  + 'Give it a moment to arrive and check your spam or junk folder.';
+
 // Merge goal + target band + the two email opt-ins into the signed-in user's
 // row. Fails soft — the worst outcome is an unanswered onboarding question.
 async function saveProfile(userId, { goal, band, examDate, studyPlanEmails, marketingEmails }) {
@@ -229,6 +250,28 @@ export default function SignInDialog({
 
   const close = closeDialog;
 
+  // Enter the verification step. `cooldown` is the resend lock in seconds and
+  // `hint` an optional notice shown above the code field (e.g. when the
+  // provider reported that a code was already sent moments ago).
+  const enterVerifyStep = (source, cooldown = 30, hint = '') => {
+    setVerifySource(source);
+    setResendIn(cooldown);
+    setCode('');
+    setNotice(hint);
+    setErrorMsg('');
+    setStep('verify');
+  };
+
+  // Back to the account form from the verify step so a mistyped address can
+  // be corrected instead of waiting on a code that will never arrive.
+  const changeEmail = () => {
+    setCode('');
+    setResendIn(0);
+    setNotice('');
+    setErrorMsg('');
+    setStep('account');
+  };
+
   // "seleem shaalan" -> "Seleem Shaalan" (hyphens/apostrophes kept intact).
   const titleCase = (value) =>
     value.trim().replace(/\S+/g, (word) => word.charAt(0).toUpperCase() + word.slice(1));
@@ -251,6 +294,13 @@ export default function SignInDialog({
           last_name: last,
         });
         if (error) {
+          // Re-submitting an unconfirmed signup inside the provider's send
+          // window: the account exists and a code was already emailed.
+          const cooldown = emailSendCooldownSeconds(error);
+          if (cooldown) {
+            enterVerifyStep('signup', cooldown, ALREADY_SENT_NOTICE);
+            return;
+          }
           setErrorMsg(error.message || 'Could not create your account. Please try again.');
           return;
         }
@@ -267,9 +317,7 @@ export default function SignInDialog({
           setStep('about');
           return;
         }
-        setVerifySource('signup');
-        setResendIn(30);
-        setStep('verify');
+        enterVerifyStep('signup');
       } else {
         track('login_start', { method: 'password', trigger, signed_in: false });
         const { error } = await signInWithPassword(trimmed, password);
@@ -279,15 +327,18 @@ export default function SignInDialog({
           if (matchesAuthError(error, 'email_not_confirmed', /email not confirmed/i)) {
             const { error: resendError } = await resendSignupEmail(trimmed);
             if (resendError) {
+              const cooldown = emailSendCooldownSeconds(resendError);
+              if (cooldown) {
+                enterVerifyStep('signup', cooldown, ALREADY_SENT_NOTICE);
+                return;
+              }
               setErrorMsg(
                 resendError.message
                   || 'Could not send a confirmation code. Please try again.'
               );
               return;
             }
-            setVerifySource('signup');
-            setResendIn(30);
-            setStep('verify');
+            enterVerifyStep('signup');
             return;
           }
           setErrorMsg(
@@ -346,6 +397,7 @@ export default function SignInDialog({
     if (resendIn > 0) return;
     setResendIn(30);
     setErrorMsg('');
+    setNotice('');
     const { error } =
       verifySource === 'signin'
         ? await signInWithEmail(email.trim())
@@ -353,6 +405,14 @@ export default function SignInDialog({
           ? await requestPasswordReset(email.trim())
           : await resendSignupEmail(email.trim());
     if (error) {
+      const cooldown = emailSendCooldownSeconds(error);
+      if (cooldown) {
+        // The previous send is still inside the provider window — keep the
+        // provider's countdown rather than reporting a failure.
+        setResendIn(cooldown);
+        setNotice(ALREADY_SENT_NOTICE);
+        return;
+      }
       setResendIn(0);
       setErrorMsg(error.message || 'Could not resend the email. Please try again.');
     }
@@ -367,13 +427,15 @@ export default function SignInDialog({
       track('password_reset_start', { trigger, signed_in: false });
       const { error } = await requestPasswordReset(email.trim());
       if (error) {
+        const cooldown = emailSendCooldownSeconds(error);
+        if (cooldown) {
+          enterVerifyStep('recovery', cooldown, ALREADY_SENT_NOTICE);
+          return;
+        }
         setErrorMsg(error.message || 'Could not send the reset code. Please try again.');
         return;
       }
-      setVerifySource('recovery');
-      setResendIn(30);
-      setCode('');
-      setStep('verify');
+      enterVerifyStep('recovery');
     } finally {
       setBusy(false);
     }
@@ -406,13 +468,15 @@ export default function SignInDialog({
       track('login_start', { method: 'email_otp', trigger, signed_in: false });
       const { error } = await signInWithEmail(email.trim());
       if (error) {
+        const cooldown = emailSendCooldownSeconds(error);
+        if (cooldown) {
+          enterVerifyStep('signin', cooldown, ALREADY_SENT_NOTICE);
+          return;
+        }
         setErrorMsg(error.message || 'Could not send the code. Please try again.');
         return;
       }
-      setVerifySource('signin');
-      setResendIn(30);
-      setCode('');
-      setStep('verify');
+      enterVerifyStep('signin');
     } finally {
       setBusy(false);
     }
@@ -476,8 +540,17 @@ export default function SignInDialog({
               : 'Confirm your email',
           <>
             Enter the 6-digit code we sent to{' '}
-            <span className="font-medium text-foreground">{email.trim()}</span>.
+            <span className="font-medium text-foreground">{email.trim()}</span>. It can take a
+            minute to arrive — check your spam or junk folder too.
           </>
+        )}
+        {notice && (
+          <p
+            role="status"
+            className="mb-3 rounded-md bg-accent/10 px-3 py-2 text-sm font-medium text-foreground"
+          >
+            {notice}
+          </p>
         )}
         <form onSubmit={handleVerifySubmit} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
@@ -517,6 +590,14 @@ export default function SignInDialog({
             className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:cursor-default disabled:opacity-60 disabled:hover:no-underline"
           >
             {resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
+          </button>
+          <button
+            type="button"
+            onClick={changeEmail}
+            disabled={busy}
+            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:cursor-default disabled:opacity-60 disabled:hover:no-underline"
+          >
+            Wrong address? Use a different email
           </button>
         </form>
       </>

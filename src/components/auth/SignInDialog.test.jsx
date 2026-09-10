@@ -39,7 +39,7 @@ vi.mock('../../lib/fonts', () => ({
   inter: { variable: '' },
 }));
 
-import SignInDialog from './SignInDialog';
+import SignInDialog, { emailSendCooldownSeconds } from './SignInDialog';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -253,5 +253,124 @@ describe('SignInDialog password validation', () => {
     );
     expect(resend.disabled).toBe(false);
     expect(resend.textContent).toBe('Resend code');
+  });
+});
+
+function rateLimitError(seconds = 47) {
+  return Object.assign(
+    new Error(`For security purposes, you can only request this after ${seconds} seconds.`),
+    { code: 'over_email_send_rate_limit', status: 429 }
+  );
+}
+
+async function submitAccountForm() {
+  const submit = document.querySelector('[role="dialog"] button[type="submit"]');
+  await act(async () => {
+    submit.closest('form').dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true })
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+describe('SignInDialog email send rate limit', () => {
+  it('parses the provider cooldown and ignores unrelated errors', () => {
+    expect(emailSendCooldownSeconds(rateLimitError(47))).toBe(47);
+    expect(emailSendCooldownSeconds({ code: 'over_email_send_rate_limit' })).toBe(60);
+    expect(emailSendCooldownSeconds(new Error('Email service unavailable'))).toBeNull();
+    expect(emailSendCooldownSeconds(null)).toBeNull();
+  });
+
+  it('continues to verification when a repeated signup hits the send window', async () => {
+    testState.signUpWithPassword.mockResolvedValue({ data: null, error: rateLimitError(47) });
+    await renderDialog('signup');
+    setInput('#signup-first-name', 'Misheel');
+    setInput('#signup-last-name', 'Kh');
+    setInput('#signin-email', 'learner@example.com');
+    setInput('#signin-password', 'password123');
+
+    await submitAccountForm();
+
+    expect(document.querySelector('#signin-otp')).not.toBeNull();
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    expect(document.querySelector('[role="status"]')?.textContent).toContain('spam or junk');
+    const resend = Array.from(document.querySelectorAll('button')).find((button) =>
+      button.textContent.startsWith('Resend code')
+    );
+    expect(resend.disabled).toBe(true);
+    expect(resend.textContent).toBe('Resend code in 47s');
+  });
+
+  it('continues to verification when the unconfirmed sign-in resend hits the send window', async () => {
+    testState.signInWithPassword.mockResolvedValue({
+      error: Object.assign(new Error('Email not confirmed'), { code: 'email_not_confirmed' }),
+    });
+    testState.resendSignupEmail.mockResolvedValue({ error: rateLimitError(12) });
+    await renderDialog('signin');
+    setInput('#signin-email', 'unconfirmed@example.com');
+    setInput('#signin-password', 'password123');
+
+    await submitAccountForm();
+
+    expect(document.querySelector('#signin-otp')).not.toBeNull();
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    expect(document.querySelector('[role="status"]')?.textContent).toContain('already emailed');
+    const resend = Array.from(document.querySelectorAll('button')).find((button) =>
+      button.textContent.startsWith('Resend code')
+    );
+    expect(resend.textContent).toBe('Resend code in 12s');
+  });
+
+  it('keeps the provider countdown when a manual resend hits the send window', async () => {
+    vi.useFakeTimers();
+    await renderDialog('signup');
+    setInput('#signup-first-name', 'New');
+    setInput('#signup-last-name', 'User');
+    setInput('#signin-email', 'new-user@example.com');
+    setInput('#signin-password', 'password123');
+    await submitAccountForm();
+    for (let second = 0; second < 30; second += 1) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1_000);
+      });
+    }
+
+    testState.resendSignupEmail.mockResolvedValue({ error: rateLimitError(20) });
+    const resend = Array.from(document.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Resend code'
+    );
+    await act(async () => {
+      resend.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    expect(document.querySelector('[role="status"]')?.textContent).toContain('already emailed');
+    expect(resend.disabled).toBe(true);
+    expect(resend.textContent).toBe('Resend code in 20s');
+  });
+
+  it('lets the learner go back and correct a mistyped address', async () => {
+    await renderDialog('signup');
+    setInput('#signup-first-name', 'New');
+    setInput('#signup-last-name', 'User');
+    setInput('#signin-email', 'typo@example.con');
+    setInput('#signin-password', 'password123');
+    await submitAccountForm();
+    expect(document.querySelector('#signin-otp')).not.toBeNull();
+    expect(document.querySelector('[role="dialog"]').textContent).toContain('spam or junk');
+
+    const back = Array.from(document.querySelectorAll('button')).find((button) =>
+      button.textContent.includes('Use a different email')
+    );
+    await act(async () => {
+      back.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(document.querySelector('#signin-otp')).toBeNull();
+    expect(document.querySelector('#signin-email')?.value).toBe('typo@example.con');
   });
 });
