@@ -3,7 +3,8 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-const state = vi.hoisted(() => ({ refresh: vi.fn(), userId: 'qa-fixture' }));
+const state = vi.hoisted(() => ({ refresh: vi.fn(), userId: 'qa-fixture', recorder: null, upload: vi.fn() }));
+vi.mock('../src/lib/realtimeAudioRecorder', () => ({ createRealtimeAudioRecorder: async () => { if (state.recorder instanceof Error) throw state.recorder; return state.recorder; }, uploadRealtimeAudio: (...args) => state.upload(...args) }));
 vi.mock('next/head', () => ({ default: () => null }));
 vi.mock('next/link', () => ({ default: ({ href, children }) => <a href={href}>{children}</a> }));
 vi.mock('../src/components/Navbar', () => ({ default: () => null }));
@@ -28,6 +29,8 @@ beforeEach(async () => {
   vi.useFakeTimers();
   intervalSpy = vi.spyOn(globalThis, 'setInterval');
   clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+  state.recorder = { start: vi.fn(), dispose: vi.fn(), stop: vi.fn(async () => [new Blob(['audio'])]) };
+  state.upload.mockReset().mockResolvedValue(1);
   sessionStorage.clear(); state.userId = 'qa-fixture';
   peers = [];
   track = { enabled: true, stop: vi.fn() };
@@ -37,18 +40,23 @@ beforeEach(async () => {
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
   vi.stubGlobal('RTCPeerConnection', class {
     constructor() { this.channel = { send: vi.fn() }; this.close = vi.fn(); peers.push(this); }
+    // Live's transport waits for ICE gathering; the fixture is already done.
+    iceGatheringState = 'complete';
+    localDescription = { type: 'offer', sdp: 'fixture-offer' };
     addTrack = vi.fn();
+    addEventListener = vi.fn();
+    removeEventListener = vi.fn();
     createDataChannel = () => this.channel;
     createOffer = async () => ({ type: 'offer', sdp: 'fixture-offer' });
     setLocalDescription = async () => {};
-    setRemoteDescription = async () => {};
+    setRemoteDescription = vi.fn(async () => {});
   });
   fetchMock = vi.fn().mockResolvedValueOnce(response({ clientSecret: 'fixture-ephemeral', model: 'fixture-model', durationSeconds: 300 })).mockResolvedValue(response({}));
   vi.stubGlobal('fetch', fetchMock);
   container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
   await act(async () => root.render(<SpeakingExaminerPage />));
 });
-afterEach(() => { if (root) unmount(); container.remove(); vi.restoreAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
+afterEach(() => { if (root) unmount(); container.remove(); vi.restoreAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.clearAllMocks(); });
 describe('synthetic WebRTC page lifecycle (no device or provider calls)', () => {
   it('requests microphone before minting and greets exactly once, then unmutes after the greeting', async () => {
     await start();
@@ -64,6 +72,32 @@ describe('synthetic WebRTC page lifecycle (no device or provider calls)', () => 
     expect(track.stop).toHaveBeenCalledOnce();
     expect(peers[0].close).toHaveBeenCalledOnce();
     expect(vi.getTimerCount()).toBe(0);
+  });
+  it('records candidate audio and preserves an uploaded recording for score retry without recording again', async () => {
+    vi.stubEnv('NEXT_PUBLIC_REALTIME_AUDIO_ASSESSMENT', 'true');
+    const requestId='22222222-2222-4222-8222-222222222222';
+    fetchMock.mockReset().mockResolvedValueOnce(response({clientSecret:'fixture',model:'gpt-realtime-2.1',durationSeconds:300,assessment:{ticket:'signed-ticket',requestId}})).mockResolvedValueOnce(response({}));
+    await start();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).audioAssessment).toBe(true);
+    expect(state.recorder.start).toHaveBeenCalledOnce();
+    await act(async () => peers[0].channel.onmessage({data:JSON.stringify({type:'conversation.item.input_audio_transcription.completed',transcript:Array(45).fill('word').join(' ')})}));
+    fetchMock.mockResolvedValueOnce(response({error:'retry'},false));
+    await act(async () => [...container.querySelectorAll('button')].find(b=>b.textContent.includes('End interview')).click());
+    expect(state.recorder.stop).toHaveBeenCalledOnce();
+    expect(state.upload).toHaveBeenCalledOnce();
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({requestId,audioAssessment:{ticket:'signed-ticket',count:1}});
+    expect(sessionStorage.getItem('ielts-pending-realtime-score')).not.toContain('audioBlobs');
+    fetchMock.mockResolvedValueOnce(response({overallBand:null,assessmentStatus:'insufficient_evidence'}));
+    await act(async () => [...container.querySelectorAll('button')].find(b=>b.textContent.includes('Retry scoring my interview')).click());
+    expect(state.upload).toHaveBeenCalledOnce();
+    expect(sessionStorage.length).toBe(0);
+  });
+  it('does not reserve minutes if pronunciation recording cannot initialize', async () => {
+    vi.stubEnv('NEXT_PUBLIC_REALTIME_AUDIO_ASSESSMENT', 'true');
+    state.recorder=new Error('audio-recording-unsupported');
+    await start();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('could not record audio');
   });
   it('denied microphone permission does not reserve paid minutes', async () => {
     navigator.mediaDevices.getUserMedia.mockRejectedValue(Object.assign(new Error('denied'), { name: 'NotAllowedError' }));
@@ -148,4 +182,91 @@ describe('synthetic WebRTC page lifecycle (no device or provider calls)', () => 
     expect(container.textContent).toContain('Sign in with the account that completed this interview');
   });
 
+});
+
+describe('gpt-live-1 transport (NEXT_PUBLIC_LIVE_EXAMINER)', () => {
+  const liveMint = (durationSeconds = 300) => response({ sessionId: 'live_1', sdp: 'fixture-answer', model: 'gpt-live-1', voice: 'vesper', durationSeconds });
+  const emit = (event) => peers[0].channel.onmessage({ data: JSON.stringify(event) });
+  const sentTypes = () => peers[0].channel.send.mock.calls.map(([raw]) => JSON.parse(raw).type);
+  const LONG_ANSWER = Array.from({ length: 45 }, (_, i) => `word${i}`).join(' ');
+  beforeEach(() => { vi.stubEnv('NEXT_PUBLIC_LIVE_EXAMINER', 'true'); });
+
+  it('mints through our own route with the SDP offer and never sends a greeting event', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(liveMint()).mockResolvedValue(response({}));
+    await start();
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/live/session');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ mode: 'part1', sdp: 'fixture-offer' });
+    expect(container.textContent).toContain('Interview in progress');
+    expect(track.enabled).toBe(false);
+    peers[0].channel.onopen();
+    expect(sentTypes()).toEqual(['session.input_audio.mute']);
+  });
+
+  it('assembles transcript deltas into captions, counts candidate words and unmutes on the examiner', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(liveMint()).mockResolvedValue(response({}));
+    await start();
+    await act(async () => {
+      emit({ type: 'session.output_transcript.delta', delta: 'Where do', start_ms: 0, end_ms: 400 });
+      emit({ type: 'session.output_transcript.delta', delta: ' you live?', start_ms: 400, end_ms: 900 });
+      emit({ type: 'session.input_transcript.delta', delta: LONG_ANSWER, start_ms: 1200, end_ms: 9000 });
+    });
+    expect(container.textContent).toContain('Where do you live?');
+    expect(container.textContent).toContain('word44');
+    expect(track.enabled).toBe(true); // examiner speech opened the mic
+    expect(sentTypes()).toContain('session.input_audio.unmute');
+    expect(container.textContent).not.toContain('45/40 words');
+  });
+
+  it('auto-ends on the examiner closing phrase and scores the assembled transcript', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(liveMint()).mockResolvedValue(response({ ended: true }));
+    await start();
+    await act(async () => {
+      emit({ type: 'session.input_transcript.delta', delta: LONG_ANSWER, start_ms: 0, end_ms: 9000 });
+      emit({ type: 'session.output_transcript.delta', delta: 'Thank you, that is the end of the speaking test.', start_ms: 10000, end_ms: 12000 });
+    });
+    fetchMock.mockResolvedValue(response({ overallBand: 7 }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(2500); });
+    expect(sentTypes()).toContain('session.close');
+    await act(async () => { emit({ type: 'session.closed', reason: 'close_requested', usage: { seconds: 44 } }); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/live/session/end');
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ sessionId: 'live_1', usageSeconds: 44, reason: 'examiner_closed' });
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/score/speaking-realtime');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({
+      mode: 'part1',
+      transcript: [{ role: 'candidate', text: LONG_ANSWER }, { role: 'examiner', text: 'Thank you, that is the end of the speaking test.' }],
+    });
+  });
+
+  it('closes the live session before scoring when the clock runs out', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(liveMint(1)).mockResolvedValue(response({ overallBand: 7 }));
+    await start();
+    await act(async () => { emit({ type: 'session.input_transcript.delta', delta: LONG_ANSWER, start_ms: 0, end_ms: 9000 }); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(sentTypes()).toContain('session.close');
+    // No session.closed ack arrives: the handshake gives up after 15 s.
+    await act(async () => { await vi.advanceTimersByTimeAsync(15000); });
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/live/session/end');
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).reason).toBe('timer');
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/score/speaking-realtime');
+    expect(peers[0].close).toHaveBeenCalled();
+  });
+
+  it('surfaces a mint refusal without opening a second peer connection', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(response({ error: 'You have used all your examiner minutes.', reason: 'minutes_exhausted' }, false));
+    await start();
+    expect(container.querySelector('[role="alert"]').textContent).toContain('used all your examiner minutes');
+    expect(peers).toHaveLength(1);
+    expect(peers[0].setRemoteDescription).not.toHaveBeenCalled();
+    expect(track.stop).toHaveBeenCalledOnce();
+    expect(state.refresh).toHaveBeenCalled();
+  });
+
+  it('does not mint a live session when the microphone is denied', async () => {
+    navigator.mediaDevices.getUserMedia.mockRejectedValue(Object.assign(new Error('denied'), { name: 'NotAllowedError' }));
+    await start();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(peers).toHaveLength(0);
+    expect(container.querySelector('[role="alert"]').textContent).toContain('Microphone access is required');
+  });
 });

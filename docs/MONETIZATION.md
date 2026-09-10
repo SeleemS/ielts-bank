@@ -408,6 +408,10 @@ Mapped to the roadmap: **auth → metering → paywall → analytics.** Ship in 
 
 ## 9. Realtime AI Speaking Examiner (premium flagship feature)
 
+> **Audio assessment update, 2026-09-06:** A local, default-off Realtime 2.1 implementation adds candidate-audio pronunciation assessment and four-criterion practice estimates. Current live pricing/allowances have not changed. See [implementation, cost sensitivity, and pilot recommendation](realtime-speaking-2026-09-06/REVIEW.md) before enabling it; the historical $0.06/minute assumption is not a hard spend ceiling.
+
+> **gpt-live-1 examiner update, 2026-09-10:** A local, default-off second transport on the Live API bills $0.05 per session minute per second of wall clock, so silence is billed and a 60-minute allowance has a $3.00 voice floor. Prices and allowances have not changed. See [the gpt-live-1 examiner pilot review](live-speaking-2026-09-10/REVIEW.md) before enabling `NEXT_PUBLIC_LIVE_EXAMINER`.
+
 > **Status: SHIPPED 2026-07-17** — `/speaking-examiner` (WebRTC client), `/api/realtime/session` (metered mint, refund-on-failure), `/api/score/speaking-realtime` (post-interview `gpt-5.1` rubric pass). Verified live: mint + metering + scoring + persistence; the voice conversation itself was validated by component (automated E2E cannot capture microphone audio).
 
 **Decision (2026-07-17):** build Speaking's premium tier on the OpenAI Realtime voice API — a live AI examiner that conducts the full 3-part IELTS interview (adaptive Part 1 questions, timed Part 2 cue card with 1-min prep, probing Part 3 follow-ups), instead of only the current record → Whisper → transcript-score pipeline.

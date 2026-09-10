@@ -1,29 +1,36 @@
-// pages/api/realtime/session.js
-// Mints an ephemeral OpenAI Realtime client secret for a live AI-examiner
-// speaking session (docs/MONETIZATION.md §9). Premium-only, metered in
-// seconds via consume_realtime_seconds BEFORE the token is created, so a
-// client can never start a session it has not paid minutes for.
+// pages/api/live/session.js
+// Mints a gpt-live-1 examiner session AND performs the WebRTC SDP exchange
+// (docs/MONETIZATION.md §9). Unlike Realtime, Live has no ephemeral client
+// secret: the browser posts its SDP offer here, we call OpenAI with the API
+// key, and we hand back the answer. The browser never talks to OpenAI
+// directly, so this route is the only place a session can be created — and
+// the metering below is therefore a hard spend gate.
 export const config = { runtime: 'nodejs' };
 
 import { randomUUID } from 'node:crypto';
 import { issueAssessmentTicket } from '../../../lib/realtimeAssessmentTicket';
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
-import { realtimeReservationRow, recordAiUsage } from '../../../lib/aiCost';
+import { liveReservationRow, recordAiUsage } from '../../../lib/aiCost';
 import { fetchPremiumStatus } from '../../../lib/premium';
+import { MODES, pickSpeakingItem } from '../../../lib/realtimeExaminer';
 import {
-  MODES,
-  REALTIME_MODEL,
-  pickSpeakingItem,
-  buildInstructions,
-  buildSessionConfig,
-} from '../../../lib/realtimeExaminer';
+  LIVE_MODEL,
+  buildLiveBackendInstructions,
+  buildLiveSessionConfig,
+  buildLiveVoiceInstructions,
+  resolveLiveVoice,
+} from '../../../lib/liveExaminer';
+import { createLiveSession } from '../../../lib/liveSessionsApi';
 
-const OPENAI_CLIENT_SECRETS_URL = 'https://api.openai.com/v1/realtime/client_secrets';
 const PER_IP_WINDOW_SECONDS = 3600;
 const PER_IP_MAX = 8; // sessions/hour/IP
 const GLOBAL_WINDOW_SECONDS = 86400;
 const GLOBAL_MAX = 300; // hard daily ceiling (cost circuit breaker)
+const MAX_SDP_CHARS = 200000;
+// Grace on top of the metered duration: the browser's own timer stops the
+// session first; this only bounds how long the cron sweep waits.
+const DEADLINE_GRACE_SECONDS = 45;
 
 let _admin = null;
 function getAdmin() {
@@ -59,10 +66,7 @@ async function resolveUserId(req) {
   if (!match) return { userId: null, error: null };
   try {
     const { data, error } = await getAdmin().auth.getUser(match[1].trim());
-    return {
-      userId: error ? null : data?.user?.id || null,
-      error: null,
-    };
+    return { userId: error ? null : data?.user?.id || null, error: null };
   } catch (error) {
     return { userId: null, error };
   }
@@ -74,19 +78,28 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (process.env.NEXT_PUBLIC_LIVE_EXAMINER !== 'true') {
+    return res.status(503).json({ error: 'The live AI examiner is not enabled yet.' });
+  }
 
   const { userId, error: authError } = await resolveUserId(req);
   if (authError) {
-    console.error('realtime auth lookup failed:', authError.message);
+    console.error('live auth lookup failed:', authError.message);
     return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
   }
   if (!userId) return res.status(401).json({ error: 'Sign in to use the AI examiner.' });
 
   const mode = typeof req.body?.mode === 'string' ? req.body.mode : 'mock';
   if (!MODES[mode]) return res.status(400).json({ error: 'Unknown session mode.' });
+
+  const sdp = typeof req.body?.sdp === 'string' ? req.body.sdp : '';
+  if (!sdp || sdp.length > MAX_SDP_CHARS) {
+    return res.status(400).json({ error: 'A valid WebRTC offer is required.' });
+  }
+
   const premium = await fetchPremiumStatus(getAdmin(), userId);
   if (premium.error) {
-    console.error('realtime entitlement lookup failed:', premium.error.message);
+    console.error('live entitlement lookup failed:', premium.error.message);
     return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
   }
   if (!premium.isPremium) {
@@ -95,6 +108,7 @@ export default async function handler(req, res) {
       reason: 'not_premium',
     });
   }
+
   const durationSeconds = MODES[mode].seconds;
   const wantsAudio = req.body?.audioAssessment === true;
   let assessment;
@@ -107,14 +121,10 @@ export default async function handler(req, res) {
   }
 
   // Both mint limits fail closed: an infrastructure outage must not create
-  // unbounded Realtime spend.
+  // unbounded Live spend (billed per session-minute, silence included).
   const ip = clientIp(req);
   const ipWithinLimit = await withinLimit(
-    'realtime-mint-ip',
-    ip,
-    PER_IP_WINDOW_SECONDS,
-    PER_IP_MAX,
-    true
+    'live-mint-ip', ip, PER_IP_WINDOW_SECONDS, PER_IP_MAX, true
   );
   if (ipWithinLimit === null) {
     return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
@@ -123,11 +133,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many sessions started. Please wait a while.' });
   }
   const globalWithinLimit = await withinLimit(
-    'realtime-mint-global',
-    'all',
-    GLOBAL_WINDOW_SECONDS,
-    GLOBAL_MAX,
-    true
+    'live-mint-global', 'all', GLOBAL_WINDOW_SECONDS, GLOBAL_MAX, true
   );
   if (globalWithinLimit === null) {
     return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
@@ -136,8 +142,8 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'The AI examiner is at capacity today. Please try again tomorrow.' });
   }
 
-  // Meter BEFORE minting, after a separate entitlement check. Keeping the
-  // quota intact during a billing pause lets access resume automatically.
+  // Meter BEFORE creating the session. Live shares the Realtime seconds quota:
+  // it is the same product to the customer, just a different transport.
   let meter;
   try {
     const { data, error } = await getAdmin().rpc('consume_realtime_seconds', {
@@ -147,7 +153,7 @@ export default async function handler(req, res) {
     if (error) throw error;
     meter = data;
   } catch (e) {
-    console.error('realtime meter failed:', e.message);
+    console.error('live meter failed:', e.message);
     return res.status(503).json({ error: 'The AI examiner is temporarily unavailable.' });
   }
   if (!meter?.allowed) {
@@ -162,8 +168,8 @@ export default async function handler(req, res) {
     });
   }
 
-  // Compensating refund: if minting fails after the decrement, give the
-  // seconds back atomically. The key makes every retry idempotent.
+  // Compensating refund: if the session never starts after the decrement,
+  // give the seconds back atomically. The key makes every retry idempotent.
   const refundKey = randomUUID();
   async function refundSeconds() {
     try {
@@ -197,7 +203,7 @@ export default async function handler(req, res) {
         .eq('user_id', userId);
       if (updateError) throw updateError;
     } catch (e) {
-      console.error('realtime refund failed:', e.message);
+      console.error('live refund failed:', e.message);
     }
   }
 
@@ -208,50 +214,58 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Pick content for the requested mode.
     const admin = getAdmin();
     const items = {};
     if (mode === 'mock' || mode === 'part1') items.part1 = await pickSpeakingItem(admin, 1);
     if (mode === 'mock' || mode === 'part2') items.part2 = await pickSpeakingItem(admin, 2);
     if (mode === 'mock' || mode === 'part3') items.part3 = await pickSpeakingItem(admin, 3);
 
-    const instructions = buildInstructions(mode, items, durationSeconds);
-    const body = buildSessionConfig(instructions);
-    if (wantsAudio) {
-      body.expires_after.seconds = 60;
-      body.session.reasoning = { effort: 'low' };
-      body.session.max_output_tokens = 512;
-    }
-
-    const r = await fetch(OPENAI_CLIENT_SECRETS_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+    const voice = resolveLiveVoice();
+    const body = buildLiveSessionConfig({
+      instructions: buildLiveVoiceInstructions(mode, items, durationSeconds),
+      backendInstructions: buildLiveBackendInstructions(mode),
+      voice,
+      sdp,
     });
-    const payload = await r.json().catch(() => ({}));
-    if (!r.ok || !payload?.value) {
-      console.error('client_secrets failed:', r.status, payload?.error?.message || 'no value');
+
+    let session;
+    try {
+      session = await createLiveSession(body);
+    } catch (e) {
+      console.error('live session create failed:', e.status || '', e.message);
       await refundSeconds();
       return res.status(502).json({ error: 'Could not start the examiner session. Please try again.' });
     }
+
+    // The row is what the end route and the cron sweep hang up against: an
+    // untracked session would bill until OpenAI expires it.
+    const { error: insertError } = await admin.from('live_examiner_sessions').insert({
+      id: session.sessionId,
+      user_id: userId,
+      mode,
+      duration_seconds: durationSeconds,
+      deadline_at: new Date(
+        Date.now() + (durationSeconds + DEADLINE_GRACE_SECONDS) * 1000
+      ).toISOString(),
+    });
+    if (insertError) console.error('live session row insert failed:', insertError.message);
+
     await recordAiUsage(
       admin,
-      realtimeReservationRow({
+      liveReservationRow({
         userId,
         durationSeconds,
         mode,
-        providerRequestId: payload.id || null,
+        providerRequestId: session.sessionId,
       })
     );
 
     return res.status(200).json({
       ...(assessment ? { assessment } : {}),
-      clientSecret: payload.value,
-      expiresAt: payload.expires_at || null,
-      model: REALTIME_MODEL,
+      sessionId: session.sessionId,
+      sdp: session.sdp,
+      model: LIVE_MODEL,
+      voice,
       mode,
       durationSeconds,
       remainingSeconds: meter.remaining,
@@ -263,7 +277,7 @@ export default async function handler(req, res) {
       },
     });
   } catch (e) {
-    console.error('realtime session error:', e.message);
+    console.error('live session error:', e.message);
     await refundSeconds();
     return res.status(502).json({ error: 'Could not start the examiner session. Please try again.' });
   }
