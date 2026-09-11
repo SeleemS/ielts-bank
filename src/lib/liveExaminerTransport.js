@@ -50,6 +50,7 @@ export async function connectLiveExaminer({
   onStarted,
   onTranscript,
   onUsage,
+  onThinking,
   onClosed,
   onError,
 } = {}) {
@@ -57,6 +58,10 @@ export async function connectLiveExaminer({
   let sessionId = null;
   let usageSeconds = 0;
   let closing = false;
+  // The backend is only consulted for off-plan questions now, but when it is
+  // the candidate hears a gap — the page shows a thinking state until the
+  // examiner's next words arrive.
+  let thinking = false;
   let resolveClosed = null;
   const closedPromise = new Promise((resolve) => { resolveClosed = resolve; });
 
@@ -108,12 +113,25 @@ export async function connectLiveExaminer({
       onStarted?.({ sessionId, expiresAt: ev.session?.expires_at || null });
     } else if (ev.type === 'session.input_transcript.delta') {
       onTranscript?.('candidate', ev);
+    } else if (ev.type === 'session.delegation.created') {
+      if (!thinking) {
+        thinking = true;
+        onThinking?.(true);
+      }
     } else if (ev.type === 'session.output_transcript.delta') {
+      if (thinking) {
+        thinking = false;
+        onThinking?.(false);
+      }
       onTranscript?.('examiner', ev);
     } else if (ev.type === 'session.usage.updated') {
       if (Number.isFinite(ev.usage?.seconds)) usageSeconds = ev.usage.seconds;
       onUsage?.(usageSeconds);
     } else if (ev.type === 'session.closed') {
+      if (thinking) {
+        thinking = false;
+        onThinking?.(false);
+      }
       if (Number.isFinite(ev.usage?.seconds)) usageSeconds = ev.usage.seconds;
       resolveClosed?.();
       onClosed?.({ reason: ev.reason || 'unknown', usageSeconds });

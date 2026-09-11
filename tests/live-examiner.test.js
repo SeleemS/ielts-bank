@@ -9,6 +9,7 @@ process.env.OPENAI_API_KEY = 'sk-test-dummy';
 
 import {
   LIVE_MODEL,
+  LIVE_BACKEND_MODEL,
   LIVE_VOICES,
   DEFAULT_LIVE_VOICE,
   resolveLiveVoice,
@@ -35,6 +36,10 @@ const items = {
 // lib
 // ---------------------------------------------------------------------------
 describe('liveExaminer lib', () => {
+  it('defaults the delegated backend to the fast, cheap Live backend model', () => {
+    expect(LIVE_BACKEND_MODEL).toBe('gpt-5.1');
+  });
+
   it('exposes the documented voice enum and defaults to vesper', () => {
     expect(LIVE_VOICES).toContain('vesper');
     expect(LIVE_VOICES).toContain('marin');
@@ -54,13 +59,26 @@ describe('liveExaminer lib', () => {
     expect(text).toContain('LIVE AUDIO CONDUCT');
     expect(text).toContain('Greet the candidate IMMEDIATELY');
     expect(text).toContain('Never talk over the candidate');
-    expect(text).toContain('three seconds of continuous silence');
-    expect(text).toContain('Never read its text out verbatim');
+    expect(text).toContain('a second or two of continuous silence');
+    expect(text).not.toContain('three seconds');
+    expect(text).toContain("Never read the backend's text out verbatim");
     // The shared plan still arrives intact.
     expect(text).toContain('PART 1');
     expect(text).toContain('PART 2');
     expect(text).toContain('PART 3');
     expect(text).toContain('Where is your hometown?');
+  });
+
+  it('tells the voice layer to ask planned questions itself and not delegate them', () => {
+    const text = buildLiveVoiceInstructions('mock', items, 840);
+    expect(text).toContain('Delegation policy');
+    expect(text).toContain('You already have the complete session plan below');
+    expect(text).toContain('Delegate to the backend when: the candidate asks something the session plan does not cover');
+    const noDelegate = text.slice(text.indexOf('Do not delegate to the backend when:'));
+    expect(noDelegate).toContain('greeting the candidate');
+    expect(noDelegate).toContain('checking or confirming their name');
+    expect(noDelegate).toContain('acknowledging what they just said');
+    expect(noDelegate).toContain('moving on to the next planned question');
   });
 
   it('keeps drill instructions limited to the requested part', () => {
@@ -75,6 +93,7 @@ describe('liveExaminer lib', () => {
     expect(text).toContain('silent planning assistant');
     expect(text).toContain('AT MOST two short sentences');
     expect(text).toContain('Never score the candidate');
+    expect(text).toContain('consulted ONLY when the candidate asks something off-plan');
   });
 
   it('builds the exact Live session body with a locked data channel', () => {
@@ -105,6 +124,7 @@ describe('liveExaminer lib', () => {
       'session.started',
       'session.input_transcript.delta',
       'session.output_transcript.delta',
+      'session.delegation.created',
       'session.usage.updated',
       'session.closed',
       'error',
@@ -113,8 +133,11 @@ describe('liveExaminer lib', () => {
 
     expect(cfg.session.delegation.type).toBe('responses');
     expect(cfg.session.delegation.responses).toMatchObject({
+      model: LIVE_BACKEND_MODEL,
       instructions: 'plan the thing',
       max_output_tokens: 300,
+      // Fast mode, so the rare off-plan delegation is as short as it can be.
+      service_tier: 'priority',
       reasoning: { effort: 'low' },
       text: { verbosity: 'low' },
       tool_choice: 'none',

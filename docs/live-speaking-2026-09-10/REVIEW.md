@@ -171,3 +171,67 @@ the strength of the flat rate looking tidy.
 ## Live check, 10 September 2026 (after model access was enabled)
 
 A synthetic primary-WebSocket session using the exact mint-route session config (minus the WebRTC-only data-channel lockdown, which the API confirmed is rejected on WebSocket) was accepted by `gpt-live-1`: voice `vesper`, Responses delegation to `gpt-5.1`, examiner greeted unprompted ("Hello, I'm your examiner. This is…"), closed with `close_requested`. Raw result in `synthetic-session.json`. This confirms the contract, not the interview quality; a real microphone session is still required.
+
+## Latency tuning, 10 September 2026
+
+Founder feedback from real sessions: the first reply after the candidate says their name took "a
+strange amount of time", and the examiner sometimes stalled mid-conversation. Two causes, both fixed
+in the instructions and session config rather than in the transport.
+
+1. **The voice layer was delegating routine turns.** The full question plan is already in the
+   voice-layer instructions, so waiting on the `gpt-5.1` Responses backend to be told what to ask
+   next bought nothing and cost the candidate a visible pause. The `LIVE AUDIO CONDUCT` block is now
+   structured as the [Live prompting guide](https://developers.openai.com/api/docs/guides/live-prompting)
+   recommends — pace and delivery, interruption policy, backchannel policy, delegation policy — and
+   the delegation policy uses the guide's "Delegate to the backend when" / "Do not delegate to the
+   backend when" headings. Greetings, the name check, acknowledgements, repeats, Part 2 instructions
+   and moving to the next planned question are explicitly non-delegating; the backend is consulted
+   only for a candidate question the plan does not cover. The backend prompt says the same from its
+   own side.
+2. **The three-second silence rule.** Instructions now ask for "a second or two of continuous
+   silence — about the length of an unhurried breath", with the "keep listening while the candidate
+   pauses to think" wording from the guide. The no-talking-over and sparing-backchannel rules are
+   unchanged.
+
+Config changes in `buildLiveSessionConfig`:
+
+- `delegation.responses.service_tier: 'priority'` — Fast mode, so the rare off-plan delegation is as
+  short as it can be. `reasoning.effort` stays `low`.
+- `session.delegation.created` added to `allowed_server_events`, and
+  `src/lib/liveExaminerTransport.js` gained an `onThinking(isThinking)` callback: `true` on
+  `session.delegation.created`, `false` on the next `session.output_transcript.delta` (or on
+  `session.closed`). The page can now show a thinking state for the one case where a wait is real.
+- **Backend default stays `gpt-5.1`** with `service_tier: 'priority'`. `gpt-5.6-luna`, the model the
+  [voice latency and cost guide](https://developers.openai.com/api/docs/guides/voice-latency-cost)
+  names for Live delegation ($0.20/$1.20 per million tokens), was accepted by `/v1/live/sessions` in
+  the check below, but its model page does not list Live as a supported endpoint, so it is opt-in via
+  `OPENAI_LIVE_BACKEND_MODEL=gpt-5.6-luna` rather than the default. With delegation limited to
+  off-plan questions the backend allowance in the cost table above is a generous over-estimate.
+
+### Measured, 10 September 2026
+
+A real `gpt-live-1` session over the primary WebSocket with the new instructions and session config
+(silence fed as input audio in place of a microphone). Raw result in `latency-check.json`.
+
+| Measure | Value |
+|---|---:|
+| `session.started` to first `session.output_audio.delta` | **710 ms** |
+| `session.started` to first `session.output_transcript.delta` | 2102 ms |
+| `session.delegation.created` events during greeting + name check | **0** |
+
+The examiner opened with "Hello, I'm your examiner. This is an IELTS speaking practice drill. Could
+you please tell me your name to check the audio?" and delegated for none of it, which is the
+behaviour the change was after. Two further observations from the run:
+
+- **The model does not speak until input audio is flowing.** On the primary WebSocket nothing is
+  emitted until `session.input_audio.append` starts arriving; the greeting then follows within a
+  second. This matters for the browser path: the examiner's opening is gated on the microphone track
+  actually producing audio, not on the session opening.
+- **Transcript deltas trail the audio by ~1.4 s and are not guaranteed.** One of three otherwise
+  identical runs produced 182 audio deltas and no transcript events at all. Turn assembly and the
+  post-interview scorer both depend on those deltas, so risk 2 above (heuristic turn grouping) should
+  be read alongside the possibility of a transcript stream that simply does not arrive.
+
+Still unverified: candidate-facing turn-taking with a real microphone, and whether the shorter
+silence window causes the examiner to cut into Part 2 long turns. The pre-launch checklist above is
+unchanged.

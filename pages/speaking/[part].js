@@ -1,6 +1,6 @@
 import React from 'react';
 import NextLink from 'next/link';
-import { Target, ListChecks, AlertTriangle, Clock, Ear, HelpCircle } from 'lucide-react';
+import { Target, ListChecks, AlertTriangle, Clock, Ear, HelpCircle, Sparkles } from 'lucide-react';
 import {
   SpeakingHubHead,
   SpeakingHubShell,
@@ -71,6 +71,29 @@ export default function SpeakingPartHub({ partSlug, cueCards = [], questionGroup
             {updated ? ` · Updated ${updated}` : ''}
           </p>
         </header>
+
+        {/* The live examiner is the strongest practice on the site, so every part
+            hub points at it before the guide content. */}
+        <NextLink
+          href="/speaking-examiner"
+          className="mb-10 flex flex-col justify-between gap-3 rounded-xl border-2 border-accent/50 bg-accent/5 p-5 no-underline shadow-sm transition hover:shadow-md sm:flex-row sm:items-center"
+        >
+          <div>
+            <p className="inline-flex items-center gap-1.5 text-sm font-bold text-foreground">
+              <Sparkles className="h-4 w-4 text-accent" />
+              New: practise {label} with the live AI examiner
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              It runs on the newly released gpt-live-1 and is full-duplex — it listens while it
+              speaks, so you can pause to think or interject as you would in the real room. Sit
+              the full 3-part interview or drill {label} alone, and get a band estimate with
+              feedback at the end.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-lg bg-accent px-4 py-2 text-center text-sm font-semibold text-accent-foreground">
+            Meet the live examiner
+          </span>
+        </NextLink>
 
         <article className="mb-12 space-y-8">
           <section>

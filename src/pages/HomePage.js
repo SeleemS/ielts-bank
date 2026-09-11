@@ -115,7 +115,7 @@ function Skills(counts) {
       icon: Mic,
       count: counts.speaking,
       blurb:
-        'Part 1–3 questions and cue cards with an examiner voice. Record your answer and get instant AI band feedback.',
+        'A live AI examiner on the newly released gpt-live-1 runs the full 3-part interview, plus Part 1–3 questions and cue cards with instant AI band feedback.',
       available: true,
     },
   ];
@@ -497,6 +497,49 @@ const HomePage = ({ counts = {} }) => {
             </div>
           </section>
 
+          {/* =================== LIVE EXAMINER BANNER =================== */}
+          {/* The live examiner is the strongest thing on the site, so the
+              homepage gives it its own row instead of leaving it buried in
+              the Speaking card. */}
+          <section className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex max-w-5xl flex-col gap-6 rounded-2xl border border-accent/30 bg-accent/5 p-6 shadow-sm sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <Badge variant="accent">New</Badge>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-accent">
+                    <Mic className="h-3.5 w-3.5" />
+                    Live AI Speaking examiner
+                  </span>
+                </div>
+                <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  Sit a real Speaking interview with a live AI examiner
+                </h2>
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                  It runs on the newly released gpt-live-1, which is full-duplex — it listens
+                  while it speaks, so you can pause to think or interrupt the way you would in
+                  the real room. Parts 1, 2 and 3 in the exam format, with a band estimate and
+                  feedback at the end.
+                </p>
+              </div>
+              <Button asChild size="lg" className="shrink-0">
+                <NextLink
+                  href="/speaking-examiner"
+                  className="no-underline"
+                  data-analytics="homepage-live-examiner-cta"
+                  onClick={() =>
+                    track('product_cta_click', {
+                      source: 'homepage_live_examiner',
+                      product: 'speaking_examiner',
+                    })
+                  }
+                >
+                  Meet the live examiner
+                  <ArrowRight className="h-4 w-4" />
+                </NextLink>
+              </Button>
+            </div>
+          </section>
+
           {/* ==================== ACCOUNT DASHBOARD ==================== */}
           <DashboardTeaser />
 
@@ -555,8 +598,9 @@ const HomePage = ({ counts = {} }) => {
                     30-day Exam Pass
                   </p>
                   <p className="mt-1.5 text-sm text-foreground">
-                    Full AI Writing reports, Speaking scoring, a live AI examiner, timed mocks
-                    and band trends. One payment for 30 days. No automatic renewal.
+                    A live AI examiner on the newly released gpt-live-1 — full-duplex, so it
+                    listens while it speaks — plus full AI Writing reports, Speaking scoring,
+                    timed mocks and band trends. One payment for 30 days. No automatic renewal.
                   </p>
                 </div>
               </div>

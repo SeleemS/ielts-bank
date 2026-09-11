@@ -189,12 +189,34 @@ export default function SpeakingIndex({ items = [] }) {
                 IELTS Speaking Practice
               </h1>
               <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-                Hear the examiner ask each question, record your spoken answer, and get
+                Sit a full interview with the live gpt-live-1 examiner, or hear the examiner
+                ask each question, record your spoken answer, and get
                 instant AI band feedback on Fluency &amp; Coherence, Lexical Resource and
                 Grammar. Choose a Part 1 topic, a Part 2 cue card or a Part 3 discussion set
                 to begin.
               </p>
             </header>
+
+            <NextLink
+              href="/speaking-examiner"
+              className="mb-10 flex flex-col justify-between gap-3 rounded-xl border-2 border-primary/60 bg-card p-5 no-underline shadow-sm transition hover:shadow-md sm:flex-row sm:items-center"
+            >
+              <div>
+                <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  New: live AI examiner mock interviews on gpt-live-1
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Talk to a live AI examiner running on the newly released gpt-live-1. It is
+                  full-duplex — it listens while it speaks — so you can pause to think or
+                  interject like you would in the real room. Full 3-part mock or single-part
+                  drills, with your band score at the end. Premium.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-lg bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
+                Try the examiner
+              </span>
+            </NextLink>
 
             {/* Hubs: part guides, topic families and the freshness page. These are
                 the SSR/SSG landers AI crawlers and search engines index. */}
@@ -232,25 +254,6 @@ export default function SpeakingIndex({ items = [] }) {
                 ))}
               </div>
             </nav>
-
-            <NextLink
-              href="/speaking-examiner"
-              className="mb-10 flex flex-col justify-between gap-3 rounded-xl border-2 border-primary/60 bg-card p-5 no-underline shadow-sm transition hover:shadow-md sm:flex-row sm:items-center"
-            >
-              <div>
-                <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  New: live AI examiner mock interviews
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Have a real-time voice conversation with an AI examiner — full 3-part mock or
-                  single-part drills — and get your band score at the end. Premium.
-                </p>
-              </div>
-              <span className="shrink-0 rounded-lg bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
-                Try the examiner
-              </span>
-            </NextLink>
 
             {hasAny ? (
               <>

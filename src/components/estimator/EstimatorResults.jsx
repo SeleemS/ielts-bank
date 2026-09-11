@@ -188,8 +188,8 @@ const PLAN_BY_SKILL = {
     cta: 'Score an essay',
   },
   speaking: {
-    action: 'Sit a live mock with the AI examiner',
-    detail: 'Speaking only improves under real conditions — a full 3-part mock gives you a band.',
+    action: 'Sit a live mock with the gpt-live-1 AI examiner',
+    detail: 'Speaking only improves under real conditions — a full 3-part mock on the live gpt-live-1 examiner gives you a band.',
     href: '/speaking-examiner',
     cta: 'Meet the examiner',
   },
@@ -688,8 +688,8 @@ export default function EstimatorResults({
               title={isPremium ? 'Meet your examiner' : 'Meet the AI examiner'}
               body={
                 isPremium
-                  ? 'Practise a full speaking test with the AI examiner and get a band.'
-                  : 'Get your Speaking measured in a realistic mock interview with the AI examiner.'
+                  ? 'Practise a full speaking test with the live gpt-live-1 examiner and get a band.'
+                  : 'Get your Speaking measured in a realistic mock interview with the live gpt-live-1 examiner.'
               }
               actionLabel={isPremium ? 'Start speaking' : 'Meet the examiner'}
               href="/speaking-examiner"

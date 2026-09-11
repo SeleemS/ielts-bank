@@ -3,27 +3,43 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-const state = vi.hoisted(() => ({ refresh: vi.fn(), userId: 'qa-fixture', recorder: null, upload: vi.fn() }));
+const state = vi.hoisted(() => ({ refresh: vi.fn(), userId: 'qa-fixture', recorder: null, upload: vi.fn(), liveOptions: null }));
+// Passthrough spy: the real transport still runs, but the page's callbacks
+// (notably onThinking) become reachable from the test.
+vi.mock('../src/lib/liveExaminerTransport', async () => {
+  const actual = await vi.importActual('../src/lib/liveExaminerTransport');
+  return {
+    ...actual,
+    connectLiveExaminer: (options) => {
+      state.liveOptions = options;
+      return actual.connectLiveExaminer(options);
+    },
+  };
+});
 vi.mock('../src/lib/realtimeAudioRecorder', () => ({ createRealtimeAudioRecorder: async () => { if (state.recorder instanceof Error) throw state.recorder; return state.recorder; }, uploadRealtimeAudio: (...args) => state.upload(...args) }));
 vi.mock('next/head', () => ({ default: () => null }));
 vi.mock('next/link', () => ({ default: ({ href, children }) => <a href={href}>{children}</a> }));
 vi.mock('../src/components/Navbar', () => ({ default: () => null }));
 vi.mock('../src/components/Footer', () => ({ default: () => null }));
 vi.mock('../src/components/auth/SignInDialog', () => ({ default: () => null }));
-vi.mock('../src/components/question/ExaminerIntroModal', () => ({ default: () => null }));
 vi.mock('../src/components/question/ScoreUI', () => ({ ScoringProgress: () => null, CriterionFeedback: () => null, BandHero: () => null, BandMeter: () => null }));
 vi.mock('../src/lib/auth', () => ({ useAuth: () => ({ user: { id: state.userId }, loading: false }) }));
 vi.mock('../src/lib/usePlan', () => ({ usePlan: () => ({ isPremium: true, loading: false }) }));
 vi.mock('../src/lib/useRealtimeMinutes', () => ({ useRealtimeMinutes: () => ({ remainingSeconds: 3600, refresh: state.refresh }) }));
 vi.mock('../src/lib/analytics', () => ({ track: () => {} }));
-vi.mock('../src/lib/prefs', () => ({ getLocalPref: () => true, setLocalPref: () => {}, loadUserPref: async () => true, saveUserPref: () => {} }));
 vi.mock('../lib/supabase', () => ({ getSupabase: () => ({ auth: { getSession: async () => ({ data: { session: { access_token: 'fixture-token' } }, error: null }) } }) }));
 import SpeakingExaminerPage from '../pages/speaking-examiner';
 let root, container, media, track, peers, fetchMock, intervalSpy, clearIntervalSpy;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const response = (body, ok = true) => ({ ok, status: ok ? 200 : 503, json: async () => body, text: async () => 'fixture-answer' });
 function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
-async function start() { await act(async () => [...container.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Start')[1].click()); }
+function modeStart(index = 1) { return [...container.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Start')[index]; }
+function byText(needle) { return [...container.querySelectorAll('button')].find(b => b.textContent.includes(needle)); }
+// Every session now goes through the mandatory briefing step.
+async function start(index = 1) {
+  await act(async () => modeStart(index).click());
+  await act(async () => byText('connect me').click());
+}
 function unmount() { act(() => root.unmount()); root = null; }
 beforeEach(async () => {
   vi.useFakeTimers();
@@ -31,7 +47,7 @@ beforeEach(async () => {
   clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
   state.recorder = { start: vi.fn(), dispose: vi.fn(), stop: vi.fn(async () => [new Blob(['audio'])]) };
   state.upload.mockReset().mockResolvedValue(1);
-  sessionStorage.clear(); state.userId = 'qa-fixture';
+  sessionStorage.clear(); state.userId = 'qa-fixture'; state.liveOptions = null;
   peers = [];
   track = { enabled: true, stop: vi.fn() };
   media = { getTracks: () => [track] };
@@ -170,6 +186,41 @@ describe('synthetic WebRTC page lifecycle (no device or provider calls)', () => 
     expect(container.textContent).not.toContain('could not be recovered');
   });
 
+
+  it('briefs the candidate on the chosen mode before touching the microphone', async () => {
+    await act(async () => modeStart(2).click()); // Part 2 drill
+    expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Part 2 drill');
+    expect(container.textContent).toContain('one minute to prepare');
+    expect(container.textContent).toContain('ask for your name');
+    expect(container.textContent).not.toContain('Part 3 only');
+    expect(container.textContent).not.toContain('Interview in progress');
+  });
+
+  it('returns to mode selection from the briefing without minting a session', async () => {
+    await act(async () => modeStart(1).click());
+    await act(async () => byText('Back').click());
+    expect(container.textContent).not.toContain('What happens next');
+    expect(container.textContent).toContain('Full mock interview');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
+    expect(peers).toHaveLength(0);
+  });
+
+  it('labels an examiner pause as thinking instead of leaving dead air', async () => {
+    await start();
+    const pill = () => container.querySelector('[data-examiner-state]');
+    expect(pill().getAttribute('data-examiner-state')).toBe('listening');
+    expect(pill().textContent).toContain('take your time');
+    await act(async () => peers[0].channel.onmessage({ data: JSON.stringify({ type: 'response.created' }) }));
+    expect(pill().getAttribute('data-examiner-state')).toBe('thinking');
+    expect(pill().textContent).toContain('Examiner is thinking');
+    await act(async () => peers[0].channel.onmessage({ data: JSON.stringify({ type: 'response.output_audio_transcript.delta', delta: 'Good' }) }));
+    expect(pill().getAttribute('data-examiner-state')).toBe('speaking');
+    expect(pill().textContent).toContain('Examiner is speaking');
+  });
+
   it('does not score an automatically ended interview into a different signed-in account', async () => {
     fetchMock.mockReset().mockResolvedValueOnce(response({ clientSecret: 'fixture', model: 'fixture', durationSeconds: 1 })).mockResolvedValueOnce(response({}));
     await start();
@@ -260,6 +311,21 @@ describe('gpt-live-1 transport (NEXT_PUBLIC_LIVE_EXAMINER)', () => {
     expect(peers[0].setRemoteDescription).not.toHaveBeenCalled();
     expect(track.stop).toHaveBeenCalledOnce();
     expect(state.refresh).toHaveBeenCalled();
+  });
+
+
+  it('shows the thinking pill when the live transport reports a backend hand-off', async () => {
+    fetchMock.mockReset().mockResolvedValueOnce(liveMint()).mockResolvedValue(response({}));
+    await start();
+    const pill = () => container.querySelector('[data-examiner-state]');
+    expect(container.textContent).toContain('Powered by gpt-live-1');
+    expect(typeof state.liveOptions.onThinking).toBe('function');
+    await act(async () => { state.liveOptions.onThinking(true); });
+    expect(pill().getAttribute('data-examiner-state')).toBe('thinking');
+    expect(pill().textContent).toContain('Examiner is thinking');
+    await act(async () => { emit({ type: 'session.output_transcript.delta', delta: 'Hello there.', start_ms: 0, end_ms: 400 }); });
+    expect(pill().getAttribute('data-examiner-state')).toBe('speaking');
+    expect(pill().textContent).toContain('Examiner is speaking');
   });
 
   it('does not mint a live session when the microphone is denied', async () => {

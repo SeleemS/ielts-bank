@@ -1,0 +1,34 @@
+{
+  "ranAt": "2026-09-11T00:18:16.708Z",
+  "backendModel": "gpt-5.6-luna",
+  "serviceTier": "priority",
+  "greetingLatencyMs": 2102,
+  "firstAudioDeltaMs": 710,
+  "eventCounts": {
+    "session.started": 1,
+    "session.output_audio.delta": 182,
+    "session.output_transcript.delta": 22,
+    "session.usage.updated": 1,
+    "session.closed": 1
+  },
+  "delegationEvents": 0,
+  "examinerText": " Hello, I'm your examiner. This is an IELTS speaking practice drill. Could you please tell me your name to check the audio?",
+  "events": [
+    {
+      "at": 768,
+      "type": "session.started",
+      "detail": "{\"event_id\":\"event_EMjG5lSWnN2LL8fllIdu6\",\"type\":\"session.started\",\"session\":{\"id\":\"live_u0_EMjG5KGAcqsQL3RGemAHz\",\"expires_at\":1789093097,\"model\":\"gpt-live-1\",\"instructions\":\"LIVE AUDIO CONDUCT (read first — this session is full duplex, so you can physically speak while the candidate is speaking; d"
+    },
+    {
+      "at": 15591,
+      "type": "session.usage.updated",
+      "detail": "{\"type\":\"session.usage.updated\",\"usage\":{\"seconds\":14},\"context_window\":{\"usage_ratio\":0.0195390625},\"event_id\":\"event_EMjGKEcjwBgqhlYQ4wK2w\"}"
+    },
+    {
+      "at": 20692,
+      "type": "session.closed",
+      "detail": "{\"event_id\":\"event_EMjGPZnAjfEoj3nhBcnKe\",\"type\":\"session.closed\",\"reason\":\"close_requested\",\"session\":{\"id\":\"live_u0_EMjG5KGAcqsQL3RGemAHz\",\"expires_at\":1789093097,\"model\":\"gpt-live-1\",\"instructions\":\"LIVE AUDIO CONDUCT (read first — this session is full duplex, so you can physically speak while th"
+    }
+  ],
+  "silenceAfterGreetingMs": 11969
+}

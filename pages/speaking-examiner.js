@@ -12,18 +12,31 @@ function audioAssessmentEnabled() { return process.env.NEXT_PUBLIC_REALTIME_AUDI
 function liveExaminerEnabled() { return process.env.NEXT_PUBLIC_LIVE_EXAMINER === 'true'; }
 import Head from 'next/head';
 import NextLink from 'next/link';
-import { Mic, PhoneOff, Sparkles, Clock, CheckCircle2, Headphones, MessageSquare, Gauge } from 'lucide-react';
+import {
+  Mic,
+  PhoneOff,
+  Sparkles,
+  Clock,
+  CheckCircle2,
+  Headphones,
+  MessageSquare,
+  Gauge,
+  Radio,
+  Timer,
+  ArrowLeft,
+  ArrowRight,
+  Ear,
+  ListChecks,
+} from 'lucide-react';
 import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
 import { Card, CardContent } from '../components/ui/card';
 import SignInDialog from '../src/components/auth/SignInDialog';
-import ExaminerIntroModal from '../src/components/question/ExaminerIntroModal';
 import { useAuth } from '../src/lib/auth';
 import { usePlan } from '../src/lib/usePlan';
 import { useRealtimeMinutes } from '../src/lib/useRealtimeMinutes';
 import { getSupabase } from '../lib/supabase';
 import { track } from '../src/lib/analytics';
-import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../src/lib/prefs';
 import {
   claimPendingSpeakingScore,
   releasePendingSpeakingScore,
@@ -48,10 +61,109 @@ const PAGE_TITLE = SPEAKING_EXAMINER_SEO.title;
 const PAGE_DESCRIPTION = SPEAKING_EXAMINER_SEO.description;
 
 const MODE_CARDS = [
-  { mode: 'mock', title: 'Full mock interview', minutes: 14, blurb: 'Parts 1-3, exactly like the real test.' },
-  { mode: 'part1', title: 'Part 1 drill', minutes: 5, blurb: 'Interview questions about familiar topics.' },
-  { mode: 'part2', title: 'Part 2 drill', minutes: 5, blurb: 'Cue card, one minute prep, long turn.' },
-  { mode: 'part3', title: 'Part 3 drill', minutes: 5, blurb: 'Abstract discussion questions.' },
+  {
+    mode: 'mock',
+    title: 'Full mock interview',
+    minutes: 14,
+    blurb: 'Parts 1-3, exactly like the real test.',
+    tag: 'Closest to the real thing',
+    highlights: ['Parts 1, 2 and 3 back to back', 'Adaptive follow-up questions', 'Band across every criterion'],
+  },
+  {
+    mode: 'part1',
+    title: 'Part 1 drill',
+    minutes: 5,
+    blurb: 'Interview questions about familiar topics.',
+    tag: 'Warm-up',
+    highlights: ['Familiar topics: home, work, study', 'Short, natural answers', 'Great for building fluency'],
+  },
+  {
+    mode: 'part2',
+    title: 'Part 2 drill',
+    minutes: 5,
+    blurb: 'Cue card, one minute prep, long turn.',
+    tag: 'Long turn',
+    highlights: ['A timed cue card', 'One minute to prepare', 'Up to two minutes of speaking'],
+  },
+  {
+    mode: 'part3',
+    title: 'Part 3 drill',
+    minutes: 5,
+    blurb: 'Abstract discussion questions.',
+    tag: 'Discussion',
+    highlights: ['Abstract, opinion-led questions', 'Follow-ups that push you', 'Where Band 7+ is won'],
+  },
+];
+
+const MODE_BY_ID = Object.fromEntries(MODE_CARDS.map((card) => [card.mode, card]));
+
+// Idle hero: what the Live examiner actually gives you.
+const BENEFIT_TILES = [
+  {
+    icon: MessageSquare,
+    title: 'The real 3-part format',
+    body: 'Part 1 interview, a timed Part 2 cue card and a Part 3 discussion — with follow-up questions that adapt to what you just said.',
+  },
+  {
+    icon: Radio,
+    title: 'Full-duplex turn-taking',
+    body: 'gpt-live-1 listens while it speaks, so you can pause to think, interject, or ask for a question to be repeated without talking over a robot.',
+  },
+  {
+    icon: Timer,
+    title: 'A properly timed cue card',
+    body: 'One minute to prepare, then your long turn — say “I’m ready” whenever you want to start early, exactly like the test-day script.',
+  },
+  {
+    icon: Gauge,
+    title: 'Band estimate and feedback',
+    body: 'When the interview closes you get a practice band with criterion-by-criterion feedback and what to practise next.',
+  },
+];
+
+const SESSION_TIMELINE = [
+  'Examiner greets you',
+  'Say your name for an audio check',
+  'Part 1 questions',
+  'Part 2 cue card — 1 min prep',
+  'Part 3 discussion',
+  'Automatic end and your band',
+];
+
+// Mandatory pre-session briefing: what happens next, per mode.
+const BRIEFING_STEPS = {
+  mock: [
+    'The examiner greets you and asks your name — answer out loud so we can check your microphone.',
+    'Part 1: four or five questions about familiar topics like your home, work or studies.',
+    'Part 2: you get a cue card, one minute to prepare, then you speak for one to two minutes.',
+    'Part 3: a deeper discussion of the Part 2 topic with abstract, opinion-led questions.',
+    'The examiner closes the test, the session ends by itself and your band estimate is marked.',
+  ],
+  part1: [
+    'The examiner greets you and asks your name — answer out loud so we can check your microphone.',
+    'Part 1 only: four or five interview questions about familiar everyday topics.',
+    'The examiner closes the drill, the session ends by itself and your band estimate is marked.',
+  ],
+  part2: [
+    'The examiner greets you and asks your name — answer out loud so we can check your microphone.',
+    'Part 2 only: you get a cue card and one minute to prepare — say “I’m ready” to start early.',
+    'You speak for one to two minutes, then answer a short rounding-off question.',
+    'The examiner closes the drill, the session ends by itself and your band estimate is marked.',
+  ],
+  part3: [
+    'The examiner greets you and asks your name — answer out loud so we can check your microphone.',
+    'Part 3 only: abstract discussion questions with follow-ups that push your ideas further.',
+    'The examiner closes the drill, the session ends by itself and your band estimate is marked.',
+  ],
+};
+
+const BRIEFING_CHECKLIST = [
+  'Find a quiet room — background voices confuse the audio.',
+  'Headphones are recommended so the examiner’s voice stays out of your microphone.',
+  'Your browser will ask for microphone permission in a moment — allow it.',
+  'Speak in full sentences; developed answers score higher than one-liners.',
+  'The examiner waits while you think — a short pause costs you nothing.',
+  'In Part 2, say “I’m ready” whenever you want to start your long turn early.',
 ];
 
 function fmtTime(totalSeconds) {
@@ -63,7 +175,9 @@ function fmtTime(totalSeconds) {
 // Minimum candidate words before an interview can be ended for a score (the
 // scoring API enforces the same threshold server-side).
 const MIN_SCORABLE_WORDS = 40;
-const INTRO_PREF = 'examinerIntroDismissed';
+// How long the candidate can be silent before a quiet examiner is presented as
+// "thinking" rather than as dead air.
+const THINKING_GRACE_MS = 900;
 
 function getBrowserSessionStorage() {
   try {
@@ -81,12 +195,18 @@ const CONNECT_STEPS = [
   'Establishing a secure audio line…',
   'Almost there — say hello when the examiner greets you…',
 ];
-function ConnectingExaminer() {
+const LIVE_CONNECT_STEPS = [
+  'Requesting your microphone…',
+  'Waking up your gpt-live-1 examiner…',
+  'Opening a full-duplex audio line…',
+  'Say hello when the examiner greets you…',
+];
+function ConnectingExaminer({ steps = CONNECT_STEPS }) {
   const [step, setStep] = React.useState(0);
   React.useEffect(() => {
-    const t = setInterval(() => setStep((s) => Math.min(s + 1, CONNECT_STEPS.length - 1)), 1800);
+    const t = setInterval(() => setStep((s) => Math.min(s + 1, steps.length - 1)), 1800);
     return () => clearInterval(t);
-  }, []);
+  }, [steps]);
   return (
     <div className="mt-12 flex flex-col items-center gap-6">
       <div className="relative flex h-32 w-32 items-center justify-center">
@@ -98,7 +218,7 @@ function ConnectingExaminer() {
         </span>
       </div>
       <p key={step} className="text-sm font-medium text-muted-foreground animate-in fade-in duration-500">
-        {CONNECT_STEPS[step]}
+        {steps[step]}
       </p>
     </div>
   );
@@ -120,13 +240,49 @@ const SPEAKING_TIPS = [
   'In Part 2, using the full two minutes almost always helps your fluency band.',
 ];
 
+const EXAMINER_STATUS = {
+  speaking: { label: 'Examiner is speaking…', className: 'border-primary/30 bg-primary/10 text-primary' },
+  thinking: { label: 'Examiner is thinking', className: 'border-amber-500/30 bg-amber-500/10 text-amber-700' },
+  listening: { label: 'Listening — take your time', className: 'border-accent/30 bg-accent/10 text-accent' },
+};
+
+// The candidate must never be left staring at dead air: every pause is labelled.
+function ExaminerStatusPill({ state }) {
+  const status = EXAMINER_STATUS[state] || EXAMINER_STATUS.listening;
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      data-examiner-state={state}
+      data-analytics-id="examiner_status"
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${status.className}`}
+    >
+      {state === 'thinking' ? (
+        <span aria-hidden="true" className="flex items-center gap-0.5">
+          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:0ms]" />
+          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:150ms]" />
+          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:300ms]" />
+        </span>
+      ) : state === 'speaking' ? (
+        <Radio aria-hidden="true" className="h-3.5 w-3.5 animate-pulse" />
+      ) : (
+        <Ear aria-hidden="true" className="h-3.5 w-3.5" />
+      )}
+      {status.label}
+      {state === 'thinking' ? '…' : ''}
+    </span>
+  );
+}
+
 export default function SpeakingExaminerPage() {
   const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
   const minutes = useRealtimeMinutes();
 
-  // phase: idle | connecting | live | scoring | score_error | done
+  // phase: idle | briefing | connecting | live | scoring | score_error | done
   const [phase, setPhase] = React.useState('idle');
+  // The mode chosen on the idle screen; it drives the briefing and the live panel.
+  const [activeMode, setActiveMode] = React.useState(null);
   const [error, setError] = React.useState('');
   const [signInOpen, setSignInOpen] = React.useState(false);
   const [captions, setCaptions] = React.useState([]); // [{role, text}]
@@ -154,10 +310,12 @@ export default function SpeakingExaminerPage() {
   const canvasRef = React.useRef(null);
   const speakingStateRef = React.useRef(null);
   const [speaking, setSpeaking] = React.useState(null); // 'examiner' | 'candidate' | null
-  // Intro modal (shown before the first interview unless dismissed forever).
-  const [introOpen, setIntroOpen] = React.useState(false);
-  const introDismissedRef = React.useRef(false);
-  const pendingModeRef = React.useRef(null);
+  // Examiner presence: 'listening' | 'thinking' | 'speaking'. A silent examiner
+  // must always be explained, never rendered as dead air.
+  const [examinerState, setExaminerState] = React.useState('listening');
+  const examinerStateRef = React.useRef('listening');
+  const thinkingRef = React.useRef(false);
+  const silenceTimerRef = React.useRef(null);
   // Live candidate word count — gates the End button.
   const [candidateWords, setCandidateWords] = React.useState(0);
   // Auto-end when the examiner closes the test.
@@ -184,25 +342,6 @@ export default function SpeakingExaminerPage() {
   }, []);
 
   React.useEffect(() => {
-    if (getLocalPref(INTRO_PREF)) {
-      introDismissedRef.current = true;
-      return undefined;
-    }
-    let active = true;
-    if (user?.id) {
-      loadUserPref(user.id, INTRO_PREF).then((dismissed) => {
-        if (active && dismissed) {
-          introDismissedRef.current = true;
-          setLocalPref(INTRO_PREF, true);
-        }
-      });
-    }
-    return () => {
-      active = false;
-    };
-  }, [user?.id]);
-
-  React.useEffect(() => {
     if (captionsBoxRef.current) {
       captionsBoxRef.current.scrollTop = captionsBoxRef.current.scrollHeight;
     }
@@ -220,7 +359,73 @@ export default function SpeakingExaminerPage() {
 
   React.useEffect(() => () => teardown(), []); // unmount cleanup
 
+  // ---- examiner presence ---------------------------------------------------
+  function applyExaminerState(next) {
+    if (examinerStateRef.current === next) return;
+    examinerStateRef.current = next;
+    setExaminerState(next);
+  }
+
+  function clearSilenceTimer() {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    silenceTimerRef.current = null;
+  }
+
+  function resetExaminerState() {
+    clearSilenceTimer();
+    thinkingRef.current = false;
+    examinerStateRef.current = 'listening';
+    setExaminerState('listening');
+  }
+
+  // The transport tells us when the model hands off to its backend.
+  function markExaminerThinking(isThinking) {
+    thinkingRef.current = Boolean(isThinking);
+    clearSilenceTimer();
+    if (isThinking) {
+      applyExaminerState('thinking');
+      return;
+    }
+    applyExaminerState(speakingStateRef.current === 'examiner' ? 'speaking' : 'listening');
+  }
+
+  // The examiner's audio (or its first transcript fragment) has started.
+  function markExaminerSpeaking() {
+    thinkingRef.current = false;
+    clearSilenceTimer();
+    applyExaminerState('speaking');
+  }
+
+  // Driven by the waveform analyser: who currently holds the floor.
+  function handleSpeakerChange(active, previous) {
+    if (active === 'examiner') {
+      markExaminerSpeaking();
+      return;
+    }
+    if (active === 'candidate') {
+      thinkingRef.current = false;
+      clearSilenceTimer();
+      applyExaminerState('listening');
+      return;
+    }
+    clearSilenceTimer();
+    if (thinkingRef.current) {
+      applyExaminerState('thinking');
+      return;
+    }
+    applyExaminerState('listening');
+    // The candidate just stopped: if the examiner has not taken over shortly,
+    // present the gap as deliberate thought rather than silence.
+    if (previous === 'candidate') {
+      silenceTimerRef.current = setTimeout(() => {
+        silenceTimerRef.current = null;
+        if (speakingStateRef.current === null) applyExaminerState('thinking');
+      }, THINKING_GRACE_MS);
+    }
+  }
+
   function teardown() {
+    clearSilenceTimer();
     recorderRef.current?.dispose();
     recorderRef.current = null;
     // A Live session keeps billing until it is closed server-side; fire the
@@ -313,8 +518,10 @@ export default function SpeakingExaminerPage() {
       const active =
         exLevel > 0.08 || meLevel > 0.08 ? (exLevel >= meLevel ? 'examiner' : 'candidate') : null;
       if (active !== speakingStateRef.current) {
+        const previous = speakingStateRef.current;
         speakingStateRef.current = active;
         setSpeaking(active);
+        handleSpeakerChange(active, previous);
       }
 
       // Mirrored bars around the midline: examiner (navy) up, you (emerald) down.
@@ -374,21 +581,33 @@ export default function SpeakingExaminerPage() {
     }
   }
 
+  // Every session starts with the briefing: nobody is thrown into a
+  // conversation without knowing what is about to happen.
+  function chooseMode(mode) {
+    setError('');
+    if (!user) {
+      setSignInOpen(true);
+      return;
+    }
+    setActiveMode(mode);
+    setPhase('briefing');
+    track('examiner_briefing_shown', { mode });
+  }
+
+  function cancelBriefing() {
+    setPhase('idle');
+    setActiveMode(null);
+  }
+
   async function startSession(mode) {
     setError('');
     if (!user) {
       setSignInOpen(true);
       return;
     }
-    // First interview: show the explainer once, then continue with this mode.
-    if (!introDismissedRef.current) {
-      pendingModeRef.current = mode;
-      setIntroOpen(true);
-      introDismissedRef.current = true; // once per visit unless "don't show again"
-      track('examiner_intro_shown', {});
-      return;
-    }
+    setActiveMode(mode);
     setPhase('connecting');
+    resetExaminerState();
     sessionModeRef.current = mode;
     transcriptRef.current = [];
     setCaptions([]);
@@ -503,10 +722,18 @@ export default function SpeakingExaminerPage() {
             ev.type === 'conversation.item.audio_transcription.completed'
           ) {
             pushTranscript('candidate', ev.transcript);
+            if (examinerStateRef.current !== 'thinking') applyExaminerState('listening');
           } else if (ev.type === 'response.output_audio_transcript.done') {
             // ONE event name only — subscribing to aliases duplicated turns.
             pushTranscript('examiner', ev.transcript);
+          } else if (ev.type === 'response.created') {
+            // The model is composing its reply — label the pause.
+            markExaminerThinking(true);
+          } else if (ev.type === 'response.output_audio_transcript.delta') {
+            // First audio of the reply: the examiner has the floor again.
+            markExaminerSpeaking();
           } else if (ev.type === 'response.done') {
+            markExaminerThinking(false);
             // Greeting finished — open the candidate's mic.
             clearTimeout(micFailsafeRef.current);
             micFailsafeRef.current = null;
@@ -603,8 +830,18 @@ export default function SpeakingExaminerPage() {
         },
         onTranscript: (role, fragment) => {
           // The examiner's first words mean the greeting is under way.
-          if (role === 'examiner') unmuteMic();
+          if (role === 'examiner') {
+            unmuteMic();
+            markExaminerSpeaking();
+          } else if (examinerStateRef.current !== 'thinking') {
+            applyExaminerState('listening');
+          }
           pushLiveFragment(role, fragment);
+        },
+        // gpt-live-1 delegates to its backend between turns; surface the pause.
+        onThinking: (isThinking) => {
+          if (!isCurrent()) return;
+          markExaminerThinking(isThinking);
         },
         onClosed: ({ reason }) => {
           // 'close_requested' is our own hangup; anything else ended the test.
@@ -801,6 +1038,8 @@ export default function SpeakingExaminerPage() {
     endedRef.current = false;
     sessionOwnerRef.current = null;
     sessionModeRef.current = null;
+    setActiveMode(null);
+    resetExaminerState();
   }
 
   const handleScoringFinished = React.useCallback(() => {
@@ -812,15 +1051,9 @@ export default function SpeakingExaminerPage() {
       .catch(() => {});
   }, []);
 
-  const handleIntroClose = ({ dontShowAgain }) => {
-    setIntroOpen(false);
-    if (dontShowAgain) {
-      setLocalPref(INTRO_PREF, true);
-      if (user?.id) saveUserPref(user.id, INTRO_PREF, true);
-    }
-  };
-
   const minutesLeft = Math.floor(minutes.remainingSeconds / 60);
+  const isLive = liveExaminerEnabled();
+  const briefingCard = activeMode ? MODE_BY_ID[activeMode] : null;
 
   return (
     <>
@@ -846,16 +1079,35 @@ export default function SpeakingExaminerPage() {
       </Head>
       <Navbar />
       <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-10">
-        <header className="text-center">
-          <p className="mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5" /> Premium · Live AI examiner
+        {/* ---------- hero ---------- */}
+        <header
+          className={
+            phase === 'idle'
+              ? 'relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-background to-accent/10 px-5 py-10 text-center sm:px-10 sm:py-14'
+              : 'text-center'
+          }
+          data-analytics-surface="speaking_examiner"
+        >
+          {phase === 'idle' ? (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-accent/10 blur-3xl"
+            />
+          ) : null}
+          <p className="relative mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+              New
+            </span>
+            Powered by gpt-live-1
           </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            A real speaking interview, any time you want one
+          <h1 className="relative text-3xl font-bold tracking-tight sm:text-4xl">
+            A real examiner that listens while it speaks
           </h1>
-          <p className="mt-3 text-muted-foreground">
-            Talk to an AI examiner that runs the real 3-part IELTS Speaking format — adaptive
-            questions, a timed cue card, and a practice band estimate with feedback at the end.
+          <p className="relative mx-auto mt-3 max-w-2xl text-muted-foreground">
+            Your interview runs on OpenAI&apos;s gpt-live-1, released in September 2026 — a
+            full-duplex voice model, so the examiner hears you even mid-sentence. Real 3-part
+            format, adaptive follow-ups, and a practice band with feedback at the end.
           </p>
         </header>
 
@@ -865,9 +1117,45 @@ export default function SpeakingExaminerPage() {
           </div>
         ) : null}
 
-        {liveExaminerEnabled() && phase === 'idle' ? <p className="mt-4 rounded-lg border p-4 text-sm text-muted-foreground">
-          Powered by the full-duplex examiner: it can listen while it speaks, so you can interject naturally.
-        </p> : null}
+        {/* ---------- what makes it different ---------- */}
+        {phase === 'idle' ? (
+          <>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {BENEFIT_TILES.map(({ icon: Icon, title, body }) => (
+                <div
+                  key={title}
+                  className="rounded-2xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <h2 className="mt-3 text-sm font-semibold text-foreground">{title}</h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
+                </div>
+              ))}
+            </div>
+
+            <section
+              aria-label="How a session goes"
+              className="mt-8 rounded-2xl border bg-gradient-to-br from-primary/5 via-card to-accent/5 p-5 sm:p-6"
+            >
+              <h2 className="text-sm font-semibold text-foreground">How a session goes</h2>
+              <ol className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                {SESSION_TIMELINE.map((stepLabel, i) => (
+                  <li key={stepLabel} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                      {i + 1}
+                    </span>
+                    <span className="font-medium text-foreground">{stepLabel}</span>
+                    {i < SESSION_TIMELINE.length - 1 ? (
+                      <ArrowRight aria-hidden="true" className="hidden h-3.5 w-3.5 sm:block" />
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </>
+        ) : null}
 
         {audioAssessmentEnabled() && phase === 'idle' ? <p className="mt-4 rounded-lg border p-4 text-sm text-muted-foreground">
           Your microphone audio will be recorded and sent to OpenAI for feedback on all four speaking criteria, including pronunciation.
@@ -876,16 +1164,22 @@ export default function SpeakingExaminerPage() {
 
         {/* ---------- gate: signed-out / free ---------- */}
         {phase === 'idle' && !planLoading && !isPremium ? (
-          <div role="status" className="mx-auto mt-8 max-w-xl rounded-xl border bg-card p-6 text-center shadow-sm">
-            <p className="text-lg font-semibold">This is a Premium feature</p>
+          <div
+            role="status"
+            data-analytics-id="speaking_examiner_paywall"
+            className="mx-auto mt-8 max-w-xl overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6 text-center shadow-sm"
+          >
+            <p className="text-lg font-semibold">The Live examiner is a Premium feature</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Premium includes 30–60 AI examiner minutes every month, depending on regional plan,
-              plus fair-use Writing and Speaking scoring.
+              Premium unlocks the gpt-live-1 examiner: a full-duplex spoken interview in the real
+              3-part format, with a band estimate and criterion feedback every time. It includes
+              30–60 AI examiner minutes every month, depending on regional plan, plus fair-use
+              Writing and Speaking scoring.
             </p>
             <NextLink
               href="/pricing"
               onClick={() => track('paywall_upgrade_click', { source: 'speaking_examiner' })}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
             >
               <Sparkles className="h-4 w-4" /> Get Premium
             </NextLink>
@@ -903,14 +1197,33 @@ export default function SpeakingExaminerPage() {
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {MODE_CARDS.map((card) => (
-                <Card key={card.mode}>
+                <Card
+                  key={card.mode}
+                  className="rounded-2xl transition-shadow hover:shadow-md"
+                  data-analytics-id={`examiner_mode_${card.mode}`}
+                >
                   <CardContent className="flex h-full flex-col p-5">
-                    <h2 className="font-semibold">{card.title}</h2>
-                    <p className="mt-1 flex-1 text-sm text-muted-foreground">{card.blurb}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">~{card.minutes} minutes</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="font-semibold">{card.title}</h2>
+                      <span className="shrink-0 rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
+                        {card.tag}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{card.blurb}</p>
+                    <ul className="mt-3 flex-1 space-y-1.5">
+                      {card.highlights.map((item) => (
+                        <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
+                          <CheckCircle2 aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Clock aria-hidden="true" className="h-3.5 w-3.5" />~{card.minutes} minutes
+                    </p>
                     <button
                       type="button"
-                      onClick={() => startSession(card.mode)}
+                      onClick={() => chooseMode(card.mode)}
                       disabled={minutes.remainingSeconds < card.minutes * 60}
                       className="mt-3 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
                     >
@@ -935,22 +1248,117 @@ export default function SpeakingExaminerPage() {
           </>
         ) : null}
 
+        {/* ---------- pre-session briefing (every session) ---------- */}
+        {phase === 'briefing' && briefingCard ? (
+          <section
+            aria-labelledby="examiner-briefing-title"
+            data-analytics-id="examiner_briefing"
+            data-analytics-surface="speaking_examiner"
+            className="mt-8 overflow-hidden rounded-2xl border bg-card shadow-sm animate-in fade-in duration-300"
+          >
+            <div className="border-b bg-gradient-to-br from-primary/10 via-card to-accent/10 px-5 py-5 sm:px-7">
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+                Before you begin
+              </p>
+              <h2 id="examiner-briefing-title" className="mt-1 text-xl font-bold tracking-tight">
+                {briefingCard.title}
+              </h2>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Clock aria-hidden="true" className="h-4 w-4" />
+                About {briefingCard.minutes} minutes
+              </p>
+            </div>
+
+            <div className="px-5 py-5 sm:px-7">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <ListChecks aria-hidden="true" className="h-4 w-4 text-accent" /> What happens next
+              </h3>
+              <ol className="mt-3 space-y-3">
+                {(BRIEFING_STEPS[briefingCard.mode] || BRIEFING_STEPS.mock).map((stepText, i) => (
+                  <li key={stepText} className="flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                      {i + 1}
+                    </span>
+                    {stepText}
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-6 rounded-xl border bg-muted/30 p-4">
+                <h3 className="text-sm font-semibold text-foreground">Quick check before we connect</h3>
+                <ul className="mt-2.5 space-y-2">
+                  {BRIEFING_CHECKLIST.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+                      <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <p className="mt-5 flex items-start gap-2.5 rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm leading-relaxed text-muted-foreground">
+                <Mic aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>
+                  The examiner speaks first. It will greet you and ask for your name — answer out
+                  loud so we can confirm your microphone is working before the test begins.
+                </span>
+              </p>
+
+              <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => startSession(briefingCard.mode)}
+                  data-analytics-id="examiner_briefing_connect"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:opacity-90"
+                >
+                  <Mic className="h-4 w-4" /> I&rsquo;m ready — connect me
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelBriefing}
+                  data-analytics-id="examiner_briefing_back"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold hover:bg-muted sm:flex-none"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         {/* ---------- connecting ---------- */}
-        {phase === 'connecting' ? <ConnectingExaminer /> : null}
+        {phase === 'connecting' ? (
+          <ConnectingExaminer steps={isLive ? LIVE_CONNECT_STEPS : CONNECT_STEPS} />
+        ) : null}
 
         {/* ---------- live interview ---------- */}
         {phase === 'live' ? (
-          <div className="mt-8 overflow-hidden rounded-2xl border bg-card shadow-sm">
+          <div
+            className="mt-8 overflow-hidden rounded-2xl border bg-card shadow-lg"
+            data-analytics-id="examiner_live_panel"
+            data-analytics-surface="speaking_examiner"
+          >
             {/* header */}
-            <div className="flex items-center justify-between border-b px-5 py-3">
-              <span className="inline-flex items-center gap-2 text-sm font-medium">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+            <div className="border-b bg-gradient-to-br from-primary/10 via-card to-accent/10 px-5 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                  </span>
+                  Interview in progress
                 </span>
-                Interview in progress
-              </span>
-              <span className="font-mono text-lg font-semibold tabular-nums">{fmtTime(secondsLeft)}</span>
+                <span className="font-mono text-lg font-semibold tabular-nums">{fmtTime(secondsLeft)}</span>
+              </div>
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <ExaminerStatusPill state={examinerState} />
+                {briefingCard ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
+                    <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
+                    {briefingCard.title}
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             {/* waveform */}
@@ -1025,6 +1433,12 @@ export default function SpeakingExaminerPage() {
                   ? `Keep going — speak a little more for a fair score (${candidateWords}/${MIN_SCORABLE_WORDS} words so far). The interview also ends by itself.`
                   : 'Take your time — the examiner waits while you think. The interview ends by itself when the test finishes.'}
               </p>
+              {isLive ? (
+                <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                  <Sparkles aria-hidden="true" className="h-3 w-3" /> Powered by gpt-live-1 —
+                  full-duplex, so you can interject
+                </p>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -1080,7 +1494,16 @@ export default function SpeakingExaminerPage() {
         {phase === 'done' && result ? (
           <div className="mt-8 space-y-4">
             {Number.isFinite(result.overallBand) ? (
-              <BandHero band={result.overallBand} subtitle={result.assessmentBasis === 'candidate_audio' ? 'Estimated speaking band · four criteria' : 'Transcript-based practice estimate'} />
+              <BandHero
+                band={result.overallBand}
+                subtitle={`${
+                  result.assessmentBasis === 'candidate_audio'
+                    ? 'Estimated speaking band · four criteria'
+                    : 'Transcript-based practice estimate'
+                } · interviewed by the ${
+                  sessionTransportRef.current === 'live' ? 'gpt-live-1 full-duplex' : 'Realtime'
+                } examiner`}
+              />
             ) : <p className="rounded-xl border p-5 font-semibold">Not enough clear audio for an overall band. Review the feedback and try again.</p>}
 
             {result.summary ? (
@@ -1157,6 +1580,7 @@ export default function SpeakingExaminerPage() {
                 onClick={() => {
                   setPhase('idle');
                   setResult(null);
+                  setActiveMode(null);
                   minutes.refresh();
                 }}
                 className="rounded-lg border px-5 py-2.5 text-sm font-semibold hover:bg-muted"
@@ -1181,15 +1605,6 @@ export default function SpeakingExaminerPage() {
             : "Create your account or sign in — you'll stay right on this page."
         }
         trigger="speaking_examiner"
-      />
-      <ExaminerIntroModal
-        open={introOpen}
-        onClose={handleIntroClose}
-        onStart={() => {
-          const pending = pendingModeRef.current;
-          pendingModeRef.current = null;
-          if (pending) startSession(pending);
-        }}
       />
     </>
   );
