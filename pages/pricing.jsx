@@ -75,7 +75,7 @@ const FREE_INCLUDES = [
 const PRO_INCLUDES = [
   'Full AI Writing reports on all four criteria',
   'AI Speaking scoring from your recordings',
-  'Live AI examiner practice included',
+  'Live AI examiner on gpt-live-1 — full-duplex, it listens while it speaks',
   'Full-length timed mock tests',
   'Writing & Speaking band trends',
   'Priority processing, completely ad-free',
@@ -84,7 +84,7 @@ const PRO_INCLUDES = [
 const PERKS = [
   'Full AI Writing reports with all four criteria and corrected examples',
   'AI Speaking scores from your recordings',
-  '30–60 live AI examiner minutes with your 30-day pass; monthly allowances on subscriptions',
+  '30–60 minutes with the live gpt-live-1 examiner on your 30-day pass; monthly allowances on subscriptions',
   'Full-length timed mock tests with section breakdowns',
   'Writing and Speaking band trends on your dashboard',
   'Stronger scoring model with priority processing',
@@ -95,7 +95,7 @@ const COMPARISON = [
   ['Reading and Listening question bank', true, true],
   ['One lifetime Writing sample + one Speaking sample score', true, true],
   ['Full Writing report and continued scoring', false, true],
-  ['AI Speaking scoring and live examiner', false, true],
+  ['AI Speaking scoring and the live gpt-live-1 examiner', false, true],
   ['Timed full-mock mode', false, true],
   ['Writing and Speaking trend insights', false, true],
   ['Ad-free experience', false, true],
@@ -151,11 +151,11 @@ const PRICING_FAQS = [
   },
   {
     q: 'What is free, and what needs Pro?',
-    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score plus one Speaking sample score. Pro adds full AI Writing reports on all four criteria, AI Speaking scoring, live AI examiner minutes, timed full mocks, trend insights, and an ad-free experience.',
+    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score plus one Speaking sample score. Pro adds full AI Writing reports on all four criteria, AI Speaking scoring, minutes with the live gpt-live-1 examiner, timed full mocks, trend insights, and an ad-free experience.',
   },
   {
     q: 'What exactly are the fair-use limits on Pro?',
-    a: 'Pro includes up to 2 AI Writing reports per day, 10 per week and 30 per month, plus up to 1 AI Speaking score per day, 5 per week and 15 per month. All three limits apply. Daily limits reset at midnight UTC, weekly limits on Monday at midnight UTC, and monthly limits on the first day of the month at midnight UTC. Your plan also includes live examiner minutes. If you reach a scoring limit, your saved feedback stays available while you wait for that allowance to reset.',
+    a: 'Pro includes up to 2 AI Writing reports per day, 10 per week and 30 per month, plus up to 1 AI Speaking score per day, 5 per week and 15 per month. All three limits apply. Daily limits reset at midnight UTC, weekly limits on Monday at midnight UTC, and monthly limits on the first day of the month at midnight UTC. Your plan also includes minutes with the live gpt-live-1 examiner, which is full-duplex — it listens while it speaks. If you reach a scoring limit, your saved feedback stays available while you wait for that allowance to reset.',
   },
   {
     q: 'How accurate are the AI band scores?',
@@ -395,7 +395,7 @@ function ActivationChecklist({ upgrade, saved, returnTo }) {
               {first.label}
             </NextLink>
             <NextLink href="/speaking-examiner" className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-emerald-900 no-underline shadow-sm">
-              Meet your live examiner
+              Meet your live gpt-live-1 examiner
             </NextLink>
             <NextLink href="/mock-test" className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-emerald-900 no-underline shadow-sm">
               Sit a timed mock
@@ -727,7 +727,8 @@ export default function PricingPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             Choose the Exam Pass for 30 days of full Writing and Speaking feedback,
-            live examiner practice, timed mocks, and trend insights. One payment, no renewal.
+            live examiner practice on the newly released gpt-live-1, timed mocks, and trend
+            insights. One payment, no renewal.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
             <span className="inline-flex items-center gap-1.5 font-bold text-foreground">

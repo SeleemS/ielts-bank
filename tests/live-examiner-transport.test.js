@@ -168,6 +168,42 @@ describe('connectLiveExaminer', () => {
     expect(onClosed).not.toHaveBeenCalled();
   });
 
+  it('raises a thinking state on delegation and clears it on the next examiner words', async () => {
+    const onThinking = vi.fn(); const onTranscript = vi.fn();
+    const pending = connect({ onThinking, onTranscript });
+    await vi.advanceTimersByTimeAsync(0);
+    peers[0].completeIce();
+    await pending;
+
+    peers[0].emit({ type: 'session.output_transcript.delta', delta: 'Good morning' });
+    // No delegation yet: nothing to clear, so the page is never told anything.
+    expect(onThinking).not.toHaveBeenCalled();
+
+    peers[0].emit({ type: 'session.delegation.created', target: 'responses', response_id: 'resp_1' });
+    // A second delegation before any reply must not re-announce the state.
+    peers[0].emit({ type: 'session.delegation.created', target: 'responses', response_id: 'resp_2' });
+    expect(onThinking.mock.calls).toEqual([[true]]);
+    // The delegation event is not a transcript.
+    expect(onTranscript).toHaveBeenCalledTimes(1);
+
+    peers[0].emit({ type: 'session.output_transcript.delta', delta: 'Good question.' });
+    peers[0].emit({ type: 'session.output_transcript.delta', delta: ' Now tell me' });
+    expect(onThinking.mock.calls).toEqual([[true], [false]]);
+    expect(onTranscript).toHaveBeenCalledTimes(3);
+  });
+
+  it('clears a pending thinking state when the session closes', async () => {
+    const onThinking = vi.fn();
+    const pending = connect({ onThinking });
+    await vi.advanceTimersByTimeAsync(0);
+    peers[0].completeIce();
+    await pending;
+
+    peers[0].emit({ type: 'session.delegation.created', target: 'responses' });
+    peers[0].emit({ type: 'session.closed', reason: 'close_requested', usage: { seconds: 9 } });
+    expect(onThinking.mock.calls).toEqual([[true], [false]]);
+  });
+
   it('closes by sending session.close, waiting for session.closed, then ending the session server-side', async () => {
     const onClosed = vi.fn();
     const pending = connect({ onClosed });
