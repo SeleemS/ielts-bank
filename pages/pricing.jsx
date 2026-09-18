@@ -1,3 +1,5 @@
+import { FUNNEL_VERSION } from '../lib/monetizationExperiment';
+import { analyticsConsentGranted } from '../src/lib/consent';
 import { normalizeUpgradeContext } from '../lib/upgradeContext';
 import * as React from 'react';
 import Head from 'next/head';
@@ -472,6 +474,8 @@ export default function PricingPage() {
   // point at billing management instead of just showing red text.
   const [errorCode, setErrorCode] = React.useState('');
   const [signInOpen, setSignInOpen] = React.useState(false);
+  const checkoutIntentRef = React.useRef(null);
+  const checkoutBusyRef = React.useRef(false);
   const [pendingSku, setPendingSku] = React.useState(null);
   const [examDate, setExamDate] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
@@ -623,14 +627,25 @@ export default function PricingPage() {
     };
   }, []);
 
-  const startCheckout = React.useCallback(async (sku) => {
+  const startCheckout = React.useCallback(async (sku, { resume = false } = {}) => {
+    if (checkoutBusyRef.current) return;
+    if (!resume) {
+      checkoutIntentRef.current = analyticsConsentGranted() ? window.crypto?.randomUUID?.() || null : null;
+    }
+    const attribution = analyticsConsentGranted() && checkoutIntentRef.current
+      ? { funnel_intent_id: checkoutIntentRef.current, funnel_version: FUNNEL_VERSION } : {};
+    const record = (event, details = {}) => track(event, { sku, source: upgrade || 'pricing', funnel_version: FUNNEL_VERSION, ...attribution, ...details });
+    if (!resume) record('plan_select', { signed_in: Boolean(user) });
+    else record('checkout_auth_completed');
     setError('');
     setErrorCode('');
     if (!user) {
       setPendingSku(sku);
+      record('checkout_auth_open');
       setSignInOpen(true);
       return;
     }
+    checkoutBusyRef.current = true;
     setBusySku(sku);
     track('checkout_start', { sku, source: upgrade || 'pricing', country, ppp: regionalPricing });
     // The cards are all visible at once, so choosing one IS the select_item
@@ -640,31 +655,39 @@ export default function PricingPage() {
     try {
       const { headers, sessionError } = await authHeader();
       if (sessionError) {
+        record('checkout_client_failed', { failure_stage: 'session_lookup' });
         setError('Could not verify your signed-in session. Please refresh and try again.');
         return;
       }
       if (!headers) {
+        setPendingSku(sku);
+        record('checkout_auth_open', { reason: 'session_missing' });
         setSignInOpen(true);
         return;
       }
+      record('checkout_request');
       const response = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ sku, offer, ga_cid: gaClientId(), ...normalizeUpgradeContext({ upgrade, stage, return_to: returnTo }) }),
+        body: JSON.stringify({ sku, offer, ga_cid: gaClientId(), ...attribution, ...normalizeUpgradeContext({ upgrade, stage, return_to: returnTo }) }),
       });
       const body = await response.json().catch(() => ({}));
       if (response.ok && body.url) {
+        record('checkout_redirect_attempt');
         window.location.assign(body.url);
         return;
       }
-      if (body.code === 'anonymous_user') setSignInOpen(true);
+      record('checkout_client_failed', { failure_stage: 'checkout_response', http_status: response.status });
+      if (body.code === 'anonymous_user') { setPendingSku(sku); record('checkout_auth_open', { reason: 'email_required' }); setSignInOpen(true); }
       else {
         setErrorCode(body.code || '');
         setError(body.error || 'Could not start checkout. Please try again.');
       }
     } catch {
+      record('checkout_client_failed', { failure_stage: 'network_or_redirect' });
       setError('Could not start checkout. Please try again.');
     } finally {
+      checkoutBusyRef.current = false;
       setBusySku(null);
     }
   }, [authHeader, country, offer, regionalPricing, upgrade, stage, returnTo, user]);
@@ -673,7 +696,7 @@ export default function PricingPage() {
     if (!user?.id || signInOpen || !pendingSku) return;
     const sku = pendingSku;
     setPendingSku(null);
-    void startCheckout(sku);
+    void startCheckout(sku, { resume: true });
   }, [pendingSku, signInOpen, startCheckout, user?.id]);
 
   return (
@@ -1041,6 +1064,12 @@ export default function PricingPage() {
           </div>
         )}
 
+        <section aria-label="Choose how you pay" className="mx-auto mt-8 max-w-3xl rounded-xl border border-border bg-card p-5 sm:p-6">
+          <h2 className="text-lg font-bold">The same feedback toolkit. Two ways to start.</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. The 30-day Exam Pass is {money(planPricing('exam_pass', regionalPricing).price)} USD once and ends automatically. Both have the same scoring limits; choose the Pass if you prefer no renewal.</p>
+          <a href="#sample-report" className="mt-3 inline-block text-sm font-semibold text-accent underline underline-offset-4">Preview a full Writing report</a>
+        </section>
+
         <p className="mt-6 text-center text-sm font-medium text-muted-foreground">
           Start with a free Writing and a free Speaking sample score. Pro unlocks the full feedback toolkit.
         </p>
@@ -1081,12 +1110,12 @@ export default function PricingPage() {
           ) : null}
         </section>
 
-        <section className="mx-auto mt-20 max-w-4xl">
+        <section id="sample-report" className="mx-auto mt-20 max-w-4xl scroll-mt-28">
           <div className="text-center">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">See the product</p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">What your full feedback looks like</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This example uses the same report layout you receive after scoring.
+              Illustrative Writing report, not a learner testimonial or a promised score. Full reports apply to your next scored essays; buying Pro does not unlock an old free sample.
             </p>
           </div>
           <div className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">

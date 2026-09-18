@@ -1,3 +1,4 @@
+import PracticeFeedbackEntry from './PracticeFeedbackEntry';
 import React from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
@@ -200,6 +201,7 @@ const SectionLanding = ({
               </p>
             </header>
 
+            {section === 'writing' ? <PracticeFeedbackEntry skill="writing" /> : null}
             <DataTable skill={section} items={items} questionTypeOptions={questionTypeOptions} />
 
             {/* Reading only: practise by question type. */}

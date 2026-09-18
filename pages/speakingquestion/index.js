@@ -257,6 +257,7 @@ export default function SpeakingIndex({ items = [] }) {
 
             {hasAny ? (
               <>
+                <div id="practice-topics" className="scroll-mt-28"><p className="mb-5 text-sm text-muted-foreground">Start with a topic below. Recording practice is free, and each account includes one lifetime Speaking sample score.</p></div>
                 <PartSection part={2} items={byPart[2]} />
                 <PartSection part={1} items={byPart[1]} />
                 <PartSection part={3} items={byPart[3]} />

@@ -1,3 +1,4 @@
+import { checkoutAttribution } from '../../../lib/monetizationExperiment';
 // pages/api/billing/checkout.js
 // Creates a Stripe Checkout Session for a currently advertised plan: the
 // Monthly or Annual subscription, or the one-time 30-day Exam Pass.
@@ -248,7 +249,7 @@ export default async function handler(req, res) {
   const operationRequestId = randomUUID();
   const recordOperation = (stage, sessionId = null) => recordCheckoutOperation(admin, {
     userId: userRow.id, sku, requestId: operationRequestId, stage,
-    sessionId, created: Boolean(sessionId),
+    sessionId, created: Boolean(sessionId), attribution: checkoutAttribution(req.body),
   });
 
   try {
@@ -359,6 +360,7 @@ export default async function handler(req, res) {
       sku,
       ppp: isPppCountry(country) ? '1' : '0',
       ...(gaCid ? { ga_cid: gaCid } : {}),
+      ...checkoutAttribution(req.body),
     };
     // Terms-of-service consent recorded by Stripe on the Checkout Session
     // (session.consent.terms_of_service = 'accepted' + a timestamp). Stripe

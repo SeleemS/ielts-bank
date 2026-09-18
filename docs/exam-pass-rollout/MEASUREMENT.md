@@ -42,3 +42,50 @@ The ordered observed offer path is a separate signed-in, consent-limited subset:
 `firstCompletedAiScoreWithin14Days` and `firstAiScoreRate` measure a completed Writing/Speaking score after a positive paid activation, inside fourteen days and before a recorded expiry/revocation. They are separate from `firstCompletedPracticeWithin14Days`, which also includes free Reading/Listening. This infers that the score completed while the recorded paid entitlement was active; it does not assert which quota bucket was charged or reconstruct unrecorded subscription cancellation history.
 
 Estimator results already mirrored into `scores` count as prior AI results for `withPriorCompletedAiScore`. The SQL classifies their source with a scalar JSON comparison inside the database; it does not retrieve essay/response content. Estimator results do **not** count as paid AI-score outcomes, even if revealed after activation. No anonymous estimator identity is stitched to later behavior and no extra estimator content query is needed.
+
+
+## September 18 offer and reconciliation revision
+
+The sequential `feedback_value_v2` offer follows `exam_pass_v1`. `consentLimitedEvents`
+now groups by `offer_version`; `observedSignedInOfferPath` contains one entry per
+14/28-day window **and version**, with `offerVersion` explicitly set. View and
+click must share that version. A learner exposed to both versions can appear in
+both denominators: do not sum them or interpret this rollout as a randomized
+experiment. The operational eligibility/revenue windows remain unchanged.
+The September 10 change to default-on optional tracking (still respecting stored
+refusal and GPC) also changes browser coverage; missing events are not zero usage.
+
+Charge reconciliation now lists modern Stripe InvoicePayment records for exact
+Checkout invoice → PaymentIntent → charge links, alongside direct one-time
+PaymentIntent and legacy charge invoice links. No customer/amount/time heuristic
+is used. Only successful live charges enter `matchedCheckoutCharges`; linked
+failed attempts are separately `matchedFailedCheckoutCharges`. Recurring renewal
+invoices do not match an initial Checkout invoice and remain excluded.
+Provider pagination/errors fail the report instead of silently treating absent
+links as zero. All calls remain read-only lists and all exported figures remain
+aggregate. Refund/dispute state is current at report generation, not a historical
+snapshot reconstructed as of the selected end date; charges created before the
+window still need dedicated ledger reconciliation. These counts are diagnostic
+coverage, not a net-revenue accounting report.
+
+
+Optional `--anonymous-exclusions=/private/path/qa-anonymous-ids.json` accepts a
+JSON array of browser anonymous UUIDs. It excludes those browser identities from
+both offer-event counts and ordered offer paths, even after events acquire a
+signed-in user ID. It does not change authenticated practice, Stripe or billing
+operational denominators; maintain the separate user exclusions for QA accounts.
+Use it for verified local/browser QA identifiers, not a guess based on traffic.
+Only exclusion counts are exported. Keep this file private alongside the user
+exclusions and pass the same fixed files for comparison runs. Omitting the flag
+retains the existing behavior with zero explicit anonymous exclusions.
+
+
+For the v2 plan-comparison CTA, use `subsequentlyCreatedAnyPlanSession` and
+`subsequentlyActivatedPositiveAnyPlan` as the primary observed downstream fields.
+They include monthly, annual and Exam Pass Checkout sessions after a same-version
+click, with an exact positive paid activation receipt for the latter. The original
+Exam-Pass-only fields remain available. Counts are unique learners per path, not
+session counts. The historical event name and `sku=exam_pass` label identify the
+offer surface, not exclusive purchase intent. A later Monthly purchase must not
+be classified as a failed comparison-offer conversion. These ordered associations
+remain observational and may overlap between versions; they are not causal lift.

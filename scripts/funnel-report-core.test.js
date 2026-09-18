@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { summarizeFunnel, observedOfferPath } from './funnel-report-core.mjs';
+import { summarizeFunnel, observedOfferPath, reconcileCheckoutCharges } from './funnel-report-core.mjs';
 const date = d => `2026-09-${String(d).padStart(2,'0')}T12:00:00Z`;
 const session = (id,user,day,amount=1499) => ({id,client_reference_id:user,created:Date.parse(date(day))/1000,livemode:true,status:'complete',payment_status:'paid',amount_total:amount,currency:'usd',mode:'payment'});
 const receipt = (id,day,extra={}) => ({session_id:id,fulfilled_at:date(day),outcome:'applied',...extra});
@@ -55,3 +55,47 @@ it('prior paid invoice excludes an existing customer from new learner revenue',(
  expect(observedOfferPath({...base,practice:[{user_id:'a',completed_at:date(1),kind:'reading'}]}).withPriorCompletedAiScore).toBe(0);
  expect(observedOfferPath({...base,practice:[{user_id:'a',completed_at:date(1),kind:'estimator_ai_score'}]}).withPriorCompletedAiScore).toBe(1);
  });
+
+it('separates offer versions without attributing another version click to the original view', () => {
+ const base = { events: [
+  { user_id:'a',event:'exam_pass_offer_view',created_at:date(2),offer_version:'exam_pass_v1' },
+  { user_id:'a',event:'exam_pass_offer_click',created_at:date(3),offer_version:'feedback_value_v2' },
+ ], practice:[{user_id:'a',completed_at:date(1),kind:'ai_score'}],sessions:[],fulfillments:[],end:'2026-09-20T00:00:00Z',days:28 };
+ expect(observedOfferPath({...base,offerVersion:'exam_pass_v1'})).toMatchObject({offerVersion:'exam_pass_v1',signedInObservedOfferLearners:1,subsequentlyClicked:0});
+ expect(observedOfferPath({...base,offerVersion:'feedback_value_v2'})).toMatchObject({offerVersion:'feedback_value_v2',signedInObservedOfferLearners:0,subsequentlyClicked:0});
+ const versionTwo={...base,events:[...base.events,{user_id:'a',event:'exam_pass_offer_view',created_at:date(2),offer_version:'feedback_value_v2'}]};
+ expect(observedOfferPath({...versionTwo,offerVersion:'feedback_value_v2'})).toMatchObject({signedInObservedOfferLearners:1,subsequentlyClicked:1});
+});
+
+it('links modern invoice payments exactly and excludes unrelated renewals, test mode and failed charges from settled counts', () => {
+ const good={livemode:true,paid:true,status:'succeeded',amount_refunded:0,disputed:false};
+ const result=reconcileCheckoutCharges({
+  sessions:[{invoice:'in_initial'},{payment_intent:'pi_pass'},{invoice:'in_legacy'}],
+  invoicePayments:[{invoice:'in_initial',payment_intent:'pi_sub'},{invoice:'in_renewal',payment_intent:'pi_renewal'}],
+  charges:[
+   {...good,payment_intent:{id:'pi_sub'},amount_refunded:899},
+   {...good,payment_intent:'pi_pass',disputed:true},
+   {...good,invoice:{id:'in_legacy'}},
+   {...good,payment_intent:'pi_renewal'},
+   {...good,payment_intent:'pi_sub',livemode:false},
+   {...good,payment_intent:'pi_sub',paid:false,status:'failed'},
+   {...good,customer:'same_customer',amount:899},
+  ],
+ });
+ expect(result).toMatchObject({matchedCheckoutCharges:3,matchedFailedCheckoutCharges:1,refundedMatchedCheckoutCharges:1,disputedMatchedCheckoutCharges:1});
+ expect(JSON.stringify(result)).not.toMatch(/pi_sub|in_initial|same_customer/);
+});
+
+
+it('counts a v2 monthly purchase as any-plan conversion without calling it an Exam Pass conversion', () => {
+ const base={events:[
+  {user_id:'a',event:'exam_pass_offer_view',offer_version:'feedback_value_v2',created_at:date(2)},
+  {user_id:'a',event:'exam_pass_offer_click',offer_version:'feedback_value_v2',created_at:date(3)},
+ ],practice:[{user_id:'a',completed_at:date(1),kind:'ai_score'}],
+ sessions:[{...session('monthly','a',4,899),mode:'subscription',metadata:{sku:'monthly'}}],
+ fulfillments:[receipt('monthly',4)],offerVersion:'feedback_value_v2',end:'2026-09-20T00:00:00Z',days:28};
+ expect(observedOfferPath(base)).toMatchObject({subsequentlyCreatedAnyPlanSession:1,subsequentlyActivatedPositiveAnyPlan:1,subsequentlyCreatedExamPassSession:0,subsequentlyActivatedPositiveExamPass:0});
+ expect(observedOfferPath({...base,fulfillments:[]})).toMatchObject({subsequentlyCreatedAnyPlanSession:1,subsequentlyActivatedPositiveAnyPlan:0});
+ expect(observedOfferPath({...base,sessions:[{...base.sessions[0],amount_total:0}]}).subsequentlyActivatedPositiveAnyPlan).toBe(0);
+ expect(observedOfferPath({...base,sessions:[{...base.sessions[0],created:Date.parse(date(1))/1000}]}).subsequentlyCreatedAnyPlanSession).toBe(0);
+});

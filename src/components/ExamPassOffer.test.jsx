@@ -17,10 +17,13 @@ beforeEach(() => {
   document.cookie = 'ib_country=US; path=/';
 });
 afterEach(() => { act(() => root.unmount()); container.remove(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
-it('offers one regional pass with a safe contextual return and no recurring price', () => {
+it('compares regional no-renewal and monthly options with a safe return', () => {
   document.cookie = 'ib_country=EG; path=/';
   act(() => root.render(<ExamPassOffer skill="writing" source="score_tease" band={6} />));
   expect(container.textContent).toContain('$5.99 USD');
+  expect(container.textContent).toContain('$3.99 USD/month');
+  expect(container.textContent).toContain('Illustrative excerpt');
+  expect(container.textContent).toContain('not your result');
   expect(container.textContent).toContain('No automatic renewal');
   expect(container.textContent).toContain('on your next essays');
   const links = container.querySelectorAll('a'); expect(links).toHaveLength(1);
@@ -29,7 +32,7 @@ it('offers one regional pass with a safe contextual return and no recurring pric
   expect(href.searchParams.get('stage')).toBe('sample');
   links[0].addEventListener('click', event => event.preventDefault());
   act(() => links[0].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
-  expect(track).toHaveBeenCalledWith('exam_pass_offer_click', expect.objectContaining({ sku: 'exam_pass', skill: 'writing', offer_version: 'exam_pass_v1' }));
+  expect(track).toHaveBeenCalledWith('exam_pass_offer_click', expect.objectContaining({ sku: 'exam_pass', skill: 'writing', offer_version: 'feedback_value_v2' }));
 });
 it('uses global pricing and records exposure once only when the offer is visible', () => {
   act(() => root.render(<ExamPassOffer skill="speaking" source="speaking_sample" />));

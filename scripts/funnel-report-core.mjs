@@ -75,19 +75,20 @@ export function summarizeFunnel({ users, practice, fulfillments, sessions, prior
 
 // Observed signed-in subset only. Ordered identity joins describe a path;
 // they do not establish that this offer caused a later purchase.
-export function observedOfferPath({ events, practice, sessions, fulfillments, exclusions = [], end, days }) {
+export function observedOfferPath({ events, practice, sessions, fulfillments, exclusions = [], end, days, offerVersion }) {
   const stop = Date.parse(end), start = stop - days * 86400000;
   const excluded = new Set(exclusions);
-  const inWindow = e => e.user_id && !excluded.has(e.user_id) && Date.parse(e.created_at) >= start && Date.parse(e.created_at) < stop;
+  const inWindow = e => (!offerVersion || e.offer_version === offerVersion) && e.user_id && !excluded.has(e.user_id) && Date.parse(e.created_at) >= start && Date.parse(e.created_at) < stop;
   const views = events.filter(e => inWindow(e) && e.event === 'exam_pass_offer_view');
   const unique = new Map();
   for (const e of views) {
     const time = Date.parse(e.created_at);
     if (!unique.has(e.user_id) || time < unique.get(e.user_id)) unique.set(e.user_id, time);
   }
-  const result = { windowDays: days, signedInObservedOfferLearners: unique.size,
+  const result = { windowDays: days, ...(offerVersion ? { offerVersion } : {}), signedInObservedOfferLearners: unique.size,
     withPriorCompletedAiScore: 0, subsequentlyClicked: 0, subsequentlyCreatedExamPassSession: 0,
-    subsequentlyActivatedPositiveExamPass: 0 };
+    subsequentlyActivatedPositiveExamPass: 0, subsequentlyCreatedAnyPlanSession: 0,
+    subsequentlyActivatedPositiveAnyPlan: 0 };
   for (const [u,time] of unique) {
     if (!practice.some(p => ['ai_score', 'estimator_ai_score'].includes(p.kind) && p.user_id === u && Date.parse(p.completed_at) <= time && Date.parse(p.completed_at) >= start)) continue;
     result.withPriorCompletedAiScore++;
@@ -96,11 +97,41 @@ export function observedOfferPath({ events, practice, sessions, fulfillments, ex
     if (!click) continue;
     result.subsequentlyClicked++;
     const created = sessions.filter(s => s.livemode && (s.client_reference_id || s.metadata?.user_id) === u
-      && s.metadata?.sku === 'exam_pass' && s.created * 1000 >= Date.parse(click.created_at) && s.created * 1000 < stop);
+      && ['exam_pass', 'monthly', 'annual'].includes(s.metadata?.sku)
+      && s.created * 1000 >= Date.parse(click.created_at) && s.created * 1000 < stop);
+    const activated = s => s.status === 'complete' && s.payment_status === 'paid' && s.amount_total > 0
+      && fulfillments.some(f => f.session_id === s.id && f.outcome === 'applied'
+        && Date.parse(f.fulfilled_at) >= s.created * 1000 && Date.parse(f.fulfilled_at) < stop);
     if (!created.length) continue;
-    result.subsequentlyCreatedExamPassSession++;
-    if (created.some(s => s.status === 'complete' && s.payment_status === 'paid' && s.amount_total > 0
-      && fulfillments.some(f => f.session_id === s.id && f.outcome === 'applied' && Date.parse(f.fulfilled_at) < stop))) result.subsequentlyActivatedPositiveExamPass++;
+    result.subsequentlyCreatedAnyPlanSession++;
+    if (created.some(activated)) result.subsequentlyActivatedPositiveAnyPlan++;
+    const passes = created.filter(s => s.metadata?.sku === 'exam_pass');
+    if (passes.length) result.subsequentlyCreatedExamPassSession++;
+    if (passes.some(activated)) result.subsequentlyActivatedPositiveExamPass++;
   }
   return result;
+}
+
+
+// Exact provider links only. Never match by customer, amount, date proximity or
+// arbitrary metadata: those would confuse a renewal with the Checkout invoice.
+export function reconcileCheckoutCharges({ sessions, charges, invoicePayments = [] }) {
+  const id = value => typeof value === 'string' ? value : value?.id;
+  const invoiceIds = new Set(sessions.map(s => id(s.invoice)).filter(Boolean));
+  const intentIds = new Set(sessions.map(s => id(s.payment_intent)).filter(Boolean));
+  for (const link of invoicePayments) {
+    if (invoiceIds.has(id(link.invoice)) && id(link.payment_intent)) intentIds.add(id(link.payment_intent));
+  }
+  const matched = charges.filter(c => c.livemode && (
+    (id(c.payment_intent) && intentIds.has(id(c.payment_intent)))
+    || (id(c.invoice) && invoiceIds.has(id(c.invoice)))
+  ));
+  const settled = matched.filter(c => c.paid && c.status === 'succeeded');
+  return {
+    matchedCheckoutCharges: settled.length,
+    matchedFailedCheckoutCharges: matched.filter(c => c.status === 'failed').length,
+    refundedMatchedCheckoutCharges: settled.filter(c => c.amount_refunded > 0).length,
+    disputedMatchedCheckoutCharges: settled.filter(c => c.disputed).length,
+    note: 'Exact Checkout payment-intent, legacy charge invoice, or InvoicePayment-to-PaymentIntent links only. Successful charges created in the reporting window; failed attempts counted separately. Renewals excluded. Refund/dispute state is current at report time, not reconstructed at the historical window end. Gross revenue is not net revenue; older charges and missing links require separate reconciliation.',
+  };
 }

@@ -1,3 +1,4 @@
+import { FUNNEL_VERSION } from '../../lib/monetizationExperiment';
 import { analyticsConsentGranted } from './consent';
 import { recordPracticeActivity } from './practiceActivity';
 
@@ -176,6 +177,7 @@ export function track(event, params = {}, options = {}) {
   const currentPageViewId = getPageViewId();
   const payload = {
     ...params,
+    telemetry_version: FUNNEL_VERSION,
     path: currentPath,
     client_event_id: clientEventId,
     session_id: sessionId,

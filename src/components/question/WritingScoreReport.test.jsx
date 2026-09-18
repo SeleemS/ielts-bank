@@ -109,7 +109,7 @@ describe('WritingScoreReport free-score preview', () => {
     expect(container.textContent).toContain('1 of 3 shown');
     expect(container.textContent).toContain('Band 8 rewrite of your weakest paragraph');
     expect(container.textContent).toContain(
-      '30 days to practise with full feedback'
+      'Know what to improve in your next answer'
     );
     expect(container.textContent).toContain('band on all four criteria and one real correction');
 
@@ -182,7 +182,7 @@ describe('WritingScoreReport free-score preview', () => {
     expect(container.textContent).toContain('They were late');
     expect(container.textContent).toContain('A band eight version');
     expect(container.textContent).toContain('Second body paragraph');
-    expect(container.textContent).not.toContain('See the 30-day Exam Pass');
+    expect(container.textContent).not.toContain('Compare feedback plans');
     expect(track).not.toHaveBeenCalled();
   });
 });

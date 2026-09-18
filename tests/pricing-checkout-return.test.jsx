@@ -338,6 +338,8 @@ describe('pricing authentication handoff', () => {
     const dialog = container.querySelector('[data-testid="pricing-auth-dialog"]');
     expect(dialog).not.toBeNull();
     expect(dialog.getAttribute('data-redirect-on-finish')).toBe('false');
+    expect(track).toHaveBeenCalledWith('plan_select', expect.objectContaining({ sku: 'annual', signed_in: false, funnel_version: 'paid_journey_v2' }));
+    expect(track).toHaveBeenCalledWith('checkout_auth_open', expect.objectContaining({ sku: 'annual' }));
 
     testState.user = { id: 'user-1' };
     await act(async () => {
@@ -353,8 +355,29 @@ describe('pricing authentication handoff', () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-access-token',
       },
-      body: JSON.stringify({ sku: 'annual', offer: '', ga_cid: null }),
+      body: expect.any(String),
     });
+    const checkoutCall = global.fetch.mock.calls.find(([url]) => url === '/api/billing/checkout');
+    const payload = JSON.parse(checkoutCall[1].body);
+    expect(payload).toMatchObject({ sku: 'annual', offer: '', ga_cid: null });
+    expect(payload.funnel_intent_id).toMatch(/^[a-f0-9-]{36}$/);
+    expect(track.mock.calls.filter(([event]) => event === 'plan_select')).toHaveLength(1);
+    expect(track).toHaveBeenCalledWith('checkout_auth_completed', expect.objectContaining({ funnel_intent_id: payload.funnel_intent_id }));
+    expect(track).toHaveBeenCalledWith('checkout_request', expect.objectContaining({ funnel_intent_id: payload.funnel_intent_id }));
+  });
+
+  it('omits checkout attribution after an explicit analytics opt-out', async () => {
+    window.__ieltsOptionalConsent = 'denied';
+    testState.router = { isReady: true, query: {} };
+    testState.user = { id: 'user-1' };
+    global.fetch.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+    try {
+      await renderPage();
+      await act(async () => { container.querySelector('button[aria-label="Choose Annual plan"]').click(); });
+      const call = global.fetch.mock.calls.find(([url]) => url === '/api/billing/checkout');
+      expect(JSON.parse(call[1].body)).not.toHaveProperty('funnel_intent_id');
+      expect(JSON.parse(call[1].body)).not.toHaveProperty('funnel_version');
+    } finally { delete window.__ieltsOptionalConsent; }
   });
 
   it.each([

@@ -1,6 +1,7 @@
+import PracticeFeedbackEntry, { feedbackEntrySkill } from '../../src/components/PracticeFeedbackEntry';
 import Head from "next/head";
 import NextLink from "next/link";
-import { ArrowLeft, ArrowRight, CalendarCheck, PenLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck } from "lucide-react";
 import Navbar from "../../src/components/Navbar";
 import Footer from "../../src/components/Footer";
 import NewsletterSignup from "../../src/components/NewsletterSignup";
@@ -12,7 +13,6 @@ import { formatMonthYear, toIsoDate } from "../../lib/postDates";
 import { sanitizeHtml } from "../../lib/sanitize";
 import AdUnit from "../../src/components/AdUnit";
 import ShareRow from "../../src/components/ShareRow";
-import { track } from "../../src/lib/analytics";
 
 import { SITE_URL } from "../../lib/site";
 
@@ -223,27 +223,7 @@ export default function BlogPost({ post }) {
             </article>
             <AdUnit />
 
-            <section className="mt-8 rounded-2xl bg-slate-950 p-6 text-white sm:p-8">
-              <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
-                  <PenLine className="h-5 w-5" />
-                </span>
-                <div>
-                  <h2 className="text-xl font-bold">Turn this strategy into a scored essay</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">
-                    Try your first AI Writing sample score free, then use the criterion feedback to
-                    choose your next practice target.
-                  </p>
-                  <NextLink
-                    href={`/ielts-writing-checker?source=blog&article=${encodeURIComponent(post.slug)}`}
-                    onClick={() => track("product_cta_click", { source: "blog", article: post.slug, product: "writing_checker" })}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white no-underline hover:bg-emerald-400"
-                  >
-                    Check my essay <ArrowRight className="h-4 w-4" />
-                  </NextLink>
-                </div>
-              </div>
-            </section>
+            <PracticeFeedbackEntry skill={feedbackEntrySkill(post.title)} source="blog" />
 
             <div className="mt-10">
               <NewsletterSignup source={`blog:${post.slug}`} variant="full" />
