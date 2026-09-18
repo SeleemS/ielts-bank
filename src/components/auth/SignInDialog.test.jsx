@@ -125,8 +125,6 @@ describe('SignInDialog password validation', () => {
 
   it('keeps the eight-character client minimum for new accounts', async () => {
     await renderDialog('signup');
-    setInput('#signup-first-name', 'new');
-    setInput('#signup-last-name', 'user');
     setInput('#signin-email', 'new-user@example.com');
     setInput('#signin-password', '123456');
 
@@ -139,18 +137,15 @@ describe('SignInDialog password validation', () => {
     expect(submit.disabled).toBe(false);
   });
 
-  it('requires first and last name for new accounts and title-cases them', async () => {
+  it('creates an account with only email and password', async () => {
     await renderDialog('signup');
     setInput('#signin-email', 'new-user@example.com');
     setInput('#signin-password', '12345678');
 
     const submit = document.querySelector('[role="dialog"] button[type="submit"]');
-    expect(submit.disabled).toBe(true);
-
-    setInput('#signup-first-name', 'seleem');
-    expect(submit.disabled).toBe(true);
-    setInput('#signup-last-name', 'shaalan');
     expect(submit.disabled).toBe(false);
+    expect(document.querySelector('#signup-first-name')).toBeNull();
+    expect(document.querySelector('#signup-last-name')).toBeNull();
 
     testState.signUpWithPassword.mockResolvedValue({ data: { user: { identities: [{}] } }, error: null });
     await act(async () => {
@@ -162,8 +157,7 @@ describe('SignInDialog password validation', () => {
 
     expect(testState.signUpWithPassword).toHaveBeenCalledWith(
       'new-user@example.com',
-      '12345678',
-      { full_name: 'Seleem Shaalan', first_name: 'Seleem', last_name: 'Shaalan' }
+      '12345678'
     );
   });
 
@@ -226,8 +220,6 @@ describe('SignInDialog password validation', () => {
   it('allows an immediate retry when a manual resend fails', async () => {
     vi.useFakeTimers();
     await renderDialog('signup');
-    setInput('#signup-first-name', 'New');
-    setInput('#signup-last-name', 'User');
     setInput('#signin-email', 'new-user@example.com');
     setInput('#signin-password', 'password123');
 
@@ -269,7 +261,7 @@ async function submitForm() {
   await act(async () => { document.querySelector('form').dispatchEvent(new Event('submit', {bubbles:true,cancelable:true})); await Promise.resolve(); });
 }
 async function startSignup() {
-  await renderDialog('signup');setInput('#signup-first-name','New');setInput('#signup-last-name','User');
+  await renderDialog('signup');
   setInput('#signin-email','audit@example.com');setInput('#signin-password','password123');await submitForm();
 }
 async function advanceCooldown() {
@@ -334,4 +326,46 @@ it('lets failed recovery start over without automatically sending another reset 
   expect(document.querySelector('[role=alert]').textContent).toContain('expired');await clickText('Request a new reset code');
   expect(document.querySelector('#signin-newpass')).toBeNull();expect(document.querySelector('#signin-password').value).toBe('');expect(document.querySelector('#signin-email').value).toBe('audit@example.com');expect(testState.requestPasswordReset).toHaveBeenCalledTimes(1);
   await clickText('Forgot password?');expect(testState.requestPasswordReset).toHaveBeenCalledTimes(2);expect(document.querySelector('#signin-otp').value).toBe('');
+});
+
+it.each([true, false])('finishes verified signup immediately with redirectOnFinish=%s', async (redirect) => {
+  const onOpenChange = vi.fn();
+  await act(async () => {
+    root.render(<SignInDialog open initialMode="signup" redirectOnFinish={redirect} onOpenChange={onOpenChange} trigger="pricing_upgrade" />);
+  });
+  setInput('#signin-email', 'learner@example.com');
+  setInput('#signin-password', 'password123');
+  await submitForm();
+  expect(onOpenChange).not.toHaveBeenCalled();
+  setInput('#signin-otp', '123456');
+  await submitForm();
+  expect(onOpenChange).toHaveBeenCalledWith(false);
+  expect(document.body.textContent).not.toContain('A quick practice plan');
+  if (redirect) expect(testState.replace).toHaveBeenCalledWith('/dashboard');
+  else expect(testState.replace).not.toHaveBeenCalled();
+  const { track } = await import('../../lib/analytics');
+  expect(track).toHaveBeenCalledWith('signup_start', expect.objectContaining({ experiment: 'signup_email_first_v1', trigger: 'pricing_upgrade' }));
+  expect(track).toHaveBeenCalledWith('signup_verified', expect.objectContaining({ experiment: 'signup_email_first_v1', method: 'otp' }));
+});
+
+it('finishes auto-confirmed signup without optional onboarding or a verification detour', async () => {
+  testState.signUpWithPassword.mockResolvedValue({data:{user:{identities:[{}]},session:{access_token:'test'}},error:null});
+  const onOpenChange = vi.fn();
+  await act(async () => { root.render(<SignInDialog open redirectOnFinish={false} onOpenChange={onOpenChange} />); });
+  setInput('#signin-email', 'learner@example.com');setInput('#signin-password','password123');
+  await submitForm();
+  expect(onOpenChange).toHaveBeenCalledWith(false);
+  expect(testState.replace).not.toHaveBeenCalled();
+  expect(testState.verifyEmailOtp).not.toHaveBeenCalled();
+  expect(document.querySelector('#signin-otp')).toBeNull();
+});
+
+it('does not finish or navigate when mailbox verification rejects the session', async () => {
+  const onOpenChange = vi.fn();
+  await act(async () => {root.render(<SignInDialog open redirectOnFinish={false} onOpenChange={onOpenChange} />);});
+  setInput('#signin-email','learner@example.com');setInput('#signin-password','password123');await submitForm();
+  testState.verifyEmailOtp.mockResolvedValue({error:new Error('Verification did not match this email. Please request a new code.')});
+  setInput('#signin-otp','123456');await submitForm();
+  expect(onOpenChange).not.toHaveBeenCalled();expect(testState.replace).not.toHaveBeenCalled();
+  expect(document.querySelector('#signin-otp')).not.toBeNull();
 });

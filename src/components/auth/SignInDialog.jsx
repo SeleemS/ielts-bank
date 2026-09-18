@@ -5,51 +5,20 @@ import {
   X,
   Mail,
   ShieldCheck,
-  GraduationCap,
-  Briefcase,
-  Globe2,
-  Sparkles,
   KeyRound,
-  CalendarDays,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
-import { Checkbox } from '../../../components/ui/checkbox';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../lib/auth';
-import { getSupabase } from '../../../lib/supabase';
 import { track } from '../../lib/analytics';
 import { POST_AUTH_PATH } from '../../lib/authPaths';
 import { inter } from '../../lib/fonts';
 import { useDialogFocus } from '../../lib/dialogFocus';
-import {
-  defaultEmailOptIns,
-  emailConsentOptInRegion,
-  withEmailConsent,
-} from '../../lib/emailConsent';
-
-// Auth + onboarding dialog. Keeps the historical SignInDialog prop contract
-// (open / onOpenChange / title / description / trigger) so every existing
-// sign-in gate gets the new flow.
-//
-// Flow (all in this one modal until authentication is complete):
-//   1. account  — email + password; Create account (default) or Sign in.
-//   2. verify   — 6-digit emailed code (OTP only, no magic links; the
-//                 Supabase email templates must render {{ .Token }}).
-//   3. about    — goal, target band, and optional exam date saved to the
-//                 users row. Skippable.
-// Existing users signing in with a password skip 2–3 entirely. All successful
-// signup and sign-in paths finish on /dashboard, unless the caller passes
-// redirectOnFinish={false} to stay on the current page.
-
-const GOALS = [
-  { key: 'study', label: 'Study abroad', icon: GraduationCap },
-  { key: 'work', label: 'Work / visa', icon: Briefcase },
-  { key: 'immigration', label: 'Immigration', icon: Globe2 },
-  { key: 'general', label: 'General English', icon: Sparkles },
-];
-const BANDS = ['6.0', '6.5', '7.0', '7.5', '8.0+'];
+// Email and password -> verified email -> resume the caller's destination.
+// Optional profile details and email preferences remain in account settings.
+const SIGNUP_EXPERIMENT = 'signup_email_first_v1';
 
 function matchesAuthError(error, code, legacyMessagePattern) {
   return error?.code === code || legacyMessagePattern.test(error?.message || '');
@@ -73,35 +42,6 @@ function verificationError(error) {
   return message || 'That code didn’t work. Check the latest email or resend a fresh one.';
 }
 
-// Merge goal + target band + the two email opt-ins into the signed-in user's
-// row. Fails soft — the worst outcome is an unanswered onboarding question.
-async function saveProfile(userId, { goal, band, examDate, studyPlanEmails, marketingEmails }) {
-  if (!userId) return;
-  try {
-    const supabase = getSupabase();
-    const { data } = await supabase.from('users').select('prefs').eq('id', userId).maybeSingle();
-    let prefs = data?.prefs && typeof data.prefs === 'object' ? { ...data.prefs } : {};
-    if (goal) prefs.goal = goal;
-    // Records both answers, their timestamps, and the consent basis/region for
-    // the audit trail — including an explicit "no", which is what makes a
-    // later send defensible.
-    prefs = withEmailConsent(prefs, {
-      studyPlan: studyPlanEmails,
-      marketing: marketingEmails,
-      source: 'onboarding',
-    });
-    const patch = { prefs };
-    if (band) patch.target_band = parseFloat(band); // '8.0+' -> 8
-    if (examDate) {
-      patch.exam_date = examDate;
-      prefs.examDate = examDate;
-    }
-    await supabase.from('users').update(patch).eq('id', userId);
-  } catch {
-    /* non-fatal */
-  }
-}
-
 export default function SignInDialog({
   open,
   onOpenChange,
@@ -116,7 +56,6 @@ export default function SignInDialog({
 }) {
   const router = useRouter();
   const {
-    user,
     signUpWithPassword,
     signInWithPassword,
     verifyEmailOtp,
@@ -127,26 +66,14 @@ export default function SignInDialog({
 
   const [mounted, setMounted] = React.useState(false);
   const [mode, setMode] = React.useState('signup'); // signup | signin
-  const [step, setStep] = React.useState('account'); // account | verify | newpass | about
+  const [step, setStep] = React.useState('account'); // account | verify | newpass
   // What triggered the verify step — decides how "Resend code" re-sends and
-  // where verification continues: 'signup' -> confirmation email -> about,
+  // where verification continues: 'signup' -> confirmation email -> finish,
   // 'recovery' -> password reset code -> choose a new password.
   const [verifySource, setVerifySource] = React.useState('signup');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
   const [code, setCode] = React.useState('');
-  const [goal, setGoal] = React.useState('');
-  const [band, setBand] = React.useState('');
-  const [examDate, setExamDate] = React.useState('');
-  // Email opt-ins. Outside opt-in regions the study-plan box starts ticked
-  // (it is the service being signed up for); inside the EU/EEA/UK/CH — and
-  // whenever geo is unknown — nothing is pre-ticked. Marketing is never
-  // pre-ticked anywhere.
-  const [optInRegion, setOptInRegion] = React.useState(true);
-  const [studyPlanEmails, setStudyPlanEmails] = React.useState(false);
-  const [marketingEmails, setMarketingEmails] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState('');
   const [notice, setNotice] = React.useState('');
@@ -173,15 +100,8 @@ export default function SignInDialog({
   }, [onOpenChange, redirectOnFinish, router]);
 
   const closeDialog = React.useCallback(() => {
-    // Reaching onboarding means signup has already produced a valid session.
-    // Closing or skipping this optional step must still honor the dashboard-
-    // first destination.
-    if (step === 'about') {
-      finishStandardAuth();
-      return;
-    }
     onOpenChange?.(false);
-  }, [step, finishStandardAuth, onOpenChange]);
+  }, [onOpenChange]);
 
   useDialogFocus({
     active: mounted && open,
@@ -203,14 +123,6 @@ export default function SignInDialog({
       setVerifySource('signup');
       setPassword('');
       setCode('');
-      setGoal('');
-      setBand('');
-      setExamDate('');
-      const region = emailConsentOptInRegion();
-      const defaults = defaultEmailOptIns(region);
-      setOptInRegion(region);
-      setStudyPlanEmails(defaults.studyPlan);
-      setMarketingEmails(defaults.marketing);
       setBusy(false);
       setErrorMsg('');
       setNotice('');
@@ -240,27 +152,17 @@ export default function SignInDialog({
 
   const close = closeDialog;
 
-  // "seleem shaalan" -> "Seleem Shaalan" (hyphens/apostrophes kept intact).
-  const titleCase = (value) =>
-    value.trim().replace(/\S+/g, (word) => word.charAt(0).toUpperCase() + word.slice(1));
-
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
     const trimmed = email.trim();
-    const first = titleCase(firstName);
-    const last = titleCase(lastName);
-    if (!trimmed || !password || (mode === 'signup' && (password.length < 8 || !first || !last))) return;
+    if (!trimmed || !password || (mode === 'signup' && password.length < 8)) return;
     if (!beginAuth()) return;
     setErrorMsg('');
     setNotice('');
     try {
       if (mode === 'signup') {
-        track('signup_start', { method: 'password', trigger, signed_in: false });
-        const { data, error } = await signUpWithPassword(trimmed, password, {
-          full_name: `${first} ${last}`,
-          first_name: first,
-          last_name: last,
-        });
+        track('signup_start', { method: 'password', trigger, signed_in: false, experiment: SIGNUP_EXPERIMENT });
+        const { data, error } = await signUpWithPassword(trimmed, password);
         if (error) {
           setErrorMsg(error.message || 'Could not create your account. Please try again.');
           return;
@@ -274,8 +176,9 @@ export default function SignInDialog({
         }
         // Some projects auto-confirm; if a session exists, skip verification.
         if (data?.session) {
-          track('signup_verified', { trigger, method: 'auto' });
-          setStep('about');
+          track('signup_verified', { trigger, method: 'auto', experiment: SIGNUP_EXPERIMENT });
+          setStep('account');
+          finishStandardAuth();
           return;
         }
         setVerifySource('signup');
@@ -340,8 +243,9 @@ export default function SignInDialog({
         setStep('newpass');
         return;
       }
-      track('signup_verified', { trigger, method: 'otp' });
-      setStep('about');
+      track('signup_verified', { trigger, method: 'otp', experiment: SIGNUP_EXPERIMENT });
+      setStep('account');
+      finishStandardAuth();
     } finally {
       endAuth();
     }
@@ -406,30 +310,6 @@ export default function SignInDialog({
     }
   };
 
-  const handleAboutSubmit = async (skipped) => {
-    setBusy(true);
-    try {
-      // Skipping stores nothing at all — a pre-ticked box the user never saw
-      // through to a submit is not consent.
-      if (!skipped) {
-        await saveProfile(user?.id, { goal, band, examDate, studyPlanEmails, marketingEmails });
-      }
-      track('onboarding_answered', {
-        trigger,
-        skipped: Boolean(skipped),
-        goal: skipped ? null : goal || null,
-        target_band: skipped ? null : band || null,
-        exam_date: skipped ? null : examDate || null,
-        study_plan_emails: skipped ? null : studyPlanEmails,
-        marketing_emails: skipped ? null : marketingEmails,
-        consent_basis: optInRegion ? 'opt_in' : 'opt_out',
-      });
-    } finally {
-      setBusy(false);
-      finishStandardAuth();
-    }
-  };
-
   const header = (icon, heading, sub) => (
     <div className="mb-5 flex flex-col gap-1.5 text-left">
       <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/5 ring-1 ring-primary/10">
@@ -441,15 +321,6 @@ export default function SignInDialog({
       <p className="text-sm text-muted-foreground">{sub}</p>
     </div>
   );
-
-  const chip = (selected) =>
-    cn(
-      'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
-      'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-      selected
-        ? 'border-accent bg-accent/10 text-foreground'
-        : 'border-input text-muted-foreground hover:border-accent/50 hover:text-foreground'
-    );
 
   let body;
   if (step === 'verify') {
@@ -553,122 +424,6 @@ export default function SignInDialog({
         </form>
       </>
     );
-  } else if (step === 'about') {
-    body = (
-      <>
-        {header(
-          <Sparkles className="h-5 w-5 text-primary" />,
-          'A quick practice plan',
-          'Tell us your goal and deadline so we can shape the right next step.'
-        )}
-        <div className="flex flex-col gap-4">
-          <div>
-            <p className="mb-2 text-sm font-semibold text-foreground">What are you preparing for?</p>
-            <div className="grid grid-cols-2 gap-2">
-              {GOALS.map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  type="button"
-                  data-dialog-initial-focus={key === GOALS[0].key ? '' : undefined}
-                  onClick={() => setGoal(key)}
-                  className={chip(goal === key)}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-semibold text-foreground">Target band score?</p>
-            <div className="flex flex-wrap gap-2">
-              {BANDS.map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => setBand(b)}
-                  className={cn(chip(band === b), 'min-w-[3.5rem] justify-center tabular-nums')}
-                >
-                  {b}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="onboarding-exam-date">When is your test?</Label>
-            <div className="relative mt-2">
-              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="onboarding-exam-date"
-                type="date"
-                value={examDate}
-                min={new Date().toISOString().slice(0, 10)}
-                onChange={(event) => setExamDate(event.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setExamDate('')}
-              className="mt-2 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              Not booked yet
-            </button>
-          </div>
-          <div className="flex flex-col gap-3 rounded-lg border border-input p-3">
-            <label
-              htmlFor="onboarding-study-plan-emails"
-              className="flex cursor-pointer items-start gap-2.5 text-sm text-foreground"
-            >
-              <Checkbox
-                id="onboarding-study-plan-emails"
-                className="mt-0.5"
-                checked={studyPlanEmails}
-                onCheckedChange={setStudyPlanEmails}
-              />
-              <span>
-                Send me a study plan for my exam date
-                <span className="block text-xs text-muted-foreground">
-                  Countdown, weekly progress, and streak reminders. Stop any time in one click.
-                </span>
-              </span>
-            </label>
-            <label
-              htmlFor="onboarding-marketing-emails"
-              className="flex cursor-pointer items-start gap-2.5 text-sm text-foreground"
-            >
-              <Checkbox
-                id="onboarding-marketing-emails"
-                className="mt-0.5"
-                checked={marketingEmails}
-                onCheckedChange={setMarketingEmails}
-              />
-              <span>
-                Tips and offers by email
-                <span className="block text-xs text-muted-foreground">
-                  Occasional IELTS guides and product offers. Separate from your study plan.
-                </span>
-              </span>
-            </label>
-          </div>
-          <Button
-            variant="accent"
-            className="w-full"
-            disabled={busy || (!goal && !band && !examDate && !studyPlanEmails && !marketingEmails)}
-            onClick={() => handleAboutSubmit(false)}
-          >
-            {busy ? 'Saving…' : 'Start practising'}
-          </Button>
-          <button
-            type="button"
-            onClick={() => handleAboutSubmit(true)}
-            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Skip for now
-          </button>
-        </div>
-      </>
-    );
   } else {
     // account step
     body = (
@@ -684,38 +439,6 @@ export default function SignInDialog({
           </p>
         )}
         <form onSubmit={handleAccountSubmit} className="flex flex-col gap-3">
-          {mode === 'signup' && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="signup-first-name">First name</Label>
-                <Input
-                  id="signup-first-name"
-                  type="text"
-                  autoComplete="given-name"
-                  autoCapitalize="words"
-                  required
-                  placeholder="First name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  disabled={busy}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="signup-last-name">Last name</Label>
-                <Input
-                  id="signup-last-name"
-                  type="text"
-                  autoComplete="family-name"
-                  autoCapitalize="words"
-                  required
-                  placeholder="Last name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  disabled={busy}
-                />
-              </div>
-            </div>
-          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="signin-email">Email</Label>
             <Input
@@ -758,7 +481,7 @@ export default function SignInDialog({
               || !email.trim()
               || !password
               || (mode === 'signup'
-                && (password.length < 8 || !firstName.trim() || !lastName.trim()))
+                && password.length < 8)
             }
           >
             {busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Sign in'}

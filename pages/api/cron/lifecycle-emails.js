@@ -481,14 +481,22 @@ export async function recipientAllowsMarketing(admin, email) {
 // The recipient's stored email prefs. Queue rows carry user_id for account
 // holders; newsletter-only recipients resolve by email. A missing row means
 // "never answered", which lib/emailPrefs.js resolves per type.
-export async function recipientEmailPrefs(admin, row) {
-  const base = admin.from('users').select('prefs');
+async function recipientEmailProfile(admin, row) {
+  const base = admin.from('users').select('prefs, created_at');
   const scoped = row.user_id
     ? base.eq('id', row.user_id)
     : base.eq('email', String(row.recipient_email || '').trim().toLowerCase());
   const { data, error } = await scoped.maybeSingle();
   if (error) throw error;
-  return data?.prefs && typeof data.prefs === 'object' ? data.prefs : null;
+  return {
+    prefs: data?.prefs && typeof data.prefs === 'object' ? data.prefs : null,
+    accountCreatedAt: data?.created_at || null,
+  };
+}
+
+// Preserve the prefs-only helper contract for callers outside the send gate.
+export async function recipientEmailPrefs(admin, row) {
+  return (await recipientEmailProfile(admin, row)).prefs;
 }
 
 // Consent decision for one queued email. The newsletter table is only read
@@ -497,11 +505,11 @@ export async function recipientEmailPrefs(admin, row) {
 export async function lifecycleGateFor(admin, row) {
   const pref = emailPrefFor(row.email_type);
   if (!pref) return lifecycleEmailAllowed(row.email_type, {});
-  const prefs = await recipientEmailPrefs(admin, row);
-  const decision = lifecycleEmailAllowed(row.email_type, { prefs });
+  const { prefs, accountCreatedAt } = await recipientEmailProfile(admin, row);
+  const decision = lifecycleEmailAllowed(row.email_type, { prefs, accountCreatedAt });
   if (decision.allowed || decision.reason !== 'recipient-not-subscribed') return decision;
   const newsletterSubscribed = await recipientAllowsMarketing(admin, row.recipient_email);
-  return lifecycleEmailAllowed(row.email_type, { prefs, newsletterSubscribed });
+  return lifecycleEmailAllowed(row.email_type, { prefs, newsletterSubscribed, accountCreatedAt });
 }
 
 export async function reclaimStaleDeliveries(admin, now = new Date()) {

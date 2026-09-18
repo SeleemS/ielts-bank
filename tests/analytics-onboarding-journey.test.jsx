@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Regression pin for the Jul 2026 "analytics dies after onboarding" incident:
 // walks the real signup-modal journey (signin gate on /, auto-confirmed
-// signup, onboarding answered, redirect to /dashboard) with the REAL
+// signup, immediate verified completion, redirect to /dashboard) with the REAL
 // analytics, consent, telemetry, and dialog modules, then asserts the client
 // event stream — delegated clicks, direct track(), and the session heartbeat —
 // keeps flowing after the modal closes.
@@ -60,7 +60,7 @@ function trackBodies(fetchMock) {
     .map(([, options]) => JSON.parse(options.body));
 }
 
-describe('client analytics survives the onboarding modal journey', () => {
+describe('client analytics survives the signup modal journey', () => {
   let container;
   let root;
   let fetchMock;
@@ -92,16 +92,14 @@ describe('client analytics survives the onboarding modal journey', () => {
     delete window.gtag;
   });
 
-  it('keeps tracking after signup + onboarding completes', async () => {
+  it('keeps tracking after email-first signup finishes immediately', async () => {
     testState.signUpWithPassword.mockResolvedValue({
       data: { user: { id: 'user-1', identities: [{}] }, session: { access_token: 'tok' } },
       error: null,
     });
 
-    let setOpenExternal;
     function App() {
       const [open, setOpen] = React.useState(true);
-      setOpenExternal = setOpen;
       return (
         <>
           <InteractionTelemetry />
@@ -129,12 +127,12 @@ describe('client analytics survives the onboarding modal journey', () => {
         input.dispatchEvent(new Event('input', { bubbles: true }));
       });
     };
-    setInput('#signup-first-name', 'Test');
-    setInput('#signup-last-name', 'User');
+    expect(document.querySelector('#signup-first-name')).toBeNull();
+    expect(document.querySelector('#signup-last-name')).toBeNull();
     setInput('#signin-email', 'test@example.com');
     setInput('#signin-password', 'password123');
 
-    // Submit -> auto-confirm session -> lands on the "about" step
+    // Submit -> auto-confirm session -> finish immediately without optional onboarding
     await act(async () => {
       document
         .querySelector('[role="dialog"] form')
@@ -144,25 +142,15 @@ describe('client analytics survives the onboarding modal journey', () => {
     testState.user = { id: 'user-1' };
     setAnalyticsUser('user-1', 'tok');
 
-    // Answer onboarding: pick a goal, then "Start practising"
-    const goalButton = [...document.querySelectorAll('[role="dialog"] button')].find(
-      (b) => b.textContent.includes('Study abroad')
-    );
-    expect(goalButton).toBeTruthy();
-    await act(async () => {
-      goalButton.click();
-      await Promise.resolve();
-    });
-    const startButton = [...document.querySelectorAll('[role="dialog"] button')].find(
-      (b) => b.textContent.includes('Start practising')
-    );
-    await act(async () => {
-      startButton.click();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    expect(trackBodies(fetchMock).map((b) => b.event)).toContain('onboarding_answered');
+    expect(testState.signUpWithPassword).toHaveBeenCalledWith('test@example.com', 'password123');
+    const signupEvents = trackBodies(fetchMock);
+    expect(signupEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({ event: 'signup_start', experiment: 'signup_email_first_v1' }),
+      expect.objectContaining({ event: 'signup_verified', experiment: 'signup_email_first_v1', method: 'auto' }),
+    ]));
+    expect(signupEvents.map((body) => body.event)).not.toContain('onboarding_answered');
+    expect(JSON.stringify(signupEvents)).not.toContain('test@example.com');
+    expect(JSON.stringify(signupEvents)).not.toContain('password123');
     expect(testState.replace).toHaveBeenCalledWith('/dashboard');
     expect(document.querySelector('[role="dialog"]')).toBeNull();
 

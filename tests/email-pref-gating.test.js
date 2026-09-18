@@ -66,7 +66,7 @@ const CASES = [
 
 describe('lifecycleEmailAllowed', () => {
   it.each(CASES)('%s with %o (newsletter: %s) -> allowed %s', (type, prefs, subscribed, expected) => {
-    expect(lifecycleEmailAllowed(type, { prefs, newsletterSubscribed: subscribed }).allowed).toBe(
+    expect(lifecycleEmailAllowed(type, { prefs, newsletterSubscribed: subscribed, accountCreatedAt: '2026-09-01T00:00:00Z' }).allowed).toBe(
       expected
     );
   });
@@ -136,14 +136,14 @@ describe('unsubscribe link per email type', () => {
 // The cron-side resolver: it must read prefs first and only fall back to the
 // newsletter table when the prefs are silent.
 describe('lifecycleGateFor', () => {
-  function admin({ prefs = null, subscribed = false, onUsers = () => {} } = {}) {
+  function admin({ prefs = null, subscribed = false, onUsers = () => {}, accountCreatedAt = '2026-09-01T00:00:00Z' } = {}) {
     return {
       from(table) {
         if (table === 'users') {
           onUsers();
           return {
             select: () => ({
-              eq: () => ({ maybeSingle: async () => ({ data: prefs ? { prefs } : null, error: null }) }),
+              eq: () => ({ maybeSingle: async () => ({ data: { prefs, created_at: accountCreatedAt }, error: null }) }),
             }),
           };
         }
@@ -198,11 +198,40 @@ describe('lifecycleGateFor', () => {
     });
   });
 
+  it('uses the database account date to deny new unanswered study-plan recipients', async () => {
+    const gate = await lifecycleGateFor(admin({ subscribed: true, accountCreatedAt: '2026-09-18T22:00:00Z' }), row);
+    expect(gate).toMatchObject({ allowed: false, reason: 'study-plan-consent-required' });
+  });
+
   it('keeps sending the exam countdown to legacy accounts that set a date', async () => {
     const gate = await lifecycleGateFor(admin({ subscribed: false }), {
       ...row,
       email_type: 'exam_countdown',
     });
     expect(gate).toMatchObject({ allowed: true, reason: 'legacy-service-basis' });
+  });
+});
+
+
+describe('deferred onboarding study-plan consent', () => {
+  const types = Object.entries(LIFECYCLE_EMAIL_GATES).filter(([, gate]) => gate.pref === STUDY_PLAN_PREF).map(([type]) => type);
+  it.each(types)('%s requires an explicit answer for the new cohort', (type) => {
+    const context = { accountCreatedAt: '2026-09-18T22:00:00Z', newsletterSubscribed: true };
+    expect(lifecycleEmailAllowed(type, { ...context, prefs: {} })).toMatchObject({ allowed: false, reason: 'study-plan-consent-required' });
+    expect(lifecycleEmailAllowed(type, { ...context, prefs: STUDY_ONLY }).allowed).toBe(true);
+    expect(lifecycleEmailAllowed(type, { ...context, prefs: NO }).allowed).toBe(false);
+  });
+  it.each([null, 'invalid-date'])('fails closed for unanswered study-plan prefs with unknown account date %s', (accountCreatedAt) => {
+    expect(lifecycleEmailAllowed('checkout_abandoned', { accountCreatedAt, newsletterSubscribed: true }).allowed).toBe(false);
+  });
+  it('preserves old-account service fallback right before the rollout boundary', () => {
+    expect(lifecycleEmailAllowed('checkout_abandoned', { accountCreatedAt: '2026-09-18T21:59:59Z' }).allowed).toBe(true);
+  });
+  it('keeps transactional and confirmed-newsletter marketing policies unchanged for new accounts', () => {
+    const context = { accountCreatedAt: '2026-09-19T00:00:00Z' };
+    expect(lifecycleEmailAllowed('welcome_signup', context).allowed).toBe(true);
+    expect(lifecycleEmailAllowed('welcome_purchase', context).allowed).toBe(true);
+    expect(lifecycleEmailAllowed('weekly_digest', { ...context, newsletterSubscribed: true }).allowed).toBe(true);
+    expect(lifecycleEmailAllowed('weekly_digest', context).allowed).toBe(false);
   });
 });
