@@ -635,11 +635,11 @@ export default function PricingPage() {
     const attribution = analyticsConsentGranted() && checkoutIntentRef.current
       ? { funnel_intent_id: checkoutIntentRef.current, funnel_version: FUNNEL_VERSION } : {};
     const record = (event, details = {}) => track(event, { sku, source: upgrade || 'pricing', funnel_version: FUNNEL_VERSION, ...attribution, ...details });
-    if (!resume) record('plan_select', { signed_in: Boolean(user) });
+    if (!resume) record('plan_select', { signed_in: Boolean(user && !user.is_anonymous) });
     else record('checkout_auth_completed');
     setError('');
     setErrorCode('');
-    if (!user) {
+    if (!user || user.is_anonymous) {
       setPendingSku(sku);
       record('checkout_auth_open');
       setSignInOpen(true);
@@ -693,11 +693,11 @@ export default function PricingPage() {
   }, [authHeader, country, offer, regionalPricing, upgrade, stage, returnTo, user]);
 
   React.useEffect(() => {
-    if (!user?.id || signInOpen || !pendingSku) return;
+    if (!user?.id || user.is_anonymous || signInOpen || !pendingSku) return;
     const sku = pendingSku;
     setPendingSku(null);
     void startCheckout(sku, { resume: true });
-  }, [pendingSku, signInOpen, startCheckout, user?.id]);
+  }, [pendingSku, signInOpen, startCheckout, user?.id, user?.is_anonymous]);
 
   return (
     <>

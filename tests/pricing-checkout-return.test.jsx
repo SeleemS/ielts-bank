@@ -366,6 +366,18 @@ describe('pricing authentication handoff', () => {
     expect(track).toHaveBeenCalledWith('checkout_request', expect.objectContaining({ funnel_intent_id: payload.funnel_intent_id }));
   });
 
+  it('lets an anonymous learner dismiss upgrade auth without a checkout retry loop', async () => {
+    testState.router = { isReady: true, query: {} };
+    testState.user = { id: 'anon-user', is_anonymous: true };
+    await renderPage();
+    await act(async () => { container.querySelector('button[aria-label="Choose Exam Pass plan"]').click(); });
+    const dialog = container.querySelector('[data-testid="pricing-auth-dialog"]');
+    expect(dialog).not.toBeNull();
+    await act(async () => { dialog.click(); });
+    expect(container.querySelector('[data-testid="pricing-auth-dialog"]')).toBeNull();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
   it('omits checkout attribution after an explicit analytics opt-out', async () => {
     window.__ieltsOptionalConsent = 'denied';
     testState.router = { isReady: true, query: {} };
