@@ -143,7 +143,7 @@ It was already set up on Aug 2 (key file `public/01984fdbff8e84fd2dcbf3a29275d30
   node scripts/seo/indexnow-submit.mjs /ielts-essay-bank /blog/new-post  # explicit URLs
   node scripts/seo/indexnow-submit.mjs --all                             # full resubmit (rarely)
   ```
-- `.github/workflows/indexnow.yml` runs it on every **successful Vercel Production `deployment_status`** event. It needs no secrets because the key is public. **Founder:** after merging, check the Actions tab once after the next deploy. If Vercel's GitHub deployment events are turned off, run the script by hand instead. Google ignores IndexNow; for Google, use the GSC steps below.
+- `.github/workflows/indexnow.yml` runs it on every **successful Vercel Production `deployment_status`** event. It diffs from the commit of the previous successful Production deployment (read via the GitHub deployments API; falls back to the deployed commit's first parent), so a deploy that ships several commits or a merge pings every changed URL, not just the last commit's. It needs no secrets because the key is public. **Founder:** after merging, check the Actions tab once after the next deploy. If Vercel's GitHub deployment events are turned off, run the script by hand instead. Google ignores IndexNow; for Google, use the GSC steps below.
 - **Run once after this branch deploys:** `node scripts/seo/indexnow-submit.mjs --all`, because every URL's canonical, links or status changed.
 
 ## 7. Core Web Vitals sanity (home, writing checker, reading question, blog post)

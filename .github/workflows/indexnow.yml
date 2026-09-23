@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  deployments: read
 
 jobs:
   indexnow:
@@ -27,9 +28,39 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.deployment.sha }}
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # deployment_status has no push `before`, and HEAD~1..HEAD misses every
+      # commit but the last when one deploy ships several (a fast-forward of a
+      # multi-commit branch). Diff against the commit of the previous successful
+      # Production deployment instead; fall back to the first parent (for a
+      # merge commit that is the full merged change) if none is found or it is
+      # not an ancestor (e.g. after a rollback).
+      - name: Find the previously deployed commit
+        id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_ID: ${{ github.event.deployment.id }}
+          CURRENT_SHA: ${{ github.event.deployment.sha }}
+        run: |
+          base=""
+          seen_current=""
+          rows=$(gh api "repos/${GITHUB_REPOSITORY}/deployments?environment=Production&per_page=50" \
+            --jq '.[] | "\(.id) \(.sha)"' || true)
+          while read -r id sha; do
+            [ -z "$id" ] && continue
+            if [ "$id" = "$CURRENT_ID" ]; then seen_current=1; continue; fi
+            [ -z "$seen_current" ] && continue
+            [ "$sha" = "$CURRENT_SHA" ] && continue
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${id}/statuses?per_page=1" --jq '.[0].state // ""' || true)
+            if [ "$state" = "success" ] || [ "$state" = "inactive" ]; then base="$sha"; break; fi
+          done <<< "$rows"
+          if [ -z "$base" ] || ! git merge-base --is-ancestor "$base" "$CURRENT_SHA" 2>/dev/null; then
+            base=$(git rev-parse "${CURRENT_SHA}^1")
+          fi
+          echo "Diffing ${base}..${CURRENT_SHA}"
+          echo "range=${base}..${CURRENT_SHA}" >> "$GITHUB_OUTPUT"
       - name: Submit changed URLs
-        run: node scripts/seo/indexnow-submit.mjs --git-range HEAD~1..HEAD --since yesterday
+        run: node scripts/seo/indexnow-submit.mjs --git-range "${{ steps.base.outputs.range }}" --since yesterday
