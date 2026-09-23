@@ -6,6 +6,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-dummy';
 const state = {
   limitResponse: { data: true, error: null },
   limitReject: null,
+  insertError: null,
   tableCalls: [],
 };
 
@@ -24,7 +25,7 @@ vi.mock('@supabase/supabase-js', () => ({
     from: (table) => ({
       insert: async (values) => {
         state.tableCalls.push({ operation: 'insert', table, values });
-        return { data: null, error: null };
+        return { data: null, error: state.insertError };
       },
     }),
   }),
@@ -76,8 +77,20 @@ describe('POST /api/track rate-limit outcomes', () => {
   beforeEach(() => {
     state.limitResponse = { data: true, error: null };
     state.limitReject = null;
+    state.insertError = null;
     state.tableCalls = [];
     vi.restoreAllMocks();
+  });
+
+  it('treats a retried beacon with a stored client_event_id as accepted', async () => {
+    state.insertError = { code: '23505', message: 'duplicate key value violates unique constraint' };
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(202);
+    expect(res.jsonBody).toEqual({ ok: true, duplicate: true });
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it('returns 503 when the limiter resolves with an infrastructure error', async () => {

@@ -139,6 +139,9 @@ export default async function handler(req, res) {
       occurred_at: occurredAt(body.occurred_at),
       props: safeProps(body),
     });
+    // A retried beacon reuses its client_event_id; the first copy is already
+    // stored, so the duplicate is an idempotent success rather than an outage.
+    if (error?.code === '23505') return res.status(202).json({ ok: true, duplicate: true });
     if (error) throw error;
     return res.status(202).json({ ok: true });
   } catch (error) {
