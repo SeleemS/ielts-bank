@@ -7,6 +7,7 @@ import {
   getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
+import { answerPageEligible, answersPath } from '../../lib/answerKeys';
 
 export default ListeningQuestion;
 
@@ -46,6 +47,8 @@ export async function getStaticProps({ params }) {
       passage,
       description,
       related,
+      // Link to the answer-key page only when one is published for this passage.
+      answersHref: answerPageEligible(passage) ? answersPath(SKILLS.listening, passage.slug) : null,
     },
     revalidate: 3600,
   };

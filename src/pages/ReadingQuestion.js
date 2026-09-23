@@ -5,7 +5,9 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import QuestionEngine from '../components/question/QuestionEngine';
 import RelatedPractice from '../components/RelatedPractice';
+import AnswerKeyLink from '../components/AnswerKeyLink';
 import { sanitizeHtml } from '../../lib/sanitize';
+import { practicePageTitle } from '../../lib/answerKeys';
 
 import { SITE_URL } from '../../lib/site';
 const PASSAGE_HTML_CLASS =
@@ -35,7 +37,7 @@ function ShareButton({ title, text }) {
   );
 }
 
-const ReadingQuestion = ({ id, passage, description, related = [] }) => {
+const ReadingQuestion = ({ id, passage, description, related = [], answersHref = null }) => {
   if (!passage) {
     return (
       <div className="min-h-screen bg-background">
@@ -48,9 +50,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
   }
 
   const { title, bodyHtml, groups, difficulty, slug, legacyId } = passage;
-  const pageTitle = title
-    ? `${title} | IELTS Reading Practice | IELTS-Bank`
-    : 'IELTS Reading Practice | IELTS-Bank';
+  const pageTitle = practicePageTitle(title, 'reading', Boolean(answersHref));
   const metaDescription =
     description || `Read and answer IELTS Reading questions for the passage: ${title}.`;
   // Canonicalise to the SAME URL the sitemap emits: the legacy Firestore id when
@@ -176,12 +176,19 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
                   durationSeconds={20 * 60}
                   module={passage.module || 'academic'}
                   stickyTopClass="-top-4 -mx-5 -mt-4 rounded-none border-x-0 border-t-0 shadow-sm"
+                  postSubmitContent={
+                    answersHref ? (
+                      <AnswerKeyLink href={answersHref} title={title} skill="reading" placement="results" />
+                    ) : null
+                  }
                 />
               </div>
             </div>
           </div>
 
           <RelatedPractice skill="reading" items={related} className="mt-10" />
+
+          <AnswerKeyLink href={answersHref} title={title} skill="reading" />
 
           <div className="mt-8 flex justify-center">
             <ShareButton title={title} text={`Check out this IELTS Reading test: ${title}`} />
