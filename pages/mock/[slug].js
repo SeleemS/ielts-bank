@@ -17,6 +17,7 @@ import { track } from '../../src/lib/analytics';
 import { buildUpgradeHref } from '../../lib/upgradeContext';
 
 import { getMockSeo } from '../../lib/mockSeo';
+import { MOCK_TEST_PAGES_INDEXABLE, robotsContent } from '../../lib/indexability';
 import {
   buildMockTestJsonLd,
   serializeJsonLd,
@@ -167,6 +168,9 @@ export default function MockTestPage({ mock }) {
       <Head>
         <title>{seo.title}</title>
         <meta name="description" content={seo.description} />
+        {/* Premium-gated shell with ~25 visible words: kept out of the index;
+            /mock-test is the page that ranks (lib/indexability.js). */}
+        <meta name="robots" content={robotsContent(MOCK_TEST_PAGES_INDEXABLE)} />
         <link rel="canonical" href={seo.canonical} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={seo.title} />

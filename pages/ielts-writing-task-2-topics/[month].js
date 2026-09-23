@@ -14,6 +14,7 @@ import {
   parseMonthSlug,
 } from '../../lib/task2Roundup';
 import { monthlyTask2Seo, TASK2_TOPICS_PATH } from '../../lib/task2TopicsSeo';
+import { robotsContent, task2MonthIndexable } from '../../lib/indexability';
 
 // Exact-duplicate prompts redirect to their kept twin (lib/questionUrls.js).
 const TASK2_PROMPTS = withoutRetiredDuplicates('writing', ALL_TASK2_PROMPTS);
@@ -69,7 +70,7 @@ function PromptList({ prompts }) {
   );
 }
 
-export default function Task2MonthlyRoundup({ roundup, seo, otherMonths }) {
+export default function Task2MonthlyRoundup({ roundup, seo, otherMonths, indexable = true }) {
   const copy = SOURCE_COPY[roundup.source];
   const { month } = roundup;
 
@@ -98,7 +99,7 @@ export default function Task2MonthlyRoundup({ roundup, seo, otherMonths }) {
       <Head>
         <title>{seo.title}</title>
         <meta name="description" content={seo.description} />
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content={robotsContent(indexable)} />
         <link rel="canonical" href={seo.canonical} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={seo.title} />
@@ -252,6 +253,9 @@ export async function getStaticProps({ params }) {
       roundup,
       seo: monthlyTask2Seo(roundup.month, roundup.totalCount),
       otherMonths,
+      // A past month with no new prompts duplicates its neighbour: noindex it
+      // (the sitemap applies the same rule).
+      indexable: task2MonthIndexable(roundup),
     },
     // The catalogue only changes on deploy, but a daily revalidate means the
     // "current month" page exists the day the calendar turns over.
