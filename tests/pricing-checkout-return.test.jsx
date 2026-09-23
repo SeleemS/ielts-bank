@@ -41,7 +41,7 @@ vi.mock('../src/components/Footer', () => ({
   default: () => React.createElement('footer'),
 }));
 vi.mock('../src/components/auth/SignInDialog', () => ({
-  default: ({ open, onOpenChange, redirectOnFinish }) =>
+  default: ({ open, onOpenChange, redirectOnFinish, title }) =>
     open
       ? React.createElement(
           'button',
@@ -49,14 +49,12 @@ vi.mock('../src/components/auth/SignInDialog', () => ({
             type: 'button',
             'data-testid': 'pricing-auth-dialog',
             'data-redirect-on-finish': String(redirectOnFinish),
+            'data-title': title,
             onClick: () => onOpenChange(false),
           },
           'Finish authentication'
         )
       : null,
-}));
-vi.mock('../src/components/question/WritingScoreReport', () => ({
-  default: () => React.createElement('div', null, 'Sample report'),
 }));
 vi.mock('../src/lib/auth', () => ({
   useAuth: () => ({
@@ -301,8 +299,12 @@ describe('pricing authentication handoff', () => {
     expect(container.textContent).toContain('$14.99');
     expect(container.textContent).toContain('60 live AI examiner minutes for your 30 days');
     expect(container.textContent).toContain('30 days · no subscription');
-    // Item 39: no fictitious anchors — nothing is struck through.
-    expect(container.querySelector('.line-through')).toBeNull();
+    // Item 39: no fictitious anchors — no price is struck through. The only
+    // strike-through allowed is a corrected sentence inside the sample report.
+    expect(container.querySelector('#plans .line-through')).toBeNull();
+    for (const node of container.querySelectorAll('.line-through')) {
+      expect(node.closest('#sample-report')).not.toBeNull();
+    }
   });
 
   it.each(['writing', 'speaking'])('only claims saved %s work when stage=saved', async (upgrade) => {
@@ -574,5 +576,70 @@ describe('checkout activation account ownership', () => {
     await act(async () => { resolveBuyerA({ ok: true, json: async () => ({ active: true }) }); });
     expect(container.textContent).not.toContain("You're in. Do this first:");
     expect(track).not.toHaveBeenCalledWith('purchase_success', expect.anything());
+  });
+});
+
+describe('pricing plan fit and clarity', () => {
+  const featuredName = () => {
+    const featured = [...container.querySelectorAll('#plans > *')].find((card) =>
+      card.className.includes('border-accent')
+    );
+    return featured?.querySelector('h2')?.textContent;
+  };
+  const pick = (label) =>
+    [...container.querySelectorAll('button[aria-pressed]')].find((b) => b.textContent === label);
+
+  it('highlights the plan that fits the chosen exam timeline without changing prices', async () => {
+    testState.router = { isReady: true, query: {} };
+    await renderPage();
+    expect(featuredName()).toBe('Exam Pass');
+
+    act(() => pick('In 1–3 months').click());
+    expect(featuredName()).toBe('Monthly');
+    expect(pick('In 1–3 months').getAttribute('aria-pressed')).toBe('true');
+    expect(container.textContent).toContain('Fits your test date');
+    expect(track).toHaveBeenCalledWith(
+      'pricing_timeline_select',
+      expect.objectContaining({ timeline: 'months', sku: 'monthly' })
+    );
+
+    act(() => pick('Not booked / 3+ months').click());
+    expect(featuredName()).toBe('Annual');
+    // Same three real prices, same checkout buttons in the same order.
+    expect(container.textContent).toContain('$14.99');
+    expect(container.textContent).toContain('$8.99');
+    expect(container.textContent).toContain('$49.99');
+    expect(
+      [...container.querySelectorAll('main button[aria-label]')].map((b) => b.getAttribute('aria-label'))
+    ).toEqual(['Choose Exam Pass plan', 'Choose Monthly plan', 'Choose Annual plan']);
+  });
+
+  it('shows plain per-day costs and plan-specific button labels', async () => {
+    testState.router = { isReady: true, query: {} };
+    await renderPage();
+    expect(container.textContent).toContain('About $0.50 a day');
+    expect(container.textContent).toContain('About $0.30 a day');
+    expect(container.textContent).toContain('About $0.14 a day');
+    expect(container.querySelector('button[aria-label="Choose Monthly plan"]').textContent).toContain('Start Monthly');
+    expect(container.querySelector('button[aria-label="Choose Annual plan"]').textContent).toContain('Get Annual');
+  });
+
+  it('puts the plan cards before the free-tier strip', async () => {
+    testState.router = { isReady: true, query: {} };
+    await renderPage();
+    const html = container.innerHTML;
+    expect(html.indexOf('id="plans"')).toBeGreaterThan(-1);
+    expect(html.indexOf('id="plans"')).toBeLessThan(html.indexOf('Free — $0, forever'));
+  });
+
+  it('restates the chosen plan in the sign-in step', async () => {
+    testState.router = { isReady: true, query: {} };
+    await renderPage();
+    await act(async () => {
+      container.querySelector('button[aria-label="Choose Exam Pass plan"]').click();
+    });
+    expect(
+      container.querySelector('[data-testid="pricing-auth-dialog"]').getAttribute('data-title')
+    ).toBe('Create your account to get the Exam Pass');
   });
 });

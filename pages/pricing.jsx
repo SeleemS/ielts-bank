@@ -25,7 +25,8 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import SignInDialog from '../src/components/auth/SignInDialog';
-import WritingScoreReport from '../src/components/question/WritingScoreReport';
+import SampleReportPreview from '../src/components/SampleReportPreview';
+import { TIMELINES, dailyCost, recommendedSku, timelineByKey, timelineFromExamDays } from '../src/lib/planFit';
 import { FaqSection, faqJsonLdFor } from '../src/components/SectionLanding';
 import { useAuth } from '../src/lib/auth';
 import { usePlan } from '../src/lib/usePlan';
@@ -177,45 +178,15 @@ const PRICING_FAQS = [
   },
 ];
 
-const SAMPLE_FEEDBACK = {
-  overallBand: 6.5,
-  wordCount: 268,
-  criteria: {
-    taskResponse: {
-      band: 6.5,
-      strengths: ['Your position is clear from the introduction.'],
-      improvements: ['Develop the remote-work example with a specific consequence.'],
-    },
-    coherenceCohesion: {
-      band: 7,
-      strengths: ['Paragraphing creates a logical progression.'],
-      improvements: ['Reduce repeated use of “Furthermore”.'],
-    },
-    lexicalResource: {
-      band: 6,
-      strengths: ['Topic vocabulary such as “commute” is accurate.'],
-      improvements: ['Replace repeated uses of “important” with precise alternatives.'],
-    },
-    grammaticalRange: {
-      band: 6.5,
-      strengths: ['You use a useful mix of simple and complex sentences.'],
-      improvements: ['Check articles and prepositions in complex clauses.'],
-    },
-  },
-  summary:
-    'A well-organised response with a clear position. More specific examples and more precise vocabulary would move it toward Band 7.',
-  improvements: [
-    'Add a concrete example to each main idea.',
-    'Vary repeated linking phrases.',
-    'Proofread articles and prepositions.',
-  ],
-  correctedExamples: [
-    {
-      original: 'People can do a decision about their work.',
-      suggestion: 'People can make an informed decision about their work.',
-    },
-  ],
-};
+// The sign-in dialog restates the plan the visitor just chose, so the account
+// step reads as part of buying it rather than a detour.
+function signInTitle(sku, regionalPricing) {
+  const plan = sku ? planPricing(sku, regionalPricing) : null;
+  if (!plan) return 'Sign in to upgrade';
+  return plan.isOneTime
+    ? 'Create your account to get the Exam Pass'
+    : `Create your account to start ${plan.name} Pro`;
+}
 
 function daysUntil(value) {
   if (!value) return null;
@@ -478,6 +449,9 @@ export default function PricingPage() {
   const checkoutBusyRef = React.useRef(false);
   const [pendingSku, setPendingSku] = React.useState(null);
   const [examDate, setExamDate] = React.useState(null);
+  // Exam timeline chosen on the page (or derived from a saved exam date). It
+  // only changes which card is highlighted — never a price or a checkout.
+  const [timeline, setTimeline] = React.useState(null);
   const [activation, setActivation] = React.useState('idle');
   const [activationOwner, setActivationOwner] = React.useState('');
   const [answeredCount, setAnsweredCount] = React.useState(0);
@@ -515,7 +489,8 @@ export default function PricingPage() {
 
   // The one-time Exam Pass leads every region; all plans retain their prices.
   const planKeys = planOrder(regionalPricing);
-  const featuredSku = highlightedSku(regionalPricing);
+  const chosenTimeline = timelineByKey(timeline);
+  const featuredSku = chosenTimeline ? recommendedSku(timeline) : highlightedSku(regionalPricing);
   const plans = planKeys.map((sku) => planPricing(sku, regionalPricing));
   const monthlyPricing = planPricing('monthly', regionalPricing);
   const annualPricing = planPricing('annual', regionalPricing);
@@ -525,6 +500,13 @@ export default function PricingPage() {
     monthlyPricing && annualPricing
       ? Math.round((1 - annualPricing.price / (monthlyPricing.price * 12)) * 100)
       : 0;
+
+  // A saved exam date pre-selects the matching timeline once, unless the
+  // visitor has already picked one on the page.
+  React.useEffect(() => {
+    if (examDays == null) return;
+    setTimeline((current) => current || timelineFromExamDays(examDays));
+  }, [examDays]);
 
   React.useEffect(() => {
     // Refine the promo state on the client so an expired promo hides its chrome.
@@ -921,37 +903,39 @@ export default function PricingPage() {
               </div>
             ) : null}
 
-            {/* Free tier stays a single compact strip so the paid grid is
-                exactly three cards. The full Free vs Pro table is below. */}
-            <div className="mx-auto max-w-5xl rounded-2xl border border-border bg-muted/40 p-5">
-              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                <div>
-                  <p className="text-sm font-bold text-foreground">Free — $0, forever</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {FREE_INCLUDES.join(' · ')}
-                  </p>
-                </div>
-                <Button asChild variant="outline" className="shrink-0">
-                  <NextLink href="/readingquestion" className="no-underline">Keep practising free</NextLink>
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Every plan below unlocks the same Pro tier — only the billing differs.
+            {/* Lead with the plan that fits the exam timeline. */}
+            <div className="mx-auto max-w-3xl text-center">
+              <p id="timeline-label" className="text-sm font-semibold text-foreground">
+                When is your IELTS test?
               </p>
-              <ul className="mx-auto mt-3 flex max-w-4xl flex-wrap justify-center gap-2">
-                {PRO_INCLUDES.map((item) => (
-                  <li
-                    key={item}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground"
+              <div
+                role="group"
+                aria-labelledby="timeline-label"
+                className="mt-3 inline-flex flex-wrap justify-center gap-2"
+              >
+                {TIMELINES.map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    aria-pressed={timeline === t.key}
+                    onClick={() => {
+                      setTimeline(t.key);
+                      track('pricing_timeline_select', { timeline: t.key, sku: t.sku, source: upgrade || 'pricing' });
+                    }}
+                    className={cn(
+                      'rounded-full border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      timeline === t.key
+                        ? 'border-accent bg-accent text-accent-foreground'
+                        : 'border-border bg-card text-foreground hover:border-accent/50'
+                    )}
                   >
-                    <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
-                    {item}
-                  </li>
+                    {t.label}
+                  </button>
                 ))}
-              </ul>
+              </div>
+              <p className="mt-2 min-h-[1.25rem] text-sm text-muted-foreground" aria-live="polite">
+                {chosenTimeline ? chosenTimeline.why : 'Every plan unlocks the same Pro features — only the billing differs.'}
+              </p>
             </div>
 
             <div
@@ -974,7 +958,7 @@ export default function PricingPage() {
                   >
                     {featured ? (
                       <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
-                        30 days · no subscription
+                        {chosenTimeline ? 'Fits your test date' : '30 days · no subscription'}
                       </span>
                     ) : null}
                     <CardContent className="flex h-full flex-col p-6 pt-7">
@@ -1003,6 +987,11 @@ export default function PricingPage() {
                           ? `one-time · ${plan.days} days of Pro`
                           : `${plan.cadence}${plan.perMonth ? ` · ≈ ${money(plan.perMonth)}/mo` : ''}`}
                       </p>
+                      {dailyCost(plan) ? (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          About {money(dailyCost(plan))} a day
+                        </p>
+                      ) : null}
                       {plan.promo ? (
                         <p className="mt-2 inline-flex w-fit items-center rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 dark:bg-amber-500/15 dark:text-amber-200">
                           {money(plan.price)} with the {PROMO.name} until{' '}
@@ -1050,7 +1039,13 @@ export default function PricingPage() {
                         ) : (
                           <Sparkles className="h-4 w-4" />
                         )}
-                        {alreadyOwned ? 'Exam Pass active' : plan.isOneTime ? 'Get 30-day Exam Pass' : 'Choose this plan'}
+                        {alreadyOwned
+                          ? 'Exam Pass active'
+                          : plan.isOneTime
+                            ? 'Get 30-day Exam Pass'
+                            : plan.sku === 'annual'
+                              ? 'Get Annual'
+                              : 'Start Monthly'}
                       </Button>
                       <p className="mt-2 text-center text-xs text-muted-foreground">
                         14-day money-back guarantee ·{' '}
@@ -1061,6 +1056,40 @@ export default function PricingPage() {
                 );
               })}
             </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Every plan above unlocks the same Pro tier:
+              </p>
+              <ul className="mx-auto mt-3 flex max-w-4xl flex-wrap justify-center gap-2">
+                {PRO_INCLUDES.map((item) => (
+                  <li
+                    key={item}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground"
+                  >
+                    <Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Free tier stays a single compact strip so the paid grid is
+                exactly three cards. The full Free vs Pro table is below. */}
+            <div className="mx-auto mt-8 max-w-5xl rounded-2xl border border-border bg-muted/40 p-5">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-sm font-bold text-foreground">Free — $0, forever</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {FREE_INCLUDES.join(' · ')}
+                  </p>
+                </div>
+                <Button asChild variant="outline" className="shrink-0">
+                  <NextLink href="/readingquestion" className="no-underline">Keep practising free</NextLink>
+                </Button>
+              </div>
+            </div>
+
           </div>
         )}
 
@@ -1110,18 +1139,17 @@ export default function PricingPage() {
           ) : null}
         </section>
 
-        <section id="sample-report" className="mx-auto mt-20 max-w-4xl scroll-mt-28">
+        <SampleReportPreview
+          className="mx-auto mt-20 max-w-4xl"
+          title="What a full Pro report looks like"
+          intro="Illustrative Writing report, not a learner testimonial or a promised score. Your free sample includes the sections marked Free; Pro adds the rest to every essay you score next. Buying Pro does not unlock an old free sample."
+        >
           <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">See the product</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">What your full feedback looks like</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Illustrative Writing report, not a learner testimonial or a promised score. Full reports apply to your next scored essays; buying Pro does not unlock an old free sample.
-            </p>
+            <a href="#plans" className="text-sm font-semibold text-accent underline underline-offset-4">
+              Back to plans
+            </a>
           </div>
-          <div className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7">
-            <WritingScoreReport task={2} result={SAMPLE_FEEDBACK} sample />
-          </div>
-        </section>
+        </SampleReportPreview>
 
         <section className="mx-auto mt-20 max-w-4xl">
           <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">Free practice or Pro feedback?</h2>
@@ -1221,8 +1249,8 @@ export default function PricingPage() {
       <SignInDialog
         open={signInOpen}
         onOpenChange={setSignInOpen}
-        title="Sign in to upgrade"
-        description="Create your account or sign in — you’ll stay right on this page."
+        title={signInTitle(pendingSku, regionalPricing)}
+        description="Next is secure Stripe checkout, backed by a 14-day money-back guarantee. You’ll stay right on this page."
         trigger="pricing_upgrade"
         redirectOnFinish={false}
       />
