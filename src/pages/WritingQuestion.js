@@ -397,7 +397,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
                             href={`/ielts-essay-bank/${e.slug}`}
                             className="inline-flex rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground no-underline hover:border-accent hover:text-accent"
                           >
-                            Band {formatBand(e.band)} sample + examiner comments
+                            Band {formatBand(e.band)} sample + examiner-style comments
                           </NextLink>
                         </li>
                       ))}

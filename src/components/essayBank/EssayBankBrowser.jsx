@@ -80,7 +80,7 @@ export default function EssayBankBrowser({ essays = [], catalogue = [] }) {
         bandGroup: e.bandGroup,
         bandLabel: `Band ${formatBand(e.band)}`,
         summary: e.opening,
-        meta: `${e.wordCount} words · examiner comments`,
+        meta: `${e.wordCount} words · examiner-style comments`,
       })),
       ...catalogue.map((c) => ({
         key: `model:${c.slug}`,

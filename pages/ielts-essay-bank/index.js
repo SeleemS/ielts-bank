@@ -190,7 +190,7 @@ export default function EssayBankPage({ essays, comparisonSets, catalogue, count
                 <p className="text-xs font-semibold uppercase tracking-wide text-accent">Quick answer</p>
                 <p className="mt-2 leading-relaxed text-foreground">
                   This essay bank has {counts.catalogue} Band 8–9 model answers (one on every Writing practice
-                  question) plus {counts.essays} examiner-annotated samples that answer the same prompt at Band 6,
+                  question) plus {counts.essays} examiner-style annotated samples that answer the same prompt at Band 6,
                   7 and 8, so you can see exactly what separates the bands. Write your answer first, compare it
                   criterion by criterion, then borrow patterns — not paragraphs.
                 </p>
