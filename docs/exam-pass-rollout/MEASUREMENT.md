@@ -89,3 +89,12 @@ session counts. The historical event name and `sku=exam_pass` label identify the
 offer surface, not exclusive purchase intent. A later Monthly purchase must not
 be classified as a failed comparison-offer conversion. These ordered associations
 remain observational and may overlap between versions; they are not causal lift.
+
+## September 23 offer revision (`locked_value_v3`)
+
+The post-sample offer (`src/components/ExamPassOffer.jsx`) now names the value
+the free payload withheld for that essay (held-back correction count, Band 8
+rewrite), shows the per-day cost of the pass, the 14-day money-back guarantee,
+and a single primary action ("Continue to the Exam Pass"). The Writing checker
+no longer shows a competing "Score another draft" button under a free result.
+Sequential rollout label only — same interpretation rules as above.

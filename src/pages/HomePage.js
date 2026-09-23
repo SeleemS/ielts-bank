@@ -30,6 +30,7 @@ import NewsletterSignup from '../components/NewsletterSignup';
 import { track } from '../lib/analytics';
 import { saveWritingDraft } from '../lib/writingDraft';
 import DashboardTeaser from '../components/home/DashboardTeaser';
+import SampleReportPreview from '../components/SampleReportPreview';
 
 import { SITE_URL } from '../../lib/site';
 const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
@@ -291,9 +292,19 @@ function HeroEssayBox() {
         </Button>
       </div>
 
+      <ul className="mt-4 grid gap-1.5 text-xs font-medium text-slate-200 sm:grid-cols-3">
+        {['Band on all 4 criteria', 'One corrected sentence', 'Free account — no card'].map((item) => (
+          <li key={item} className="inline-flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
+            {item}
+          </li>
+        ))}
+      </ul>
       <p className="mt-3 text-xs leading-relaxed text-slate-300">
-        Free means one AI Writing report per account — a single lifetime sample. You sign
-        in when you submit; no card is asked for.
+        One free AI Writing report per account. You sign in when you submit.{' '}
+        <a href="#sample-report" className="font-semibold text-emerald-300 underline underline-offset-2 hover:text-white">
+          See a sample report
+        </a>
       </p>
     </form>
   );
@@ -356,46 +367,40 @@ const HomePage = ({ counts = {} }) => {
               }}
             />
             <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-              <div className="mx-auto max-w-3xl text-center">
+              <div className="mx-auto max-w-4xl text-center">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-emerald-300">
                   <GraduationCap className="h-3.5 w-3.5" />
-                  IELTS practice, feedback and progress
+                  Free AI IELTS Writing check
                 </span>
-                <h1 className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
-                  Prepare for IELTS with
-                  <span className="text-emerald-400"> feedback you can use</span>
+                <h1 className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.25rem]">
+                  Know your IELTS Writing band{' '}
+                  <span className="text-emerald-400 sm:block">and exactly what to fix</span>
                 </h1>
                 <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
-                  Practise with timed tests, get AI feedback on your Writing and Speaking,
-                  and track your progress. Start with a free Writing sample below.
+                  Paste a Task 1 or Task 2 answer. An AI examiner marks it on the four
+                  official criteria in under a minute and shows the sentences holding your
+                  score back. Reading and Listening practice is free too.
                 </p>
               </div>
 
               <HeroEssayBox />
 
-              <div className="mx-auto mt-6 flex max-w-2xl flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white sm:w-auto"
-                >
-                  <NextLink href="/readingquestion" className="no-underline">
-                    Free Reading practice
-                  </NextLink>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-emerald-300/40 bg-emerald-300/10 text-emerald-100 hover:bg-emerald-300/20 hover:text-white sm:w-auto"
-                >
-                  <NextLink href="/pricing#plans" className="no-underline">
-                    Explore the 30-day Exam Pass
-                  </NextLink>
-                </Button>
-
-              </div>
+              {/* Secondary paths are text links so the paste box keeps the only
+                  button-weight action in the hero. */}
+              <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-slate-300">
+                Not writing today?{' '}
+                <NextLink href="/readingquestion" className="font-semibold text-white underline underline-offset-4 hover:text-emerald-300">
+                  Practise Reading free
+                </NextLink>{' '}
+                ·{' '}
+                <NextLink href="/listeningquestion" className="font-semibold text-white underline underline-offset-4 hover:text-emerald-300">
+                  Listening
+                </NextLink>{' '}
+                ·{' '}
+                <NextLink href="/pricing#plans" className="font-semibold text-white underline underline-offset-4 hover:text-emerald-300">
+                  See Pro plans
+                </NextLink>
+              </p>
             </div>
           </section>
 
@@ -429,6 +434,31 @@ const HomePage = ({ counts = {} }) => {
               </div>
             </div>
           </section>
+
+          {/* ======================== SAMPLE REPORT ======================== */}
+          {/* Show the product before asking for an essay: what the free report
+              contains and what Pro adds, tagged section by section. */}
+          <div className="border-b border-border bg-secondary/40 px-4 py-16 sm:px-6 lg:px-8">
+            <SampleReportPreview title="What your Writing report looks like">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <Button asChild variant="accent" size="lg" className="w-full sm:w-auto">
+                  <NextLink
+                    href="/ielts-writing-checker"
+                    className="no-underline"
+                    onClick={() => track('sample_report_cta_click', { source: 'homepage' })}
+                  >
+                    Check my essay free <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </NextLink>
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Pro: 30-day Exam Pass or monthly, with a 14-day money-back guarantee ·{' '}
+                  <NextLink href="/pricing" className="font-semibold text-accent">
+                    see prices
+                  </NextLink>
+                </p>
+              </div>
+            </SampleReportPreview>
+          </div>
 
           {/* ========================= FOUR SKILLS ========================= */}
           <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

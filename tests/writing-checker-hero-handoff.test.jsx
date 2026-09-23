@@ -40,7 +40,12 @@ vi.mock('../src/components/question/WritingScoreReport', () => ({
   default: () => React.createElement('div', null, 'report'),
 }));
 vi.mock('../src/components/question/ScoreUI', () => ({
-  ScoringProgress: () => React.createElement('div', null, 'scoring'),
+  ScoringProgress: ({ onFinished }) => {
+    React.useEffect(() => { onFinished?.(); }, [onFinished]);
+    return React.createElement('div', null, 'scoring');
+  },
+  BandHero: () => React.createElement('div', null, 'band-hero'),
+  BandMeter: () => null,
 }));
 vi.mock('../src/components/auth/SignInDialog', () => ({
   default: ({ open }) =>
@@ -175,6 +180,53 @@ describe('writing checker hero handoff', () => {
     expect(container.querySelector('#essay').value).toBe('Technology is good for people.');
     expect(container.textContent).toContain('must be at least 250 words');
     expect(container.querySelector('[data-testid="sign-in-dialog"]')).toBeFalsy();
+  });
+
+  it('clears the word-count error as soon as the essay reaches the minimum', () => {
+    saveWritingDraft({ taskType: 'task2', essay: 'Technology is good for people.' });
+    render();
+    expect(container.textContent).toContain('must be at least 250 words');
+
+    const essay = container.querySelector('#essay');
+    const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    act(() => {
+      setValue.call(essay, LONG_ESSAY);
+      essay.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(container.textContent).not.toContain('must be at least 250 words');
+  });
+
+  it('leaves one primary upgrade action under a spent free sample', async () => {
+    testState.user = { id: 'test-user' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ overallBand: 6, free: true, criteria: {}, quotaRemaining: 0 }),
+    }));
+    saveWritingDraft({ taskType: 'task2', essay: LONG_ESSAY, autoSubmit: true });
+    await act(async () => { render(); });
+    await vi.waitFor(() => expect(container.textContent).toContain('Your estimated score'));
+    expect(container.textContent).not.toContain('Score another draft');
+    expect(container.textContent).toContain('Not ready to upgrade?');
+  });
+
+  it('keeps Score another draft for a paid result', async () => {
+    testState.user = { id: 'test-user' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ overallBand: 7, free: false, criteria: {}, quotaRemaining: 5 }),
+    }));
+    saveWritingDraft({ taskType: 'task2', essay: LONG_ESSAY, autoSubmit: true });
+    await act(async () => { render(); });
+    await vi.waitFor(() => expect(container.textContent).toContain('Score another draft (5 left)'));
+  });
+
+  it('shows the free/Pro sample report and the scoring explainer', () => {
+    render();
+    expect(container.querySelector('section#sample-report')).not.toBeNull();
+    expect(container.textContent).toContain('How the scoring works');
+    expect(container.textContent).toContain('Get my free band score');
   });
 
   it('does not overwrite the stored draft with empty initial state', () => {

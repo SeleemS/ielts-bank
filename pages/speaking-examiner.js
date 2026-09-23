@@ -1169,20 +1169,26 @@ export default function SpeakingExaminerPage() {
             data-analytics-id="speaking_examiner_paywall"
             className="mx-auto mt-8 max-w-xl overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6 text-center shadow-sm"
           >
-            <p className="text-lg font-semibold">The Live examiner is a Premium feature</p>
+            <p className="text-lg font-semibold">The live examiner is part of Pro</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Premium unlocks the gpt-live-1 examiner: a full-duplex spoken interview in the real
-              3-part format, with a band estimate and criterion feedback every time. It includes
-              30–60 AI examiner minutes every month, depending on regional plan, plus fair-use
-              Writing and Speaking scoring.
+              Sit a full 3-part Speaking interview that listens while it speaks, then get a band
+              estimate and feedback on each criterion. Pro includes 30–60 examiner minutes a
+              month depending on your region, plus Writing and Speaking scoring.
             </p>
             <NextLink
-              href="/pricing"
+              href="/pricing?upgrade=speaking"
               onClick={() => track('paywall_upgrade_click', { source: 'speaking_examiner' })}
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground no-underline hover:opacity-90"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground no-underline hover:opacity-90"
             >
-              <Sparkles className="h-4 w-4" /> Get Premium
+              <Sparkles className="h-4 w-4" /> See Pro plans
             </NextLink>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Not sure yet?{' '}
+              <NextLink href="/speakingquestion" className="font-semibold text-accent">
+                Get one free Speaking sample score
+              </NextLink>{' '}
+              from a recorded answer first. 14-day money-back guarantee on Pro.
+            </p>
           </div>
         ) : null}
 

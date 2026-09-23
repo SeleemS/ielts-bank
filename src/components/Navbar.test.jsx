@@ -116,14 +116,19 @@ describe('Navbar mobile navigation', () => {
   });
 });
 
-describe('Navbar studying-now badge', () => {
-  it('shows the live badge without estimate language', () => {
-    const badge = container.querySelector('[data-testid="studying-now-badge"]');
-    expect(badge).not.toBeNull();
-    expect(badge.textContent).toContain('Studying');
-    expect(badge.textContent.toLowerCase()).not.toContain('estimate');
-    expect(badge.getAttribute('aria-label')).toMatch(
-      /^\d{2} people studying now$/
-    );
+describe('Navbar primary CTA', () => {
+  it('sends visitors to the free Writing check off question pages', () => {
+    const cta = [...container.querySelectorAll('a')].find((a) => a.textContent.includes('Check my essay free'));
+    expect(cta).toBeTruthy();
+    expect(cta.getAttribute('href')).toBe('/ielts-writing-checker');
+  });
+});
+
+describe('Navbar trust signals', () => {
+  // A randomised "N studying now" counter was removed: it was not backed by
+  // real concurrency data and was flagged as a consumer-law risk. Keep it out.
+  it('does not render a simulated live-visitor counter', () => {
+    expect(container.querySelector('[data-testid="studying-now-badge"]')).toBeNull();
+    expect(container.textContent.toLowerCase()).not.toContain('studying now');
   });
 });
