@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
 
 const trackSpy = vi.hoisted(() => vi.fn());
-const db = vi.hoisted(() => ({ passages: {}, eligible: [], related: [] }));
+const db = vi.hoisted(() => ({ passages: {}, rows: [], related: [] }));
 
 vi.mock('../src/lib/analytics', () => ({ track: trackSpy }));
 vi.mock('../src/components/Navbar', () => ({ default: () => null }));
@@ -20,13 +20,22 @@ vi.mock('../lib/supabase', async (importOriginal) => {
   return {
     ...actual,
     getStructuredPassage: vi.fn(async (_skill, id) => db.passages[id] || null),
-    listAnswerKeySlugs: vi.fn(async () => db.eligible),
+    // listAnswerKeySlugs (lib/answerKeyPages.js) runs its real eligibility
+    // filter over these raw rows.
+    getSupabase: () => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        order: async () => ({ data: db.rows, error: null }),
+      };
+      return { from: () => query };
+    },
     getRelatedPractice: vi.fn(async () => db.related),
   };
 });
 
 import { toStructuredPassageShape } from '../lib/supabase';
-import { answerKeyStaticPaths, answerKeyStaticProps, pickRelated } from '../lib/answerKeyPages';
+import { answerKeyStaticPaths, answerKeyStaticProps, listAnswerKeySlugs, pickRelated } from '../lib/answerKeyPages';
 import AnswerKeyPage from '../src/pages/AnswerKeyPage';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -41,8 +50,12 @@ const ak = (over) => ({
   ...over,
 });
 
-function makePassage({ slug = 'why-the-body-needs-vitamins-abc', title = 'Why the Body Needs Vitamins', legacy = null } = {}) {
-  return toStructuredPassageShape({
+function makePassage(opts) {
+  return toStructuredPassageShape(makeRow(opts));
+}
+
+function makeRow({ slug = 'why-the-body-needs-vitamins-abc', title = 'Why the Body Needs Vitamins', legacy = null } = {}) {
+  return {
     id: slug,
     slug,
     legacy_firestore_id: legacy,
@@ -65,7 +78,7 @@ function makePassage({ slug = 'why-the-body-needs-vitamins-abc', title = 'Why th
         ],
       },
     ],
-  });
+  };
 }
 
 beforeEach(() => {
@@ -76,7 +89,10 @@ beforeEach(() => {
     'legacy-id-1': vit,
     'endless-harvest-x': makePassage({ slug: 'endless-harvest-x', title: 'Endless Harvest' }),
   };
-  db.eligible = [vit.slug, 'a-1', 'b-2', 'c-3'];
+  // The denylisted title is published but must never become an answers page.
+  db.rows = [vit.slug, 'a-1', 'b-2', 'c-3', 'endless-harvest-x'].map((slug) =>
+    makeRow({ slug, title: slug === 'endless-harvest-x' ? 'Endless Harvest' : `Passage ${slug}` })
+  );
   db.related = [
     { id: vit.slug, title: 'self' },
     { id: 'a-1', title: 'A', difficulty: 'easy' },
@@ -91,6 +107,11 @@ describe('answer-key static props', () => {
     const res = await answerKeyStaticPaths('reading');
     expect(res.fallback).toBe('blocking');
     expect(res.paths[0]).toEqual({ params: { id: 'why-the-body-needs-vitamins-abc' } });
+  });
+
+  it('lists answer-key slugs server-side, dropping denylisted titles', async () => {
+    const slugs = await listAnswerKeySlugs('listening-unused-cache-key');
+    expect(slugs).toEqual(['why-the-body-needs-vitamins-abc', 'a-1', 'b-2', 'c-3']);
   });
 
   it('returns the key plus eligible related passages (never self or denylisted)', async () => {
