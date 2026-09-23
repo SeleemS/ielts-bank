@@ -186,4 +186,18 @@ describe('WritingScoreReport free-score preview', () => {
     expect(container.textContent).not.toContain('Continue to the Exam Pass');
     expect(track).not.toHaveBeenCalled();
   });
+  it('renders the afterOffer slot below the Pro offer on free reports only', () => {
+    const slot = <aside data-testid="after-offer">tutor card</aside>;
+    render(<WritingScoreReport task={2} result={freeResult} afterOffer={slot} />);
+    const html = container.innerHTML;
+    expect(html).toContain('data-testid="after-offer"');
+    expect(html.indexOf('Compare feedback plans')).toBeGreaterThan(-1);
+    expect(html.indexOf('data-testid="after-offer"')).toBeGreaterThan(html.indexOf('Compare feedback plans'));
+
+    render(<WritingScoreReport task={2} result={{ ...result, free: false }} afterOffer={slot} />);
+    expect(container.innerHTML).not.toContain('after-offer');
+
+    render(<WritingScoreReport task={2} result={freeResult} sample afterOffer={slot} />);
+    expect(container.innerHTML).not.toContain('after-offer');
+  });
 });

@@ -4,6 +4,7 @@ import NextLink from 'next/link';
 import { ArrowLeft, ArrowRight, Calculator, CalendarCheck, ClipboardList, Gauge } from 'lucide-react';
 import Navbar from '../../src/components/Navbar';
 import Footer from '../../src/components/Footer';
+import ScoreNextSteps from '../../src/components/affiliates/ScoreNextSteps';
 import {
   SCORE_REQUIREMENT_COUNTRIES,
   SCORE_REQUIREMENT_COUNTRY_SLUGS,
@@ -237,6 +238,11 @@ export default function CountryScoreRequirements({ country, seo, otherCountries 
                 .
               </p>
             </section>
+
+            {/* Affiliate "next steps" (inert until AFFILIATE_URL_* is set): after
+                the sourced tables and the estimator/calculator CTAs above, which
+                feed Pro and must stay first. */}
+            <ScoreNextSteps countrySlug={country.slug} shortName={country.shortName} />
 
             <section className="mb-12">
               <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground">

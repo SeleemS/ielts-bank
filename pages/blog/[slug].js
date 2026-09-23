@@ -19,6 +19,7 @@ import { relatedPosts, postSkill } from "../../lib/relatedPosts";
 import { breadcrumbJsonLd } from "../../lib/breadcrumbs";
 import Breadcrumbs from "../../src/components/Breadcrumbs";
 import AdUnit from "../../src/components/AdUnit";
+import CambridgeBooksBox from "../../src/components/affiliates/CambridgeBooksBox";
 import ShareRow from "../../src/components/ShareRow";
 
 import { SITE_URL } from "../../lib/site";
@@ -318,6 +319,11 @@ export default function BlogPost({ post, essayBank = [], related = [], skill = n
             ) : null}
 
             <PracticeFeedbackEntry skill={feedbackEntrySkill(post.title)} source="blog" />
+
+            {/* Contextual Amazon books module: only on study-plan/resources
+                posts, below the article and the practice CTA; inert until
+                AFFILIATE_URL_AMAZON_CAMBRIDGE_BOOKS is set. */}
+            <CambridgeBooksBox post={post} />
 
             <div className="mt-10">
               <NewsletterSignup source={`blog:${post.slug}`} variant="full" />

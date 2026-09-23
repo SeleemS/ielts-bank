@@ -22,6 +22,7 @@ import FreeSampleChip from '../components/question/FreeSampleChip';
 import SignInDialog from '../components/auth/SignInDialog';
 import { ScoringProgress } from '../components/question/ScoreUI';
 import WritingScoreReport from '../components/question/WritingScoreReport';
+import TutorCta from '../components/affiliates/TutorCta';
 import { syncLocalAttempts } from '../lib/progress';
 import { getSessionAccess } from '../lib/sessionAccess';
 
@@ -485,7 +486,13 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
         onClose={() => setFeedbackOpen(false)}
         title="Your AI Feedback & Score"
       >
-        {result && <WritingScoreReport task={task} result={result} />}
+        {result && (
+          <WritingScoreReport
+            task={task}
+            result={result}
+            afterOffer={<TutorCta skill="writing" band={result.overallBand} placement="writing_result" />}
+          />
+        )}
         {result ? (
           <p className="mt-4 rounded-md bg-accent/5 p-3 text-sm text-foreground">
             This score is saved to your dashboard, so you can come back to it any time. Write a fresh attempt using the feedback when you’re ready.

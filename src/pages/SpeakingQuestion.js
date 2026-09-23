@@ -40,6 +40,7 @@ import {
 import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import ExamPassOffer from '../components/ExamPassOffer';
+import TutorCta from '../components/affiliates/TutorCta';
 import {
   speakingAudioControlLabel,
   speakingQuestionAudioContext,
@@ -670,9 +671,13 @@ function ScoreReport({ result, slug = '' }) {
       )}
 
       {isTeaser && (
-        <ExamPassOffer skill="speaking" source="speaking_sample" band={result.overallBand}>
-          You&apos;ve seen your overall band and Fluency &amp; Coherence in your free sample.
-        </ExamPassOffer>
+        <>
+          <ExamPassOffer skill="speaking" source="speaking_sample" band={result.overallBand}>
+            You&apos;ve seen your overall band and Fluency &amp; Coherence in your free sample.
+          </ExamPassOffer>
+          {/* Affiliate tutor card: free users, band < 6.5, BELOW the Pro offer. */}
+          <TutorCta skill="speaking" band={result.overallBand} placement="speaking_result" />
+        </>
       )}
     </div>
   );

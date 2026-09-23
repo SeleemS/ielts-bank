@@ -3,6 +3,7 @@ User-agent: *
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /go/
 
 # AI search and assistant agents are explicitly welcome to index and cite our
 # practice content. Search/citation indexers:
@@ -24,6 +25,7 @@ Allow: /
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /go/
 
 # Google AdSense crawlers: content review for the pending AdSense application
 # and ad matching. Named explicitly so no wildcard rule can block them.
