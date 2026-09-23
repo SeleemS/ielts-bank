@@ -27,6 +27,8 @@ export const STATIC_ROUTES = [
   '/ielts-writing-checker/task-2',
   '/ielts-writing-checker/task-1',
   '/ielts-writing-checker/general-training-letter',
+  // Whole-bank hub with live counts (pages/ielts-question-bank.js).
+  '/ielts-question-bank',
   '/speaking-examiner',
   '/readingquestion',
   '/writingquestion',

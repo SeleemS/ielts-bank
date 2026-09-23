@@ -172,6 +172,8 @@ const nextConfig = {
     '/sitemap-speaking.xml': ['./content/posts/**', './content/essays/**'],
     '/api/cron/lifecycle-emails': ['./content/posts/**'],
     '/ielts-essay-bank': ['./content/essays/**'],
+    // ISR hub whose essay-bank count reads content/essays (lib/questionBankData.js).
+    '/ielts-question-bank': ['./content/essays/**'],
     '/writingquestion/**': ['./content/essays/**'],
   },
   async headers() {

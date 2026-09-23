@@ -144,6 +144,9 @@ export default function SpeakingCueCardsHub({ hub, seo, jsonLd }) {
             <NextLink href="/speaking-examiner" className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline">
               AI Speaking Examiner <ArrowRight className="h-4 w-4" />
             </NextLink>
+            <NextLink href="/ielts-question-bank" className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline">
+              Full IELTS question bank <ArrowRight className="h-4 w-4" />
+            </NextLink>
           </div>
         </section>
 

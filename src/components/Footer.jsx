@@ -18,6 +18,7 @@ const PRACTICE_LINKS = [
   { label: 'Speaking', href: '/speakingquestion' },
   { label: 'Mock Tests', href: '/mock-test' },
   { label: 'Speaking Cue Cards', href: '/ielts-speaking-cue-cards' },
+  { label: 'IELTS Question Bank', href: '/ielts-question-bank' },
 ];
 
 const TOOLS_LINKS = [
