@@ -130,8 +130,23 @@ const securityHeaders = [
   { key: 'Content-Security-Policy', value: CSP },
 ];
 
+// Affiliate programs (lib/affiliates.js) are inert until the founder sets
+// AFFILIATE_URL_<ID>. Client placements can't read server env vars, so bake the
+// list of CONFIGURED program ids — never the URLs — into the bundle. Same
+// naming convention as affiliateEnvVar()/affiliateIdFromEnvVar(); lib/affiliates
+// intersects this list with its registry, so an unknown id here is ignored.
+const AFFILIATE_PROGRAMS_ENABLED = Object.keys(process.env)
+  .filter((key) => /^AFFILIATE_URL_[A-Z0-9_]+$/.test(key))
+  .filter((key) => /^https:\/\/\S+$/.test(String(process.env[key] || '').trim()))
+  .map((key) => key.slice('AFFILIATE_URL_'.length).toLowerCase().replace(/_/g, '-'))
+  .sort()
+  .join(',');
+
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    AFFILIATE_PROGRAMS_ENABLED,
+  },
   // lib/posts.js reads content/posts/*.md with fs.readdirSync. Next's tracer
   // cannot follow a dynamic directory read, so the two routes that load posts
   // at REQUEST time (rather than only at build time) would ship without the
