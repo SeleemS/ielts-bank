@@ -9,6 +9,7 @@ import {
   Gauge,
   MessageSquareText,
   ArrowRight,
+  CheckCircle2,
   ClipboardList,
   Wand2,
   ListChecks,
@@ -31,6 +32,9 @@ import AiQuotaPanel from '../src/components/AiQuotaPanel';
 import FreeSampleChip from '../src/components/question/FreeSampleChip';
 import { ScoringProgress } from '../src/components/question/ScoreUI';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
+import SampleReportPreview from '../src/components/SampleReportPreview';
+import ScoringExplainer from '../src/components/ScoringExplainer';
+import StickyMobileCta from '../src/components/StickyMobileCta';
 import { getSessionAccess } from '../src/lib/sessionAccess';
 import { consumeWritingDraft } from '../src/lib/writingDraft';
 
@@ -88,35 +92,6 @@ const FAQ = [
   },
 ];
 
-const SAMPLE_FEEDBACK = {
-  overallBand: 6.5,
-  wordCount: 268,
-  criteria: {
-    taskResponse: {
-      band: 6.5,
-      feedback:
-        'You address both views and give your opinion, and your position is clear throughout ("I firmly believe that…"). Some ideas, such as the paragraph on remote work, are asserted rather than fully developed with examples, which holds this back from band 7.',
-    },
-    coherenceCohesion: {
-      band: 7,
-      feedback:
-        'Ideas are logically sequenced and paragraphing is effective. Linking words ("Furthermore", "On the other hand") are used accurately, though a few sentences over-rely on "and" to join clauses.',
-    },
-    lexicalResource: {
-      band: 6,
-      feedback:
-        'You use some good topic vocabulary ("commute", "flexibility"), but there is repetition of "important" and a few collocation slips ("do a decision"). Widening your range of precise word choices would lift this score.',
-    },
-    grammaticalRange: {
-      band: 6.5,
-      feedback:
-        'A mix of simple and complex sentences with generally good control. Occasional article and preposition errors ("in the last decade" written as "on the last decade") appear but rarely block meaning.',
-    },
-  },
-  summary:
-    'A solid, well-organised response with a clear position. To move toward band 7, develop each idea with a specific example and broaden your vocabulary to reduce repetition.',
-};
-
 export default function WritingCheckerPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -144,6 +119,7 @@ export default function WritingCheckerPage() {
   const restoredRef = useRef(false);
   const autoRunDoneRef = useRef(false);
   const formRef = useRef(null);
+  const toolRef = useRef(null);
 
   const active = TASK_TYPES.find((t) => t.value === taskType) || TASK_TYPES[2];
   const apiTask = active.apiTask;
@@ -192,6 +168,12 @@ export default function WritingCheckerPage() {
       setRestored(true);
     }
   }, []);
+
+  // A "must be at least N words" error is stale the moment the essay reaches
+  // the minimum — clear it instead of leaving red text above a valid form.
+  useEffect(() => {
+    if (isSufficient && errorMsg.startsWith('Your answer must be at least')) setErrorMsg('');
+  }, [errorMsg, isSufficient]);
 
   // Persist the draft on every change so nothing is lost on navigation/auth.
   // Gated on `restored` so the first render's empty state never overwrites a
@@ -422,16 +404,30 @@ export default function WritingCheckerPage() {
                 AI IELTS Writing Checker
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Create an account for one free Writing sample: your overall band, feedback on
-                all four criteria, and one corrected example. Continue with the 30-day
-                Exam Pass for full reports on your next essays.
+                Paste a Task 1 or Task 2 answer. In under a minute you get a band on each of
+                the four official criteria and the sentences holding your score back.
+                Your first report is free.
               </p>
+              <ul className="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-foreground">
+                {['Free first report — no card', 'Marked on the public band descriptors', 'Your draft is saved while you sign up'].map((item) => (
+                  <li key={item} className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="#sample-report"
+                className="mt-4 inline-block text-sm font-semibold text-accent underline underline-offset-4"
+              >
+                See a sample report first
+              </a>
             </div>
           </section>
 
           {/* Tool */}
-          <section className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
+          <section id="check" className="mx-auto w-full max-w-3xl scroll-mt-20 px-4 py-10 sm:px-6 lg:px-8">
+            <div ref={toolRef} className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid gap-1.5">
                   <Label htmlFor="task-type">Task type</Label>
@@ -510,14 +506,14 @@ export default function WritingCheckerPage() {
                   {isLoading
                     ? 'Analyzing…'
                     : !loading && !user
-                    ? 'Sign in & check my writing'
+                    ? 'Get my free band score'
                     : 'Check my writing'}
                 </Button>
                 <AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" resetsAt={quotaResetsAt} />
                 {!loading && !user ? (
                   <p className="text-center text-xs text-muted-foreground">
-                    Create a free account to get your first AI score. Your draft stays safe
-                    while you sign up.
+                    Next you create a free account (email and password, no card). Your draft
+                    stays saved while you sign up.
                   </p>
                 ) : (
                   !result && <FreeSampleChip />
@@ -542,13 +538,26 @@ export default function WritingCheckerPage() {
                   Your estimated score &amp; feedback
                 </h2>
                 <WritingScoreReport task={apiTask} result={result} />
-                <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4">
-                  <p className="text-sm font-semibold text-foreground">Put the feedback into practice</p>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    <Button variant="accent" onClick={() => { setResult(null); window.scrollTo({ top: 360, behavior: 'smooth' }); }}>Score another draft{result.quotaRemaining != null ? ` (${result.quotaRemaining} left)` : ''}</Button>
-                    <Button asChild variant="outline"><NextLink href="/writingquestion">Choose a Writing task</NextLink></Button>
+                {result.free === true ? (
+                  // The free sample is spent: the Exam Pass offer inside the
+                  // report is the one primary action. A second accent button
+                  // ("Score another draft") only led to the paywall anyway.
+                  <p className="mt-5 text-center text-sm text-muted-foreground">
+                    Not ready to upgrade?{' '}
+                    <NextLink href="/writingquestion" className="font-semibold text-accent">
+                      Keep practising with Writing tasks and model answers
+                    </NextLink>
+                    .
+                  </p>
+                ) : (
+                  <div className="mt-5 rounded-lg border border-accent/30 bg-accent/5 p-4">
+                    <p className="text-sm font-semibold text-foreground">Put the feedback into practice</p>
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      <Button variant="accent" onClick={() => { setResult(null); window.scrollTo({ top: 360, behavior: 'smooth' }); }}>Score another draft{result.quotaRemaining != null ? ` (${result.quotaRemaining} left)` : ''}</Button>
+                      <Button asChild variant="outline"><NextLink href="/writingquestion">Choose a Writing task</NextLink></Button>
+                    </div>
                   </div>
-                </div>
+                )}
                 <p className="mt-4 rounded-md bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
                   This is an AI estimate for study purposes, not an official IELTS result.
                 </p>
@@ -589,23 +598,23 @@ export default function WritingCheckerPage() {
             </div>
           </section>
 
-          {/* Sample feedback */}
-          <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
-            <div className="mb-6 text-center">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                What your feedback looks like
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                A sample of the criterion-by-criterion breakdown you receive for a Task 2
-                essay.
+          {/* Sample report — tagged Free vs Pro so nobody is surprised by a lock */}
+          <SampleReportPreview className="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <Button asChild variant="accent" size="lg" className="w-full sm:w-auto">
+                <a href="#check" className="no-underline" onClick={() => track('sample_report_cta_click', { source: CHECKER_SLUG })}>
+                  Check my essay free <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Pro is a 30-day Exam Pass or a monthly plan ·{' '}
+                <NextLink href="/pricing" className="font-semibold text-accent">see prices</NextLink>
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7">
-              <WritingScoreReport task={2} result={SAMPLE_FEEDBACK} sample />
-              <p className="mt-4 text-center text-xs text-muted-foreground">
-                Illustrative example. Your own feedback is generated from your essay.
-              </p>
-            </div>
+          </SampleReportPreview>
+
+          <section className="border-t border-border bg-secondary/30 px-4 py-14 sm:px-6 lg:px-8">
+            <ScoringExplainer />
           </section>
 
           {/* Feature strip / internal links */}
@@ -694,6 +703,17 @@ export default function WritingCheckerPage() {
         <Footer />
       </div>
 
+      <StickyMobileCta
+        watchRef={toolRef}
+        hidden={isLoading || Boolean(result) || signInOpen}
+        label={essay.trim() ? 'Back to my essay' : 'Check my essay free'}
+        hint={!loading && !user ? 'First report free · no card' : undefined}
+        source={CHECKER_SLUG}
+        onActivate={() => {
+          toolRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+          window.setTimeout(() => document.getElementById('essay')?.focus({ preventScroll: true }), 400);
+        }}
+      />
       <SignInDialog
         open={signInOpen}
         onOpenChange={(v) => {
