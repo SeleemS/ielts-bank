@@ -11,6 +11,9 @@ export default function Document() {
         <meta name="theme-color" content="#000000" />
         {/* Allow large image previews in Google Search / Discover. */}
         <meta name="robots" content="max-image-preview:large" />
+        {/* AdSense site verification. The ad script itself loads client-side
+            after consent, so the review crawler needs this server-rendered tag. */}
+        <meta name="google-adsense-account" content="ca-pub-5189362957619937" />
         {/* Optional tracking defaults on; saved opt-outs and GPC still win.
             Initialize before analytics or advertising scripts can load. */}
         <script
