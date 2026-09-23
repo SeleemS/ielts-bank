@@ -22,11 +22,11 @@ const CANONICAL = `${SITE_URL}/ielts-essay-bank`;
 const FAQ = [
   {
     q: 'What is an IELTS essay bank?',
-    a: 'An organised collection of Writing practice prompts paired with sample answers. Everything in this bank is original practice material written by IELTS-Bank — real IELTS test papers are confidential and never published, so any site claiming to offer them is not legitimate.',
+    a: 'An organised collection of Writing practice prompts paired with sample answers. The samples in this bank are original IELTS-Bank practice material, not official test papers. IELTS also publishes official sample questions and preparation materials; use those alongside independent practice resources.',
   },
   {
     q: 'Why are some essays shown at Band 6, 7 and 8 for the same question?',
-    a: 'Because the fastest way to understand the band descriptors is to see one question answered at three levels. Each version has criterion-by-criterion examiner-style comments that point to the exact sentences separating it from the next band.',
+    a: 'Comparing responses to the same question can make differences in task coverage, organisation, vocabulary and grammar easier to identify. Each version includes our criterion-by-criterion commentary; the band labels are illustrative assessments, not official examiner marks.',
   },
   {
     q: 'Are the band scores official?',
