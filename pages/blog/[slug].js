@@ -11,6 +11,7 @@ import NewsletterSignup from "../../src/components/NewsletterSignup";
 import { posts } from "../../lib/posts";
 import { formatMonthYear, toIsoDate } from "../../lib/postDates";
 import { sanitizeHtml } from "../../lib/sanitize";
+import { rewriteMergedBlogLinks } from "../../lib/blogMerges";
 import AdUnit from "../../src/components/AdUnit";
 import ShareRow from "../../src/components/ShareRow";
 
@@ -261,5 +262,7 @@ export async function getStaticProps({ params }) {
     return { notFound: true };
   }
 
-  return { props: { post } };
+  // Links to posts that were merged into hubs point straight at the hub
+  // rather than through a redirect (lib/blogMerges.js).
+  return { props: { post: { ...post, content: rewriteMergedBlogLinks(post.content) } } };
 }

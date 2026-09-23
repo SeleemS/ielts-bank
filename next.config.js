@@ -130,6 +130,9 @@ const securityHeaders = [
   { key: 'Content-Security-Policy', value: CSP },
 ];
 
+// Blog posts merged into the hub they duplicated (lib/blogMerges.js).
+const BLOG_MERGES = require('./lib/blogMerges.json');
+
 const nextConfig = {
   reactStrictMode: true,
   // lib/posts.js reads content/posts/*.md with fs.readdirSync. Next's tracer
@@ -163,6 +166,18 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+    ];
+  },
+  async redirects() {
+    return [
+      // /index served a duplicate of the home page (canonicalised, but still a
+      // crawlable second URL).
+      { source: '/index', destination: '/', permanent: true },
+      ...Object.entries(BLOG_MERGES).map(([slug, destination]) => ({
+        source: `/blog/${slug}`,
+        destination,
+        permanent: true,
+      })),
     ];
   },
   async rewrites() {
