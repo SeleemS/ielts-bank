@@ -54,7 +54,7 @@ function LockedPlaceholder({ label, hint }) {
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-bold text-foreground">{label}</h3>
         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-          <Lock className="h-3 w-3" aria-hidden="true" /> Premium
+          <Lock className="h-3 w-3" aria-hidden="true" /> Pro
         </span>
       </div>
       {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
@@ -282,7 +282,12 @@ export default function WritingScoreReport({
       )}
 
       {isTeaser ? (
-        <ExamPassOffer skill="writing" source={analyticsSource} band={result.overallBand}>
+        <ExamPassOffer
+          skill="writing"
+          source={analyticsSource}
+          band={result.overallBand}
+          locked={{ corrections: lockedCorrections, rewrite: result.rewriteLocked === true }}
+        >
           {visibleCriteria >= criteriaMeta.length
             ? `You’ve seen your band on all four criteria${corrected.length ? ' and one real correction' : ''}.`
             : 'You’ve seen your overall band and your first criterion.'}

@@ -19,7 +19,7 @@ const endDate = option('end') || new Date().toISOString().slice(0, 10);
 if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate) || !Number.isFinite(Date.parse(endDate))) throw new Error('Invalid exclusive UTC end date');
 const end = `${endDate}T00:00:00.000Z`;
 const start = new Date(Date.parse(end) - 28 * 86400000).toISOString();
-const offerVersions = ['exam_pass_v1', 'feedback_value_v2'];
+const offerVersions = ['exam_pass_v1', 'feedback_value_v2', 'locked_value_v3'];
 const exclusions = new Set(JSON.parse(option('exclusions') ? fs.readFileSync(option('exclusions'), 'utf8') : env.FUNNEL_QA_USER_IDS_JSON || '[]'));
 // The approved audit account never enters reported business results.
 for (const qaFile of ['/private/tmp/ielts-confirmed-qa.json', '/private/tmp/ielts-exampass-qa.json']) {

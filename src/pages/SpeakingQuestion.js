@@ -547,11 +547,11 @@ function LockedCriterion({ label }) {
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-bold text-muted-foreground">{label}</h3>
         <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-          <Lock className="h-3 w-3" /> Premium
+          <Lock className="h-3 w-3" /> Pro
         </span>
       </div>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Unlock Premium for this criterion&apos;s band and examiner feedback.
+        Pro adds this criterion&apos;s band and examiner feedback to your next report.
       </p>
     </div>
   );

@@ -108,9 +108,10 @@ describe('WritingScoreReport free-score preview', () => {
     expect(container.textContent).toContain('People are affected');
     expect(container.textContent).toContain('1 of 3 shown');
     expect(container.textContent).toContain('Band 8 rewrite of your weakest paragraph');
-    expect(container.textContent).toContain(
-      'Know what to improve in your next answer'
-    );
+    expect(container.textContent).toContain('Get the full report on your next essay');
+    // The offer names the value THIS essay had withheld, not a generic perk.
+    expect(container.textContent).toContain('this essay had 2 more we held back');
+    expect(container.textContent).toContain('one was written for this essay');
     expect(container.textContent).toContain('band on all four criteria and one real correction');
 
     // No withheld text is in the DOM, so un-blurring reveals nothing.
@@ -142,7 +143,7 @@ describe('WritingScoreReport free-score preview', () => {
 
     const upgrade = container.querySelector('a[href^="/pricing?upgrade=writing"]');
     expect(container.querySelectorAll('a[href^="/pricing?upgrade=writing"]')).toHaveLength(1);
-    expect(container.textContent).toContain('on your next essays');
+    expect(container.textContent).toContain('this free sample stays as it is');
     upgrade.addEventListener('click', (event) => event.preventDefault());
     act(() => {
       upgrade.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
@@ -167,7 +168,7 @@ describe('WritingScoreReport free-score preview', () => {
     );
     expect(container.textContent).toContain('A clear position');
     expect(container.textContent).not.toContain('Logical paragraphs');
-    expect(container.textContent).toContain('Premium');
+    expect(container.textContent).toContain('Pro');
     // Upgrade copy must not claim four visible bands when only one was sent.
     expect(container.textContent).toContain('overall band and your first criterion');
     expect(container.textContent).not.toContain('all four criteria');
@@ -182,7 +183,7 @@ describe('WritingScoreReport free-score preview', () => {
     expect(container.textContent).toContain('They were late');
     expect(container.textContent).toContain('A band eight version');
     expect(container.textContent).toContain('Second body paragraph');
-    expect(container.textContent).not.toContain('Compare feedback plans');
+    expect(container.textContent).not.toContain('Continue to the Exam Pass');
     expect(track).not.toHaveBeenCalled();
   });
 });
