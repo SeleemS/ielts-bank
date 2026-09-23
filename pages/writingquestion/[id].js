@@ -7,6 +7,7 @@ import {
   toMetaDescription,
 } from '../../lib/supabase';
 import { canonicalQuestionRedirect, retiredDuplicateTarget } from '../../lib/questionUrls';
+import { questionContextLinks } from '../../lib/siteDirectory';
 
 export default WritingQuestion;
 
@@ -35,6 +36,7 @@ export async function getStaticProps({ params }) {
       passage,
       description: toMetaDescription(passage.bodyHtml),
       related,
+      contextLinks: questionContextLinks('writing', passage),
     },
     revalidate: 3600,
   };

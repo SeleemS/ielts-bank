@@ -7,6 +7,7 @@ import {
   toMetaDescription,
 } from '../../lib/supabase';
 import { canonicalQuestionRedirect, retiredDuplicateTarget } from '../../lib/questionUrls';
+import { questionContextLinks } from '../../lib/siteDirectory';
 
 export default ListeningQuestion;
 
@@ -43,6 +44,7 @@ export async function getStaticProps({ params }) {
       passage,
       description,
       related,
+      contextLinks: questionContextLinks('listening', passage),
     },
     revalidate: 3600,
   };

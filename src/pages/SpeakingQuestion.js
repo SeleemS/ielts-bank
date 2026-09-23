@@ -17,6 +17,9 @@ import {
   Lock,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import Footer from '../components/Footer';
 import RelatedPractice from '../components/RelatedPractice';
 import Modal from '../components/AccessibleModal';
@@ -877,7 +880,7 @@ function ModelAnswerSection({ item }) {
 // ---------------------------------------------------------------------------
 // Main practice page.
 // ---------------------------------------------------------------------------
-const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
+const SpeakingQuestion = ({ id: routeId, item, description, related = [], contextLinks = [] }) => {
   const { user } = useAuth();
   const { isPremium, loading: planLoading } = usePlan();
   const { used: sampleUsed } = useFreeSample('speaking');
@@ -1211,6 +1214,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
         <Navbar />
 
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-16 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('speaking', topic, canonicalUrl)} className="mb-3" />
           <div className="mb-6">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <Badge variant="emerald">{partLabel}</Badge>
@@ -1332,6 +1336,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
           </div>
           <ModelAnswerSection item={item} />
           <RelatedPractice skill="speaking" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
         </main>
 
         <Footer />

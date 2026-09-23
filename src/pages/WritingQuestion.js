@@ -3,6 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../../lib/upgradeContext';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Progress } from '../../components/ui/progress';
@@ -49,7 +53,7 @@ function htmlToText(html) {
     .trim();
 }
 
-const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
+const WritingQuestion = ({ id: docId, passage, description, related = [], contextLinks = [] }) => {
   const { user } = useAuth();
   const router = useRouter();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
@@ -342,6 +346,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 pb-16 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('writing', title, canonicalUrl)} className="mb-3" />
           <div className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -418,7 +423,9 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
           {!result && <FreeSampleChip className="mt-3" />}
           <div className="mt-2"><AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" resetsAt={quotaResetsAt} /></div>
           <RelatedPractice skill="writing" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
         </main>
+        <Footer />
       </div>
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}

@@ -6,6 +6,7 @@ import {
   getRelatedPractice,
 } from '../../lib/supabase';
 import { canonicalQuestionRedirect, retiredDuplicateTarget } from '../../lib/questionUrls';
+import { questionContextLinks } from '../../lib/siteDirectory';
 
 export default SpeakingQuestion;
 
@@ -40,6 +41,7 @@ export async function getStaticProps({ params }) {
       item,
       description: describe(item),
       related,
+      contextLinks: questionContextLinks('speaking', item),
     },
     revalidate: 3600,
   };

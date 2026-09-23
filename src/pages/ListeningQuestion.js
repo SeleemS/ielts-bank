@@ -2,6 +2,10 @@ import React from 'react';
 import Head from 'next/head';
 import { Headphones } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Badge } from '../../components/ui/badge';
 import QuestionEngine from '../components/question/QuestionEngine';
 import AudioPlayer from '../components/question/AudioPlayer';
@@ -19,7 +23,7 @@ import { questionUrl } from '../../lib/questionUrls';
 // for logged-out users and in users.prefs for signed-in users (src/lib/prefs).
 const INTRO_PREF = 'listeningIntroDismissed';
 
-const ListeningQuestion = ({ id, passage, description, related = [] }) => {
+const ListeningQuestion = ({ id, passage, description, related = [], contextLinks = [] }) => {
   const [audioDuration, setAudioDuration] = React.useState(null);
   const [introOpen, setIntroOpen] = React.useState(false);
   const { user, loading: authLoading } = useAuth();
@@ -153,6 +157,7 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('listening', title, canonicalUrl)} className="mb-3" />
           <div className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
@@ -222,7 +227,9 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
             </div>
           </div>
           <RelatedPractice skill="listening" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
         </main>
+        <Footer />
 
         <ListeningIntroModal open={introOpen} onClose={handleIntroClose} />
       </div>

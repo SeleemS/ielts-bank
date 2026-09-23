@@ -6,6 +6,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import DataTable from './DataTable';
 import { availableReadingTypeLinks } from '../../lib/readingQuestionTypes';
+import { questionPath } from '../../lib/questionUrls';
 
 // Pure Tailwind/shadcn section landing. NO Chakra imports.
 //
@@ -134,6 +135,70 @@ export function faqJsonLdFor(faqs) {
   };
 }
 
+// Server-rendered A–Z list of EVERY question in the section. The interactive
+// DataTable above paginates client-side (10 per page), which left most
+// questions with no crawlable link from their hub — 67 Writing pages were
+// orphans in the Sep 2026 crawl. The list sits in a <details> so it does not
+// crowd the page, but every <a href> is in the initial HTML.
+export function AllQuestionsDirectory({ section, items = [] }) {
+  if (!items.length) return null;
+  const skillLabel = section.charAt(0).toUpperCase() + section.slice(1);
+  const sorted = [...items].sort((a, b) =>
+    String(a.title || '').localeCompare(String(b.title || ''), 'en', { sensitivity: 'base' })
+  );
+  return (
+    <section className="mt-12" aria-labelledby={`all-${section}-questions`}>
+      <details className="group rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <summary className="cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center justify-between gap-3">
+            <h2 id={`all-${section}-questions`} className="text-xl font-bold tracking-tight text-foreground">
+              All {items.length} IELTS {skillLabel} practice questions (A–Z)
+            </h2>
+            <span className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
+          </span>
+        </summary>
+        <ul className="mt-5 gap-x-8 sm:columns-2 lg:columns-3">
+          {sorted.map((item) => (
+            <li key={item.id} className="mb-2 break-inside-avoid">
+              <NextLink
+                href={questionPath(section, item)}
+                className="text-sm text-foreground no-underline transition-colors hover:text-accent"
+              >
+                {item.title}
+              </NextLink>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </section>
+  );
+}
+
+// Crawlable hub-link chips (e.g. Listening Part 1–4 guides), passed in from
+// getStaticProps so the guide content modules stay out of the client bundle.
+function HubLinks({ hubLinks }) {
+  if (!hubLinks?.links?.length) return null;
+  return (
+    <section className="mt-12 rounded-2xl border border-border bg-secondary/40 p-6 sm:p-8">
+      <h2 className="text-xl font-bold tracking-tight text-foreground">{hubLinks.title}</h2>
+      {hubLinks.description ? (
+        <p className="mt-2 text-sm text-muted-foreground">{hubLinks.description}</p>
+      ) : null}
+      <div className="mt-5 flex flex-wrap gap-2.5">
+        {hubLinks.links.map(({ href, label }) => (
+          <NextLink
+            key={href}
+            href={href}
+            className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground no-underline shadow-sm transition-colors hover:border-accent/40 hover:text-accent"
+          >
+            {label}
+          </NextLink>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const SectionLanding = ({
   section, // e.g. 'reading'
   heading,
@@ -142,6 +207,7 @@ const SectionLanding = ({
   description,
   items = [],
   questionTypeOptions, // Reading only: [{ value, label }] for the type filter
+  hubLinks, // optional { title, description, links: [{ href, label }] }
 }) => {
   const canonical = `${SITE_URL}/${section}question`;
   const skillLabel = section
@@ -227,6 +293,8 @@ const SectionLanding = ({
                 </div>
               </section>
             )}
+            <HubLinks hubLinks={hubLinks} />
+            <AllQuestionsDirectory section={section} items={items} />
             <FaqSection faqs={faqs} />
           </div>
         </main>

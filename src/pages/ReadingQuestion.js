@@ -1,6 +1,10 @@
 import React from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import QuestionEngine from '../components/question/QuestionEngine';
@@ -36,7 +40,7 @@ function ShareButton({ title, text }) {
   );
 }
 
-const ReadingQuestion = ({ id, passage, description, related = [] }) => {
+const ReadingQuestion = ({ id, passage, description, related = [], contextLinks = [] }) => {
   if (!passage) {
     return (
       <div className="min-h-screen bg-background">
@@ -130,6 +134,7 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('reading', title, canonicalUrl)} className="mb-3" />
           {/* Header */}
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -181,11 +186,13 @@ const ReadingQuestion = ({ id, passage, description, related = [] }) => {
           </div>
 
           <RelatedPractice skill="reading" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
 
           <div className="mt-8 flex justify-center">
             <ShareButton title={title} text={`Check out this IELTS Reading test: ${title}`} />
           </div>
         </main>
+        <Footer />
       </div>
     </>
   );
