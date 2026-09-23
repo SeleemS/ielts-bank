@@ -105,6 +105,7 @@ vi.mock('../lib/supabase', () => ({
 }));
 vi.mock('../lib/billing', () => ({
   isPppCountry: () => testState.ppp,
+  isPassFirstMarket: (country) => testState.ppp || ['CN', 'HK'].includes(country),
 }));
 vi.mock('../src/lib/analytics', () => ({
   track: vi.fn(),
@@ -166,6 +167,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => root.unmount());
+  document.cookie = 'ib_country=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   container.remove();
   delete global.fetch;
   vi.clearAllMocks();
@@ -441,6 +443,58 @@ describe('pricing authentication handoff', () => {
     expect(container.textContent).toContain('$3.99');
     expect(container.textContent).toContain('$19.99');
     expect(container.textContent).not.toContain('$14.99');
+  });
+
+  it('makes the pass the single primary offer, subscriptions second, in a pass-first market', async () => {
+    testState.router = { isReady: true, query: {} };
+    testState.ppp = true;
+
+    await renderPage();
+
+    const plans = container.querySelector('#plans');
+    const text = plans.textContent;
+    expect(text).toContain('One payment · no auto-renew');
+    expect(text).toContain('Prefer a subscription?');
+    // The pass card renders before the subscription heading; both subscriptions after it.
+    expect(text.indexOf('Exam Pass')).toBeLessThan(text.indexOf('Prefer a subscription?'));
+    expect(text.indexOf('Prefer a subscription?')).toBeLessThan(text.indexOf('Monthly'));
+    expect(text.indexOf('Prefer a subscription?')).toBeLessThan(text.indexOf('Annual'));
+    expect(container.textContent).toContain('Recommended for your region');
+    expect(track).toHaveBeenCalledWith('view_item_list', expect.objectContaining({ pass_first: true }));
+  });
+
+  it('gives mainland China the pass-first layout at global prices', async () => {
+    testState.router = { isReady: true, query: {} };
+    document.cookie = 'ib_country=CN; path=/';
+
+    await renderPage();
+
+    expect(container.textContent).toContain('Prefer a subscription?');
+    expect(container.textContent).toContain('$14.99');
+    expect(container.textContent).not.toContain('$5.99');
+    expect(container.textContent).not.toContain('Priced for your region');
+  });
+
+  it('keeps the standard three-card grid everywhere else', async () => {
+    testState.router = { isReady: true, query: {} };
+    document.cookie = 'ib_country=US; path=/';
+
+    await renderPage();
+
+    expect(container.textContent).not.toContain('Prefer a subscription?');
+    expect(container.textContent).not.toContain('One payment · no auto-renew');
+    expect(container.textContent).not.toContain('Recommended for your region');
+    expect(track).toHaveBeenCalledWith('view_item_list', expect.objectContaining({ pass_first: false }));
+  });
+
+  it('points a pass-first buyer whose payment failed at the one-time pass', async () => {
+    testState.router = { isReady: true, query: { checkout: 'canceled' } };
+    testState.ppp = true;
+    await renderPage();
+    const payment = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Payment problem');
+    await act(async () => { payment.click(); });
+    expect(container.textContent).toContain('decline automatic renewals');
+    expect(container.textContent).toContain('See the Exam Pass');
   });
 
   it('tells an active subscriber to manage the plan they already have', async () => {

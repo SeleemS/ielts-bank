@@ -168,6 +168,23 @@ export function highlightedSku() {
   return 'exam_pass';
 }
 
+// Short label for the pass in pass-first markets (lib/billing
+// isPassFirstMarket), where cards often decline recurring mandates and local
+// wallets take one-time payments only.
+export const PASS_FIRST_LABEL = 'One payment · no auto-renew';
+
+// How upgrade surfaces lay the plans out. Every market already sees the pass
+// first (planOrder). Pass-first markets additionally get the pass as the single
+// primary offer, with subscriptions moved to a secondary row.
+export function planLayout(passFirst = false) {
+  const order = planOrder();
+  if (!passFirst) return { primary: order, secondary: [] };
+  return {
+    primary: order.filter((sku) => PLANS[sku]?.type === 'one_time'),
+    secondary: order.filter((sku) => PLANS[sku]?.type !== 'one_time'),
+  };
+}
+
 export const money = (value) => `$${Number(value).toFixed(2)}`;
 
 // Resolve the display numbers for one plan in one region.

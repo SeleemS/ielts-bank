@@ -64,32 +64,45 @@ function flatPlanProps(sku, ppp) {
   };
 }
 
-export function trackViewItemList(ppp = false, source = 'pricing') {
+// `context` carries scalar funnel dimensions (e.g. { pass_first: true } for
+// the pass-first layout) so the /data dashboard and GA4 can split the funnel.
+function contextProps(context) {
+  const props = {};
+  if (context && typeof context === 'object' && 'pass_first' in context) {
+    props.pass_first = Boolean(context.pass_first);
+  }
+  return props;
+}
+
+export function trackViewItemList(ppp = false, source = 'pricing', context = {}) {
   track('view_item_list', {
     item_list_id: ITEM_LIST_ID,
     item_list_name: 'Pro plans',
     items: planOrder(ppp).map((sku) => planItem(sku, ppp)),
     ppp: Boolean(ppp),
     source,
+    ...contextProps(context),
   });
 }
 
-export function trackSelectItem(sku, ppp = false) {
+export function trackSelectItem(sku, ppp = false, context = {}) {
   if (!PLANS[sku]) return;
   track('select_item', {
     item_list_id: ITEM_LIST_ID,
     item_list_name: 'Pro plans',
     items: [planItem(sku, ppp)],
     ...flatPlanProps(sku, ppp),
+    ...contextProps(context),
   });
 }
 
-export function trackBeginCheckout(sku, ppp = false, source = 'pricing') {
+export function trackBeginCheckout(sku, ppp = false, source = 'pricing', context = {}) {
   track('begin_checkout', {
     coupon: planCoupon(sku),
     items: [planItem(sku, ppp)],
     ...flatPlanProps(sku, ppp),
     source,
+    ...contextProps(context),
   });
 }
 

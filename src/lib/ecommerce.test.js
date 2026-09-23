@@ -106,6 +106,16 @@ describe('funnel events', () => {
     expect(params.coupon).toBeUndefined();
   });
 
+  it('tags the funnel with the pass-first layout only when told to', () => {
+    trackViewItemList(true, 'pricing', { pass_first: true });
+    trackSelectItem('exam_pass', true, { pass_first: true });
+    trackBeginCheckout('exam_pass', true, 'pricing', { pass_first: true });
+    trackBeginCheckout('monthly', false, 'pricing');
+    const calls = trackMock.mock.calls;
+    expect(calls.slice(0, 3).map(([, params]) => params.pass_first)).toEqual([true, true, true]);
+    expect(calls[3][1]).not.toHaveProperty('pass_first');
+  });
+
   it('ignores a select_item for a retired plan', () => {
     trackSelectItem('3month', false);
     expect(trackMock).not.toHaveBeenCalled();

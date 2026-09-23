@@ -34,6 +34,22 @@ it('compares regional no-renewal and monthly options with a safe return', () => 
   act(() => links[0].dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
   expect(track).toHaveBeenCalledWith('exam_pass_offer_click', expect.objectContaining({ sku: 'exam_pass', skill: 'writing', offer_version: 'feedback_value_v2' }));
 });
+it('labels the pass as one payment with no auto-renew in pass-first markets', () => {
+  document.cookie = 'ib_country=IN; path=/';
+  act(() => root.render(<ExamPassOffer skill="writing" source="score_tease" band={6} />));
+  expect(container.textContent).toContain('$5.99 USD · One payment · no auto-renew');
+  expect(container.textContent).toContain('Prefer a subscription? Monthly at $3.99 USD/month');
+  document.cookie = 'ib_country=CN; path=/';
+  act(() => root.unmount()); root = createRoot(container);
+  act(() => root.render(<ExamPassOffer skill="writing" source="score_tease" band={6} />));
+  expect(container.textContent).toContain('$14.99 USD · One payment · no auto-renew');
+});
+it('keeps the standard offer copy outside pass-first markets', () => {
+  act(() => root.render(<ExamPassOffer skill="writing" source="score_tease" band={6} />));
+  expect(container.textContent).toContain('$14.99 USD · one payment');
+  expect(container.textContent).not.toContain('no auto-renew');
+  expect(container.textContent).toContain('Or Monthly at $8.99 USD/month');
+});
 it('uses global pricing and records exposure once only when the offer is visible', () => {
   act(() => root.render(<ExamPassOffer skill="speaking" source="speaking_sample" />));
   expect(container.textContent).toContain('$14.99 USD');

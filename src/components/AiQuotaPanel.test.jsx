@@ -36,6 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => root.unmount());
+  document.cookie = 'ib_country=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   container.remove();
   vi.clearAllMocks();
 });
@@ -75,5 +76,30 @@ describe('AiQuotaPanel plan verification', () => {
       skill: 'writing',
       premium: false,
     });
+  });
+});
+
+describe('AiQuotaPanel plan emphasis by market', () => {
+  it('keeps the standard subscription-first line outside pass-first markets', () => {
+    document.cookie = 'ib_country=US; path=/';
+    render();
+    expect(container.textContent).toContain('From $4.17/mo on the annual plan, or a');
+    expect(container.textContent).not.toContain('no auto-renew');
+  });
+
+  it('leads with the one-time pass at the regional price in India', () => {
+    document.cookie = 'ib_country=IN; path=/';
+    render();
+    const text = container.textContent;
+    expect(text).toContain('Exam Pass: $5.99 · One payment · no auto-renew');
+    expect(text.indexOf('Exam Pass')).toBeLessThan(text.indexOf('subscribe from'));
+    expect(text).toContain('subscribe from $1.67/mo');
+    expect(text).not.toContain('$14.99');
+  });
+
+  it('leads with the pass at global prices in China', () => {
+    document.cookie = 'ib_country=CN; path=/';
+    render();
+    expect(container.textContent).toContain('Exam Pass: $14.99 · One payment · no auto-renew');
   });
 });

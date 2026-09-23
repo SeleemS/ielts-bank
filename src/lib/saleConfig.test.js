@@ -12,6 +12,8 @@ import {
   highlightedSku,
   isPromoLive,
   money,
+  PASS_FIRST_LABEL,
+  planLayout,
   planOrder,
   planPricing,
   promoAppliesTo,
@@ -139,6 +141,18 @@ describe('saleConfig planPricing — global list prices', () => {
     expect(p.days).toBe(EXAM_PASS_DAYS);
     expect(EXAM_PASS_DAYS).toBe(30);
     expect(p.perMonth).toBeNull();
+  });
+});
+
+describe('planLayout', () => {
+  it('keeps the standard three-card order outside pass-first markets', () => {
+    expect(planLayout(false)).toEqual({ primary: ['exam_pass', 'monthly', 'annual'], secondary: [] });
+    expect(planLayout()).toEqual(planLayout(false));
+  });
+
+  it('makes the one-time pass the only primary offer in pass-first markets', () => {
+    expect(planLayout(true)).toEqual({ primary: ['exam_pass'], secondary: ['monthly', 'annual'] });
+    expect(PASS_FIRST_LABEL).toBe('One payment · no auto-renew');
   });
 });
 
