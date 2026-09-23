@@ -164,6 +164,23 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // The two essay-bank blog guides were merged into the IELTS Essay Bank
+      // hub (their method now lives in its "How to use" section), so their
+      // ranking signals consolidate on the page searchers actually want.
+      {
+        source: '/blog/ielts-essay-bank-guide',
+        destination: '/ielts-essay-bank',
+        permanent: true,
+      },
+      {
+        source: '/blog/ielts-writing-bank-tips',
+        destination: '/ielts-essay-bank',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       // First-party proxy for Google Analytics so ad blockers that block
