@@ -44,10 +44,10 @@ it('renders a page-supplied call to action and a custom anchor id', () => {
   act(() =>
     root.render(
       <SampleReportPreview id="report-demo">
-        <a href="/ielts-writing-checker">Check my essay</a>
+        <button type="button">Check my essay</button>
       </SampleReportPreview>
     )
   );
   expect(container.querySelector('section#report-demo')).not.toBeNull();
-  expect(container.querySelector('a[href="/ielts-writing-checker"]').textContent).toBe('Check my essay');
+  expect(container.querySelector('section#report-demo button').textContent).toBe('Check my essay');
 });
