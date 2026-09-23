@@ -85,7 +85,7 @@ describe('dual analytics tracking', () => {
     expect(window.localStorage.setItem).toHaveBeenCalledWith('ielts-anon-id', value);
   });
 
-  it('sends the same enriched event to GA4 and the first-party endpoint', () => {
+  it('preserves first-party correlation without overriding the GA4 session', () => {
     track('ui_interaction', { element_id: 'pricing_cta' });
 
     expect(window.gtag).toHaveBeenCalledTimes(1);
@@ -98,7 +98,9 @@ describe('dual analytics tracking', () => {
     expect(body.event).toBe('ui_interaction');
     expect(body.element_id).toBe('pricing_cta');
     expect(body.client_event_id).toBe(gaPayload.client_event_id);
-    expect(body.session_id).toBe(gaPayload.session_id);
+    expect(body.session_id).toBe(getSessionId());
+    expect(gaPayload.app_session_id).toBe(body.session_id);
+    expect(gaPayload).not.toHaveProperty('session_id');
     expect(body.page_view_id).toBe(gaPayload.page_view_id);
     expect(body.event_sequence).toBe(1);
     expect(body.occurred_at).toMatch(/Z$/);

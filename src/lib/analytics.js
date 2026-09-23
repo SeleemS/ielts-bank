@@ -196,7 +196,14 @@ export function track(event, params = {}, options = {}) {
   // event (heartbeat interval, delegated click listener, submit handler).
   if (!options.firstPartyOnly) {
     try {
-      ensureGoogleAnalytics()?.('event', event, payload);
+      // Our per-tab UUID is for first-party correlation, not GA's session ID.
+      // Let gtag retain its own session so acquisition attribution is not
+      // overwritten by an unrelated application identifier.
+      const { session_id: appSessionId, ...gaPayload } = payload;
+      ensureGoogleAnalytics()?.('event', event, {
+        ...gaPayload,
+        app_session_id: appSessionId,
+      });
     } catch {
       /* GA sink failure must not sever first-party telemetry */
     }
