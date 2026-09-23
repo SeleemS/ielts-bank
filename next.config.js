@@ -138,7 +138,15 @@ const nextConfig = {
   // markdown files and throw ENOENT on Vercel. The blog pages are SSG and bake
   // their content in at build, so they need no entry here.
   outputFileTracingIncludes: {
+    // The sitemap index builds every section (for per-section lastmod) and
+    // each child sitemap imports the same loader, so all of them read posts.
     '/sitemap.xml': ['./content/posts/**'],
+    '/sitemap-guides.xml': ['./content/posts/**'],
+    '/sitemap-blog.xml': ['./content/posts/**'],
+    '/sitemap-reading.xml': ['./content/posts/**'],
+    '/sitemap-writing.xml': ['./content/posts/**'],
+    '/sitemap-listening.xml': ['./content/posts/**'],
+    '/sitemap-speaking.xml': ['./content/posts/**'],
     '/api/cron/lifecycle-emails': ['./content/posts/**'],
   },
   async headers() {
