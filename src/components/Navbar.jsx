@@ -41,7 +41,9 @@ function BrandMark() {
   return (
     <NextLink href="/" className="flex items-center gap-2.5 no-underline">
       <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-md bg-primary/5 ring-1 ring-primary/10">
-        <Image src="/image.png" alt="IELTS-Bank logo" width={28} height={28} className="h-7 w-7 object-contain" />
+        {/* Always above the fold: load eagerly instead of next/image's default
+            lazy-load, which defers it behind the viewport intersection check. */}
+        <Image src="/image.png" alt="IELTS-Bank logo" width={28} height={28} loading="eager" className="h-7 w-7 object-contain" />
       </span>
       <span className="text-lg font-bold tracking-tight text-foreground">
         IELTS<span className="text-accent">-Bank</span>
