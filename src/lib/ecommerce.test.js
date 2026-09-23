@@ -116,6 +116,13 @@ describe('funnel events', () => {
     expect(calls[3][1]).not.toHaveProperty('pass_first');
   });
 
+  it('purchase carries recovered_from for checkouts reopened from the recovery email', () => {
+    trackPurchase({ transactionId: 'cs_new', sku: 'exam_pass', ppp: true, amountMinor: 599, recoveredFrom: 'cs_old' });
+    trackPurchase({ transactionId: 'cs_plain', sku: 'monthly', amountMinor: 899 });
+    expect(trackMock.mock.calls[0][1].recovered_from).toBe('cs_old');
+    expect(trackMock.mock.calls[1][1]).not.toHaveProperty('recovered_from');
+  });
+
   it('ignores a select_item for a retired plan', () => {
     trackSelectItem('3month', false);
     expect(trackMock).not.toHaveBeenCalled();

@@ -624,6 +624,7 @@ export default function PricingPage() {
               amountMinor: body.amount_total,
               currency: body.currency || 'USD',
               source: upgrade || 'pricing',
+              recoveredFrom: body.recovered_from || null,
             });
           }
           setActivation('active');

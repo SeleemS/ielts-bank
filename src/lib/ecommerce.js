@@ -117,6 +117,7 @@ export function trackPurchase({
   amountMinor = null,
   currency = 'USD',
   source = 'pricing',
+  recoveredFrom = null,
 }) {
   if (!transactionId || !sku) return;
   const pricing = planPricing(sku, ppp);
@@ -136,6 +137,9 @@ export function trackPurchase({
     sku,
     ppp: Boolean(ppp),
     source,
+    // Set when the buyer completed a checkout reopened from the
+    // abandoned-checkout email (Stripe recovery link).
+    ...(recoveredFrom ? { recovered_from: String(recoveredFrom) } : {}),
   });
 }
 
