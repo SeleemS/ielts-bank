@@ -1,0 +1,185 @@
+{
+  "_readme": "Queue for the daily blog routine. Take the first item with status 'todo', write it, then set its status to 'done' and add publishedOn in the same commit.",
+  "items": [
+    {
+      "slug": "ielts-task-2-band-6-vs-band-7-vs-band-8-same-essay",
+      "targetQuery": "ielts essay band 6 vs band 7",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "band-7-ielts-essay-sample-technology",
+      "targetQuery": "band 7 ielts essay sample",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "band-6-ielts-essay-sample-with-examiner-comments",
+      "targetQuery": "band 6 essay sample ielts",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "band-9-ielts-essay-samples-task-2",
+      "targetQuery": "ielts band 9 essay sample",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-opinion-essay-samples-agree-disagree",
+      "targetQuery": "agree or disagree essay sample ielts",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-discussion-essay-samples-both-views",
+      "targetQuery": "discuss both views essay sample",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-advantages-disadvantages-essay-samples",
+      "targetQuery": "advantages and disadvantages essay ielts sample",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-problem-solution-essay-samples",
+      "targetQuery": "problem solution essay ielts sample",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-writing-task-2-topics-october-2026",
+      "targetQuery": "ielts writing task 2 topics october 2026",
+      "note": "(feeds month page)",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-writing-task-2-topics-november-2026",
+      "targetQuery": "ielts writing task 2 topics november 2026",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-education-essay-topics-with-sample-answers",
+      "targetQuery": "ielts essay topics education",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-environment-essay-topics-with-sample-answers",
+      "targetQuery": "ielts environment essay",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-technology-essay-topics-with-sample-answers",
+      "targetQuery": "ielts technology essay topics",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-crime-essay-topics-with-sample-answers",
+      "targetQuery": "ielts crime essay",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-health-essay-topics-with-sample-answers",
+      "targetQuery": "ielts health essay topics",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-work-and-employment-essay-topics-samples",
+      "targetQuery": "ielts work essay topics",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-task-1-line-graph-sample-answer-band-8",
+      "targetQuery": "ielts line graph sample answer",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-task-1-bar-chart-sample-answer-band-8",
+      "targetQuery": "ielts bar chart sample answer",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-task-1-pie-chart-sample-answer-band-8",
+      "targetQuery": "ielts pie chart sample answer",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-task-1-process-diagram-sample-answer",
+      "targetQuery": "ielts process diagram sample answer",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-task-1-map-sample-answer-band-8",
+      "targetQuery": "ielts map sample answer",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-general-training-letter-samples-formal-informal",
+      "targetQuery": "ielts letter sample general training",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-cue-cards-october-2026-practice-set",
+      "targetQuery": "ielts cue card october 2026",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-cue-cards-september-december-2026",
+      "targetQuery": "ielts cue cards september to december 2026",
+      "note": "(hub, weekly refresh)",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-speaking-part-3-questions-technology-with-answers",
+      "targetQuery": "ielts speaking part 3 technology questions",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-speaking-part-1-topics-september-december-2026",
+      "targetQuery": "ielts speaking part 1 topics 2026",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "chatgpt-vs-ielts-writing-checker-same-essay",
+      "targetQuery": "can chatgpt check ielts writing",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-reading-practice-with-answers-and-explanations",
+      "targetQuery": "ielts reading practice with answers",
+      "note": "(list of our original passages)",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-listening-practice-with-transcripts-and-answers",
+      "targetQuery": "ielts listening practice with answers",
+      "note": "",
+      "status": "todo"
+    },
+    {
+      "slug": "ielts-writing-task-2-sample-answers-pdf",
+      "targetQuery": "ielts writing task 2 sample answers pdf",
+      "note": "(free PDF of the top 30 essays)",
+      "status": "todo"
+    }
+  ]
+}
