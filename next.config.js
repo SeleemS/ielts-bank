@@ -208,6 +208,9 @@ const nextConfig = {
       // /index served a duplicate of the home page (canonicalised, but still a
       // crawlable second URL).
       { source: '/index', destination: '/', permanent: true },
+      // The month-grouped "new cue cards" page was reshaped into the seasonal
+      // cue-card hub (every card by topic family, newest first).
+      { source: '/speaking/new-cue-cards', destination: '/ielts-speaking-cue-cards', permanent: true },
       ...Object.entries(BLOG_MERGES).map(([slug, destination]) => ({
         source: `/blog/${slug}`,
         destination,

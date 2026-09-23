@@ -17,7 +17,7 @@ const PRACTICE_LINKS = [
   { label: 'Listening', href: '/listeningquestion' },
   { label: 'Speaking', href: '/speakingquestion' },
   { label: 'Mock Tests', href: '/mock-test' },
-  { label: 'New Cue Cards', href: '/speaking/new-cue-cards' },
+  { label: 'Speaking Cue Cards', href: '/ielts-speaking-cue-cards' },
 ];
 
 const TOOLS_LINKS = [

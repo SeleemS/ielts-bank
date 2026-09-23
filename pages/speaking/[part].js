@@ -169,7 +169,7 @@ export default function SpeakingPartHub({ partSlug, cueCards = [], questionGroup
             <p className="mb-4 text-sm text-muted-foreground">
               {cueCards.length} free cue cards with examiner audio, a one-minute prep timer and an
               original Band 8–9 model answer.{' '}
-              <NextLink href="/speaking/new-cue-cards" className="font-semibold text-accent no-underline">
+              <NextLink href="/ielts-speaking-cue-cards" className="font-semibold text-accent no-underline">
                 See the newest cards
               </NextLink>
               .

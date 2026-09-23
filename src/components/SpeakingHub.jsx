@@ -1,6 +1,6 @@
 // src/components/SpeakingHub.jsx
 // Shared building blocks for the /speaking hub pages (part hubs, topic-family
-// hubs, and the new-cue-cards freshness hub). Keeps the three pages visually
+// hubs, and the /ielts-speaking-cue-cards hub). Keeps the three pages visually
 // identical to the reading/listening hubs without triplicating markup.
 
 import React from 'react';
@@ -184,7 +184,7 @@ export function PartChips({ activePart }) {
         </NextLink>
       ))}
       <NextLink
-        href="/speaking/new-cue-cards"
+        href="/ielts-speaking-cue-cards"
         className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground no-underline shadow-sm transition-colors hover:border-accent/40 hover:text-accent"
       >
         New cue cards

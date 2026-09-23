@@ -51,8 +51,8 @@ export const STATIC_ROUTES = [
   ...SPEAKING_PART_SLUGS.map((slug) => `/speaking/${slug}`),
   // Speaking topic-family hubs (pages/speaking/topics/[family].js).
   ...SPEAKING_FAMILY_SLUGS.map((slug) => `/speaking/topics/${slug}`),
-  // Freshness hub for newly published cue cards.
-  '/speaking/new-cue-cards',
+  // Seasonal hub of every Part 2 cue card (replaced /speaking/new-cue-cards).
+  '/ielts-speaking-cue-cards',
   // Per-country score requirement pages (pages/ielts-score-requirements/[country].js).
   ...SCORE_REQUIREMENT_COUNTRY_SLUGS.map((slug) => `/ielts-score-requirements/${slug}`),
 ];

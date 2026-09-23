@@ -237,7 +237,7 @@ export default function SpeakingIndex({ items = [] }) {
                   </NextLink>
                 ))}
                 <NextLink
-                  href="/speaking/new-cue-cards"
+                  href="/ielts-speaking-cue-cards"
                   className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent no-underline transition-colors hover:bg-accent/20"
                 >
                   New cue cards

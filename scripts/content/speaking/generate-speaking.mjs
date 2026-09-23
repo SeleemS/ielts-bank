@@ -322,7 +322,7 @@ async function upsertPassage(env, item, slug, details) {
   });
   const passageId = rows[0].id;
   // passages.created_at (default now(), untouched by later upserts) is the
-  // "published/added" timestamp /speaking/new-cue-cards sorts and dates by.
+  // "published/added" timestamp /ielts-speaking-cue-cards sorts and dates by.
   const createdAt = rows[0].created_at || null;
 
   await pg(env, 'speaking_details', {
@@ -545,7 +545,7 @@ async function runFromTopics() {
     const families = [...new Set(imported.map((r) => r.family).filter(Boolean))];
     const paths = [
       ...imported.map((r) => `/speakingquestion/${r.slug}`),
-      '/speaking/new-cue-cards',
+      '/ielts-speaking-cue-cards',
       '/speaking/part-2',
       '/speakingquestion',
       ...families.map((f) => `/speaking/topics/${f}`),
