@@ -137,9 +137,16 @@ const nextConfig = {
   // at REQUEST time (rather than only at build time) would ship without the
   // markdown files and throw ENOENT on Vercel. The blog pages are SSG and bake
   // their content in at build, so they need no entry here.
+  //
+  // lib/essays.js reads content/essays/*.md the same way. The essay pages are
+  // fully static, but the essay-bank hub and the writing question pages are
+  // ISR (their getStaticProps re-runs on Vercel) and the sitemap runs per
+  // request, so all three need the essay files traced in.
   outputFileTracingIncludes: {
-    '/sitemap.xml': ['./content/posts/**'],
+    '/sitemap.xml': ['./content/posts/**', './content/essays/**'],
     '/api/cron/lifecycle-emails': ['./content/posts/**'],
+    '/ielts-essay-bank': ['./content/essays/**'],
+    '/writingquestion/**': ['./content/essays/**'],
   },
   async headers() {
     return [
