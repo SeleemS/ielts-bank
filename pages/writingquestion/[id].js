@@ -7,6 +7,10 @@ import {
   getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
+// Server-only (fs): used inside getStaticProps alone, so it never reaches the
+// client bundle. ISR regeneration reads content/essays at request time, which
+// is why next.config.js traces it into this route.
+import { getEssaysForPractice } from '../../lib/essays';
 
 export default WritingQuestion;
 
@@ -32,6 +36,9 @@ export async function getStaticProps({ params }) {
   const passage = await getStructuredPassage(SKILLS.writing, params.id);
   if (!passage) return { notFound: true };
   const related = await getRelatedPractice(SKILLS.writing, passage.slug);
+  const sampleEssays = getEssaysForPractice(passage.slug)
+    .map((e) => ({ slug: e.slug, band: e.band }))
+    .sort((a, b) => a.band - b.band);
 
   return {
     props: {
@@ -39,6 +46,7 @@ export async function getStaticProps({ params }) {
       passage,
       description: toMetaDescription(passage.bodyHtml),
       related,
+      sampleEssays,
     },
     revalidate: 3600,
   };
