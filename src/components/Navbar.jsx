@@ -26,6 +26,12 @@ import StreakBadge from './StreakBadge';
 // Pure Tailwind/shadcn Navbar. No Chakra imports — this renders on every page,
 // including pages still built with Chakra, so it must be self-contained.
 
+// Sitewide primary action. The free AI Writing report is what converts
+// (writing drives purchases), so the header sends people there rather than
+// to the Reading list. Question pages still swap this for "Create account".
+export const PRIMARY_CTA_HREF = '/ielts-writing-checker';
+export const PRIMARY_CTA_LABEL = 'Check my essay free';
+
 const NAV_LINKS = [
   { label: 'Reading', href: '/readingquestion', icon: BookOpen },
   { label: 'Writing', href: '/writingquestion', icon: PenLine },
@@ -133,7 +139,7 @@ export default function Navbar() {
   const router = useRouter();
 
   // On any practice surface (question detail pages, mock runner) a signed-out
-  // visitor is already practising — the CTA pivots from "Improve my IELTS band" to
+  // visitor is already practising — the CTA pivots from the writing check to
   // creating an account (opens the signup dialog in place).
   const onQuestionPage = /^\/(reading|writing|listening|speaking)question\/\[|^\/mock\/\[/.test(
     router.pathname
@@ -179,8 +185,8 @@ export default function Navbar() {
             </Button>
           ) : (
             <Button asChild variant="accent" className="shadow-sm">
-              <NextLink href="/readingquestion" className="no-underline">
-                Improve my IELTS band
+              <NextLink href={PRIMARY_CTA_HREF} className="no-underline">
+                {PRIMARY_CTA_LABEL}
                 <ArrowRight className="h-4 w-4" />
               </NextLink>
             </Button>
@@ -244,8 +250,8 @@ export default function Navbar() {
             </Button>
           ) : (
             <Button asChild variant="accent" size="lg" className="mt-2 w-full">
-              <NextLink href="/readingquestion" onClick={() => setOpen(false)} className="no-underline">
-                Improve my IELTS band
+              <NextLink href={PRIMARY_CTA_HREF} onClick={() => setOpen(false)} className="no-underline">
+                {PRIMARY_CTA_LABEL}
                 <ArrowRight className="h-4 w-4" />
               </NextLink>
             </Button>

@@ -116,6 +116,14 @@ describe('Navbar mobile navigation', () => {
   });
 });
 
+describe('Navbar primary CTA', () => {
+  it('sends visitors to the free Writing check off question pages', () => {
+    const cta = [...container.querySelectorAll('a')].find((a) => a.textContent.includes('Check my essay free'));
+    expect(cta).toBeTruthy();
+    expect(cta.getAttribute('href')).toBe('/ielts-writing-checker');
+  });
+});
+
 describe('Navbar trust signals', () => {
   // A randomised "N studying now" counter was removed: it was not backed by
   // real concurrency data and was flagged as a consumer-law risk. Keep it out.
