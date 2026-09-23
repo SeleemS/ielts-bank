@@ -529,9 +529,9 @@ export async function lifecycleGateFor(admin, row) {
   return lifecycleEmailAllowed(row.email_type, { prefs, newsletterSubscribed, accountCreatedAt });
 }
 
-// A checkout follow-up is pointless (and a recovery link risks a second
-// purchase) once the learner has Pro by any route. An unknown status sends:
-// the email is informational and the checkout gate still refuses duplicates.
+// A checkout follow-up is pointless once the learner has Pro by any route. An
+// unknown status sends: the email is informational, and its resume link
+// (/billing/resume) re-runs the checkout guards before opening a session.
 async function checkoutFollowupStillRelevant(admin, row) {
   if (row.email_type !== 'checkout_abandoned' || !row.user_id) return true;
   const status = await fetchPremiumStatus(admin, row.user_id);

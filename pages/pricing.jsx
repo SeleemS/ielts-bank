@@ -25,6 +25,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import SignInDialog from '../src/components/auth/SignInDialog';
+import ResumeNotice from '../src/components/billing/ResumeNotice';
 import SampleReportPreview from '../src/components/SampleReportPreview';
 import { TIMELINES, dailyCost, recommendedSku, timelineByKey, timelineFromExamDays } from '../src/lib/planFit';
 import { FaqSection, faqJsonLdFor } from '../src/components/SectionLanding';
@@ -917,6 +918,7 @@ export default function PricingPage() {
           ) : null}
         </header>
 
+        <ResumeNotice className="mx-auto mt-6 max-w-xl text-center" />
         {checkoutStatus === 'success' && currentActivation === 'active' ? (
           <ActivationChecklist upgrade={upgrade} saved={saved} returnTo={returnTo} />
         ) : null}

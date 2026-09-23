@@ -405,6 +405,9 @@ export default async function handler(req, res) {
     // Promotion codes and an attached coupon are mutually exclusive in
     // Stripe; recovered sessions follow the same rule as the original.
     const allowPromotionCodes = !couponId;
+    // Lets the recovery email's resume link tell when the discount this
+    // checkout advertised has since ended (lib/checkoutResume.js).
+    if (couponId) metadata.discount_coupon = couponId;
     operationStage = 'session';
     const session = await stripe.checkout.sessions.create({
       mode: oneTime ? 'payment' : 'subscription',

@@ -21,6 +21,7 @@ import DailyReminderCard from '../src/components/dashboard/DailyReminderCard';
 import EmailPreferences from '../src/components/dashboard/EmailPreferences';
 import { isPremiumActive } from '../src/lib/usePlan';
 import BaselineCard from '../src/components/estimator/BaselineCard';
+import ResumeNotice from '../src/components/billing/ResumeNotice';
 
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
@@ -264,6 +265,7 @@ function DashboardBody({ user, signOut }) {
 
   return (
     <div className="space-y-5">
+      <ResumeNotice />
       <StreakCard />
       <DashboardHero user={user} profile={profile} data={data} />
       <DashboardNav active={activeTab} onChange={changeTab} />
