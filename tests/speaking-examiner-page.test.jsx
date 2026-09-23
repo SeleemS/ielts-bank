@@ -24,7 +24,7 @@ vi.mock('../src/components/Footer', () => ({ default: () => null }));
 vi.mock('../src/components/auth/SignInDialog', () => ({ default: () => null }));
 vi.mock('../src/components/question/ScoreUI', () => ({ ScoringProgress: () => null, CriterionFeedback: () => null, BandHero: () => null, BandMeter: () => null }));
 vi.mock('../src/lib/auth', () => ({ useAuth: () => ({ user: { id: state.userId }, loading: false }) }));
-vi.mock('../src/lib/usePlan', () => ({ usePlan: () => ({ isPremium: true, loading: false }) }));
+vi.mock('../src/lib/usePlan', () => ({ usePlan: () => ({ isPremium: state.isPremium !== false, loading: false }) }));
 vi.mock('../src/lib/useRealtimeMinutes', () => ({ useRealtimeMinutes: () => ({ remainingSeconds: 3600, refresh: state.refresh }) }));
 vi.mock('../src/lib/analytics', () => ({ track: () => {} }));
 vi.mock('../lib/supabase', () => ({ getSupabase: () => ({ auth: { getSession: async () => ({ data: { session: { access_token: 'fixture-token' } }, error: null }) } }) }));
@@ -47,7 +47,7 @@ beforeEach(async () => {
   clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
   state.recorder = { start: vi.fn(), dispose: vi.fn(), stop: vi.fn(async () => [new Blob(['audio'])]) };
   state.upload.mockReset().mockResolvedValue(1);
-  sessionStorage.clear(); state.userId = 'qa-fixture'; state.liveOptions = null;
+  sessionStorage.clear(); state.userId = 'qa-fixture'; state.liveOptions = null; state.isPremium = true;
   peers = [];
   track = { enabled: true, stop: vi.fn() };
   media = { getTracks: () => [track] };
@@ -334,5 +334,20 @@ describe('gpt-live-1 transport (NEXT_PUBLIC_LIVE_EXAMINER)', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(peers).toHaveLength(0);
     expect(container.querySelector('[role="alert"]').textContent).toContain('Microphone access is required');
+  });
+});
+
+describe('free-visitor gate', () => {
+  it('names Pro, links pricing with speaking context and offers the free sample path', async () => {
+    unmount();
+    state.isPremium = false;
+    root = createRoot(container);
+    await act(async () => root.render(<SpeakingExaminerPage />));
+    expect(container.textContent).toContain('The live examiner is part of Pro');
+    expect(container.textContent).not.toContain('Premium feature');
+    const links = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(links).toContain('/pricing?upgrade=speaking');
+    expect(links).toContain('/speakingquestion');
+    expect(container.textContent).toContain('14-day money-back guarantee');
   });
 });
