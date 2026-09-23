@@ -10,6 +10,7 @@ import NewsletterSignup from './NewsletterSignup';
 const PRACTICE_LINKS = [
   { label: 'Reading', href: '/readingquestion' },
   { label: 'Writing', href: '/writingquestion' },
+  { label: 'IELTS Essay Bank', href: '/ielts-essay-bank' },
   { label: 'Listening', href: '/listeningquestion' },
   { label: 'Speaking', href: '/speakingquestion' },
   { label: 'Mock Tests', href: '/mock-test' },

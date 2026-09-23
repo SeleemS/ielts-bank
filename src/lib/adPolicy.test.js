@@ -26,6 +26,8 @@ describe('AdSense route policy', () => {
       '/',
       '/blog',
       '/blog/ielts-reading-time-management',
+      '/ielts-essay-bank',
+      '/ielts-essay-bank/free-university-education-band-7',
       '/readingquestion',
       '/listeningquestion',
       '/about',

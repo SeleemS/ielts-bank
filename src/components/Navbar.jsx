@@ -14,6 +14,7 @@ import {
   LogOut,
   ClipboardCheck,
   Sparkles,
+  Library,
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../../components/ui/sheet';
@@ -30,6 +31,7 @@ import StreakBadge from './StreakBadge';
 const NAV_LINKS = [
   { label: 'Reading', href: '/readingquestion', icon: BookOpen },
   { label: 'Writing', href: '/writingquestion', icon: PenLine },
+  { label: 'Essay Bank', href: '/ielts-essay-bank', icon: Library },
   { label: 'Listening', href: '/listeningquestion', icon: Headphones },
   { label: 'Speaking', href: '/speakingquestion', icon: Mic },
   { label: 'Mock Tests', href: '/mock-test', icon: ClipboardCheck },
