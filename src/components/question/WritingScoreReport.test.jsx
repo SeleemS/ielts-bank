@@ -191,8 +191,8 @@ describe('WritingScoreReport free-score preview', () => {
     render(<WritingScoreReport task={2} result={freeResult} afterOffer={slot} />);
     const html = container.innerHTML;
     expect(html).toContain('data-testid="after-offer"');
-    expect(html.indexOf('Compare feedback plans')).toBeGreaterThan(-1);
-    expect(html.indexOf('data-testid="after-offer"')).toBeGreaterThan(html.indexOf('Compare feedback plans'));
+    expect(html.indexOf('Continue to the Exam Pass')).toBeGreaterThan(-1);
+    expect(html.indexOf('data-testid="after-offer"')).toBeGreaterThan(html.indexOf('Continue to the Exam Pass'));
 
     render(<WritingScoreReport task={2} result={{ ...result, free: false }} afterOffer={slot} />);
     expect(container.innerHTML).not.toContain('after-offer');
