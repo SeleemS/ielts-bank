@@ -16,6 +16,11 @@ describe('AdSense route policy', () => {
       '/writingquestion/example',
       '/listeningquestion/example',
       '/speakingquestion/example',
+      // Only the exact answers sub-route is ad-eligible, not look-alikes.
+      '/readingquestion/example?tab=answers',
+      '/readingquestion/answers',
+      '/writingquestion/example/answers',
+      '/listeningquestion/example/answers-draft',
     ]) {
       expect(adsAllowedForPath(path), path).toBe(false);
     }
@@ -29,6 +34,10 @@ describe('AdSense route policy', () => {
       '/readingquestion',
       '/listeningquestion',
       '/about',
+      '/readingquestion/why-the-body-needs-vitamins-1bndxg/answers',
+      '/listeningquestion/booking-an-airport-taxi-abc123/answers',
+      '/readingquestion/why-the-body-needs-vitamins-1bndxg/answers?utm_source=x',
+      '/readingquestion/why-the-body-needs-vitamins-1bndxg/answers#answer-3',
     ]) {
       expect(adsAllowedForPath(path), path).toBe(true);
     }

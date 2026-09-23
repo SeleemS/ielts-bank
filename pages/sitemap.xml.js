@@ -1,5 +1,6 @@
 import { posts } from '../lib/posts';
-import { SKILLS, listMockTests, listPassages } from '../lib/supabase';
+import { SKILLS, listMockTests, listPassages, listAnswerKeySlugs } from '../lib/supabase';
+import { ANSWER_SKILLS, answersUrl } from '../lib/answerKeys';
 import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
 import { LISTENING_PART_SLUGS } from '../lib/listeningQuestionTypes';
 import { SPEAKING_PART_SLUGS } from '../lib/speakingParts';
@@ -114,6 +115,19 @@ export async function getServerSideProps({ res }) {
       } catch (err) {
         // If Supabase is unreachable, still emit the static + blog URLs.
         console.error(`Sitemap: failed to enumerate ${skill}`, err);
+      }
+    })
+  );
+
+  // Answer-key pages (/readingquestion/<slug>/answers, /listeningquestion/…)
+  // — only passages with a complete, publishable key (lib/answerKeys.js).
+  await Promise.all(
+    ANSWER_SKILLS.map(async (skill) => {
+      try {
+        const slugs = await listAnswerKeySlugs(skill);
+        slugs.forEach((slug) => entries.push({ loc: answersUrl(skill, slug) }));
+      } catch (err) {
+        console.error(`Sitemap: failed to enumerate ${skill} answer keys`, err);
       }
     })
   );
