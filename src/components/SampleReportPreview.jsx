@@ -169,9 +169,12 @@ export default function SampleReportPreview({
       </div>
 
       <div className="mx-auto mt-6 max-w-3xl space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
-        <div className="relative">
+        <div data-testid="sample-overall" data-tier="free">
+          <div className="mb-2 flex items-center justify-between gap-3 px-1">
+            <h3 className="text-sm font-bold text-foreground">Overall band estimate</h3>
+            <TierTag tier="free" />
+          </div>
           <BandHero band={r.overallBand} subtitle={`Writing Task ${r.task} · ${r.wordCount} words`} />
-          <TierTag tier="free" className="absolute right-3 top-3" />
         </div>
 
         <Section tier="free" title="Band and feedback on all four criteria" testId="sample-criteria">

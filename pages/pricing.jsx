@@ -723,17 +723,16 @@ export default function PricingPage() {
         ) : null}
 
         <header className="mx-auto max-w-3xl text-center">
-          <Badge variant="emerald" className="mb-4">
+          <Badge variant="emerald" className="mb-3 sm:mb-4">
             <Sparkles className="mr-1.5 h-3.5 w-3.5" />
             IELTS-Bank Pro
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-            30 days of focused IELTS preparation
+            Full IELTS feedback until test day
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Choose the Exam Pass for 30 days of full Writing and Speaking feedback,
-            live examiner practice on the newly released gpt-live-1, timed mocks, and trend
-            insights. One payment, no renewal.
+          <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+            Full Writing and Speaking reports, the live AI speaking examiner, timed mocks and
+            band trends. Pick the plan that fits your test date.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
             <span className="inline-flex items-center gap-1.5 font-bold text-foreground">

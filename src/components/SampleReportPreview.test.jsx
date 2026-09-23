@@ -24,6 +24,7 @@ const tierOf = (id) => container.querySelector(`[data-testid="${id}"]`)?.getAttr
 it('labels exactly what the free report includes and what Pro adds', () => {
   act(() => root.render(<SampleReportPreview />));
   // Mirrors reduceForFree: bands + criterion feedback + one correction are free.
+  expect(tierOf('sample-overall')).toBe('free');
   expect(tierOf('sample-criteria')).toBe('free');
   expect(tierOf('sample-first-correction')).toBe('free');
   // Everything the API withholds from a free score is tagged Pro.

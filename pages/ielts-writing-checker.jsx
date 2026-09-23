@@ -395,7 +395,7 @@ export default function WritingCheckerPage() {
         <main className="flex-1">
           {/* Hero */}
           <section className="border-b border-border bg-secondary/40">
-            <div className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-6 md:py-16 lg:px-8">
+            <div className="mx-auto max-w-4xl px-4 py-8 text-center sm:px-6 sm:py-12 md:py-16 lg:px-8">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-accent" />
                 AI-powered tool
@@ -408,7 +408,7 @@ export default function WritingCheckerPage() {
                 the four official criteria and the sentences holding your score back.
                 Your first report is free.
               </p>
-              <ul className="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-foreground">
+              <ul className="mx-auto mt-5 hidden max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-foreground sm:flex">
                 {['Free first report — no card', 'Marked on the public band descriptors', 'Your draft is saved while you sign up'].map((item) => (
                   <li key={item} className="inline-flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />

@@ -293,7 +293,7 @@ function HeroEssayBox() {
       </div>
 
       <ul className="mt-4 grid gap-1.5 text-xs font-medium text-slate-200 sm:grid-cols-3">
-        {['Band on all 4 criteria', 'A corrected sentence from your essay', 'Free account — no card'].map((item) => (
+        {['Band on all 4 criteria', 'One corrected sentence', 'Free account — no card'].map((item) => (
           <li key={item} className="inline-flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
             {item}
@@ -367,14 +367,14 @@ const HomePage = ({ counts = {} }) => {
               }}
             />
             <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-              <div className="mx-auto max-w-3xl text-center">
+              <div className="mx-auto max-w-4xl text-center">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-emerald-300">
                   <GraduationCap className="h-3.5 w-3.5" />
                   Free AI IELTS Writing check
                 </span>
-                <h1 className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
-                  Know your IELTS Writing band
-                  <span className="text-emerald-400"> and exactly what to fix</span>
+                <h1 className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.25rem]">
+                  Know your IELTS Writing band{' '}
+                  <span className="text-emerald-400 sm:block">and exactly what to fix</span>
                 </h1>
                 <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
                   Paste a Task 1 or Task 2 answer. An AI examiner marks it on the four
