@@ -2,7 +2,8 @@
 // Server-side IELTS Writing scoring. Replaces the old unauthenticated AWS API
 // Gateway GPT endpoint that the browser called directly. This route:
 //   * runs only on the server (needs the secret OPENAI_API_KEY),
-//   * REQUIRES sign-in; free users receive one lifetime Writing sample while
+//   * REQUIRES sign-in; free users receive a free Writing sample (lifetime
+//     under consume_ai_score v9, one per rolling 7 days under v10) while
 //     Premium users use the daily fair-use meter in consume_ai_score,
 //   * rate-limits per client IP AND enforces a daily global circuit breaker via
 //     the Supabase check_rate_limit() RPC (service role),
@@ -511,6 +512,9 @@ export default async function handler(req, res) {
       quotaRemaining: quota.remaining,
       plan: quota.plan,
       free: isFreeScore,
+      // consume_ai_score v10 (weekly free samples) says when the next free
+      // score unlocks; absent before that migration, so clients show nothing.
+      ...(isFreeScore && quota.nextFreeAt ? { nextFreeAt: quota.nextFreeAt } : {}),
       ...(isFreeScore ? reduceForFree(result) : result),
     });
   } catch (e) {

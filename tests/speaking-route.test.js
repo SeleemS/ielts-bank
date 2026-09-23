@@ -332,6 +332,78 @@ describe('POST /api/score/speaking quota safety', () => {
     expect(res.jsonBody.improvements).toEqual([]);
     // The FULL result is still persisted for the user's own history.
     expect(state.tableCalls.map(({ table }) => table)).toContain('scores');
+    // Lifetime RPC (v9) has no refill time, so none is invented.
+    expect(res.jsonBody).not.toHaveProperty('nextFreeAt');
+  });
+
+  it('passes the weekly refill time through with a v10 free sample', async () => {
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    state.quotaResult = {
+      allowed: true,
+      remaining: 0,
+      plan: 'free',
+      free: true,
+      consumedAt: '2026-09-23T12:00:00.000Z',
+      freePeriod: 'week',
+      nextFreeAt: '2026-09-30T12:00:00.000Z',
+    };
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { 'content-type': 'audio/webm' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            text:
+              'I enjoy travelling because it teaches me about different people and cultures while helping me become more independent and adaptable.',
+          }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }
+        )
+      );
+    chatCompletionWithFallback.mockResolvedValue({
+      ok: true,
+      status: 200,
+      model: 'gpt-5.1',
+      payload: {
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                overallBand: 7,
+                criteria: {
+                  fluencyCoherence: { band: 6.5, feedback: 'Clear progression.' },
+                  lexicalResource: { band: 7, feedback: 'Good range.' },
+                  grammaticalRange: { band: 7.5, feedback: 'Varied structures.' },
+                },
+                summary: 'A capable response.',
+                improvements: ['Develop examples further.'],
+              }),
+            },
+          },
+        ],
+      },
+      detail: '',
+    });
+
+    const res = await callRoute();
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.free).toBe(true);
+    expect(res.jsonBody.overallBand).toBe(7);
+    // ONLY the first criterion may leave the server on the free sample.
+    expect(Object.keys(res.jsonBody.criteria)).toEqual(['fluencyCoherence']);
+    expect(res.jsonBody.lockedCriteriaCount).toBe(2);
+    expect(res.jsonBody.summary).toBe('');
+    expect(res.jsonBody.improvements).toEqual([]);
+    // The FULL result is still persisted for the user's own history.
+    expect(res.jsonBody.nextFreeAt).toBe('2026-09-30T12:00:00.000Z');
+    expect(Object.keys(res.jsonBody.criteria)).toEqual(['fluencyCoherence']);
   });
 
   it('refunds the free sample when scoring cannot start', async () => {

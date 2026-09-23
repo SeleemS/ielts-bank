@@ -3,6 +3,7 @@ import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../lib/upgradeContext';
+import { freeScoreCopy } from '../lib/freeScorePeriod';
 import {
   Sparkles,
   PenLine,
@@ -415,7 +416,7 @@ export default function WritingCheckerPage() {
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Paste a Task 1 or Task 2 answer. In under a minute you get a band on each of
                 the four official criteria and the sentences holding your score back.
-                Your first report is free.
+                {freeScoreCopy().checkerFreeLine}
               </p>
               <ul className="mx-auto mt-5 hidden max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-foreground sm:flex">
                 {['Free first report — no card', 'Marked on the public band descriptors', 'Your draft is saved while you sign up'].map((item) => (

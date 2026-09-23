@@ -7,6 +7,7 @@ import { track } from '../../lib/analytics';
 import { usePlan } from '../../lib/usePlan';
 import { useFreeWritingSample } from '../../lib/useFreeWritingSample';
 import { formatResultScore, writingPromptVariant } from '../../lib/writingUpsell';
+import { nextFreeScoreHint } from '../../../lib/freeScorePeriod';
 
 // Post-result bridge from Reading/Listening into AI Writing scoring.
 // Reading and Listening bring most of the traffic and used to end at the
@@ -22,7 +23,7 @@ export default function WritingPromptCard({
   className,
 }) {
   const { isPremium, loading: planLoading } = usePlan();
-  const { loading: sampleLoading, used: freeSampleUsed } = useFreeWritingSample();
+  const { loading: sampleLoading, used: freeSampleUsed, nextFreeAt } = useFreeWritingSample();
 
   const variant = writingPromptVariant({
     skill,
@@ -47,12 +48,13 @@ export default function WritingPromptCard({
   if (!variant) return null;
 
   const scoreLine = formatResultScore({ skill, band, score, total });
+  const refillHint = nextFreeScoreHint(nextFreeAt, { skill: 'writing' });
   const checkerHref = `/ielts-writing-checker?from=${skill}_result`;
 
   const copy =
     variant === 'upgrade'
       ? {
-          body: 'Get full AI Writing reports with Pro — every criterion, corrected examples and a Band 8 rewrite, with up to 2 reports per day, 10 per week and 30 per month.',
+          body: `Get full AI Writing reports with Pro — every criterion, corrected examples and a Band 8 rewrite, with up to 2 reports per day, 10 per week and 30 per month.${refillHint ? ` ${refillHint}` : ''}`,
           cta: 'See Pro plans',
           href: '/pricing?upgrade=writing',
         }

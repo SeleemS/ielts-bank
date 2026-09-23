@@ -14,6 +14,7 @@ const state = {
   scoreError: null,
   scoreReject: null,
   deletedAttemptIds: [],
+  consumeData: null,
 };
 
 vi.mock('@supabase/supabase-js', () => ({
@@ -37,6 +38,7 @@ vi.mock('@supabase/supabase-js', () => ({
         return response;
       }
       if (name === 'consume_ai_score') {
+        if (state.consumeData) return { data: state.consumeData, error: null };
         return {
           data: {
             allowed: true,
@@ -132,6 +134,7 @@ describe('POST /api/score/writing account and quota safety', () => {
     state.scoreError = null;
     state.scoreReject = null;
     state.deletedAttemptIds = [];
+    state.consumeData = null;
     vi.restoreAllMocks();
   });
 
@@ -464,6 +467,66 @@ describe('POST /api/score/writing account and quota safety', () => {
       'scores',
     ]);
     expect(state.deletedAttemptIds).toEqual(['attempt-id']);
+  });
+
+  it('returns the weekly refill time with a free score under consume_ai_score v10', async () => {
+    state.authUser = linkedUser();
+    state.consumeData = {
+      allowed: true,
+      free: true,
+      remaining: 0,
+      plan: 'free',
+      consumedAt: '2026-09-23T12:00:00.000Z',
+      freePeriod: 'week',
+      nextFreeAt: '2026-09-30T12:00:00.000Z',
+    };
+    await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.free).toBe(true);
+    expect(res.jsonBody.nextFreeAt).toBe('2026-09-30T12:00:00.000Z');
+  });
+
+  it('omits the refill time under the lifetime RPC (v9) so old and new schemas both work', async () => {
+    state.authUser = linkedUser();
+    await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonBody.free).toBe(true);
+    expect(res.jsonBody).not.toHaveProperty('nextFreeAt');
+  });
+
+  it('passes a v10 free-tier denial through as premium_required with the refill time', async () => {
+    state.authUser = linkedUser();
+    state.consumeData = {
+      allowed: false,
+      free: false,
+      remaining: 0,
+      plan: 'free',
+      reason: 'premium_required',
+      resetsAt: '2026-09-30T12:00:00.000Z',
+      freePeriod: 'week',
+      nextFreeAt: '2026-09-30T12:00:00.000Z',
+    };
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes();
+
+    await handler(makeReq({ body: validBody() }), res);
+
+    expect(res.statusCode).toBe(402);
+    expect(res.jsonBody).toMatchObject({
+      reason: 'premium_required',
+      resetsAt: '2026-09-30T12:00:00.000Z',
+    });
+    expect(state.rpcCalls.map(({ name }) => name)).not.toContain('refund_ai_score');
   });
 
   it('rolls back the attempt when score persistence rejects', async () => {
