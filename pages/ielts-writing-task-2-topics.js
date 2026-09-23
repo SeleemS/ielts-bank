@@ -7,7 +7,11 @@ import Footer from '../src/components/Footer';
 
 import { SITE_URL } from '../lib/site';
 import { listAvailableRoundupMonths, parseMonthSlug } from '../lib/task2Roundup';
-import { TASK2_PROMPTS } from '../lib/task2Prompts';
+import { TASK2_PROMPTS as ALL_TASK2_PROMPTS } from '../lib/task2Prompts';
+import { questionPath, withoutRetiredDuplicates } from '../lib/questionUrls';
+
+// Exact-duplicate prompts redirect to their kept twin (lib/questionUrls.js).
+const TASK2_PROMPTS = withoutRetiredDuplicates('writing', ALL_TASK2_PROMPTS);
 
 const PAGE_TITLE = 'IELTS Writing Task 2 Topics 2026 (with Practice Questions)';
 const PAGE_DESCRIPTION =
@@ -95,7 +99,7 @@ const TOPIC_FAMILIES = [
     blurb:
       'University funding, school subjects, homework and how technology is changing the classroom.',
     prompts: [
-      { slug: 'should-university-education-be-free-for-everyone-p5ttxn', title: 'Should University Education Be Free for Everyone?' },
+      { slug: 'ielts-writing-task-2-should-university-education-be-free-for-everyone-p5ttxn', title: 'Should University Education Be Free for Everyone?' },
       { slug: 'free-university-tuition-1ha5az', title: 'Free University Tuition' },
       { slug: 'homework-burden-d674n0', title: 'Homework Burden' },
       { slug: 'screens-in-the-classroom-jgnr3c', title: 'Screens in the Classroom' },
@@ -394,7 +398,7 @@ export default function IeltsWritingTask2Topics({ roundupMonths }) {
                         <li key={prompt.slug} className="flex items-start gap-2">
                           <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" />
                           <NextLink
-                            href={`/writingquestion/${prompt.slug}`}
+                            href={questionPath('writing', prompt)}
                             className="text-sm font-medium text-foreground no-underline transition-colors hover:text-accent"
                           >
                             {prompt.title}

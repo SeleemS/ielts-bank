@@ -22,6 +22,7 @@ import { syncLocalAttempts } from '../lib/progress';
 import { getSessionAccess } from '../lib/sessionAccess';
 
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 import {
   buildWritingQuestionJsonLd,
   serializeJsonLd,
@@ -284,7 +285,8 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
   const metaDescription =
     description ||
     `AI-powered IELTS grading for your writing. Practise with a real IELTS question like: '${title}'.`;
-  const canonicalUrl = `${SITE_URL}/writingquestion/${encodeURIComponent(docId || '')}`;
+  // Canonical = the clean slug URL (lib/questionUrls.js); legacy-id URLs 308 to it.
+  const canonicalUrl = questionUrl('writing', { slug: passage?.slug || docId });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     title || 'IELTS Writing Practice'
   )}&type=writing&subtitle=${encodeURIComponent(`Task ${task}`)}`;

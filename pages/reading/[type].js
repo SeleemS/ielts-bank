@@ -13,6 +13,7 @@ import {
 } from '../../lib/readingQuestionTypes';
 
 import { SITE_URL } from '../../lib/site';
+import { questionPath } from '../../lib/questionUrls';
 
 const DIFFICULTY_STYLES = {
   easy: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
@@ -209,8 +210,7 @@ export default function ReadingTypeHub({ typeKey, items }) {
                       </thead>
                       <tbody>
                         {items.map((item, index) => {
-                          const routeId = item.legacyId || item.id;
-                          const href = `/readingquestion/${encodeURIComponent(routeId)}`;
+                          const href = questionPath('reading', item);
                           return (
                             <tr
                               key={item.id}

@@ -5,7 +5,8 @@ import { ArrowLeft, ArrowRight, CalendarCheck, PenLine, Sparkles } from 'lucide-
 import Navbar from '../../src/components/Navbar';
 import Footer from '../../src/components/Footer';
 import { SITE_URL } from '../../lib/site';
-import { TASK2_PROMPTS } from '../../lib/task2Prompts';
+import { TASK2_PROMPTS as ALL_TASK2_PROMPTS } from '../../lib/task2Prompts';
+import { questionPath, withoutRetiredDuplicates } from '../../lib/questionUrls';
 import {
   buildMonthlyRoundup,
   isPublishableMonth,
@@ -13,6 +14,9 @@ import {
   parseMonthSlug,
 } from '../../lib/task2Roundup';
 import { monthlyTask2Seo, TASK2_TOPICS_PATH } from '../../lib/task2TopicsSeo';
+
+// Exact-duplicate prompts redirect to their kept twin (lib/questionUrls.js).
+const TASK2_PROMPTS = withoutRetiredDuplicates('writing', ALL_TASK2_PROMPTS);
 
 // How the page describes itself, per roundup `source`. The wording is the whole
 // point of the fallback: a month with no new prompts still gets a useful page,
@@ -41,7 +45,7 @@ function PromptList({ prompts }) {
       {prompts.map((prompt) => (
         <li key={prompt.slug} className="list-none">
           <NextLink
-            href={`/writingquestion/${prompt.slug}`}
+            href={questionPath('writing', prompt)}
             className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground no-underline shadow-sm transition-colors hover:border-accent/40 hover:text-accent"
           >
             <span>
@@ -83,7 +87,7 @@ export default function Task2MonthlyRoundup({ roundup, seo, otherMonths }) {
       group.prompts.map((prompt) => ({
         '@type': 'CreativeWork',
         name: prompt.title,
-        url: `${SITE_URL}/writingquestion/${prompt.slug}`,
+        url: `${SITE_URL}${questionPath('writing', prompt)}`,
         genre: group.frame.name,
       }))
     ),

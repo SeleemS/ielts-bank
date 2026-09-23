@@ -1,27 +1,21 @@
 import WritingQuestion from '../../src/pages/WritingQuestion';
 import {
   SKILLS,
-  getLegacyIdSlugMap,
   getPassageSlugs,
   getStructuredPassage,
   getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
+import { canonicalQuestionRedirect, retiredDuplicateTarget } from '../../lib/questionUrls';
 
 export default WritingQuestion;
 
 export async function getStaticPaths() {
-  // Canonical URL only per passage (legacy Firestore id when present — some
-  // contain spaces — else slug); the other variant renders via blocking
-  // fallback. Building both doubled question-page build time.
-  const [legacyMap, slugs] = await Promise.all([
-    getLegacyIdSlugMap(SKILLS.writing),
-    getPassageSlugs(SKILLS.writing),
-  ]);
-  const slugsWithLegacyId = new Set(Object.values(legacyMap));
-  const ids = Array.from(
-    new Set([...Object.keys(legacyMap), ...slugs.filter((s) => !slugsWithLegacyId.has(s))])
-  );
+  // Pre-render each passage's CANONICAL URL only: the clean slug (see
+  // lib/questionUrls.js). Legacy Firestore-id URLs still resolve via
+  // fallback: 'blocking' and permanently redirect to the slug.
+  const slugs = await getPassageSlugs(SKILLS.writing);
+  const ids = slugs.filter((slug) => !retiredDuplicateTarget('writing', slug));
   return {
     paths: ids.map((id) => ({ params: { id } })),
     fallback: 'blocking',
@@ -31,6 +25,8 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const passage = await getStructuredPassage(SKILLS.writing, params.id);
   if (!passage) return { notFound: true };
+  const redirect = canonicalQuestionRedirect('writing', params.id, passage);
+  if (redirect) return redirect;
   const related = await getRelatedPractice(SKILLS.writing, passage.slug);
 
   return {

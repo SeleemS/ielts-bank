@@ -7,6 +7,7 @@ import { Badge } from '../../components/ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
 import { cn } from '../../src/lib/utils';
 import { listSpeakingItems } from '../../lib/supabase';
+import { questionPath } from '../../lib/questionUrls';
 import { SECTION_FAQS, FaqSection, faqJsonLdFor } from '../../src/components/SectionLanding';
 import { SPEAKING_PART_LINKS } from '../../lib/speakingParts';
 import { SPEAKING_FAMILY_LINKS } from '../../lib/speakingTopicFamilies';
@@ -66,7 +67,7 @@ function DifficultyBadge({ difficulty }) {
 }
 
 function ItemCard({ item, featured }) {
-  const href = `/speakingquestion/${item.legacyId || item.slug}`;
+  const href = questionPath('speaking', item);
   return (
     <NextLink href={href} className="no-underline">
       <Card

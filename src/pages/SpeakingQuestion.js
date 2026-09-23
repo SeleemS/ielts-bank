@@ -44,6 +44,7 @@ import {
 
 import { sanitizeHtml } from '../../lib/sanitize';
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 import {
   buildSpeakingQuestionJsonLd,
   serializeJsonLd,
@@ -1153,7 +1154,8 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
   const metaDescription =
     description ||
     `Practise IELTS Speaking ${partLabel} with an examiner voice and record your answer for instant AI band feedback.`;
-  const canonicalUrl = `${SITE_URL}/speakingquestion/${encodeURIComponent(routeId || '')}`;
+  // Canonical = the clean slug URL (lib/questionUrls.js).
+  const canonicalUrl = questionUrl('speaking', { slug: item?.slug || routeId });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     topic || 'IELTS Speaking Practice'
   )}&type=speaking&subtitle=${encodeURIComponent(partLabel)}`;

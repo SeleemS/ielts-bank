@@ -13,6 +13,7 @@ import { useAuth } from '../lib/auth';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../lib/prefs';
 
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 
 // Pref name for "don't show the listening intro modal again". Stored locally
 // for logged-out users and in users.prefs for signed-in users (src/lib/prefs).
@@ -70,17 +71,15 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
     );
   }
 
-  const { title, audioUrl, transcriptHtml, groups, difficulty, slug, legacyId, listeningPart } = passage;
+  const { title, audioUrl, transcriptHtml, groups, difficulty, slug, listeningPart } = passage;
   const pageTitle = title
     ? `${title} | IELTS Listening Practice | IELTS-Bank`
     : 'IELTS Listening Practice | IELTS-Bank';
   const metaDescription =
     description || `Practise IELTS Listening with the audio passage: ${title}.`;
-  // Canonicalise to the SAME URL the sitemap emits: legacy Firestore id when one
-  // exists (already-indexed URLs), otherwise the slug. Both URLs pre-render, so a
-  // single stable canonical prevents duplicate-content indexing.
-  const canonicalId = legacyId || slug || id || '';
-  const canonicalUrl = `${SITE_URL}/listeningquestion/${encodeURIComponent(canonicalId)}`;
+  // Canonical = the clean slug URL, the same one the sitemap emits and every
+  // internal link uses (lib/questionUrls.js). Legacy-id URLs 308 to it.
+  const canonicalUrl = questionUrl('listening', { slug: slug || id });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     title || 'IELTS Listening Practice'
   )}&type=listening${difficulty ? `&subtitle=${encodeURIComponent(difficulty)}` : ''}`;

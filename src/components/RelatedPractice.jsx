@@ -2,6 +2,7 @@ import React from 'react';
 import NextLink from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
+import { questionPath } from '../../lib/questionUrls';
 
 export default function RelatedPractice({ skill, items = [], className = '' }) {
   if (!items.length) return null;
@@ -15,7 +16,7 @@ export default function RelatedPractice({ skill, items = [], className = '' }) {
         Build consistency with another {label} practice item.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {items.slice(0, 3).map((item) => (
+        {items.slice(0, 6).map((item) => (
           <Card key={item.id} className="h-full transition-colors hover:border-accent/40">
             <CardContent className="flex h-full flex-col p-4">
               <h3 className="font-semibold text-foreground">{item.title}</h3>
@@ -23,7 +24,7 @@ export default function RelatedPractice({ skill, items = [], className = '' }) {
                 <p className="mt-1 text-xs capitalize text-muted-foreground">{item.difficulty}</p>
               ) : null}
               <NextLink
-                href={`/${skill}question/${item.id}`}
+                href={questionPath(skill, item)}
                 className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent no-underline"
               >
                 Practise next <ArrowRight className="h-4 w-4" />

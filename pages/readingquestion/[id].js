@@ -1,28 +1,21 @@
 import ReadingQuestion from '../../src/pages/ReadingQuestion';
 import {
   SKILLS,
-  getLegacyIdSlugMap,
   getPassageSlugs,
   getStructuredPassage,
   getRelatedPractice,
   toMetaDescription,
 } from '../../lib/supabase';
+import { canonicalQuestionRedirect, retiredDuplicateTarget } from '../../lib/questionUrls';
 
 export default ReadingQuestion;
 
 export async function getStaticPaths() {
-  // Pre-render only each passage's CANONICAL URL (the legacy Firestore id when
-  // one exists — matching the canonicalUrl choice in src/pages/ReadingQuestion
-  // — otherwise the slug). The non-canonical variant still renders on demand
-  // via fallback: 'blocking'; building both doubled question-page build time.
-  const [legacyMap, slugs] = await Promise.all([
-    getLegacyIdSlugMap(SKILLS.reading),
-    getPassageSlugs(SKILLS.reading),
-  ]);
-  const slugsWithLegacyId = new Set(Object.values(legacyMap));
-  const ids = Array.from(
-    new Set([...Object.keys(legacyMap), ...slugs.filter((s) => !slugsWithLegacyId.has(s))])
-  );
+  // Pre-render each passage's CANONICAL URL only: the clean slug (see
+  // lib/questionUrls.js). Legacy Firestore-id URLs still resolve via
+  // fallback: 'blocking' and permanently redirect to the slug.
+  const slugs = await getPassageSlugs(SKILLS.reading);
+  const ids = slugs.filter((slug) => !retiredDuplicateTarget('reading', slug));
   return {
     paths: ids.map((id) => ({ params: { id } })),
     fallback: 'blocking',
@@ -33,6 +26,8 @@ export async function getStaticProps({ params }) {
   // getStructuredPassage accepts either a slug or a legacy Firestore id.
   const passage = await getStructuredPassage(SKILLS.reading, params.id);
   if (!passage) return { notFound: true };
+  const redirect = canonicalQuestionRedirect('reading', params.id, passage);
+  if (redirect) return redirect;
   const related = await getRelatedPractice(
     SKILLS.reading,
     passage.slug,
