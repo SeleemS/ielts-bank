@@ -75,7 +75,16 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['subscription'],
     });
-    const mappedUserId = session.client_reference_id || session.metadata?.user_id;
+    let mappedUserId = session.client_reference_id || session.metadata?.user_id;
+    // A session opened from a recovery link may not repeat our stamps; its
+    // original (same Stripe customer) identifies the owner.
+    if (!mappedUserId && session.recovered_from) {
+      const original = await stripe.checkout.sessions.retrieve(session.recovered_from);
+      const customerOf = (value) => (typeof value === 'string' ? value : value?.id || null);
+      if (original && customerOf(original.customer) === customerOf(session.customer)) {
+        mappedUserId = original.client_reference_id || original.metadata?.user_id;
+      }
+    }
     if (mappedUserId !== user.id) {
       return res.status(403).json({ error: 'This checkout belongs to another account.' });
     }
@@ -120,6 +129,7 @@ export default async function handler(req, res) {
       ppp: session.metadata?.ppp === '1',
       amount_total: Number.isFinite(session.amount_total) ? session.amount_total : null,
       currency: session.currency || null,
+      recovered_from: session.recovered_from || null,
     });
   } catch (error) {
     console.error('verify-session error:', error.message);

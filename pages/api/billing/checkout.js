@@ -9,6 +9,8 @@ import { checkoutAttribution } from '../../../lib/monetizationExperiment';
 //     second one (409 already_premium); an Exam Pass holder may subscribe but
 //     cannot stack a second pass (409 already_exam_pass).
 //   * promotion codes allowed; card collection skipped for 100%-off checkouts.
+//   * sessions expire after 3 hours with Stripe recovery enabled; the webhook
+//     turns an expiry into one checkout_abandoned email with the recovery URL.
 //   * when saleConfig's PROMO is live, its REAL Stripe coupon is attached and
 //     its percent_off is verified against saleConfig before the session opens.
 export const config = { runtime: 'nodejs' };
@@ -16,6 +18,7 @@ export const config = { runtime: 'nodejs' };
 import { randomUUID } from 'node:crypto';
 import { recordCheckoutOperation } from '../../../lib/checkoutOperations';
 import { checkoutReturnUrls } from '../../../lib/upgradeContext';
+import { checkoutExpiryParams } from '../../../lib/checkoutRecovery';
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
 import {
@@ -427,12 +430,19 @@ export default async function handler(req, res) {
     const couponId = winBackEligible
       ? process.env.STRIPE_WINBACK_COUPON_ID
       : promoCouponId;
+    // Promotion codes and an attached coupon are mutually exclusive in
+    // Stripe; recovered sessions follow the same rule as the original.
+    const allowPromotionCodes = !couponId;
     operationStage = 'session';
     const session = await stripe.checkout.sessions.create({
       mode: oneTime ? 'payment' : 'subscription',
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
-      allow_promotion_codes: !couponId,
+      allow_promotion_codes: allowPromotionCodes,
+      // Expire after 3h instead of Stripe's 24h so an abandoned checkout is
+      // noticed while the learner still cares, and let Stripe mint a 30-day
+      // recovery link for the checkout_abandoned email (lib/checkoutRecovery).
+      ...checkoutExpiryParams({ allowPromotionCodes }),
       ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
       ...(oneTime ? {} : { payment_method_collection: 'if_required' }),
       client_reference_id: userRow.id,

@@ -35,6 +35,36 @@ describe('new lifecycle templates', () => {
     expect(rendered.html).toContain('Your essay is saved');
   });
 
+  it('checkout_abandoned links straight back into the saved Stripe checkout', () => {
+    const rendered = render('checkout_abandoned', {
+      upgrade: 'writing',
+      sku: 'exam_pass',
+      recovery_url: 'https://buy.stripe.com/r/live_asAb1724',
+      recovery_expires_at: '2099-10-23T12:00:00.000Z',
+    });
+    expect(rendered.subject).toBe('Your IELTS Bank checkout is saved — finish in one tap');
+    expect(rendered.html).toContain('href="https://buy.stripe.com/r/live_asAb1724"');
+    expect(rendered.html).toContain('Finish my checkout');
+    expect(rendered.html).toContain('same plan, same price, one payment with no auto-renew');
+    expect(rendered.html).toContain('It works until October 23.');
+    expect(rendered.html).toContain('14-day money-back guarantee');
+    // Same consent footer and unsubscribe as the fallback email.
+    expect(rendered.html).toContain('You received this because you started a checkout');
+  });
+
+  it('checkout_abandoned falls back to pricing for an expired or unsafe recovery link', () => {
+    for (const payload of [
+      { upgrade: 'speaking', recovery_url: 'https://buy.stripe.com/r/x', recovery_expires_at: '2000-01-01T00:00:00Z' },
+      { upgrade: 'speaking', recovery_url: 'https://evil.example/r/x' },
+    ]) {
+      const rendered = render('checkout_abandoned', payload);
+      expect(rendered.subject).toContain('no charge was made');
+      expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing?upgrade=speaking"');
+      expect(rendered.html).not.toContain('evil.example');
+      expect(rendered.html).not.toContain('buy.stripe.com');
+    }
+  });
+
   it('checkout_abandoned ignores an unexpected upgrade value', () => {
     const rendered = render('checkout_abandoned', { upgrade: '"><script>' });
     expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing"');
