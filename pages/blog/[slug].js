@@ -12,6 +12,7 @@ import { posts } from "../../lib/posts";
 import { formatMonthYear, toIsoDate } from "../../lib/postDates";
 import { sanitizeHtml } from "../../lib/sanitize";
 import AdUnit from "../../src/components/AdUnit";
+import CambridgeBooksBox from "../../src/components/affiliates/CambridgeBooksBox";
 import ShareRow from "../../src/components/ShareRow";
 
 import { SITE_URL } from "../../lib/site";
@@ -224,6 +225,11 @@ export default function BlogPost({ post }) {
             <AdUnit />
 
             <PracticeFeedbackEntry skill={feedbackEntrySkill(post.title)} source="blog" />
+
+            {/* Contextual Amazon books module: only on study-plan/resources
+                posts, below the article and the practice CTA; inert until
+                AFFILIATE_URL_AMAZON_CAMBRIDGE_BOOKS is set. */}
+            <CambridgeBooksBox post={post} />
 
             <div className="mt-10">
               <NewsletterSignup source={`blog:${post.slug}`} variant="full" />

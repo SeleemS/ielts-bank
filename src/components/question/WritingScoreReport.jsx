@@ -102,6 +102,10 @@ export default function WritingScoreReport({
   sourceLabel,
   submissionLabel = 'essay',
   analyticsSource = 'score_tease',
+  // Optional secondary unit (e.g. <TutorCta />) that may only appear once the
+  // free user has been shown the Pro offer — rendered below it and the share
+  // row, and never for paid reports or the pricing-page sample.
+  afterOffer = null,
 }) {
   const criteriaMeta = task === 1 ? TASK1_CRITERIA : TASK2_CRITERIA;
   const criteria = result.criteria || {};
@@ -295,6 +299,7 @@ export default function WritingScoreReport({
           text={`My IELTS Writing ${submissionLabel} scored Band ${formatBand(result.overallBand)} with AI examiner feedback — try it free at IELTS-Bank`}
         />
       ) : null}
+      {isTeaser && afterOffer ? afterOffer : null}
       {!sample && !isTeaser ? (
         // Testimonial collection loop: the pricing page's testimonial section
         // deliberately ships empty until real quotes exist — this is where
