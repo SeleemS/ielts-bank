@@ -23,6 +23,10 @@ export const STATIC_ROUTES = [
   '/band-calculator',
   '/band-estimator',
   '/ielts-writing-checker',
+  // Task-specific checker landing pages (pages/ielts-writing-checker/[task].jsx).
+  '/ielts-writing-checker/task-2',
+  '/ielts-writing-checker/task-1',
+  '/ielts-writing-checker/general-training-letter',
   '/speaking-examiner',
   '/readingquestion',
   '/writingquestion',

@@ -31,6 +31,15 @@ const CHECKER_TASK_TYPE = {
   'task1-general': 'task1-general',
 };
 
+// The task-specific checker page for each bucket; it is locked to the same
+// task type the handoff above carries, so the prompt lands pre-filled.
+const CHECKER_PATH = {
+  'task2-academic': '/ielts-writing-checker/task-2',
+  'task2-general': '/ielts-writing-checker/task-2',
+  'task1-academic': '/ielts-writing-checker/task-1',
+  'task1-general': '/ielts-writing-checker/general-training-letter',
+};
+
 function bandTone(band) {
   if (band >= 8) return 'bg-emerald-100 text-emerald-900 ring-emerald-200';
   if (band >= 7) return 'bg-sky-100 text-sky-900 ring-sky-200';
@@ -343,7 +352,7 @@ export default function EssayPage({ essay, siblings, related }) {
                   </NextLink>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <NextLink href="/ielts-writing-checker?entry=essay_bank" onClick={onCheckerClick} className="no-underline">
+                  <NextLink href={`${CHECKER_PATH[essay.bucket] || '/ielts-writing-checker'}?entry=essay_bank`} onClick={onCheckerClick} className="no-underline">
                     Use it in the Writing Checker
                   </NextLink>
                 </Button>

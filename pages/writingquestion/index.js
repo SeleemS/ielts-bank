@@ -7,6 +7,9 @@ const WRITING_HUB_LINKS = {
   links: [
     { href: '/ielts-writing-task-2-topics', label: 'Writing Task 2 topics' },
     { href: '/ielts-writing-checker', label: 'AI Writing Checker' },
+    { href: '/ielts-writing-checker/task-2', label: 'Task 2 essay checker' },
+    { href: '/ielts-writing-checker/task-1', label: 'Task 1 report checker' },
+    { href: '/ielts-writing-checker/general-training-letter', label: 'GT letter checker' },
     { href: '/ielts-band-descriptors', label: 'Band descriptors' },
     { href: '/ielts-writing-checker-accuracy', label: 'Checker accuracy' },
   ],

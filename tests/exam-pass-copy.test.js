@@ -7,6 +7,9 @@ import { describe, expect, it } from 'vitest';
 const COPY_FILES = [
   'pages/pricing.jsx',
   'pages/ielts-writing-checker.jsx',
+  'pages/ielts-writing-checker/[task].jsx',
+  'lib/writingCheckerTasks.js',
+  'src/components/writingChecker/WritingCheckerTool.jsx',
   'src/components/ExamPassOffer.jsx',
   'src/components/AiQuotaPanel.jsx',
   'src/pages/HomePage.js',
