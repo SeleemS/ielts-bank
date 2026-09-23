@@ -108,14 +108,16 @@ New and extended events (all scalar props; no URLs or contact details):
 | `view_item_list`, `select_item`, `begin_checkout`, `checkout_start` | browser (GA4 + `activity_events`) | now carry `pass_first` (true in PPP countries plus CN/HK, where the pass is the single primary card) |
 | `exam_pass_offer_view` / `_click` | browser | carry `pass_first` |
 | `checkout_expired` | webhook → `activity_events` (`billing_event_id = expired:<session>`), GA4 MP when `ga_cid` + secret exist | a Checkout Session hit its 3h `expires_at`; `recovery_available` says whether Stripe minted a recovery link |
-| `checkout_recovered` | webhook → `activity_events` (`recovered:<session>`), GA4 MP | a session opened from that link completed; `recovered_from` = the expired session |
+| `checkout_resume` | `/api/billing/resume` → `activity_events` (operational); browser for `sign_in_required` | the recovery email's link was opened; `outcome` = `new_session`, `checkout_refused`, `wrong_user`, `already_premium`, `already_exam_pass`, `expired`, `offer_ended`, `plan_unavailable`, `not_found`, `anonymous_user`, `sign_in_required` |
+| `checkout_recovered` | webhook → `activity_events` (`recovered:<session>`), GA4 MP | a recovered checkout completed; `recovered_from` = the expired session; `recovery_path` = `resume_link` (our guarded link, via `metadata.resumed_from`) or `stripe_recovery_url` (a raw Stripe link — should be ~0 since the email no longer carries it) |
+| `duplicate_purchase` | webhook → `activity_events` (`duplicate:<session>`) + `DUPLICATE PURCHASE` error log | a completed checkout landed on an account that already had a live subscription (or, for a pass, a live pass), or its Stripe customer has another live subscription. Nothing is auto-refunded: review and refund by hand |
 | `purchase_success` (server) / `purchase` (browser + GA4 MP) | both | carry `recovered_from` when applicable |
 
-Recovery rate = distinct `checkout_recovered.recovered_from` / `checkout_expired` with `recovery_available=true`, same window. Compare `pass_first=true` vs `false` begin_checkout → purchase before/after; this is a sequential rollout, not an A/B test.
+The email links to `/billing/resume?c=<opaque token>`, never to Stripe's recovery URL (which would bypass the checkout guards). Recovery rate = distinct `checkout_recovered.recovered_from` / `checkout_expired`, same window. Compare `pass_first=true` vs `false` begin_checkout → purchase before/after; this is a sequential rollout, not an A/B test.
 
 ### Founder steps (in order)
 
-1. **Stripe webhook:** add `checkout.session.expired` to the live endpoint's events (Developers → Webhooks → www endpoint). Without it, expiries fall back to the T+4h cron email with a /pricing link.
+1. **Stripe webhook:** add `checkout.session.expired` to the live endpoint's events (Developers → Webhooks → www endpoint) — only once the guarded resume link (`/billing/resume`) is deployed. Without it, expiries fall back to the T+4h cron email with a /pricing link. After subscribing, search the Vercel logs for `DUPLICATE PURCHASE` (or `activity_events.event = 'duplicate_purchase'`) weekly.
 2. **Exam Pass 45 days:** `node scripts/apply-exam-pass-length.mjs` (applies `20260923130000_exam_pass_length.sql`, verifies, runs a rolled-back QA transaction). Only after it prints `applied + verified`: set `NEXT_PUBLIC_EXAM_PASS_DAYS=45` in Vercel Production and redeploy. If the env flag is set first, checkout refuses pass sales (503, log `EXAM PASS LENGTH NOT DEPLOYED`) rather than promise 45 and grant 30.
 3. **Stripe product text:** after step 2 is live, rename the Exam Pass product/price nicknames from "30 days" to "45 days" (display only; prices and IDs unchanged).
 4. Confirm the CASL/consent wording of the `checkout_abandoned` email ("Your IELTS Bank checkout is saved — finish in one tap").
