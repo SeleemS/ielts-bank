@@ -6,6 +6,7 @@ import {
   listPassages,
   listSpeakingItems,
 } from '../lib/supabase';
+import { buildHomeDirectory } from '../lib/siteDirectory';
 
 export default HomePage;
 
@@ -49,10 +50,10 @@ export async function getStaticProps() {
       questions,
       questionsAnswered,
     };
-    return { props: { counts }, revalidate: 3600 };
+    return { props: { counts, directory: buildHomeDirectory() }, revalidate: 3600 };
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn('[HomePage] Falling back to static counts:', err?.message || err);
-    return { props: { counts: fallback }, revalidate: 3600 };
+    return { props: { counts: fallback, directory: buildHomeDirectory() }, revalidate: 3600 };
   }
 }

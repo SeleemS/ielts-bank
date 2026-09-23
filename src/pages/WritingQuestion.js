@@ -3,6 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../../lib/upgradeContext';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Progress } from '../../components/ui/progress';
@@ -22,6 +26,7 @@ import { syncLocalAttempts } from '../lib/progress';
 import { getSessionAccess } from '../lib/sessionAccess';
 
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 import {
   buildWritingQuestionJsonLd,
   serializeJsonLd,
@@ -50,7 +55,7 @@ function htmlToText(html) {
     .trim();
 }
 
-const WritingQuestion = ({ id: docId, passage, description, related = [], sampleEssays = [] }) => {
+const WritingQuestion = ({ id: docId, passage, description, related = [], sampleEssays = [], contextLinks = [] }) => {
   const { user } = useAuth();
   const router = useRouter();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
@@ -288,7 +293,8 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
   const metaDescription =
     description ||
     `AI-powered IELTS grading for your writing. Practise with a real IELTS question like: '${title}'.`;
-  const canonicalUrl = `${SITE_URL}/writingquestion/${encodeURIComponent(docId || '')}`;
+  // Canonical = the clean slug URL (lib/questionUrls.js); legacy-id URLs 308 to it.
+  const canonicalUrl = questionUrl('writing', { slug: passage?.slug || docId });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     title || 'IELTS Writing Practice'
   )}&type=writing&subtitle=${encodeURIComponent(`Task ${task}`)}`;
@@ -344,6 +350,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 pb-16 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('writing', title, canonicalUrl)} className="mb-3" />
           <div className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -450,7 +457,9 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
           {!result && <FreeSampleChip className="mt-3" />}
           <div className="mt-2"><AiQuotaPanel userId={user?.id} remaining={result?.quotaRemaining} open={quotaOpen} onClose={() => setQuotaOpen(false)} skill="writing" resetsAt={quotaResetsAt} /></div>
           <RelatedPractice skill="writing" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
         </main>
+        <Footer />
       </div>
 
       {/* Feedback modal — structured, plain-text render (no HTML injection) */}

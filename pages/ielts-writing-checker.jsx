@@ -38,7 +38,7 @@ import StickyMobileCta from '../src/components/StickyMobileCta';
 import { getSessionAccess } from '../src/lib/sessionAccess';
 import { consumeWritingDraft } from '../src/lib/writingDraft';
 
-import { WRITING_CHECKER_SEO } from '../lib/writingCheckerSeo';
+import { WRITING_CHECKER_SEO, buildWritingCheckerAppJsonLd } from '../lib/writingCheckerSeo';
 import { WRITING_PROMPT_MAX_CHARS } from '../lib/writingLimits';
 const SCORE_API = '/api/score/writing';
 const CANONICAL = WRITING_CHECKER_SEO.canonical;
@@ -389,6 +389,12 @@ export default function WritingCheckerPage() {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildWritingCheckerAppJsonLd()).replace(/</g, '\\u003c'),
+          }}
         />
       </Head>
 

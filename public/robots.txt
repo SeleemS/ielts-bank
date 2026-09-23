@@ -25,4 +25,10 @@ Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
 
+# Google AdSense crawlers: content review for the pending AdSense application
+# and ad matching. Named explicitly so no wildcard rule can block them.
+User-agent: Mediapartners-Google
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
 Sitemap: https://www.ielts-bank.com/sitemap.xml

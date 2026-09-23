@@ -2,6 +2,10 @@ import React from 'react';
 import Head from 'next/head';
 import { Headphones } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Badge } from '../../components/ui/badge';
 import QuestionEngine from '../components/question/QuestionEngine';
 import AudioPlayer from '../components/question/AudioPlayer';
@@ -15,12 +19,13 @@ import { useAuth } from '../lib/auth';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../lib/prefs';
 
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 
 // Pref name for "don't show the listening intro modal again". Stored locally
 // for logged-out users and in users.prefs for signed-in users (src/lib/prefs).
 const INTRO_PREF = 'listeningIntroDismissed';
 
-const ListeningQuestion = ({ id, passage, description, related = [], answersHref = null }) => {
+const ListeningQuestion = ({ id, passage, description, related = [], answersHref = null, contextLinks = [] }) => {
   const [audioDuration, setAudioDuration] = React.useState(null);
   const [introOpen, setIntroOpen] = React.useState(false);
   const { user, loading: authLoading } = useAuth();
@@ -76,11 +81,9 @@ const ListeningQuestion = ({ id, passage, description, related = [], answersHref
   const pageTitle = practicePageTitle(title, 'listening', Boolean(answersHref));
   const metaDescription =
     description || `Practise IELTS Listening with the audio passage: ${title}.`;
-  // Canonicalise to the SAME URL the sitemap emits: legacy Firestore id when one
-  // exists (already-indexed URLs), otherwise the slug. Both URLs pre-render, so a
-  // single stable canonical prevents duplicate-content indexing.
-  const canonicalId = legacyId || slug || id || '';
-  const canonicalUrl = `${SITE_URL}/listeningquestion/${encodeURIComponent(canonicalId)}`;
+  // Canonical = the clean slug URL, the same one the sitemap emits and every
+  // internal link uses (lib/questionUrls.js). Legacy-id URLs 308 to it.
+  const canonicalUrl = questionUrl('listening', { slug: slug || id });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     title || 'IELTS Listening Practice'
   )}&type=listening${difficulty ? `&subtitle=${encodeURIComponent(difficulty)}` : ''}`;
@@ -154,6 +157,7 @@ const ListeningQuestion = ({ id, passage, description, related = [], answersHref
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('listening', title, canonicalUrl)} className="mb-3" />
           <div className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
@@ -228,7 +232,9 @@ const ListeningQuestion = ({ id, passage, description, related = [], answersHref
           <RelatedPractice skill="listening" items={related} className="mt-10" />
 
           <AnswerKeyLink href={answersHref} title={title} skill="listening" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
         </main>
+        <Footer />
 
         <ListeningIntroModal open={introOpen} onClose={handleIntroClose} />
       </div>

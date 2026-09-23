@@ -1,6 +1,10 @@
 import React from 'react';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Breadcrumbs from '../components/Breadcrumbs';
+import QuestionContextLinks from '../components/question/QuestionContextLinks';
+import { questionBreadcrumbs } from '../../lib/breadcrumbs';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import QuestionEngine from '../components/question/QuestionEngine';
@@ -10,6 +14,7 @@ import { sanitizeHtml } from '../../lib/sanitize';
 import { practicePageTitle } from '../../lib/answerKeys';
 
 import { SITE_URL } from '../../lib/site';
+import { questionUrl } from '../../lib/questionUrls';
 const PASSAGE_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
 
@@ -37,7 +42,7 @@ function ShareButton({ title, text }) {
   );
 }
 
-const ReadingQuestion = ({ id, passage, description, related = [], answersHref = null }) => {
+const ReadingQuestion = ({ id, passage, description, related = [], answersHref = null, contextLinks = [] }) => {
   if (!passage) {
     return (
       <div className="min-h-screen bg-background">
@@ -53,11 +58,9 @@ const ReadingQuestion = ({ id, passage, description, related = [], answersHref =
   const pageTitle = practicePageTitle(title, 'reading', Boolean(answersHref));
   const metaDescription =
     description || `Read and answer IELTS Reading questions for the passage: ${title}.`;
-  // Canonicalise to the SAME URL the sitemap emits: the legacy Firestore id when
-  // one exists (already-indexed URLs), otherwise the slug. Both URLs pre-render,
-  // so a single stable canonical prevents duplicate-content indexing.
-  const canonicalId = legacyId || slug || id || '';
-  const canonicalUrl = `${SITE_URL}/readingquestion/${encodeURIComponent(canonicalId)}`;
+  // Canonical = the clean slug URL, the same one the sitemap emits and every
+  // internal link uses (lib/questionUrls.js). Legacy-id URLs 308 to it.
+  const canonicalUrl = questionUrl('reading', { slug: slug || id });
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     title || 'IELTS Reading Practice'
   )}&type=reading${difficulty ? `&subtitle=${encodeURIComponent(difficulty)}` : ''}`;
@@ -131,6 +134,7 @@ const ReadingQuestion = ({ id, passage, description, related = [], answersHref =
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <Breadcrumbs items={questionBreadcrumbs('reading', title, canonicalUrl)} className="mb-3" />
           {/* Header */}
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -187,6 +191,7 @@ const ReadingQuestion = ({ id, passage, description, related = [], answersHref =
           </div>
 
           <RelatedPractice skill="reading" items={related} className="mt-10" />
+          <QuestionContextLinks links={contextLinks} className="mt-10" />
 
           <AnswerKeyLink href={answersHref} title={title} skill="reading" />
 
@@ -194,6 +199,7 @@ const ReadingQuestion = ({ id, passage, description, related = [], answersHref =
             <ShareButton title={title} text={`Check out this IELTS Reading test: ${title}`} />
           </div>
         </main>
+        <Footer />
       </div>
     </>
   );

@@ -44,12 +44,12 @@ export function updatedLabel(iso) {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
-export function SpeakingHubHead({ seo, jsonLd }) {
+export function SpeakingHubHead({ seo, jsonLd, robots = 'index, follow' }) {
   return (
     <Head>
       <title>{seo.title}</title>
       <meta name="description" content={seo.description} />
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={robots} />
       <link rel="canonical" href={seo.canonical} />
       <meta property="og:type" content="website" />
       <meta property="og:title" content={seo.title} />

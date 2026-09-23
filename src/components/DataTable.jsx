@@ -13,6 +13,7 @@ import { listPassages, getSupabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/select';
 import { formatAverageUserBand } from '../../lib/averageUserBand';
+import { questionPath } from '../../lib/questionUrls';
 import { useAuth } from '../lib/auth';
 import { cn } from '../lib/utils';
 import AdUnit from './AdUnit';
@@ -405,7 +406,7 @@ const DataTable = ({ items, skill, selectedOption, questionTypeOptions }) => {
               </thead>
               <tbody>
                 {pageItems.map((item, index) => {
-                  const href = `/${skillLower}question/${item.legacyId || item.id}`;
+                  const href = questionPath(skillLower, item);
                   const isDone = completedSlugs.has(item.id);
                   // Whole row navigates. The inner links stay for keyboard
                   // access and middle-click; they stopPropagation so a click

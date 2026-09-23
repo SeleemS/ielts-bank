@@ -1,0 +1,35 @@
+# Ping IndexNow (Bing / Copilot / Yandex / Naver / Seznam) with the URLs that
+# changed, after every successful Vercel PRODUCTION deploy.
+#
+# Vercel's GitHub integration posts a deployment_status event for each deploy;
+# this job runs only for successful Production ones. Two sources of "changed":
+#   * the files in the deployed commit (blog posts, static pages, redirects)
+#   * sitemap URLs whose <lastmod> is today or yesterday (database content
+#     such as new passages, which never shows up in git)
+# No secrets needed: the IndexNow key is public by design (public/<key>.txt).
+# Details: docs/growth-2026-09-23/30-TECH-SEO-CHANGES.md
+name: IndexNow ping
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  indexnow:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Submit changed URLs
+        run: node scripts/seo/indexnow-submit.mjs --git-range HEAD~1..HEAD --since yesterday

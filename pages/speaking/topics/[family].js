@@ -17,6 +17,7 @@ import {
 } from '../../../lib/speakingTopicFamilies';
 import { getSpeakingFamilyHubData } from '../../../lib/speakingHubs';
 import { SITE_URL } from '../../../lib/site';
+import { robotsContent, speakingTopicHubIndexable } from '../../../lib/indexability';
 
 export default function SpeakingFamilyHub({ family, cueCards = [], related = [], updatedAt = null }) {
   const config = SPEAKING_TOPIC_FAMILIES[family];
@@ -63,7 +64,13 @@ export default function SpeakingFamilyHub({ family, cueCards = [], related = [],
 
   return (
     <>
-      <SpeakingHubHead seo={seo} jsonLd={jsonLd} />
+      {/* Thin hubs (fewer than 3 cue cards) stay navigable but out of the
+          index and the sitemap until they fill up (lib/indexability.js). */}
+      <SpeakingHubHead
+        seo={seo}
+        jsonLd={jsonLd}
+        robots={robotsContent(speakingTopicHubIndexable(cueCards.length))}
+      />
       <SpeakingHubShell>
         <SpeakingBreadcrumb current={config.label} />
 

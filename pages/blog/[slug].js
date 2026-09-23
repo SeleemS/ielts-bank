@@ -14,6 +14,10 @@ import { essaysForBlogPost } from "../../lib/essays";
 import { formatBand, questionTypeLabel, taskLabel } from "../../lib/essayTaxonomy";
 import { formatMonthYear, toIsoDate } from "../../lib/postDates";
 import { sanitizeHtml } from "../../lib/sanitize";
+import { rewriteMergedBlogLinks } from "../../lib/blogMerges";
+import { relatedPosts, postSkill } from "../../lib/relatedPosts";
+import { breadcrumbJsonLd } from "../../lib/breadcrumbs";
+import Breadcrumbs from "../../src/components/Breadcrumbs";
 import AdUnit from "../../src/components/AdUnit";
 import ShareRow from "../../src/components/ShareRow";
 
@@ -42,8 +46,22 @@ const PROSE = [
   "[&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:align-top",
 ].join(" ");
 
-export default function BlogPost({ post, essayBank = [] }) {
+const SKILL_HUBS = {
+  reading: { href: "/readingquestion", label: "IELTS Reading practice passages" },
+  writing: { href: "/writingquestion", label: "IELTS Writing practice prompts" },
+  listening: { href: "/listeningquestion", label: "IELTS Listening practice tests" },
+  speaking: { href: "/speakingquestion", label: "IELTS Speaking practice" },
+};
+
+export default function BlogPost({ post, essayBank = [], related = [], skill = null }) {
   const canonical = `${SITE_URL}/blog/${post.slug}`;
+  const trail = [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+    { label: post.title, href: canonical },
+  ];
+  const breadcrumbLd = { "@context": "https://schema.org", ...breadcrumbJsonLd(trail) };
+  const skillHub = skill ? SKILL_HUBS[skill] : null;
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     post.title
   )}&type=blog&subtitle=${encodeURIComponent("IELTS Blog")}`;
@@ -125,6 +143,10 @@ export default function BlogPost({ post, essayBank = [] }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }}
+        />
         {faqJsonLd ? (
           <script
             type="application/ld+json"
@@ -140,13 +162,7 @@ export default function BlogPost({ post, essayBank = [] }) {
 
         <main className="flex-1">
           <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 md:py-14 lg:px-8">
-            <NextLink
-              href="/blog"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline hover:text-accent/80"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Blog
-            </NextLink>
+            <Breadcrumbs items={trail} />
 
             <article className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-10">
               <header className="mb-8 border-b border-border pb-8">
@@ -224,6 +240,40 @@ export default function BlogPost({ post, essayBank = [] }) {
                 text={post.title}
               />
             </article>
+            {/* Related guides: 4–6 contextual links so every post is linked
+                from its nearest neighbours, not only from /blog. */}
+            {related.length > 0 ? (
+              <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8" aria-labelledby="related-guides">
+                <h2 id="related-guides" className="text-xl font-bold tracking-tight text-foreground">
+                  Related guides
+                </h2>
+                <ul className="mt-4 space-y-2">
+                  {related.map((item) => (
+                    <li key={item.slug}>
+                      <NextLink
+                        href={`/blog/${item.slug}`}
+                        className="inline-flex items-start gap-2 text-sm font-medium text-foreground no-underline hover:text-accent"
+                      >
+                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        {item.title}
+                      </NextLink>
+                    </li>
+                  ))}
+                  {skillHub ? (
+                    <li>
+                      <NextLink
+                        href={skillHub.href}
+                        className="inline-flex items-start gap-2 text-sm font-semibold text-accent no-underline hover:text-accent/80"
+                      >
+                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
+                        {skillHub.label}
+                      </NextLink>
+                    </li>
+                  ) : null}
+                </ul>
+              </section>
+            ) : null}
+
             <AdUnit />
 
             {/* Writing articles point readers at worked examples in the
@@ -310,5 +360,14 @@ export async function getStaticProps({ params }) {
   const isWriting = /writing|essay|task-1|task-2|letter/.test(post.slug);
   const essayBank = isWriting ? essaysForBlogPost({ slug: post.slug, title: post.title }, 3) : [];
 
-  return { props: { post, essayBank } };
+  // Links to posts that were merged into hubs point straight at the hub
+  // rather than through a redirect (lib/blogMerges.js).
+  return {
+    props: {
+      post: { ...post, content: rewriteMergedBlogLinks(post.content) },
+      related: relatedPosts(post, posts, 5),
+      skill: postSkill(post),
+      essayBank,
+    },
+  };
 }

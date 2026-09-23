@@ -50,9 +50,36 @@ describe('Footer heading hierarchy', () => {
       'Get new practice tests in your inbox',
       'Practice',
       'Tools',
+      'Guides',
       'Resources',
       'Legal',
     ]);
     expect(container.querySelector('h3, h4, h5, h6')).toBeNull();
+  });
+});
+
+describe('Footer site directory', () => {
+  it('links every hub so each indexable page is within two clicks', () => {
+    const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    for (const hub of [
+      '/readingquestion',
+      '/writingquestion',
+      '/listeningquestion',
+      '/speakingquestion',
+      '/mock-test',
+      '/ielts-writing-checker',
+      '/ielts-writing-checker-accuracy',
+      '/ielts-vs-toefl-pte-duolingo',
+      '/ielts-score-requirements',
+      '/ielts-band-descriptors',
+      '/ielts-test-format',
+      '/ielts-writing-task-2-topics',
+      '/listening/part-1',
+      '/listening/part-4',
+      '/speaking/part-2',
+      '/blog',
+    ]) {
+      expect(hrefs).toContain(hub);
+    }
   });
 });

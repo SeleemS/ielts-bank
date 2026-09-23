@@ -130,6 +130,9 @@ const securityHeaders = [
   { key: 'Content-Security-Policy', value: CSP },
 ];
 
+// Blog posts merged into the hub they duplicated (lib/blogMerges.js).
+const BLOG_MERGES = require('./lib/blogMerges.json');
+
 const nextConfig = {
   reactStrictMode: true,
   // lib/posts.js reads content/posts/*.md with fs.readdirSync. Next's tracer
@@ -143,7 +146,15 @@ const nextConfig = {
   // ISR (their getStaticProps re-runs on Vercel) and the sitemap runs per
   // request, so all three need the essay files traced in.
   outputFileTracingIncludes: {
+    // The sitemap index builds every section (for per-section lastmod) and
+    // each child sitemap imports the same loader, so all of them read posts.
     '/sitemap.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-guides.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-blog.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-reading.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-writing.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-listening.xml': ['./content/posts/**', './content/essays/**'],
+    '/sitemap-speaking.xml': ['./content/posts/**', './content/essays/**'],
     '/api/cron/lifecycle-emails': ['./content/posts/**'],
     '/ielts-essay-bank': ['./content/essays/**'],
     '/writingquestion/**': ['./content/essays/**'],
@@ -179,6 +190,14 @@ const nextConfig = {
         destination: '/ielts-essay-bank',
         permanent: true,
       },
+      // /index served a duplicate of the home page (canonicalised, but still a
+      // crawlable second URL).
+      { source: '/index', destination: '/', permanent: true },
+      ...Object.entries(BLOG_MERGES).map(([slug, destination]) => ({
+        source: `/blog/${slug}`,
+        destination,
+        permanent: true,
+      })),
     ];
   },
   async rewrites() {

@@ -310,7 +310,7 @@ function HeroEssayBox() {
   );
 }
 
-const HomePage = ({ counts = {} }) => {
+const HomePage = ({ counts = {}, directory = [] }) => {
   const skills = Skills(counts);
 
   return (
@@ -526,6 +526,41 @@ const HomePage = ({ counts = {} }) => {
               })}
             </div>
           </section>
+
+          {/* ===================== QUESTION BANK DIRECTORY ===================== */}
+          {/* Crawlable one-click links to every hub (question types, parts,
+              guides) — built server-side by lib/siteDirectory.js. */}
+          {directory.length > 0 && (
+            <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8" aria-labelledby="bank-directory">
+              <h2 id="bank-directory" className="text-2xl font-bold tracking-tight text-foreground">
+                Browse the question bank
+              </h2>
+              <p className="mt-2 max-w-2xl text-muted-foreground">
+                Jump straight to a question type, a test part or a guide.
+              </p>
+              <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
+                {directory.map((group) => (
+                  <div key={group.title}>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      {group.title}
+                    </h3>
+                    <ul className="mt-3 space-y-1.5">
+                      {group.links.map((link) => (
+                        <li key={link.href}>
+                          <NextLink
+                            href={link.href}
+                            className="text-sm text-foreground no-underline transition-colors hover:text-accent"
+                          >
+                            {link.label}
+                          </NextLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* =================== LIVE EXAMINER BANNER =================== */}
           {/* The live examiner is the strongest thing on the site, so the
