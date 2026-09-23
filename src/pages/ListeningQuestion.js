@@ -7,7 +7,9 @@ import QuestionEngine from '../components/question/QuestionEngine';
 import AudioPlayer from '../components/question/AudioPlayer';
 import ListeningIntroModal from '../components/question/ListeningIntroModal';
 import RelatedPractice from '../components/RelatedPractice';
+import AnswerKeyLink from '../components/AnswerKeyLink';
 import { sanitizeHtml } from '../../lib/sanitize';
+import { practicePageTitle } from '../../lib/answerKeys';
 import { track } from '../lib/analytics';
 import { useAuth } from '../lib/auth';
 import { getLocalPref, setLocalPref, loadUserPref, saveUserPref } from '../lib/prefs';
@@ -18,7 +20,7 @@ import { SITE_URL } from '../../lib/site';
 // for logged-out users and in users.prefs for signed-in users (src/lib/prefs).
 const INTRO_PREF = 'listeningIntroDismissed';
 
-const ListeningQuestion = ({ id, passage, description, related = [] }) => {
+const ListeningQuestion = ({ id, passage, description, related = [], answersHref = null }) => {
   const [audioDuration, setAudioDuration] = React.useState(null);
   const [introOpen, setIntroOpen] = React.useState(false);
   const { user, loading: authLoading } = useAuth();
@@ -71,9 +73,7 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
   }
 
   const { title, audioUrl, transcriptHtml, groups, difficulty, slug, legacyId, listeningPart } = passage;
-  const pageTitle = title
-    ? `${title} | IELTS Listening Practice | IELTS-Bank`
-    : 'IELTS Listening Practice | IELTS-Bank';
+  const pageTitle = practicePageTitle(title, 'listening', Boolean(answersHref));
   const metaDescription =
     description || `Practise IELTS Listening with the audio passage: ${title}.`;
   // Canonicalise to the SAME URL the sitemap emits: legacy Firestore id when one
@@ -206,23 +206,28 @@ const ListeningQuestion = ({ id, passage, description, related = [] }) => {
                   skill="listening"
                   durationSeconds={audioDuration ? Math.ceil(audioDuration) + 10 * 60 : null}
                   postSubmitContent={
-                    transcriptHtml ? (
-                      <details className="mb-6 rounded-lg border border-border bg-card">
-                        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                          Show transcript
-                        </summary>
-                        <div
-                          className="border-t border-border px-4 py-4 text-sm leading-7 text-foreground [&_p]:mb-3"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(transcriptHtml) }}
-                        />
-                      </details>
-                    ) : null
+                    <>
+                      <AnswerKeyLink href={answersHref} title={title} skill="listening" placement="results" />
+                      {transcriptHtml ? (
+                        <details className="mb-6 rounded-lg border border-border bg-card">
+                          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                            Show transcript
+                          </summary>
+                          <div
+                            className="border-t border-border px-4 py-4 text-sm leading-7 text-foreground [&_p]:mb-3"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(transcriptHtml) }}
+                          />
+                        </details>
+                      ) : null}
+                    </>
                   }
                 />
               </div>
             </div>
           </div>
           <RelatedPractice skill="listening" items={related} className="mt-10" />
+
+          <AnswerKeyLink href={answersHref} title={title} skill="listening" />
         </main>
 
         <ListeningIntroModal open={introOpen} onClose={handleIntroClose} />

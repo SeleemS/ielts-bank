@@ -283,6 +283,17 @@ export function stripOptionKeyPrefix(key, text) {
   return stripped.trim() ? stripped : text;
 }
 
+// "Questions 1–6" / "Question 7" eyebrow for a group, from the continuous
+// global numbers. Shared by the practice engine and the answer-key pages so
+// both always show identical numbering.
+export function groupRangeLabel(group) {
+  const qs = group?.questions || [];
+  if (!qs.length) return '';
+  const first = qs[0].number;
+  const last = qs[qs.length - 1].number;
+  return qs.length > 1 ? `Questions ${first}–${last}` : `Question ${first}`;
+}
+
 // Group prompts imported as "Question 7: Choose the correct letter…" repeat
 // the "QUESTION 7" range eyebrow the UI already renders above them. Drop the
 // redundant "Question(s) N(–M):" lead-in (also after a mock's "Section 1 · "

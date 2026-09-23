@@ -1,6 +1,6 @@
 import React from 'react';
 import QuestionItem from './QuestionItem';
-import { typeConfig, stripOptionKeyPrefix, cleanGroupPrompt } from './grade';
+import { typeConfig, stripOptionKeyPrefix, cleanGroupPrompt, groupRangeLabel } from './grade';
 import { sanitizeHtml, sanitizeSvg } from '../../../lib/sanitize';
 
 // Renders one question_group: heading + instructions (+ an options legend for
@@ -28,10 +28,7 @@ export default function QuestionGroup({
           ? 'Plan'
           : 'Map';
 
-  const first = group.questions[0]?.number;
-  const last = group.questions[group.questions.length - 1]?.number;
-  const range =
-    group.questions.length > 1 ? `Questions ${first}–${last}` : `Question ${first}`;
+  const range = groupRangeLabel(group);
   // The range eyebrow above already names the question number(s) — drop a
   // redundant "Question N:" lead-in baked into imported prompts.
   const prompt = cleanGroupPrompt(group.prompt);
