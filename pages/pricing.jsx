@@ -28,6 +28,8 @@ import SignInDialog from '../src/components/auth/SignInDialog';
 import WritingScoreReport from '../src/components/question/WritingScoreReport';
 import { FaqSection, faqJsonLdFor } from '../src/components/SectionLanding';
 import { useAuth } from '../src/lib/auth';
+import { useFreeSample } from '../src/lib/useFreeWritingSample';
+import { IS_WEEKLY_FREE_SCORE, freeScoreCopy, nextFreeScoreHint } from '../lib/freeScorePeriod';
 import { usePlan } from '../src/lib/usePlan';
 import { getSupabase, getPublicTrustStats } from '../lib/supabase';
 import { isPppCountry } from '../lib/billing';
@@ -64,6 +66,10 @@ const PAGE_DESCRIPTION = PRICING_SEO.description;
 // actually been done — see pages/ielts-writing-checker-accuracy.js.
 const accuracyLine = calibrationPricingLine();
 
+// Free-tier allowance copy follows NEXT_PUBLIC_FREE_SCORE_PERIOD (lifetime by
+// default, weekly once consume_ai_score v10 is live) — lib/freeScorePeriod.js.
+const FREE_COPY = freeScoreCopy();
+
 // Everything Pro unlocks — shown on every Pro card and in the "Everything
 // included" grid. The single Pro tier is sold three ways (Monthly, Annual, and
 // the one-time Exam Pass); prices and the promo live in src/lib/saleConfig.js
@@ -71,7 +77,7 @@ const accuracyLine = calibrationPricingLine();
 const FREE_INCLUDES = [
   'Full Reading & Listening question bank',
   'Instant marking with answer keys',
-  'One lifetime Writing sample + one Speaking sample score',
+  FREE_COPY.allowanceLine,
 ];
 
 const PRO_INCLUDES = [
@@ -95,7 +101,7 @@ const PERKS = [
 
 const COMPARISON = [
   ['Reading and Listening question bank', true, true],
-  ['One lifetime Writing sample + one Speaking sample score', true, true],
+  [FREE_COPY.allowanceLine, true, true],
   ['Full Writing report and continued scoring', false, true],
   ['AI Speaking scoring and the live gpt-live-1 examiner', false, true],
   ['Timed full-mock mode', false, true],
@@ -153,7 +159,7 @@ const PRICING_FAQS = [
   },
   {
     q: 'What is free, and what needs Pro?',
-    a: 'The full Reading and Listening question bank stays free with instant marking, and you get one lifetime Writing sample score plus one Speaking sample score. Pro adds full AI Writing reports on all four criteria, AI Speaking scoring, minutes with the live gpt-live-1 examiner, timed full mocks, trend insights, and an ad-free experience.',
+    a: `${FREE_COPY.pricingFaq} Pro adds full AI Writing reports on all four criteria, AI Speaking scoring, minutes with the live gpt-live-1 examiner, timed full mocks, trend insights, and an ad-free experience.`,
   },
   {
     q: 'What exactly are the fair-use limits on Pro?',
@@ -508,6 +514,14 @@ export default function PricingPage() {
     (isPremium && !examPassActive) || pauseActive || pausePending;
   const saved = stage === 'saved';
   const context = contextualCopy(upgrade, saved);
+  // Weekly free scores: a free learner sent here by a spent sample also sees
+  // when the next free one unlocks (no query at all in lifetime mode).
+  const paywallSkill = upgrade === 'speaking' ? 'speaking' : 'writing';
+  const freeSample = useFreeSample(paywallSkill, {
+    enabled: IS_WEEKLY_FREE_SCORE && (upgrade === 'writing' || upgrade === 'speaking'),
+  });
+  const refillHint =
+    !isPremium && freeSample.used ? nextFreeScoreHint(freeSample.nextFreeAt, { skill: paywallSkill }) : '';
   const examDays = daysUntil(examDate);
   const examWeeks = examDays == null ? null : Math.max(1, Math.ceil(examDays / 7));
 
@@ -737,6 +751,11 @@ export default function PricingPage() {
               <span aria-hidden="true">{context.icon}</span> {context.title}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">{context.body}</p>
+            {refillHint ? (
+              <p className="mt-2 text-xs font-medium text-muted-foreground" data-testid="free-score-refill">
+                Not ready to upgrade? {refillHint}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -1071,7 +1090,7 @@ export default function PricingPage() {
         </section>
 
         <p className="mt-6 text-center text-sm font-medium text-muted-foreground">
-          Start with a free Writing and a free Speaking sample score. Pro unlocks the full feedback toolkit.
+          {FREE_COPY.pricingStart} Pro unlocks the full feedback toolkit.
         </p>
 
         {/* Genuine trust signals — every claim maps to real behaviour. */}

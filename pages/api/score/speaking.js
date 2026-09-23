@@ -711,7 +711,8 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
         operation: 'rubric_score',
         model: ai.model,
         payload,
-        metadata: { part },
+        // free_sample mirrors writing, so weekly free-score cost is queryable.
+        metadata: { part, free_sample: quota.free === true },
       })
     );
     const content = payload?.choices?.[0]?.message?.content;
@@ -796,6 +797,8 @@ Assess this transcript as an IELTS Speaking examiner on the three transcript-ass
       transcript,
       quotaRemaining: quota.remaining,
       free: isFreeScore,
+      // Weekly refill time from consume_ai_score v10; absent under v9.
+      ...(isFreeScore && quota.nextFreeAt ? { nextFreeAt: quota.nextFreeAt } : {}),
     });
   } catch (e) {
     await refundQuota(userId, quota);

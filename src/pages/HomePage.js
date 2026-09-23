@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+import { freeScoreCopy } from '../../lib/freeScorePeriod';
 import {
   ArrowRight,
   BookOpen,
@@ -292,8 +293,8 @@ function HeroEssayBox() {
       </div>
 
       <p className="mt-3 text-xs leading-relaxed text-slate-300">
-        Free means one AI Writing report per account — a single lifetime sample. You sign
-        in when you submit; no card is asked for.
+        {freeScoreCopy().heroFootnote} You sign in when you submit; no card is asked
+        for.
       </p>
     </form>
   );
@@ -589,8 +590,8 @@ const HomePage = ({ counts = {} }) => {
                     Free forever
                   </p>
                   <p className="mt-1.5 text-sm text-foreground">
-                    The full Reading &amp; Listening bank with instant marking, plus one free AI
-                    Writing and one Speaking sample score.
+                    The full Reading &amp; Listening bank with instant marking,{' '}
+                    {freeScoreCopy().homeFreeTier}
                   </p>
                 </div>
                 <div>

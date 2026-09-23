@@ -3,6 +3,7 @@ import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../lib/upgradeContext';
+import { freeScoreCopy } from '../lib/freeScorePeriod';
 import {
   Sparkles,
   PenLine,
@@ -422,7 +423,7 @@ export default function WritingCheckerPage() {
                 AI IELTS Writing Checker
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Create an account for one free Writing sample: your overall band, feedback on
+                {freeScoreCopy().checkerIntro} your overall band, feedback on
                 all four criteria, and one corrected example. Continue with the 30-day
                 Exam Pass for full reports on your next essays.
               </p>

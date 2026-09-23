@@ -5,8 +5,10 @@ import Modal from './AccessibleModal';
 import { usePlan } from '../lib/usePlan';
 import { track } from '../lib/analytics';
 import { money, planPricing, cheapestMonthlyRate } from '../lib/saleConfig';
+import { freeScoreCopy, nextFreeScoreHint } from '../../lib/freeScorePeriod';
 
-// Limit modal for AI-scoring CTAs. Writing includes one lifetime free sample;
+// Limit modal for AI-scoring CTAs. Free accounts get a free sample per skill
+// (lifetime, or one per week when NEXT_PUBLIC_FREE_SCORE_PERIOD=weekly);
 // after that, this opens in two situations:
 //   * a premium user hit a per-skill fair-use cap (or an IP limit) —
 //     tell them when it resets, no upsell;
@@ -38,6 +40,10 @@ export default function AiQuotaPanel({
   const impressionRef = React.useRef(false);
 
   const skillLabel = skill === 'writing' ? 'Writing' : 'Speaking';
+  const copy = freeScoreCopy();
+  // Weekly mode: consume_ai_score v10 returns the refill time as resetsAt on
+  // a free-tier denial. Lifetime mode (or no date) renders nothing extra.
+  const refillHint = nextFreeScoreHint(resetsAt, { skill });
 
   React.useEffect(() => {
     if (!open || loading) {
@@ -71,8 +77,8 @@ export default function AiQuotaPanel({
           <>
             <p className="text-sm leading-6 text-muted-foreground">
               {skill === 'writing'
-                ? 'You’ve used your lifetime free Writing sample. Upgrade to unlock the complete report and continued scoring:'
-                : 'You’ve used your lifetime free Speaking sample. Upgrade to unlock full scoring on every recording:'}
+                ? `${copy.quotaUsedWriting}${refillHint ? ` ${refillHint}` : ''} Upgrade to unlock the complete report and continued scoring:`
+                : `${copy.quotaUsedSpeaking}${refillHint ? ` ${refillHint}` : ''} Upgrade to unlock full scoring on every recording:`}
             </p>
             <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
               <li>Writing and Speaking AI band scores with clear fair-use limits</li>

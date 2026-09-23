@@ -37,6 +37,7 @@ import {
 import { track } from '../lib/analytics';
 import AiQuotaPanel from '../components/AiQuotaPanel';
 import ExamPassOffer from '../components/ExamPassOffer';
+import { nextFreeScoreHint } from '../../lib/freeScorePeriod';
 import {
   speakingAudioControlLabel,
   speakingQuestionAudioContext,
@@ -562,6 +563,8 @@ function ScoreReport({ result, slug = '' }) {
   const improvements = Array.isArray(result.improvements) ? result.improvements : [];
   const pronunciation = result.pronunciation || {};
   const isTeaser = result.free === true;
+  // Weekly free scores only (server-provided date); '' otherwise.
+  const refillHint = isTeaser ? nextFreeScoreHint(result.nextFreeAt, { skill: 'speaking' }) : '';
   const [transcriptOpen, setTranscriptOpen] = useState(false);
 
   return (
@@ -668,6 +671,7 @@ function ScoreReport({ result, slug = '' }) {
       {isTeaser && (
         <ExamPassOffer skill="speaking" source="speaking_sample" band={result.overallBand}>
           You&apos;ve seen your overall band and Fluency &amp; Coherence in your free sample.
+          {refillHint ? ` ${refillHint}` : ''}
         </ExamPassOffer>
       )}
     </div>
@@ -1098,8 +1102,9 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [] }) => {
       }
 
       // Premium gate BEFORE the scoring call — but free users with their
-      // lifetime Speaking sample still available go through to the server
-      // (consume_ai_score v8 grants exactly one sampled score). When the plan
+      // Speaking sample still available (lifetime, or this week's under
+      // consume_ai_score v10 + NEXT_PUBLIC_FREE_SCORE_PERIOD=weekly) go through
+      // to the server, which makes the real decision. When the plan
       // or sample state is still loading we let the server decide (the 402
       // premium_required handler catches it).
       if (!planLoading && !isPremium && sampleUsed === true) {

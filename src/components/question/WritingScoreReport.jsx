@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import { track } from '../../lib/analytics';
 import { BandHero, BandMeter, CriterionFeedback } from './ScoreUI';
 import ShareRow from '../ShareRow';
+import { nextFreeScoreHint } from '../../../lib/freeScorePeriod';
 
 const TASK2_CRITERIA = [
   ['taskResponse', 'Task Response'],
@@ -111,6 +112,8 @@ export default function WritingScoreReport({
     : [];
   const rewrite = result.rewrite && typeof result.rewrite === 'object' ? result.rewrite : null;
   const isTeaser = result.free === true && !sample;
+  // Weekly free scores only (server-provided date); '' otherwise.
+  const refillHint = isTeaser ? nextFreeScoreHint(result.nextFreeAt, { skill: 'writing' }) : '';
   // How many corrections the API held back. The free payload ships exactly one
   // real correction plus this count — never the withheld text.
   const lockedCorrections = Number.isFinite(result.lockedCorrectionCount)
@@ -286,6 +289,7 @@ export default function WritingScoreReport({
           {visibleCriteria >= criteriaMeta.length
             ? `You’ve seen your band on all four criteria${corrected.length ? ' and one real correction' : ''}.`
             : 'You’ve seen your overall band and your first criterion.'}
+          {refillHint ? ` ${refillHint}` : ''}
         </ExamPassOffer>
       ) : null}
       {!sample && typeof result.overallBand === 'number' ? (
