@@ -9,8 +9,8 @@ import { LISTENING_PART_SLUGS } from '../lib/listeningQuestionTypes';
 import { SPEAKING_PART_SLUGS } from '../lib/speakingParts';
 import { SPEAKING_FAMILY_SLUGS } from '../lib/speakingTopicFamilies';
 import { SCORE_REQUIREMENT_COUNTRY_SLUGS } from '../lib/scoreRequirementsData';
-import { SITEMAP_SECTIONS, latestDate, sendXml, sitemapIndexXml, urlsetXml } from '../lib/sitemap';
-import { collectAllSitemapSections, collectSitemapSection } from '../lib/sitemapData';
+import { SITEMAP_SECTIONS, latestDate, sendXml, sitemapIndexXml } from '../lib/sitemap';
+import { collectAllSitemapSections } from '../lib/sitemapData';
 
 export const STATIC_ROUTES = [
   '/',
@@ -50,13 +50,6 @@ export const STATIC_ROUTES = [
   // Per-country score requirement pages (pages/ielts-score-requirements/[country].js).
   ...SCORE_REQUIREMENT_COUNTRY_SLUGS.map((slug) => `/ielts-score-requirements/${slug}`),
 ];
-
-// Shared getServerSideProps for the child sitemaps (pages/sitemap-*.xml.js).
-export async function renderSitemapSection(section, res) {
-  const entries = await collectSitemapSection(section, { staticRoutes: STATIC_ROUTES });
-  sendXml(res, urlsetXml(entries || []));
-  return { props: {} };
-}
 
 export async function getServerSideProps({ res }) {
   // Build every section so each <sitemap> carries the newest real lastmod of

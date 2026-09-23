@@ -1,8 +1,9 @@
 // /sitemap-writing.xml — child of the /sitemap.xml index (see pages/sitemap.xml.js).
-import { renderSitemapSection } from './sitemap.xml';
+import { STATIC_ROUTES } from './sitemap.xml';
+import { renderSitemapSection } from '../lib/sitemapData';
 
 export async function getServerSideProps({ res }) {
-  return renderSitemapSection('writing', res);
+  return renderSitemapSection('writing', res, STATIC_ROUTES);
 }
 
 export default function SitemapWriting() {
