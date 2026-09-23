@@ -53,6 +53,25 @@ describe('serializeWritingDraft / parseWritingDraft', () => {
     expect(parseWritingDraft(serializeWritingDraft({ essay: '   ' }))).toBeNull();
   });
 
+  it('carries a prompt-only handoff that can never auto-submit', () => {
+    const raw = serializeWritingDraft({
+      taskType: 'task1-general',
+      prompt: 'Write a letter to the manager of the hotel.',
+      essay: 'ignored',
+      autoSubmit: true,
+      promptOnly: true,
+    });
+    expect(parseWritingDraft(raw)).toMatchObject({
+      taskType: 'task1-general',
+      prompt: 'Write a letter to the manager of the hotel.',
+      essay: '',
+      autoSubmit: false,
+      promptOnly: true,
+    });
+    // A prompt-only handoff with no question is as useless as an empty essay.
+    expect(parseWritingDraft(serializeWritingDraft({ prompt: '  ', promptOnly: true }))).toBeNull();
+  });
+
   it('truncates oversized text rather than storing it whole', () => {
     const parsed = parseWritingDraft(
       serializeWritingDraft({ essay: 'a'.repeat(30000), prompt: 'b'.repeat(5000) })

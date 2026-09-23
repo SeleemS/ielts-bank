@@ -9,6 +9,9 @@ import NewsletterSignup from "../../src/components/NewsletterSignup";
 // strips it — and its filesystem read — from the client bundle. The date
 // helpers are used in the component, so they come from a browser-safe module.
 import { posts } from "../../lib/posts";
+// Server-only as well: used inside getStaticProps alone.
+import { essaysForBlogPost } from "../../lib/essays";
+import { formatBand, questionTypeLabel, taskLabel } from "../../lib/essayTaxonomy";
 import { formatMonthYear, toIsoDate } from "../../lib/postDates";
 import { sanitizeHtml } from "../../lib/sanitize";
 import AdUnit from "../../src/components/AdUnit";
@@ -39,7 +42,7 @@ const PROSE = [
   "[&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:align-top",
 ].join(" ");
 
-export default function BlogPost({ post }) {
+export default function BlogPost({ post, essayBank = [] }) {
   const canonical = `${SITE_URL}/blog/${post.slug}`;
   const ogImage = `${SITE_URL}/api/og?title=${encodeURIComponent(
     post.title
@@ -223,6 +226,47 @@ export default function BlogPost({ post }) {
             </article>
             <AdUnit />
 
+            {/* Writing articles point readers at worked examples in the
+                essay bank: the same skill, shown at Band 6, 7 and 8. */}
+            {essayBank.length ? (
+              <section
+                aria-labelledby="essay-bank-heading"
+                className="mt-8 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6"
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-accent">IELTS Essay Bank</p>
+                <h2 id="essay-bank-heading" className="mt-2 text-xl font-bold text-foreground">
+                  See it in a band-scored sample answer
+                </h2>
+                <ul className="mt-4 space-y-2">
+                  {essayBank.map((e) => (
+                    <li key={e.slug}>
+                      <NextLink
+                        href={`/ielts-essay-bank/${e.slug}`}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 no-underline hover:border-accent/50"
+                      >
+                        <span>
+                          <span className="block font-semibold text-foreground">
+                            {e.title} — Band {formatBand(e.band)}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {taskLabel(e.bucket)} · {questionTypeLabel(e.type)}
+                          </span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-accent" />
+                      </NextLink>
+                    </li>
+                  ))}
+                </ul>
+                <NextLink
+                  href="/ielts-essay-bank"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline hover:text-accent/80"
+                >
+                  Browse the full IELTS essay bank
+                  <ArrowRight className="h-4 w-4" />
+                </NextLink>
+              </section>
+            ) : null}
+
             <PracticeFeedbackEntry skill={feedbackEntrySkill(post.title)} source="blog" />
 
             <div className="mt-10">
@@ -261,5 +305,10 @@ export async function getStaticProps({ params }) {
     return { notFound: true };
   }
 
-  return { props: { post } };
+  // Only Writing articles get essay-bank suggestions; elsewhere they would be
+  // noise rather than a related resource.
+  const isWriting = /writing|essay|task-1|task-2|letter/.test(post.slug);
+  const essayBank = isWriting ? essaysForBlogPost({ slug: post.slug, title: post.title }, 3) : [];
+
+  return { props: { post, essayBank } };
 }

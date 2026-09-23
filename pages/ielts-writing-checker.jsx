@@ -172,6 +172,9 @@ export default function WritingCheckerPage() {
     if (handoff) {
       setTaskType(handoff.taskType);
       setPrompt(handoff.prompt);
+      // A prompt-only handoff (the essay bank's "answer this question in the
+      // checker" link) arrives with an empty essay and autoSubmit=false, so the
+      // learner lands on a blank answer box under the pre-filled question.
       setEssay(handoff.essay);
       if (handoff.autoSubmit) setAutoRun(true);
       setRestored(true);

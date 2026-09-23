@@ -137,9 +137,16 @@ const nextConfig = {
   // at REQUEST time (rather than only at build time) would ship without the
   // markdown files and throw ENOENT on Vercel. The blog pages are SSG and bake
   // their content in at build, so they need no entry here.
+  //
+  // lib/essays.js reads content/essays/*.md the same way. The essay pages are
+  // fully static, but the essay-bank hub and the writing question pages are
+  // ISR (their getStaticProps re-runs on Vercel) and the sitemap runs per
+  // request, so all three need the essay files traced in.
   outputFileTracingIncludes: {
-    '/sitemap.xml': ['./content/posts/**'],
+    '/sitemap.xml': ['./content/posts/**', './content/essays/**'],
     '/api/cron/lifecycle-emails': ['./content/posts/**'],
+    '/ielts-essay-bank': ['./content/essays/**'],
+    '/writingquestion/**': ['./content/essays/**'],
   },
   async headers() {
     return [
@@ -154,6 +161,23 @@ const nextConfig = {
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // The two essay-bank blog guides were merged into the IELTS Essay Bank
+      // hub (their method now lives in its "How to use" section), so their
+      // ranking signals consolidate on the page searchers actually want.
+      {
+        source: '/blog/ielts-essay-bank-guide',
+        destination: '/ielts-essay-bank',
+        permanent: true,
+      },
+      {
+        source: '/blog/ielts-writing-bank-tips',
+        destination: '/ielts-essay-bank',
+        permanent: true,
       },
     ];
   },

@@ -1,4 +1,5 @@
 import { posts } from '../lib/posts';
+import { essays } from '../lib/essays';
 import { SKILLS, listMockTests, listPassages, listAnswerKeySlugs } from '../lib/supabase';
 import { ANSWER_SKILLS, answersUrl } from '../lib/answerKeys';
 import { READING_QUESTION_TYPE_SLUGS } from '../lib/readingQuestionTypes';
@@ -36,6 +37,9 @@ export const STATIC_ROUTES = [
   '/ielts-score-requirements',
   // Published accuracy of the AI Writing scorer (review item 24).
   '/ielts-writing-checker-accuracy',
+  // IELTS Essay Bank hub (pages/ielts-essay-bank/index.js); the essay pages
+  // themselves are listed from content/essays below.
+  '/ielts-essay-bank',
   // Reading question-type hub pages (pages/reading/[type].js).
   ...READING_QUESTION_TYPE_SLUGS.map((slug) => `/reading/${slug}`),
   // Listening part hub pages (pages/listening/[type].js).
@@ -85,6 +89,14 @@ export async function getServerSideProps({ res }) {
     entries.push({
       loc: `${SITE_URL}/blog/${post.slug}`,
       lastmod: isoDate(post.date),
+    })
+  );
+
+  // Essay-bank sample answers (pages/ielts-essay-bank/[slug].js).
+  essays.forEach((essay) =>
+    entries.push({
+      loc: `${SITE_URL}/ielts-essay-bank/${essay.slug}`,
+      lastmod: isoDate(essay.date),
     })
   );
 

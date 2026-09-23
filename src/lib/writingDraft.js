@@ -34,19 +34,25 @@ function normalizeText(value, max) {
 
 // Serialize a hero draft to the string stored in sessionStorage. Versioned so
 // a future shape change can be ignored rather than mis-parsed.
-export function serializeWritingDraft({ taskType, prompt, essay, autoSubmit = true } = {}) {
+//
+// `promptOnly` handoffs carry a question but no essay (the essay bank's "answer
+// this prompt in the checker" link): the checker pre-fills the task type and
+// question and waits for the learner to write — they can never auto-submit.
+export function serializeWritingDraft({ taskType, prompt, essay, autoSubmit = true, promptOnly = false } = {}) {
   return JSON.stringify({
     v: 1,
     taskType: normalizeTaskType(taskType),
     prompt: normalizeText(prompt, MAX_PROMPT_CHARS),
-    essay: normalizeText(essay, MAX_ESSAY_CHARS),
-    autoSubmit: autoSubmit !== false,
+    essay: promptOnly ? '' : normalizeText(essay, MAX_ESSAY_CHARS),
+    autoSubmit: promptOnly ? false : autoSubmit !== false,
+    ...(promptOnly ? { promptOnly: true } : {}),
     createdAt: new Date().toISOString(),
   });
 }
 
 // Parse a stored draft back into a normalized object, or null when the record
-// is missing, malformed, from another version, or carries no essay text.
+// is missing, malformed, from another version, or carries no essay text (no
+// question text, for a prompt-only handoff).
 export function parseWritingDraft(raw) {
   if (typeof raw !== 'string' || !raw) return null;
   let parsed;
@@ -57,6 +63,18 @@ export function parseWritingDraft(raw) {
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
   if (parsed.v !== 1) return null;
+  if (parsed.promptOnly === true) {
+    const prompt = normalizeText(parsed.prompt, MAX_PROMPT_CHARS);
+    if (!prompt.trim()) return null;
+    return {
+      taskType: normalizeTaskType(parsed.taskType),
+      prompt,
+      essay: '',
+      autoSubmit: false,
+      promptOnly: true,
+      createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : null,
+    };
+  }
   const essay = normalizeText(parsed.essay, MAX_ESSAY_CHARS);
   if (!essay.trim()) return null;
   return {

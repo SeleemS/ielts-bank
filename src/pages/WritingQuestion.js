@@ -26,6 +26,8 @@ import {
   buildWritingQuestionJsonLd,
   serializeJsonLd,
 } from '../../lib/writingQuestionSeo';
+import { formatBand, writingPageTitle } from '../../lib/essayTaxonomy';
+import NextLink from 'next/link';
 const SCORE_API = '/api/score/writing';
 const PROMPT_HTML_CLASS =
   'text-[15px] leading-7 text-foreground [&_p]:mb-4 [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_li]:mb-1';
@@ -48,7 +50,7 @@ function htmlToText(html) {
     .trim();
 }
 
-const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
+const WritingQuestion = ({ id: docId, passage, description, related = [], sampleEssays = [] }) => {
   const { user } = useAuth();
   const router = useRouter();
   const promptHtml = passage?.writing?.promptHtml || passage?.bodyHtml || '';
@@ -278,8 +280,10 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
     import('canvas-confetti').then(({ default: confetti }) => confetti({ spread: 100, particleCount: 200, origin: { y: 0.5 }, zIndex: 3000, scalar: 1.4 })).catch(() => {});
   }, [storageKey]);
 
+  // Pages with a model answer are titled as sample essays — what searchers
+  // actually type — rather than generic "practice" (lib/essayTaxonomy.js).
   const pageTitle = title
-    ? `${title} | IELTS Writing Practice | IELTS-Bank`
+    ? writingPageTitle({ title, task, module: passage?.module, hasModelAnswer: Boolean(modelAnswerHtml) })
     : 'IELTS Writing Practice | IELTS-Bank';
   const metaDescription =
     description ||
@@ -370,6 +374,36 @@ const WritingQuestion = ({ id: docId, passage, description, related = [] }) => {
                   </div>
                 </details>
               ) : null}
+              {/* Essay-bank cross-link: the same prompt answered at Band 6, 7
+                  and 8 with examiner comments, when the bank has them. */}
+              <div className="mt-4 rounded-lg border border-border bg-background p-4">
+                {sampleEssays.length ? (
+                  <>
+                    <p className="text-sm font-bold text-foreground">
+                      Compare band levels for this question
+                    </p>
+                    <ul className="mt-2 flex flex-wrap gap-2">
+                      {sampleEssays.map((e) => (
+                        <li key={e.slug}>
+                          <NextLink
+                            href={`/ielts-essay-bank/${e.slug}`}
+                            className="inline-flex rounded-full border border-border px-3 py-1 text-sm font-semibold text-foreground no-underline hover:border-accent hover:text-accent"
+                          >
+                            Band {formatBand(e.band)} sample + examiner comments
+                          </NextLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                <p className={cn('text-sm text-muted-foreground', sampleEssays.length && 'mt-3')}>
+                  More sample answers by topic and band in the{' '}
+                  <NextLink href="/ielts-essay-bank" className="font-semibold text-accent underline underline-offset-2">
+                    IELTS Essay Bank
+                  </NextLink>
+                  .
+                </p>
+              </div>
             </div>
 
             {/* Answer */}

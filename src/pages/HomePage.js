@@ -540,6 +540,41 @@ const HomePage = ({ counts = {} }) => {
             </div>
           </section>
 
+          {/* ===================== IELTS ESSAY BANK ===================== */}
+          {/* Brand + "essay bank" is one of the site's biggest search entry
+              points, so the hub gets a crawlable homepage link of its own. */}
+          <section className="mx-auto max-w-7xl px-4 pb-4 pt-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex max-w-5xl flex-col gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-accent">
+                  <PenLine className="h-3.5 w-3.5" />
+                  IELTS Essay Bank
+                </span>
+                <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  Sample essays with band scores — Band 6 vs 7 vs 8
+                </h2>
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                  Every Writing model answer in one place, filterable by task, topic, question type and band —
+                  plus the same questions answered at Band 6, 7 and 8 with examiner-style comments, so you can
+                  see exactly what moves a score.
+                </p>
+              </div>
+              <Button asChild size="lg" variant="outline" className="shrink-0">
+                <NextLink
+                  href="/ielts-essay-bank"
+                  className="no-underline"
+                  data-analytics="homepage-essay-bank-cta"
+                  onClick={() =>
+                    track('product_cta_click', { source: 'homepage_essay_bank', product: 'essay_bank' })
+                  }
+                >
+                  Browse the essay bank
+                  <ArrowRight className="h-4 w-4" />
+                </NextLink>
+              </Button>
+            </div>
+          </section>
+
           {/* ==================== ACCOUNT DASHBOARD ==================== */}
           <DashboardTeaser />
 
