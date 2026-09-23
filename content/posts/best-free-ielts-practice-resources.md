@@ -35,9 +35,13 @@ answer: "Start with the official free sources — the sample questions on ielts.
   <p><strong>Best for:</strong> knowing where you stand. Also ours: the <a href="/band-estimator">15-minute band estimator</a> gives you a four-skill starting range from real practice questions, and the <a href="/band-calculator">band score calculator</a> converts Listening and Reading raw scores and applies the official rounding rule to estimate your overall band.</p>
   <p><strong>Limitation:</strong> both produce estimates. Raw-to-band conversions vary slightly between real test versions, and no short estimator can be as reliable as a full, examiner-marked test.</p>
 
-  <h2>8. Our AI Writing checker (this site — free tier)</h2>
-  <p><strong>Best for:</strong> getting any feedback at all on your Writing, which is the skill the rest of the free ecosystem leaves unmarked. Our <a href="/ielts-writing-checker">AI IELTS Writing checker</a> scores essays against the four official criteria with sentence-level feedback, and the free tier is enough to diagnose your recurring errors.</p>
-  <p><strong>Limitation:</strong> it is an AI estimate, not an examiner's mark, and unlimited use requires a paid plan. Treat its band as a guide and its feedback — the specific, fixable errors it flags — as the real value.</p>
+  <h2>8. Our AI Writing checker (this site — free sample)</h2>
+  <p><strong>Best for:</strong> trying AI feedback on one practice response. Our <a href="/ielts-writing-checker">AI IELTS Writing checker</a> gives one free Writing sample after signup, with estimated overall and criterion bands, feedback and one corrected example.</p>
+  <p><strong>Limitation:</strong> it is an AI estimate, not an examiner's mark. Full reports and continued scoring require paid access; see <a href="/pricing">current plans and allowances</a>. One sample cannot establish recurring errors or measure improvement. Check each suggestion against your actual text.</p>
+
+  <h2>9. Our printable Writing revision worksheet (this site — free)</h2>
+  <p><strong>Best for:</strong> turning feedback from a teacher, peer or AI tool into one concrete revision. <a href="/downloads/ielts-writing-revision-worksheet.pdf">Download the free Writing revision worksheet (PDF, 2 pages)</a> to record the task requirements, find evidence for a suggestion, rewrite a paragraph and plan what to practise next. No account is needed for the download.</p>
+  <p><strong>Limitation:</strong> the worksheet does not mark your writing or predict a band. It is an independent practice aid, with a link to the official IELTS Writing resources and descriptors.</p>
 
   <h2>How to combine them</h2>
   <ol>
