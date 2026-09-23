@@ -10,8 +10,8 @@
 //     premium_monthly_ppp    -> $3.99    /month
 //     premium_annual         -> $49.99   /year
 //     premium_annual_ppp     -> $19.99   /year
-//     premium_exam_pass      -> $14.99   one-time (30 days)
-//     premium_exam_pass_ppp  -> $5.99    one-time (30 days)
+//     premium_exam_pass      -> $14.99   one-time (EXAM_PASS_DAYS days)
+//     premium_exam_pass_ppp  -> $5.99    one-time (EXAM_PASS_DAYS days)
 //   pages/api/billing/checkout.js re-verifies every one of those against the
 //   live Stripe Price before a Checkout Session is created (PRICE MISMATCH).
 //
@@ -20,9 +20,44 @@
 // attached to the checkout (see PROMO below), so any crossed-out number a
 // visitor sees is a price we would genuinely charge without that coupon.
 
-// One-time Exam Pass entitlement window, in days. lib/billing.js stamps
-// plan_expires_at = now + this, and the Terms billing section states it.
-export const EXAM_PASS_DAYS = 30;
+// One-time Exam Pass entitlement window, in days.
+//
+// ONE value drives both the promise and the grant: every page/email/Terms
+// line renders it, checkout stamps it into the session metadata
+// (`pass_days`), and the webhook asks the database to grant exactly that many
+// days (`_exam_pass_days` -> billing_private.fulfill_checkout).
+//
+// The 45-day pass needs the database function from
+// supabase/migrations/20260923120000_exam_pass_length.sql. Until the founder
+// has applied it (scripts/apply-exam-pass-length.mjs) the env flag stays unset
+// and everything — copy and grant — remains 30 days. Setting
+// NEXT_PUBLIC_EXAM_PASS_DAYS=45 before the migration cannot make them
+// disagree either: checkout refuses to sell a pass the database cannot grant
+// (pages/api/billing/checkout.js, "EXAM PASS LENGTH NOT DEPLOYED").
+export const LEGACY_EXAM_PASS_DAYS = 30;
+export const SUPPORTED_EXAM_PASS_DAYS = [30, 45];
+
+export function resolveExamPassDays(raw) {
+  const days = Number(String(raw ?? '').trim());
+  return SUPPORTED_EXAM_PASS_DAYS.includes(days) ? days : LEGACY_EXAM_PASS_DAYS;
+}
+
+// Literal process.env access so Next.js inlines it at build time (client and
+// server bundles alike). Server code calls the function so tests can vary the
+// flag per case; rendered copy uses the constant. Both resolve identically.
+export function examPassDays() {
+  return resolveExamPassDays(process.env.NEXT_PUBLIC_EXAM_PASS_DAYS);
+}
+export const EXAM_PASS_DAYS = examPassDays();
+
+// The pass length a specific checkout promised (stamped at session creation),
+// or null for sessions created before the stamp existed.
+export function examPassDaysFromMetadata(metadata) {
+  const raw = metadata?.pass_days;
+  if (raw == null || raw === '') return null;
+  const days = Number(raw);
+  return SUPPORTED_EXAM_PASS_DAYS.includes(days) ? days : null;
+}
 
 // ---------------------------------------------------------------------------
 // Promo — a REAL Stripe coupon, or nothing at all.
@@ -117,13 +152,13 @@ export const PLANS = {
     cadence: 'one-time',
     days: EXAM_PASS_DAYS,
     months: 1,
-    blurb: 'One payment for your exam month. Never renews.',
+    blurb: 'One payment to cover your run-up to test day. Never renews.',
     global: { price: 14.99 },
     ppp: { price: 5.99 },
   },
 };
 
-// Lead with the same fixed 30-day commitment in every region. Regional
+// Lead with the same fixed one-time Exam Pass in every region. Regional
 // eligibility changes prices, not which plan is featured.
 export function planOrder() {
   return ['exam_pass', 'monthly', 'annual'];

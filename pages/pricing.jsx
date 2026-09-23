@@ -86,7 +86,7 @@ const PRO_INCLUDES = [
 const PERKS = [
   'Full AI Writing reports with all four criteria and corrected examples',
   'AI Speaking scores from your recordings',
-  '30–60 minutes with the live gpt-live-1 examiner on your 30-day pass; monthly allowances on subscriptions',
+  `30–60 minutes with the live gpt-live-1 examiner on your ${EXAM_PASS_DAYS}-day pass; monthly allowances on subscriptions`,
   'Full-length timed mock tests with section breakdowns',
   'Writing and Speaking band trends on your dashboard',
   'Stronger scoring model with priority processing',
@@ -233,7 +233,7 @@ function planPoints(plan, annualVsMonthlyPct, regionalPricing) {
       `Full Pro access for ${plan.days} days`,
       'One payment — it never renews',
       'Nothing to cancel; access simply ends',
-      `${regionalPricing ? 30 : 60} live AI examiner minutes for your 30 days`,
+      `${regionalPricing ? 30 : 60} live AI examiner minutes for your ${plan.days} days`,
     ];
   }
   if (plan.sku === 'annual') {
@@ -271,14 +271,14 @@ function contextualCopy(upgrade, saved) {
     return {
       icon: '✍️',
       title: saved ? 'Your essay is saved and waiting' : 'Keep improving your Writing score',
-      body: saved ? 'Return to your saved essay after checkout to request a full report.' : 'Get full reports on your next essays with the 30-day Exam Pass.',
+      body: saved ? 'Return to your saved essay after checkout to request a full report.' : `Get full reports on your next essays with the ${EXAM_PASS_DAYS}-day Exam Pass.`,
     };
   }
   if (upgrade === 'speaking') {
     return {
       icon: '🎙️',
       title: saved ? 'Your recording is saved and waiting' : 'Get feedback on your Speaking',
-      body: saved ? 'Return to your saved recording after checkout to request a full report.' : 'Get full reports on your next recordings with the 30-day Exam Pass.',
+      body: saved ? 'Return to your saved recording after checkout to request a full report.' : `Get full reports on your next recordings with the ${EXAM_PASS_DAYS}-day Exam Pass.`,
     };
   }
   if (upgrade === 'mock') {
@@ -352,7 +352,7 @@ function CanceledRecovery({ upgrade, saved, returnTo, onSeePlans }) {
           {reason === 'price' ? (
             <>
               Free Reading and Listening practice remains available. The Exam Pass is a
-              one-time payment for 30 days, with no automatic renewal.{' '}
+              one-time payment for {EXAM_PASS_DAYS} days, with no automatic renewal.{' '}
               <button type="button" onClick={onSeePlans} className="font-semibold text-accent underline">
                 Compare plans
               </button>
@@ -746,10 +746,10 @@ export default function PricingPage() {
             IELTS-Bank Pro
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-            30 days of focused IELTS preparation
+            {EXAM_PASS_DAYS} days of focused IELTS preparation
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Choose the Exam Pass for 30 days of full Writing and Speaking feedback,
+            Choose the Exam Pass for {EXAM_PASS_DAYS} days of full Writing and Speaking feedback,
             live examiner practice on the newly released gpt-live-1, timed mocks, and trend
             insights. One payment, no renewal.
           </p>
@@ -974,7 +974,7 @@ export default function PricingPage() {
                   >
                     {featured ? (
                       <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
-                        30 days · no subscription
+                        {EXAM_PASS_DAYS} days · no subscription
                       </span>
                     ) : null}
                     <CardContent className="flex h-full flex-col p-6 pt-7">
@@ -1050,7 +1050,7 @@ export default function PricingPage() {
                         ) : (
                           <Sparkles className="h-4 w-4" />
                         )}
-                        {alreadyOwned ? 'Exam Pass active' : plan.isOneTime ? 'Get 30-day Exam Pass' : 'Choose this plan'}
+                        {alreadyOwned ? 'Exam Pass active' : plan.isOneTime ? `Get ${plan.days}-day Exam Pass` : 'Choose this plan'}
                       </Button>
                       <p className="mt-2 text-center text-xs text-muted-foreground">
                         14-day money-back guarantee ·{' '}
@@ -1066,7 +1066,7 @@ export default function PricingPage() {
 
         <section aria-label="Choose how you pay" className="mx-auto mt-8 max-w-3xl rounded-xl border border-border bg-card p-5 sm:p-6">
           <h2 className="text-lg font-bold">The same feedback toolkit. Two ways to start.</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. The 30-day Exam Pass is {money(planPricing('exam_pass', regionalPricing).price)} USD once and ends automatically. Both have the same scoring limits; choose the Pass if you prefer no renewal.</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. The {EXAM_PASS_DAYS}-day Exam Pass is {money(planPricing('exam_pass', regionalPricing).price)} USD once and ends automatically. Both have the same scoring limits; choose the Pass if you prefer no renewal.</p>
           <a href="#sample-report" className="mt-3 inline-block text-sm font-semibold text-accent underline underline-offset-4">Preview a full Writing report</a>
         </section>
 

@@ -1,7 +1,7 @@
 import { checkoutAttribution } from '../../../lib/monetizationExperiment';
 // pages/api/billing/checkout.js
 // Creates a Stripe Checkout Session for a currently advertised plan: the
-// Monthly or Annual subscription, or the one-time 30-day Exam Pass.
+// Monthly or Annual subscription, or the one-time Exam Pass (EXAM_PASS_DAYS).
 //   * signed-in, NON-anonymous users only (receipts + portal need an email);
 //   * price resolved server-side by lookup_key — PPP variant when the request
 //     geo (x-vercel-ip-country) is in the PPP list. Never client-chosen.
@@ -27,7 +27,13 @@ import {
 } from '../../../lib/billing';
 import { isPremiumRow } from '../../../lib/premium';
 import { sanitizeGaClientId } from '../../../lib/ga4mp';
-import { PROMO, planPricing, promoAppliesTo } from '../../../src/lib/saleConfig';
+import {
+  LEGACY_EXAM_PASS_DAYS,
+  examPassDays,
+  PROMO,
+  planPricing,
+  promoAppliesTo,
+} from '../../../src/lib/saleConfig';
 
 const CHECKOUT_WINDOW_SECONDS = 10 * 60;
 const CHECKOUT_MAX_PER_WINDOW = 10;
@@ -86,6 +92,24 @@ function promoCouponMismatch(coupon) {
         actualAmountOff: coupon?.amount_off ?? null,
         valid: coupon?.valid ?? null,
       };
+}
+
+// A pass longer than the legacy 30 days is only sold once the database
+// function that grants it is live (supabase/migrations/20260923120000_exam_pass_length.sql).
+// Otherwise the page would promise N days and the grant would give 30. A
+// positive answer is cached for the life of the function instance.
+let verifiedPassDays = null;
+async function examPassLengthDeployed(admin, days) {
+  if (days === LEGACY_EXAM_PASS_DAYS || verifiedPassDays === days) return true;
+  try {
+    const { data, error } = await admin.rpc('billing_exam_pass_days_supported');
+    if (error || !Array.isArray(data)) return false;
+    if (!data.map(Number).includes(days)) return false;
+    verifiedPassDays = days;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 let _admin = null;
@@ -281,6 +305,17 @@ export default async function handler(req, res) {
   let stripe;
   let unpersistedCustomerId = null;
   try {
+    if (isOneTimeSku(sku) && !(await examPassLengthDeployed(admin, examPassDays()))) {
+      await recordOperation('catalog');
+      console.error('checkout EXAM PASS LENGTH NOT DEPLOYED:', {
+        advertisedDays: examPassDays(),
+        fix: 'run scripts/apply-exam-pass-length.mjs or unset NEXT_PUBLIC_EXAM_PASS_DAYS',
+      });
+      return res.status(503).json({
+        error: 'Pricing is being updated. Please try again later.',
+      });
+    }
+
     stripe = getStripe();
 
     const prices = await stripe.prices.list({
@@ -359,6 +394,9 @@ export default async function handler(req, res) {
       user_id: userRow.id,
       sku,
       ppp: isPppCountry(country) ? '1' : '0',
+      // The pass length this checkout advertised; the webhook grants exactly
+      // this, so a later length change never alters what was bought.
+      ...(isOneTimeSku(sku) ? { pass_days: String(examPassDays()) } : {}),
       ...(gaCid ? { ga_cid: gaCid } : {}),
       ...checkoutAttribution(req.body),
     };

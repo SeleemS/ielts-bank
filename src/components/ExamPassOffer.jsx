@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { isPppCountry } from '../../lib/billing';
 import { buildUpgradeHref } from '../../lib/upgradeContext';
-import { money, planPricing } from '../lib/saleConfig';
+import { EXAM_PASS_DAYS, money, planPricing } from '../lib/saleConfig';
 import { track } from '../lib/analytics';
 
 // A single, inline next step after the learner has received a free result.
@@ -38,7 +38,7 @@ export default function ExamPassOffer({ skill, source, band, children }) {
   const price = planPricing('exam_pass', regional);
   const monthly = planPricing('monthly', regional);
   return (
-    <section ref={element} aria-label="30-day Exam Pass" className="rounded-xl border border-primary/25 bg-primary/5 p-5 sm:p-6">
+    <section ref={element} aria-label={`${EXAM_PASS_DAYS}-day Exam Pass`} className="rounded-xl border border-primary/25 bg-primary/5 p-5 sm:p-6">
       <p className="text-xs font-bold uppercase tracking-wide text-primary">Your next step</p>
       <h3 className="mt-2 text-lg font-bold text-foreground">Know what to improve in your next answer</h3>
       {children ? <p className="mt-2 text-sm text-muted-foreground">{children}</p> : null}
@@ -48,7 +48,7 @@ export default function ExamPassOffer({ skill, source, band, children }) {
       </p>
       <FeedbackPreview skill={skill} />
       <p className="mt-3 font-semibold text-foreground">Exam Pass · {money(price.price)} USD · one payment</p>
-      <p className="mt-1 text-xs text-muted-foreground">30 days of Pro. No automatic renewal. Scoring limits apply.</p>
+      <p className="mt-1 text-xs text-muted-foreground">{EXAM_PASS_DAYS} days of Pro. No automatic renewal. Scoring limits apply.</p>
       <p className="mt-2 text-sm text-muted-foreground">Or Monthly at {money(monthly.price)} USD/month, renewing until canceled. Both include the same scoring limits.</p>
       <Button asChild variant="accent" className="mt-4 w-full sm:w-auto">
         <NextLink href={href} className="no-underline" onClick={() => {

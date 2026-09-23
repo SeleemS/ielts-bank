@@ -136,6 +136,7 @@ const mockState = {
   coupon: null,
   couponReject: null,
   stripeCalls: {},
+  passDaysProbe: null,
 };
 
 // Mirrors the live catalogue after scripts/configure-exam-pass-annual.mjs:
@@ -216,6 +217,9 @@ vi.mock('@supabase/supabase-js', () => ({
     }),
     rpc: async (name, args) => {
       mockState.rpcCalls.push({ name, args });
+      if (name === 'billing_exam_pass_days_supported') {
+        return mockState.passDaysProbe || { data: null, error: { message: 'function does not exist' } };
+      }
       if (mockState.rateLimitReject) throw mockState.rateLimitReject;
       return {
         data: mockState.rateLimit,
@@ -331,6 +335,7 @@ describe('POST /api/billing/checkout', () => {
     mockState.coupon = null;
     mockState.couponReject = null;
     mockState.stripeCalls = {};
+    mockState.passDaysProbe = null;
     vi.restoreAllMocks();
     delete process.env.STRIPE_AUTOMATIC_TAX;
     delete process.env.STRIPE_WINBACK_COUPON_ID;
@@ -689,6 +694,63 @@ describe('POST /api/billing/checkout', () => {
     expect(session.payment_method_collection).toBeUndefined();
     expect(session.metadata).toMatchObject({ sku: 'exam_pass', ppp: '0', user_id: 'user-1' });
     expect(session.client_reference_id).toBe('user-1');
+  });
+
+  it('stamps the advertised 30-day length without probing the database', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = { id: 'user-1', email: 'a@b.com', is_anonymous: false, plan: 'free' };
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' }, body: { sku: 'exam_pass' } });
+    expect(res.statusCode).toBe(200);
+    expect(mockState.stripeCalls.sessionCreate.metadata.pass_days).toBe('30');
+    expect(mockState.rpcCalls.map((call) => call.name)).not.toContain('billing_exam_pass_days_supported');
+    // Subscriptions carry no pass length.
+    await callCheckout({ headers: { authorization: 'Bearer tok' }, body: { sku: 'monthly' } });
+    expect(mockState.stripeCalls.sessionCreate.metadata.pass_days).toBeUndefined();
+  });
+
+  describe('with NEXT_PUBLIC_EXAM_PASS_DAYS=45', () => {
+    async function callCheckout45(body) {
+      vi.stubEnv('NEXT_PUBLIC_EXAM_PASS_DAYS', '45');
+      try {
+        return await callCheckout({ headers: { authorization: 'Bearer tok' }, body });
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    }
+
+    beforeEach(() => {
+      mockState.authUser = { id: 'user-1' };
+      mockState.userRow = { id: 'user-1', email: 'a@b.com', is_anonymous: false, plan: 'free' };
+    });
+
+    it('refuses to sell a 45-day pass until the database can grant it', async () => {
+      const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const res = await callCheckout45({ sku: 'exam_pass' });
+      expect(res.statusCode).toBe(503);
+      expect(mockState.stripeCalls.sessionCreate).toBeUndefined();
+      expect(mockState.stripeCalls.pricesList).toBeUndefined();
+      expect(errors).toHaveBeenCalledWith('checkout EXAM PASS LENGTH NOT DEPLOYED:', expect.anything());
+    });
+
+    it('refuses when the deployed function grants other lengths only', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockState.passDaysProbe = { data: [30], error: null };
+      const res = await callCheckout45({ sku: 'exam_pass' });
+      expect(res.statusCode).toBe(503);
+    });
+
+    it('sells and stamps a 45-day pass once the migration is live', async () => {
+      mockState.passDaysProbe = { data: [30, 45], error: null };
+      const res = await callCheckout45({ sku: 'exam_pass' });
+      expect(res.statusCode).toBe(200);
+      expect(mockState.stripeCalls.sessionCreate.metadata.pass_days).toBe('45');
+    });
+
+    it('never blocks subscriptions on the pass-length probe', async () => {
+      const res = await callCheckout45({ sku: 'annual' });
+      expect(res.statusCode).toBe(200);
+      expect(mockState.rpcCalls.map((call) => call.name)).not.toContain('billing_exam_pass_days_supported');
+    });
   });
 
   it('resolves the regional Exam Pass price for a PPP visitor', async () => {

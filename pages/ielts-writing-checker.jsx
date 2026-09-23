@@ -3,6 +3,7 @@ import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../lib/upgradeContext';
+import { EXAM_PASS_DAYS } from '../src/lib/saleConfig';
 import {
   Sparkles,
   PenLine,
@@ -76,7 +77,7 @@ const FAQ = [
   },
   {
     q: 'Is it free?',
-    a: 'Yes, your first AI Writing score is free after you create an account. It shows your overall band, all four criterion bands and feedback, and one corrected example. The 30-day Exam Pass adds continued scoring with full reports, examiner summaries, improvement plans and all corrections on your next essays.',
+    a: `Yes, your first AI Writing score is free after you create an account. It shows your overall band, all four criterion bands and feedback, and one corrected example. The ${EXAM_PASS_DAYS}-day Exam Pass adds continued scoring with full reports, examiner summaries, improvement plans and all corrections on your next essays.`,
   },
   {
     q: 'Do you store my essay?',
@@ -423,7 +424,7 @@ export default function WritingCheckerPage() {
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Create an account for one free Writing sample: your overall band, feedback on
-                all four criteria, and one corrected example. Continue with the 30-day
+                all four criteria, and one corrected example. Continue with the {EXAM_PASS_DAYS}-day
                 Exam Pass for full reports on your next essays.
               </p>
             </div>

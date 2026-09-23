@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   EXAM_PASS_DAYS,
+  LEGACY_EXAM_PASS_DAYS,
+  SUPPORTED_EXAM_PASS_DAYS,
+  examPassDaysFromMetadata,
+  resolveExamPassDays,
   PLANS,
   PROMO,
   cheapestMonthlyRate,
@@ -135,6 +139,28 @@ describe('saleConfig planPricing — global list prices', () => {
     expect(p.days).toBe(EXAM_PASS_DAYS);
     expect(EXAM_PASS_DAYS).toBe(30);
     expect(p.perMonth).toBeNull();
+  });
+});
+
+describe('Exam Pass length', () => {
+  it('only honours the lengths the database can grant, defaulting to 30', () => {
+    expect(resolveExamPassDays(undefined)).toBe(30);
+    expect(resolveExamPassDays('')).toBe(30);
+    expect(resolveExamPassDays('45')).toBe(45);
+    expect(resolveExamPassDays(' 45 ')).toBe(45);
+    expect(resolveExamPassDays('30')).toBe(30);
+    expect(resolveExamPassDays('60')).toBe(30);
+    expect(resolveExamPassDays('45days')).toBe(30);
+    expect(SUPPORTED_EXAM_PASS_DAYS).toEqual([30, 45]);
+    expect(LEGACY_EXAM_PASS_DAYS).toBe(30);
+  });
+
+  it('reads the length a checkout promised from its metadata', () => {
+    expect(examPassDaysFromMetadata({ pass_days: '45' })).toBe(45);
+    expect(examPassDaysFromMetadata({ pass_days: '30' })).toBe(30);
+    expect(examPassDaysFromMetadata({ pass_days: '7' })).toBeNull();
+    expect(examPassDaysFromMetadata({})).toBeNull();
+    expect(examPassDaysFromMetadata(null)).toBeNull();
   });
 });
 
