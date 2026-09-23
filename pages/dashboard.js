@@ -22,6 +22,7 @@ import EmailPreferences from '../src/components/dashboard/EmailPreferences';
 import { isPremiumActive } from '../src/lib/usePlan';
 import BaselineCard from '../src/components/estimator/BaselineCard';
 import ResumeNotice from '../src/components/billing/ResumeNotice';
+import { freeScoreCopy } from '../lib/freeScorePeriod';
 
 const ATTEMPTS_SELECT =
   'id, skill, raw_score, total, per_question, band, started_at, submitted_at, created_at, passages ( title, slug, skill ), mock_tests ( title, slug )';
@@ -199,7 +200,7 @@ function DashboardNav({ active, onChange }) {
 function EmptyNudge() {
   return (
     <div className="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-cyan-50 p-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-6">
-      <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm"><Target className="h-5 w-5" /></span><div><h2 className="text-base font-black text-slate-900">Build your first baseline</h2><p className="mt-1 text-sm leading-6 text-slate-600">Start with Reading, Listening, or your free Writing score. Premium adds a Speaking baseline and full four-skill comparisons.</p></div></div>
+      <div className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm"><Target className="h-5 w-5" /></span><div><h2 className="text-base font-black text-slate-900">Build your first baseline</h2><p className="mt-1 text-sm leading-6 text-slate-600">{freeScoreCopy().dashboardBaseline}</p></div></div>
       <NextLink href="/readingquestion" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white no-underline sm:mt-0">Start now <ArrowRight className="h-4 w-4" /></NextLink>
     </div>
   );

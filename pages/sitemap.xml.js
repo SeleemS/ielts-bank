@@ -23,6 +23,12 @@ export const STATIC_ROUTES = [
   '/band-calculator',
   '/band-estimator',
   '/ielts-writing-checker',
+  // Task-specific checker landing pages (pages/ielts-writing-checker/[task].jsx).
+  '/ielts-writing-checker/task-2',
+  '/ielts-writing-checker/task-1',
+  '/ielts-writing-checker/general-training-letter',
+  // Whole-bank hub with live counts (pages/ielts-question-bank.js).
+  '/ielts-question-bank',
   '/speaking-examiner',
   '/readingquestion',
   '/writingquestion',
@@ -47,8 +53,8 @@ export const STATIC_ROUTES = [
   ...SPEAKING_PART_SLUGS.map((slug) => `/speaking/${slug}`),
   // Speaking topic-family hubs (pages/speaking/topics/[family].js).
   ...SPEAKING_FAMILY_SLUGS.map((slug) => `/speaking/topics/${slug}`),
-  // Freshness hub for newly published cue cards.
-  '/speaking/new-cue-cards',
+  // Seasonal hub of every Part 2 cue card (replaced /speaking/new-cue-cards).
+  '/ielts-speaking-cue-cards',
   // Per-country score requirement pages (pages/ielts-score-requirements/[country].js).
   ...SCORE_REQUIREMENT_COUNTRY_SLUGS.map((slug) => `/ielts-score-requirements/${slug}`),
 ];

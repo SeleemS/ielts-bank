@@ -1259,7 +1259,7 @@ const SpeakingQuestion = ({ id: routeId, item, description, related = [], contex
                 </NextLink>
               ) : null}
               <NextLink
-                href="/speaking/new-cue-cards"
+                href="/ielts-speaking-cue-cards"
                 className="text-muted-foreground no-underline hover:text-accent"
               >
                 Newest cue cards
