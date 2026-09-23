@@ -21,7 +21,6 @@ import { Separator } from '../../components/ui/separator';
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth';
 import SignInDialog from './auth/SignInDialog';
-import StudyingNowBadge from './StudyingNowBadge';
 import StreakBadge from './StreakBadge';
 
 // Pure Tailwind/shadcn Navbar. No Chakra imports — this renders on every page,
@@ -209,7 +208,6 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-      <StudyingNowBadge />
 
       {/* Mobile sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
