@@ -4,7 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { posts } from '../../../lib/posts';
 import { sendLifecycleEmail } from '../../../lib/lifecycleEmail';
 import { emailPrefFor, lifecycleEmailAllowed } from '../../../lib/emailPrefs';
-import { isPremiumRow } from '../../../lib/premium';
+import { isPremiumRow, fetchPremiumStatus } from '../../../lib/premium';
+import { RECOVERY_EMAIL_COOLDOWN_DAYS } from '../../../lib/checkoutRecovery';
 
 const AUDIENCE_PAGE_SIZE = 1000;
 const QUEUE_BATCH_SIZE = 1000;
@@ -293,18 +294,34 @@ async function latestEventPerUser(admin, eventName, fromIso, toIso) {
   return byUser;
 }
 
-// T+2h after a checkout_start with no purchase. Soft-opt-in basis: the user
+// Fallback for checkouts whose expiry never reached the webhook (older 24h
+// sessions, or before checkout.session.expired is registered in Stripe).
+// Checkout Sessions now expire after 3h and the webhook queues the email with
+// Stripe's recovery link (lib/checkoutRecovery.js), so this waits until T+4h
+// and skips anyone already emailed in the last 7 days — one email per learner
+// per week at most, whichever path queues it. Soft-opt-in basis: the user
 // initiated the transaction; the email restates the guarantee, no discount.
+export const CHECKOUT_ABANDONED_DELAY_HOURS = 4;
+
 export async function queueCheckoutAbandoned(admin, now = new Date()) {
   const events = await latestEventPerUser(
     admin,
     'checkout_start',
-    new Date(now.getTime() - 26 * 3600000).toISOString(),
-    new Date(now.getTime() - 2 * 3600000).toISOString()
+    new Date(now.getTime() - (24 + CHECKOUT_ABANDONED_DELAY_HOURS) * 3600000).toISOString(),
+    new Date(now.getTime() - CHECKOUT_ABANDONED_DELAY_HOURS * 3600000).toISOString()
   );
   if (!events.size) return 0;
   const freeUsers = await filterToFreeUsers(admin, [...events.keys()], now.getTime());
-  const rows = freeUsers.map((user) => {
+  if (!freeUsers.length) return 0;
+  const { data: recentNudges, error: nudgeError } = await admin
+    .from('lifecycle_emails')
+    .select('user_id')
+    .eq('email_type', 'checkout_abandoned')
+    .gte('created_at', new Date(now.getTime() - RECOVERY_EMAIL_COOLDOWN_DAYS * DAY_MS).toISOString())
+    .in('user_id', freeUsers.map((user) => user.id));
+  if (nudgeError) throw nudgeError;
+  const alreadyNudged = new Set((recentNudges || []).map((row) => row.user_id));
+  const rows = freeUsers.filter((user) => !alreadyNudged.has(user.id)).map((user) => {
     const event = events.get(user.id);
     const source = event?.props?.source;
     return {
@@ -512,6 +529,15 @@ export async function lifecycleGateFor(admin, row) {
   return lifecycleEmailAllowed(row.email_type, { prefs, newsletterSubscribed, accountCreatedAt });
 }
 
+// A checkout follow-up is pointless (and a recovery link risks a second
+// purchase) once the learner has Pro by any route. An unknown status sends:
+// the email is informational and the checkout gate still refuses duplicates.
+async function checkoutFollowupStillRelevant(admin, row) {
+  if (row.email_type !== 'checkout_abandoned' || !row.user_id) return true;
+  const status = await fetchPremiumStatus(admin, row.user_id);
+  return !(status && !status.error && status.isPremium);
+}
+
 export async function reclaimStaleDeliveries(admin, now = new Date()) {
   const cutoff = new Date(now.getTime() - STALE_CLAIM_MINUTES * 60_000).toISOString();
   const { data, error } = await admin
@@ -544,7 +570,9 @@ export async function deliverDue(admin, { send = sendLifecycleEmail, now = new D
 
   const results = { sent: 0, failed: 0, suppressed: 0, skipped: 0, reclaimed };
   for (const row of due || []) {
-    const gate = await lifecycleGateFor(admin, row);
+    const gate = await checkoutFollowupStillRelevant(admin, row)
+      ? await lifecycleGateFor(admin, row)
+      : { allowed: false, reason: 'already-purchased' };
     if (!gate.allowed) {
       const { data: suppressed, error: suppressError } = await admin
         .from('lifecycle_emails')

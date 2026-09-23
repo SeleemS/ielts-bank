@@ -103,6 +103,7 @@ vi.mock('../lib/supabase', () => ({
 }));
 vi.mock('../lib/billing', () => ({
   isPppCountry: () => testState.ppp,
+  isPassFirstMarket: (country) => testState.ppp || ['CN', 'HK'].includes(country),
 }));
 vi.mock('../src/lib/analytics', () => ({
   track: vi.fn(),
@@ -164,6 +165,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => root.unmount());
+  document.cookie = 'ib_country=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   container.remove();
   delete global.fetch;
   vi.clearAllMocks();
@@ -445,6 +447,58 @@ describe('pricing authentication handoff', () => {
     expect(container.textContent).not.toContain('$14.99');
   });
 
+  it('makes the pass the single primary offer, subscriptions second, in a pass-first market', async () => {
+    testState.router = { isReady: true, query: {} };
+    testState.ppp = true;
+
+    await renderPage();
+
+    const plans = container.querySelector('#plans');
+    const text = plans.textContent;
+    expect(text).toContain('One payment · no auto-renew');
+    expect(text).toContain('Prefer a subscription?');
+    // The pass card renders before the subscription heading; both subscriptions after it.
+    expect(text.indexOf('Exam Pass')).toBeLessThan(text.indexOf('Prefer a subscription?'));
+    expect(text.indexOf('Prefer a subscription?')).toBeLessThan(text.indexOf('Monthly'));
+    expect(text.indexOf('Prefer a subscription?')).toBeLessThan(text.indexOf('Annual'));
+    expect(container.textContent).toContain('Recommended for your region');
+    expect(track).toHaveBeenCalledWith('view_item_list', expect.objectContaining({ pass_first: true }));
+  });
+
+  it('gives mainland China the pass-first layout at global prices', async () => {
+    testState.router = { isReady: true, query: {} };
+    document.cookie = 'ib_country=CN; path=/';
+
+    await renderPage();
+
+    expect(container.textContent).toContain('Prefer a subscription?');
+    expect(container.textContent).toContain('$14.99');
+    expect(container.textContent).not.toContain('$5.99');
+    expect(container.textContent).not.toContain('Priced for your region');
+  });
+
+  it('keeps the standard three-card grid everywhere else', async () => {
+    testState.router = { isReady: true, query: {} };
+    document.cookie = 'ib_country=US; path=/';
+
+    await renderPage();
+
+    expect(container.textContent).not.toContain('Prefer a subscription?');
+    expect(container.textContent).not.toContain('One payment · no auto-renew');
+    expect(container.textContent).not.toContain('Recommended for your region');
+    expect(track).toHaveBeenCalledWith('view_item_list', expect.objectContaining({ pass_first: false }));
+  });
+
+  it('points a pass-first buyer whose payment failed at the one-time pass', async () => {
+    testState.router = { isReady: true, query: { checkout: 'canceled' } };
+    testState.ppp = true;
+    await renderPage();
+    const payment = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Payment problem');
+    await act(async () => { payment.click(); });
+    expect(container.textContent).toContain('decline automatic renewals');
+    expect(container.textContent).toContain('See the Exam Pass');
+  });
+
   it('tells an active subscriber to manage the plan they already have', async () => {
     testState.router = { isReady: true, query: {} };
     testState.user = { id: 'user-1' };
@@ -581,7 +635,9 @@ describe('checkout activation account ownership', () => {
 
 describe('pricing plan fit and clarity', () => {
   const featuredName = () => {
-    const featured = [...container.querySelectorAll('#plans > *')].find((card) =>
+    // Plan cards are the positioned roots inside #plans (the grid wrapper
+    // differs between the standard and pass-first layouts).
+    const featured = [...container.querySelectorAll('#plans .relative')].find((card) =>
       card.className.includes('border-accent')
     );
     return featured?.querySelector('h2')?.textContent;
@@ -630,6 +686,25 @@ describe('pricing plan fit and clarity', () => {
     const html = container.innerHTML;
     expect(html.indexOf('id="plans"')).toBeGreaterThan(-1);
     expect(html.indexOf('id="plans"')).toBeLessThan(html.indexOf('Free — $0, forever'));
+  });
+
+  it('keeps the pass as the single primary card in pass-first markets while the picker moves the highlight', async () => {
+    testState.router = { isReady: true, query: {} };
+    testState.ppp = true;
+    await renderPage();
+    expect(featuredName()).toBe('Exam Pass');
+    // Design per-day cost, computed from the gated pass length.
+    expect(container.textContent).toContain('About $0.20 a day');
+    expect(container.querySelector('button[aria-label="Choose Monthly plan"]').textContent).toContain('Start Monthly');
+
+    act(() => pick('In 1–3 months').click());
+    expect(featuredName()).toBe('Monthly');
+    const text = container.querySelector('#plans').textContent;
+    expect(text.indexOf('Exam Pass')).toBeLessThan(text.indexOf('Prefer a subscription?'));
+    expect(text.indexOf('Prefer a subscription?')).toBeLessThan(text.indexOf('Monthly'));
+    // Display-only: prices unchanged.
+    expect(container.textContent).toContain('$5.99');
+    expect(container.textContent).toContain('$3.99');
   });
 
   it('restates the chosen plan in the sign-in step', async () => {

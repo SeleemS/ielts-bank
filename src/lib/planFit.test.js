@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { dailyCost, recommendedSku, timelineFromExamDays, TIMELINES } from './planFit';
 import { planPricing, PLANS } from './saleConfig';
 
@@ -31,5 +31,25 @@ describe('planFit', () => {
     expect(dailyCost(planPricing('annual'))).toBe(0.14);
     expect(dailyCost(planPricing('exam_pass', true))).toBe(0.2);
     expect(dailyCost(null)).toBeNull();
+  });
+
+  describe('with the 45-day pass enabled', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    });
+
+    it('follows the gated pass length for the soon timeline and per-day cost', async () => {
+      vi.stubEnv('NEXT_PUBLIC_EXAM_PASS_DAYS', '45');
+      vi.resetModules();
+      const fit = await import('./planFit');
+      const sale = await import('./saleConfig');
+      expect(sale.EXAM_PASS_DAYS).toBe(45);
+      expect(fit.TIMELINES[0].label).toBe('Within 45 days');
+      expect(fit.timelineFromExamDays(45)).toBe('soon');
+      expect(fit.timelineFromExamDays(46)).toBe('months');
+      expect(fit.dailyCost(sale.planPricing('exam_pass'))).toBe(0.33);
+      expect(fit.dailyCost(sale.planPricing('exam_pass', true))).toBe(0.13);
+    });
   });
 });

@@ -2,9 +2,12 @@
 // Which Pro plan fits a learner's exam timeline. Display-only: it decides which
 // card the pricing page highlights, never what checkout charges (prices live in
 // saleConfig.js and are re-verified server-side in pages/api/billing/checkout).
+import { EXAM_PASS_DAYS } from './saleConfig';
 
 export const TIMELINES = [
-  { key: 'soon', label: 'Within 30 days', sku: 'exam_pass', why: 'One payment covers you to test day, and it never renews.' },
+  // "Soon" means the one-time pass covers test day, so it tracks the gated
+  // pass length (EXAM_PASS_DAYS) rather than a fixed 30.
+  { key: 'soon', label: `Within ${EXAM_PASS_DAYS} days`, sku: 'exam_pass', why: 'One payment covers you to test day, and it never renews.' },
   { key: 'months', label: 'In 1–3 months', sku: 'monthly', why: 'Pay month to month and cancel in one click once your test is done.' },
   { key: 'later', label: 'Not booked / 3+ months', sku: 'annual', why: 'The lowest monthly rate, with room for a retake.' },
 ];
@@ -17,7 +20,7 @@ export function timelineByKey(key) {
 // told us their test date sees the matching plan without clicking.
 export function timelineFromExamDays(days) {
   if (days == null || !Number.isFinite(days) || days < 0) return null;
-  if (days <= 30) return 'soon';
+  if (days <= EXAM_PASS_DAYS) return 'soon';
   if (days <= 92) return 'months';
   return 'later';
 }

@@ -1,9 +1,10 @@
 // pages/api/webhooks/stripe.js
 // Stripe webhook: verifies the signature over the RAW body, then applies
 // idempotent plan/quota upserts via lib/billing.handleStripeEvent.
-// Registered events: checkout.session.completed, customer.subscription.*,
-// invoice.paid, invoice.payment_failed, charge.refunded,
-// charge.dispute.created.
+// Registered events: checkout.session.completed, checkout.session.expired
+// (abandoned-checkout recovery; must be added to the endpoint in the Stripe
+// Dashboard), customer.subscription.*, invoice.paid, invoice.payment_failed,
+// charge.refunded, charge.dispute.created.
 export const config = {
   runtime: 'nodejs',
   api: { bodyParser: false },

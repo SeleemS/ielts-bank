@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { TERMS_SEO } from '../../lib/termsSeo';
+import { EXAM_PASS_DAYS } from '../lib/saleConfig';
 
 const TermsOfService = () => {
   return (
@@ -106,7 +107,7 @@ const TermsOfService = () => {
                   </li>
                   <li>
                     <strong className="font-semibold text-foreground">Exam Pass.</strong>{' '}
-                    The Exam Pass is one payment for 30 days of Premium access. It does not renew,
+                    The Exam Pass is one payment for {EXAM_PASS_DAYS} days of Premium access. It does not renew,
                     no further payment is taken, and access ends on the date shown in your account.
                   </li>
                   <li>

@@ -33,7 +33,7 @@ import { useFreeSample } from '../src/lib/useFreeWritingSample';
 import { IS_WEEKLY_FREE_SCORE, freeScoreCopy, nextFreeScoreHint } from '../lib/freeScorePeriod';
 import { usePlan } from '../src/lib/usePlan';
 import { getSupabase, getPublicTrustStats } from '../lib/supabase';
-import { isPppCountry } from '../lib/billing';
+import { useVisitorMarket } from '../src/lib/useVisitorMarket';
 import { gaClientId, track } from '../src/lib/analytics';
 import {
   trackBeginCheckout,
@@ -50,10 +50,11 @@ import { cn } from '../src/lib/utils';
 import SaleCountdown from '../src/components/SaleCountdown';
 import {
   EXAM_PASS_DAYS,
+  PASS_FIRST_LABEL,
   PROMO,
   isPromoLive,
   promoEndsAtMs,
-  planOrder,
+  planLayout,
   highlightedSku,
   planPricing,
   money,
@@ -93,7 +94,7 @@ const PRO_INCLUDES = [
 const PERKS = [
   'Full AI Writing reports with all four criteria and corrected examples',
   'AI Speaking scores from your recordings',
-  '30–60 minutes with the live gpt-live-1 examiner on your 30-day pass; monthly allowances on subscriptions',
+  `30–60 minutes with the live gpt-live-1 examiner on your ${EXAM_PASS_DAYS}-day pass; monthly allowances on subscriptions`,
   'Full-length timed mock tests with section breakdowns',
   'Writing and Speaking band trends on your dashboard',
   'Stronger scoring model with priority processing',
@@ -210,7 +211,7 @@ function planPoints(plan, annualVsMonthlyPct, regionalPricing) {
       `Full Pro access for ${plan.days} days`,
       'One payment — it never renews',
       'Nothing to cancel; access simply ends',
-      `${regionalPricing ? 30 : 60} live AI examiner minutes for your 30 days`,
+      `${regionalPricing ? 30 : 60} live AI examiner minutes for your ${plan.days} days`,
     ];
   }
   if (plan.sku === 'annual') {
@@ -248,14 +249,14 @@ function contextualCopy(upgrade, saved) {
     return {
       icon: '✍️',
       title: saved ? 'Your essay is saved and waiting' : 'Keep improving your Writing score',
-      body: saved ? 'Return to your saved essay after checkout to request a full report.' : 'Get full reports on your next essays with the 30-day Exam Pass.',
+      body: saved ? 'Return to your saved essay after checkout to request a full report.' : `Get full reports on your next essays with the ${EXAM_PASS_DAYS}-day Exam Pass.`,
     };
   }
   if (upgrade === 'speaking') {
     return {
       icon: '🎙️',
       title: saved ? 'Your recording is saved and waiting' : 'Get feedback on your Speaking',
-      body: saved ? 'Return to your saved recording after checkout to request a full report.' : 'Get full reports on your next recordings with the 30-day Exam Pass.',
+      body: saved ? 'Return to your saved recording after checkout to request a full report.' : `Get full reports on your next recordings with the ${EXAM_PASS_DAYS}-day Exam Pass.`,
     };
   }
   if (upgrade === 'mock') {
@@ -278,7 +279,7 @@ const CANCEL_REASONS = [
   { key: 'payment', label: 'Payment problem' },
 ];
 
-function CanceledRecovery({ upgrade, saved, returnTo, onSeePlans }) {
+function CanceledRecovery({ upgrade, saved, returnTo, passFirst = false, onSeePlans }) {
   const [reason, setReason] = React.useState('');
   const savedWork =
     saved && upgrade === 'writing'
@@ -329,7 +330,7 @@ function CanceledRecovery({ upgrade, saved, returnTo, onSeePlans }) {
           {reason === 'price' ? (
             <>
               Free Reading and Listening practice remains available. The Exam Pass is a
-              one-time payment for 30 days, with no automatic renewal.{' '}
+              one-time payment for {EXAM_PASS_DAYS} days, with no automatic renewal.{' '}
               <button type="button" onClick={onSeePlans} className="font-semibold text-accent underline">
                 Compare plans
               </button>
@@ -338,6 +339,19 @@ function CanceledRecovery({ upgrade, saved, returnTo, onSeePlans }) {
             <>
               That&apos;s what the guarantee is for: try Pro for two weeks, and if it doesn&apos;t
               help, ask for your money back within 14 days and get it — no questions asked.
+            </>
+          ) : passFirst ? (
+            <>
+              Sorry about that. Cards in many regions decline automatic renewals. The
+              Exam Pass is one payment with nothing to renew, so it usually goes through.{' '}
+              <button type="button" onClick={onSeePlans} className="font-semibold text-accent underline">
+                See the Exam Pass
+              </button>{' '}
+              or{' '}
+              <NextLink href="/contactus" className="font-semibold text-accent underline">
+                tell us what went wrong
+              </NextLink>
+              .
             </>
           ) : (
             <>
@@ -424,15 +438,14 @@ export default function PricingPage() {
   // via the middleware's ib_country cookie, read after hydration; the page
   // first paints with standard pricing and flips to the regional rate on
   // mount. Checkout re-resolves geography server-side, so this is display-only.
-  const [country, setCountry] = React.useState('');
-  const [countryReady, setCountryReady] = React.useState(false);
-  const regionalPricing = isPppCountry(country);
-
-  React.useEffect(() => {
-    const match = document.cookie.match(/(?:^|;\s*)ib_country=([A-Z]{2})/);
-    if (match) setCountry(match[1]);
-    setCountryReady(true);
-  }, []);
+  // Pass-first markets (PPP countries plus CN/HK) get the one-time pass as the
+  // single primary offer and subscriptions second; see lib/billing.
+  const {
+    country,
+    ready: countryReady,
+    ppp: regionalPricing,
+    passFirst,
+  } = useVisitorMarket();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const {
@@ -502,10 +515,14 @@ export default function PricingPage() {
   const pricingFaqJsonLd = React.useMemo(() => faqJsonLdFor(PRICING_FAQS), []);
 
   // The one-time Exam Pass leads every region; all plans retain their prices.
-  const planKeys = planOrder(regionalPricing);
+  // Pass-first markets split it out as the primary offer. The exam-timeline
+  // picker is display-only: it moves the highlight, never the layout or price.
+  const layout = planLayout(passFirst);
   const chosenTimeline = timelineByKey(timeline);
   const featuredSku = chosenTimeline ? recommendedSku(timeline) : highlightedSku(regionalPricing);
-  const plans = planKeys.map((sku) => planPricing(sku, regionalPricing));
+  const primaryPlans = layout.primary.map((sku) => planPricing(sku, regionalPricing));
+  const secondaryPlans = layout.secondary.map((sku) => planPricing(sku, regionalPricing));
+  const passPricing = planPricing('exam_pass', regionalPricing);
   const monthlyPricing = planPricing('monthly', regionalPricing);
   const annualPricing = planPricing('annual', regionalPricing);
   // Genuine billing-frequency saving: a year prepaid vs twelve monthly charges.
@@ -540,9 +557,9 @@ export default function PricingPage() {
     if (!router.isReady || !countryReady || checkoutStatus === 'success') return;
     if (trackedRef.current.itemList) return;
     trackedRef.current.itemList = true;
-    trackViewItemList(regionalPricing, upgrade || 'pricing');
+    trackViewItemList(regionalPricing, upgrade || 'pricing', { pass_first: passFirst });
     trackViewPromotion('pricing_banner');
-  }, [router.isReady, countryReady, checkoutStatus, regionalPricing, upgrade]);
+  }, [router.isReady, countryReady, checkoutStatus, regionalPricing, passFirst, upgrade]);
 
   // Live, real social proof: total practice questions answered across all
   // learners. Fetched client-side; renders only if the RPC returns a count.
@@ -604,6 +621,7 @@ export default function PricingPage() {
               amountMinor: body.amount_total,
               currency: body.currency || 'USD',
               source: upgrade || 'pricing',
+              recoveredFrom: body.recovered_from || null,
             });
           }
           setActivation('active');
@@ -643,11 +661,11 @@ export default function PricingPage() {
     }
     checkoutBusyRef.current = true;
     setBusySku(sku);
-    track('checkout_start', { sku, source: upgrade || 'pricing', country, ppp: regionalPricing });
+    track('checkout_start', { sku, source: upgrade || 'pricing', country, ppp: regionalPricing, pass_first: passFirst });
     // The cards are all visible at once, so choosing one IS the select_item
     // step of the GA4 funnel; begin_checkout follows immediately.
-    trackSelectItem(sku, regionalPricing);
-    trackBeginCheckout(sku, regionalPricing, upgrade || 'pricing');
+    trackSelectItem(sku, regionalPricing, { pass_first: passFirst });
+    trackBeginCheckout(sku, regionalPricing, upgrade || 'pricing', { pass_first: passFirst });
     try {
       const { headers, sessionError } = await authHeader();
       if (sessionError) {
@@ -686,7 +704,7 @@ export default function PricingPage() {
       checkoutBusyRef.current = false;
       setBusySku(null);
     }
-  }, [authHeader, country, offer, regionalPricing, upgrade, stage, returnTo, user]);
+  }, [authHeader, country, offer, regionalPricing, passFirst, upgrade, stage, returnTo, user]);
 
   React.useEffect(() => {
     if (!user?.id || user.is_anonymous || signInOpen || !pendingSku) return;
@@ -694,6 +712,125 @@ export default function PricingPage() {
     setPendingSku(null);
     void startCheckout(sku, { resume: true });
   }, [pendingSku, signInOpen, startCheckout, user?.id, user?.is_anonymous]);
+
+  const renderPlanCard = (plan) => {
+    const featured = plan.sku === featuredSku;
+    const alreadyOwned = plan.isOneTime && examPassActive;
+    const note = planNote(plan, { examDays, examWeeks });
+    return (
+      <Card
+        key={plan.sku}
+        className={cn(
+          'relative flex flex-col shadow-sm',
+          featured
+            ? 'border-2 border-accent bg-accent/[0.03] shadow-xl ring-1 ring-accent/10'
+            : 'border-border'
+        )}
+      >
+        {featured ? (
+          <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
+            {chosenTimeline ? 'Fits your test date' : `${EXAM_PASS_DAYS} days · no subscription`}
+          </span>
+        ) : null}
+        <CardContent className="flex h-full flex-col p-6 pt-7">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-foreground">{plan.name}</h2>
+            {plan.promo ? (
+              <Badge variant="secondary" className="bg-amber-500 uppercase tracking-wide text-white">
+                {PROMO.percentOff}% off
+              </Badge>
+            ) : null}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{plan.blurb}</p>
+
+          <div className="mt-4 flex items-baseline gap-2">
+            {plan.promo ? (
+              <span className="text-lg font-semibold text-muted-foreground line-through decoration-2">
+                {money(plan.list)}
+              </span>
+            ) : null}
+            <span className="text-4xl font-extrabold tracking-tight text-foreground">
+              {money(plan.price)}
+            </span>
+          </div>
+          <p className="mt-1 text-sm font-medium text-muted-foreground">
+            {plan.isOneTime
+              ? `one-time · ${plan.days} days of Pro`
+              : `${plan.cadence}${plan.perMonth ? ` · ≈ ${money(plan.perMonth)}/mo` : ''}`}
+          </p>
+          {dailyCost(plan) ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              About {money(dailyCost(plan))} a day
+            </p>
+          ) : null}
+          {plan.isOneTime && passFirst ? (
+            <p className="mt-2 inline-flex w-fit items-center rounded-md bg-accent/10 px-2 py-1 text-xs font-bold text-accent">
+              {PASS_FIRST_LABEL}
+            </p>
+          ) : null}
+          {plan.promo ? (
+            <p className="mt-2 inline-flex w-fit items-center rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 dark:bg-amber-500/15 dark:text-amber-200">
+              {money(plan.price)} with the {PROMO.name} until{' '}
+              {new Date(PROMO.endsAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+              })}
+            </p>
+          ) : null}
+
+          {note ? (
+            <p className="mt-3 rounded-lg bg-accent/10 p-2 text-xs font-semibold text-accent">
+              {note}
+            </p>
+          ) : null}
+
+          <ul className="mt-5 flex flex-1 flex-col gap-2.5">
+            {planPoints(plan, annualVsMonthlyPct, regionalPricing).map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span className="text-foreground">{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          {plan.isOneTime ? (
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              Scoring limits: Writing up to 2/day, 10/week, 30/month;
+              Speaking up to 1/day, 5/week, 15/month. All limits apply.
+            </p>
+          ) : null}
+
+          <Button
+            type="button"
+            variant={featured ? 'accent' : 'outline'}
+            aria-label={`Choose ${plan.name} plan`}
+            onClick={() => startCheckout(plan.sku)}
+            disabled={
+              busySku !== null || planLoading || Boolean(planError) || alreadyOwned
+            }
+            className="mt-6 w-full"
+          >
+            {busySku === plan.sku ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {alreadyOwned
+              ? 'Exam Pass active'
+              : plan.isOneTime
+                ? `Get ${plan.days}-day Exam Pass`
+                : plan.sku === 'annual'
+                  ? 'Get Annual'
+                  : 'Start Monthly'}
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            14-day money-back guarantee ·{' '}
+            {plan.isOneTime ? 'never renews' : 'cancel anytime'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <>
@@ -772,6 +909,12 @@ export default function PricingPage() {
               Priced for your region{country ? ` (${country})` : ''} — your regional rate is shown below.
             </p>
           ) : null}
+          {passFirst ? (
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
+              Recommended for your region: the Exam Pass is {PASS_FIRST_LABEL.toLowerCase()} —
+              charged once, with no card mandate to set up and nothing to cancel.
+            </p>
+          ) : null}
         </header>
 
         {checkoutStatus === 'success' && currentActivation === 'active' ? (
@@ -801,6 +944,7 @@ export default function PricingPage() {
             upgrade={upgrade}
             saved={saved}
             returnTo={returnTo}
+            passFirst={passFirst}
             onSeePlans={() => {
               document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' });
             }}
@@ -956,123 +1100,27 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <div
-              id="plans"
-              className="mx-auto mt-5 grid max-w-5xl scroll-mt-28 items-stretch gap-5 md:grid-cols-3"
-            >
-              {plans.map((plan) => {
-                const featured = plan.sku === featuredSku;
-                const alreadyOwned = plan.isOneTime && examPassActive;
-                const note = planNote(plan, { examDays, examWeeks });
-                return (
-                  <Card
-                    key={plan.sku}
-                    className={cn(
-                      'relative flex flex-col shadow-sm',
-                      featured
-                        ? 'border-2 border-accent bg-accent/[0.03] shadow-xl ring-1 ring-accent/10'
-                        : 'border-border'
-                    )}
-                  >
-                    {featured ? (
-                      <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3.5 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-md">
-                        {chosenTimeline ? 'Fits your test date' : '30 days · no subscription'}
-                      </span>
-                    ) : null}
-                    <CardContent className="flex h-full flex-col p-6 pt-7">
-                      <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-base font-bold text-foreground">{plan.name}</h2>
-                        {plan.promo ? (
-                          <Badge variant="secondary" className="bg-amber-500 uppercase tracking-wide text-white">
-                            {PROMO.percentOff}% off
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{plan.blurb}</p>
-
-                      <div className="mt-4 flex items-baseline gap-2">
-                        {plan.promo ? (
-                          <span className="text-lg font-semibold text-muted-foreground line-through decoration-2">
-                            {money(plan.list)}
-                          </span>
-                        ) : null}
-                        <span className="text-4xl font-extrabold tracking-tight text-foreground">
-                          {money(plan.price)}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm font-medium text-muted-foreground">
-                        {plan.isOneTime
-                          ? `one-time · ${plan.days} days of Pro`
-                          : `${plan.cadence}${plan.perMonth ? ` · ≈ ${money(plan.perMonth)}/mo` : ''}`}
-                      </p>
-                      {dailyCost(plan) ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          About {money(dailyCost(plan))} a day
-                        </p>
-                      ) : null}
-                      {plan.promo ? (
-                        <p className="mt-2 inline-flex w-fit items-center rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 dark:bg-amber-500/15 dark:text-amber-200">
-                          {money(plan.price)} with the {PROMO.name} until{' '}
-                          {new Date(PROMO.endsAt).toLocaleDateString(undefined, {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      ) : null}
-
-                      {note ? (
-                        <p className="mt-3 rounded-lg bg-accent/10 p-2 text-xs font-semibold text-accent">
-                          {note}
-                        </p>
-                      ) : null}
-
-                      <ul className="mt-5 flex flex-1 flex-col gap-2.5">
-                        {planPoints(plan, annualVsMonthlyPct, regionalPricing).map((item) => (
-                          <li key={item} className="flex items-start gap-2.5 text-sm">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                            <span className="text-foreground">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {plan.isOneTime ? (
-                        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                          Scoring limits: Writing up to 2/day, 10/week, 30/month;
-                          Speaking up to 1/day, 5/week, 15/month. All limits apply.
-                        </p>
-                      ) : null}
-
-                      <Button
-                        type="button"
-                        variant={featured ? 'accent' : 'outline'}
-                        aria-label={`Choose ${plan.name} plan`}
-                        onClick={() => startCheckout(plan.sku)}
-                        disabled={
-                          busySku !== null || planLoading || Boolean(planError) || alreadyOwned
-                        }
-                        className="mt-6 w-full"
-                      >
-                        {busySku === plan.sku ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                        {alreadyOwned
-                          ? 'Exam Pass active'
-                          : plan.isOneTime
-                            ? 'Get 30-day Exam Pass'
-                            : plan.sku === 'annual'
-                              ? 'Get Annual'
-                              : 'Start Monthly'}
-                      </Button>
-                      <p className="mt-2 text-center text-xs text-muted-foreground">
-                        14-day money-back guarantee ·{' '}
-                        {plan.isOneTime ? 'never renews' : 'cancel anytime'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+            <div id="plans" className="scroll-mt-28">
+              {passFirst ? (
+                <>
+                  <div className="mx-auto mt-5 max-w-md">
+                    {primaryPlans.map(renderPlanCard)}
+                  </div>
+                  <div className="mx-auto mt-10 max-w-3xl text-center">
+                    <h2 className="text-base font-bold text-foreground">Prefer a subscription?</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Same Pro access, billed automatically until you cancel.
+                    </p>
+                  </div>
+                  <div className="mx-auto mt-5 grid max-w-3xl items-stretch gap-5 md:grid-cols-2">
+                    {secondaryPlans.map(renderPlanCard)}
+                  </div>
+                </>
+              ) : (
+                <div className="mx-auto mt-5 grid max-w-5xl items-stretch gap-5 md:grid-cols-3">
+                  {primaryPlans.map(renderPlanCard)}
+                </div>
+              )}
             </div>
 
             <div className="mt-8 text-center">
@@ -1113,7 +1161,11 @@ export default function PricingPage() {
 
         <section aria-label="Choose how you pay" className="mx-auto mt-8 max-w-3xl rounded-xl border border-border bg-card p-5 sm:p-6">
           <h2 className="text-lg font-bold">The same feedback toolkit. Two ways to start.</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. The 30-day Exam Pass is {money(planPricing('exam_pass', regionalPricing).price)} USD once and ends automatically. Both have the same scoring limits; choose the Pass if you prefer no renewal.</p>
+          {passFirst ? (
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">The {EXAM_PASS_DAYS}-day Exam Pass is {money(passPricing.price)} USD once and ends automatically: {PASS_FIRST_LABEL.toLowerCase()}. Prefer a subscription? Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. Both have the same scoring limits.</p>
+          ) : (
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Monthly is {money(monthlyPricing.price)} USD/month and renews until canceled. The {EXAM_PASS_DAYS}-day Exam Pass is {money(passPricing.price)} USD once and ends automatically. Both have the same scoring limits; choose the Pass if you prefer no renewal.</p>
+          )}
           <a href="#sample-report" className="mt-3 inline-block text-sm font-semibold text-accent underline underline-offset-4">Preview a full Writing report</a>
         </section>
 

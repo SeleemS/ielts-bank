@@ -4,6 +4,7 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { buildUpgradeHref } from '../lib/upgradeContext';
 import { freeScoreCopy } from '../lib/freeScorePeriod';
+import { EXAM_PASS_DAYS } from '../src/lib/saleConfig';
 import {
   Sparkles,
   PenLine,
@@ -81,7 +82,7 @@ const FAQ = [
   },
   {
     q: 'Is it free?',
-    a: 'Yes, your first AI Writing score is free after you create an account. It shows your overall band, all four criterion bands and feedback, and one corrected example. The 30-day Exam Pass adds continued scoring with full reports, examiner summaries, improvement plans and all corrections on your next essays.',
+    a: `Yes, your first AI Writing score is free after you create an account. It shows your overall band, all four criterion bands and feedback, and one corrected example. The ${EXAM_PASS_DAYS}-day Exam Pass adds continued scoring with full reports, examiner summaries, improvement plans and all corrections on your next essays.`,
   },
   {
     q: 'Do you store my essay?',
@@ -617,7 +618,7 @@ export default function WritingCheckerPage() {
                 </a>
               </Button>
               <p className="text-xs text-muted-foreground">
-                Pro is a 30-day Exam Pass or a monthly plan ·{' '}
+                Pro is a {EXAM_PASS_DAYS}-day Exam Pass or a monthly plan ·{' '}
                 <NextLink href="/pricing" className="font-semibold text-accent">see prices</NextLink>
               </p>
             </div>

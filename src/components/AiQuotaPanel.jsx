@@ -4,7 +4,8 @@ import { Sparkles } from 'lucide-react';
 import Modal from './AccessibleModal';
 import { usePlan } from '../lib/usePlan';
 import { track } from '../lib/analytics';
-import { money, planPricing, cheapestMonthlyRate } from '../lib/saleConfig';
+import { EXAM_PASS_DAYS, PASS_FIRST_LABEL, money, planPricing, cheapestMonthlyRate } from '../lib/saleConfig';
+import { useVisitorMarket } from '../lib/useVisitorMarket';
 import { freeScoreCopy, nextFreeScoreHint } from '../../lib/freeScorePeriod';
 
 // Limit modal for AI-scoring CTAs. Free accounts get a free sample per skill
@@ -37,6 +38,7 @@ export default function AiQuotaPanel({
   resetsAt = null,
 }) {
   const { isPremium, loading } = usePlan();
+  const { ppp, passFirst } = useVisitorMarket();
   const impressionRef = React.useRef(false);
 
   const skillLabel = skill === 'writing' ? 'Writing' : 'Speaking';
@@ -93,13 +95,22 @@ export default function AiQuotaPanel({
               <Sparkles className="h-4 w-4" />
               Upgrade to Premium
             </NextLink>
-            {/* List prices only. The modal has no region context, so it quotes
-                the standard rates; PPP visitors see their own lower prices on
-                /pricing, which is where the link goes. */}
-            <p className="text-center text-xs text-muted-foreground">
-              From {money(cheapestMonthlyRate(false))}/mo on the annual plan, or a
-              one-time {money(planPricing('exam_pass', false).list)} Exam Pass.
-            </p>
+            {/* Pass-first markets (PPP + CN/HK, read from the display-only
+                ib_country cookie) lead with the one-time pass at their own
+                price; everywhere else keeps the standard list-price line.
+                Checkout re-resolves the charged price server-side. */}
+            {passFirst ? (
+              <p className="text-center text-xs text-muted-foreground">
+                {EXAM_PASS_DAYS}-day Exam Pass: {money(planPricing('exam_pass', ppp).list)} ·{' '}
+                {PASS_FIRST_LABEL}. Or subscribe from{' '}
+                {money(cheapestMonthlyRate(ppp))}/mo on the annual plan.
+              </p>
+            ) : (
+              <p className="text-center text-xs text-muted-foreground">
+                From {money(cheapestMonthlyRate(false))}/mo on the annual plan, or a
+                one-time {money(planPricing('exam_pass', false).list)} Exam Pass.
+              </p>
+            )}
           </>
         )}
       </div>

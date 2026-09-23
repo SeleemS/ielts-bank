@@ -106,6 +106,23 @@ describe('funnel events', () => {
     expect(params.coupon).toBeUndefined();
   });
 
+  it('tags the funnel with the pass-first layout only when told to', () => {
+    trackViewItemList(true, 'pricing', { pass_first: true });
+    trackSelectItem('exam_pass', true, { pass_first: true });
+    trackBeginCheckout('exam_pass', true, 'pricing', { pass_first: true });
+    trackBeginCheckout('monthly', false, 'pricing');
+    const calls = trackMock.mock.calls;
+    expect(calls.slice(0, 3).map(([, params]) => params.pass_first)).toEqual([true, true, true]);
+    expect(calls[3][1]).not.toHaveProperty('pass_first');
+  });
+
+  it('purchase carries recovered_from for checkouts reopened from the recovery email', () => {
+    trackPurchase({ transactionId: 'cs_new', sku: 'exam_pass', ppp: true, amountMinor: 599, recoveredFrom: 'cs_old' });
+    trackPurchase({ transactionId: 'cs_plain', sku: 'monthly', amountMinor: 899 });
+    expect(trackMock.mock.calls[0][1].recovered_from).toBe('cs_old');
+    expect(trackMock.mock.calls[1][1]).not.toHaveProperty('recovered_from');
+  });
+
   it('ignores a select_item for a retired plan', () => {
     trackSelectItem('3month', false);
     expect(trackMock).not.toHaveBeenCalled();

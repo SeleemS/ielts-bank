@@ -4,9 +4,9 @@ import * as React from 'react';
 import NextLink from 'next/link';
 import { ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/ui/button';
-import { isPppCountry } from '../../lib/billing';
 import { buildUpgradeHref } from '../../lib/upgradeContext';
-import { EXAM_PASS_DAYS, money, planPricing } from '../lib/saleConfig';
+import { EXAM_PASS_DAYS, PASS_FIRST_LABEL, money, planPricing } from '../lib/saleConfig';
+import { useVisitorMarket } from '../lib/useVisitorMarket';
 import { track } from '../lib/analytics';
 
 // What Pro adds to the NEXT report, stated as concretely as the free result
@@ -48,18 +48,17 @@ export function perDay(price, days = EXAM_PASS_DAYS) {
 export default function ExamPassOffer({ skill, source, band, locked, children }) {
   const element = React.useRef(null);
   const viewed = React.useRef(false);
-  const [regional, setRegional] = React.useState(false);
+  const passFirstRef = React.useRef(false);
+  const { ppp: regional, passFirst } = useVisitorMarket();
   const [returnTo, setReturnTo] = React.useState('');
   React.useEffect(() => {
-    const country = document.cookie.match(/(?:^|;\s*)ib_country=([A-Z]{2})/)?.[1];
-    setRegional(isPppCountry(country));
     setReturnTo(window.location.pathname);
   }, []);
   React.useEffect(() => {
     const record = () => {
       if (viewed.current) return;
       viewed.current = true;
-      track('exam_pass_offer_view', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION });
+      track('exam_pass_offer_view', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION, pass_first: passFirstRef.current });
     };
     if (typeof IntersectionObserver === 'undefined') { record(); return; }
     const observer = new IntersectionObserver(entries => {
@@ -68,6 +67,7 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
     if (element.current) observer.observe(element.current);
     return () => observer.disconnect();
   }, [skill, source]);
+  passFirstRef.current = passFirst;
   const href = buildUpgradeHref({ upgrade: skill, stage: 'sample', return_to: returnTo });
   const price = planPricing('exam_pass', regional);
   const monthly = planPricing('monthly', regional);
@@ -75,7 +75,7 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
   const next = speaking ? 'recording' : 'essay';
   const daily = perDay(price.price, price.days || EXAM_PASS_DAYS);
   return (
-    <section ref={element} aria-label="30-day Exam Pass" className="rounded-xl border-2 border-accent/40 bg-accent/[0.04] p-5 sm:p-6">
+    <section ref={element} aria-label={`${EXAM_PASS_DAYS}-day Exam Pass`} className="rounded-xl border-2 border-accent/40 bg-accent/[0.04] p-5 sm:p-6">
       <p className="text-xs font-bold uppercase tracking-wide text-accent">Your free sample is done</p>
       <h3 className="mt-2 text-lg font-bold text-foreground sm:text-xl">
         Get the full report on your next {next}
@@ -93,14 +93,14 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
 
       <div className="mt-5 flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
         <p className="text-base font-bold text-foreground">
-          Exam Pass · {money(price.price)} USD, one payment
+          Exam Pass · {money(price.price)} USD · {passFirst ? PASS_FIRST_LABEL : 'one payment'}
         </p>
         <p className="text-sm text-muted-foreground">
           {EXAM_PASS_DAYS} days of Pro{daily ? ` (about ${daily} a day)` : ''}. No automatic renewal. Scoring limits apply.
         </p>
         <Button asChild variant="accent" size="lg" className="mt-3 w-full sm:w-auto sm:self-start">
           <NextLink href={href} className="no-underline" onClick={() => {
-            track('exam_pass_offer_click', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION });
+            track('exam_pass_offer_click', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION, pass_first: passFirst });
             track('paywall_upgrade_click', { skill, source, band });
           }}>Continue to the Exam Pass <ArrowRight className="h-4 w-4" aria-hidden="true" /></NextLink>
         </Button>

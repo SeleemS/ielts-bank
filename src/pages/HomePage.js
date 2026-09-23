@@ -34,6 +34,7 @@ import DashboardTeaser from '../components/home/DashboardTeaser';
 import SampleReportPreview from '../components/SampleReportPreview';
 
 import { SITE_URL } from '../../lib/site';
+import { EXAM_PASS_DAYS } from '../lib/saleConfig';
 const OG_IMAGE = `${SITE_URL}/api/og?title=${encodeURIComponent(
   'Master IELTS with real, auto-scored practice'
 )}&type=home`;
@@ -452,7 +453,7 @@ const HomePage = ({ counts = {}, directory = [] }) => {
                   </NextLink>
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Pro: 30-day Exam Pass or monthly, with a 14-day money-back guarantee ·{' '}
+                  Pro: {EXAM_PASS_DAYS}-day Exam Pass or monthly, with a 14-day money-back guarantee ·{' '}
                   <NextLink href="/pricing" className="font-semibold text-accent">
                     see prices
                   </NextLink>
@@ -696,12 +697,12 @@ const HomePage = ({ counts = {}, directory = [] }) => {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-accent">
-                    30-day Exam Pass
+                    {EXAM_PASS_DAYS}-day Exam Pass
                   </p>
                   <p className="mt-1.5 text-sm text-foreground">
                     A live AI examiner on the newly released gpt-live-1 — full-duplex, so it
                     listens while it speaks — plus full AI Writing reports, Speaking scoring,
-                    timed mocks and band trends. One payment for 30 days. No automatic renewal.
+                    timed mocks and band trends. One payment for {EXAM_PASS_DAYS} days. No automatic renewal.
                   </p>
                 </div>
               </div>
