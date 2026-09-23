@@ -7,10 +7,13 @@ import { checkoutAttribution } from '../../../lib/monetizationExperiment';
 //     geo (x-vercel-ip-country) is in the PPP list. Never client-chosen.
 //   * an account that already owns a recurring subscription cannot buy a
 //     second one (409 already_premium); an Exam Pass holder may subscribe but
-//     cannot stack a second pass (409 already_exam_pass).
+//     cannot stack a second pass (409 already_exam_pass). These guards live in
+//     lib/checkoutEligibility.js, shared with the resume route and webhook.
 //   * promotion codes allowed; card collection skipped for 100%-off checkouts.
-//   * sessions expire after 3 hours with Stripe recovery enabled; the webhook
-//     turns an expiry into one checkout_abandoned email with the recovery URL.
+//   * sessions expire after 3 hours; the webhook turns an expiry into one
+//     checkout_abandoned email linking to OUR /billing/resume route, which
+//     re-runs these guards and comes back through this handler for a fresh
+//     session (never Stripe's raw recovery URL — see lib/checkoutResume.js).
 //   * when saleConfig's PROMO is live, its REAL Stripe coupon is attached and
 //     its percent_off is verified against saleConfig before the session opens.
 export const config = { runtime: 'nodejs' };
@@ -28,7 +31,7 @@ import {
   resolveLookupKey,
   isPppCountry,
 } from '../../../lib/billing';
-import { isPremiumRow } from '../../../lib/premium';
+import { BILLING_USER_COLUMNS, checkoutEligibility } from '../../../lib/checkoutEligibility';
 import { sanitizeGaClientId } from '../../../lib/ga4mp';
 import {
   LEGACY_EXAM_PASS_DAYS,
@@ -140,6 +143,13 @@ async function resolveUser(req) {
   }
 }
 
+// The expired session a resumed checkout replaces. Only the resume route sets
+// req.checkoutResume; a client cannot, because it is not part of the body.
+function resumedSessionId(req) {
+  const id = req.checkoutResume?.sessionId;
+  return typeof id === 'string' && /^cs_[A-Za-z0-9_]{1,200}$/.test(id) ? id : null;
+}
+
 function siteOrigin(req) {
   if (process.env.NODE_ENV !== 'production') {
     const origin = req.headers.origin;
@@ -209,7 +219,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await admin
       .from('users')
-      .select('id, email, is_anonymous, plan, plan_status, plan_renews_at, plan_expires_at, billing_pause_until, canceled_at, stripe_customer_id, stripe_subscription_id')
+      .select(BILLING_USER_COLUMNS)
       .eq('id', authUser.id)
       .maybeSingle();
     if (error) throw error;
@@ -220,55 +230,13 @@ export default async function handler(req, res) {
       error: 'Could not verify your account. Please try again.',
     });
   }
-  if (!userRow) return res.status(401).json({ error: 'Account not found.' });
-  if (userRow.is_anonymous || !userRow.email) {
-    return res.status(403).json({
-      error: 'Link an email or Google account before upgrading.',
-      code: 'anonymous_user',
-    });
-  }
-  // A billing pause intentionally blocks product access, so isPremiumRow on
-  // the stored row returns false. It must not make the learner eligible to buy
-  // a second recurring subscription. Ignore only the access-pause timestamp
-  // when deciding whether an existing paid commitment still owns this account.
-  const hasTruePausedSubscription = Boolean(
-    userRow.stripe_subscription_id
-    && userRow.plan === 'premium'
-    && userRow.plan_status === 'paused'
-  );
-  const entitledNow = isPremiumRow({ ...userRow, billing_pause_until: null });
-  // An unexpired one-time pass with no subscription behind it. A pass holder
-  // is deliberately allowed to convert to a subscription while the pass runs
-  // (Stripe bills the subscription from day one; the pass simply stops being
-  // the thing granting access) — but must not stack a second pass.
-  const holdsExamPass = Boolean(
-    entitledNow
-    && userRow.plan_expires_at
-    && new Date(userRow.plan_expires_at).getTime() > Date.now()
-    && !userRow.stripe_subscription_id
-  );
-  const ownsRecurringPlan =
-    (entitledNow && !holdsExamPass) || hasTruePausedSubscription;
-  if (ownsRecurringPlan) {
-    return res.status(409).json({
-      error: 'You already have Pro — manage your plan.',
-      code: 'already_premium',
-    });
-  }
-  if (holdsExamPass && isOneTimeSku(sku)) {
-    return res.status(409).json({
-      error: 'Your Exam Pass is still active. Subscribe instead, or wait until it ends.',
-      code: 'already_exam_pass',
-    });
-  }
-  const winBackEligible =
-    offer === 'winback' &&
-    sku === 'monthly' &&
-    userRow.canceled_at &&
-    new Date(userRow.canceled_at).getTime() <= Date.now() - 30 * 86400000;
-  if (offer === 'winback' && !winBackEligible) {
-    return res.status(403).json({ error: 'This returning-subscriber offer is not available for this account.' });
-  }
+  // Missing account / anonymous / already Pro (incl. paused) / second Exam
+  // Pass / win-back eligibility: one shared definition (lib/checkoutEligibility)
+  // so the emailed resume link and the webhook's duplicate-purchase backstop
+  // apply exactly these rules.
+  const eligibility = checkoutEligibility(userRow, { sku, offer });
+  if (!eligibility.ok) return res.status(eligibility.status).json(eligibility.body);
+  const { winBackEligible } = eligibility;
   if (winBackEligible && !process.env.STRIPE_WINBACK_COUPON_ID) {
     return res.status(503).json({ error: 'The returning-subscriber offer is temporarily unavailable.' });
   }
@@ -393,6 +361,7 @@ export default async function handler(req, res) {
     // consent). Lets the webhook report the purchase to GA4 via Measurement
     // Protocol when the buyer never returns to the success page (lib/ga4mp.js).
     const gaCid = sanitizeGaClientId(req.body?.ga_cid);
+    const resumedFrom = resumedSessionId(req);
     const metadata = {
       user_id: userRow.id,
       sku,
@@ -402,6 +371,9 @@ export default async function handler(req, res) {
       ...(isOneTimeSku(sku) ? { pass_days: String(examPassDays()) } : {}),
       ...(gaCid ? { ga_cid: gaCid } : {}),
       ...checkoutAttribution(req.body),
+      // Set only by pages/api/billing/resume.js (a request property, never the
+      // body), so the webhook can attribute a purchase to the recovery email.
+      ...(resumedFrom ? { resumed_from: resumedFrom } : {}),
     };
     // Terms-of-service consent recorded by Stripe on the Checkout Session
     // (session.consent.terms_of_service = 'accepted' + a timestamp). Stripe
