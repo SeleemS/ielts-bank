@@ -3,6 +3,7 @@ User-agent: *
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /go/
 
 # AI search and assistant agents are explicitly welcome to index and cite our
 # practice content. Search/citation indexers:
@@ -24,5 +25,6 @@ Allow: /
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /go/
 
 Sitemap: https://www.ielts-bank.com/sitemap.xml
