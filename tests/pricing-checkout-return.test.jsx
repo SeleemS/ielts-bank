@@ -108,6 +108,7 @@ vi.mock('../lib/billing', () => ({
 vi.mock('../src/lib/analytics', () => ({
   track: vi.fn(),
   gaClientId: () => null,
+  gaSessionId: async () => null,
 }));
 vi.mock('../lib/pricingSeo', () => ({
   PRICING_SEO: {

@@ -43,7 +43,7 @@ vi.mock('../lib/supabase', () => ({
     },
   }),
 }));
-vi.mock('../src/lib/analytics', () => ({ track: vi.fn(), gaClientId: () => 'ga.1' }));
+vi.mock('../src/lib/analytics', () => ({ track: vi.fn(), gaClientId: () => 'ga.1', gaSessionId: async () => null }));
 
 import ResumeCheckoutPage from '../pages/billing/resume';
 import { track } from '../src/lib/analytics';
@@ -117,7 +117,7 @@ describe('/billing/resume page', () => {
     expect(globalThis.fetch).toHaveBeenCalledWith('/api/billing/resume', expect.objectContaining({
       method: 'POST',
       headers: expect.objectContaining({ Authorization: 'Bearer access-token' }),
-      body: JSON.stringify({ c: TOKEN, ga_cid: 'ga.1' }),
+      body: JSON.stringify({ c: TOKEN, ga_sid: null, ga_cid: 'ga.1' }),
     }));
     expect(assign).toHaveBeenCalledWith('https://checkout.stripe.com/c/pay/cs_live_fresh');
   });

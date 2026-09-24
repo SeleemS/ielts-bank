@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getAnonId,
   getSessionId,
+  gaSessionId,
   ensureGoogleAnalytics,
   isInternalAnalyticsPath,
   resetAnalyticsForTests,
@@ -47,8 +48,40 @@ describe('dual analytics tracking', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     delete global.window;
     delete global.document;
+  });
+
+  it('reads the real GA session only with consent and an existing client ID', async () => {
+    document.cookie = '_ga=GA1.1.123.456';
+    window.gtag.mockImplementation((command, measurement, key, callback) => callback('1790207000'));
+    await expect(gaSessionId()).resolves.toBe('1790207000');
+    expect(window.gtag).toHaveBeenCalledWith('get', 'G-1KRYZZY68X', 'session_id', expect.any(Function));
+    window.gtag.mockClear();
+    window.__ieltsOptionalConsent = 'denied';
+    await expect(gaSessionId()).resolves.toBeNull();
+    expect(window.gtag).not.toHaveBeenCalled();
+  });
+
+  it('times out missing callbacks and handles a throwing tag without blocking checkout', async () => {
+    vi.useFakeTimers();
+    document.cookie = '_ga=GA1.1.123.456';
+    const pending = gaSessionId();
+    await vi.advanceTimersByTimeAsync(250);
+    await expect(pending).resolves.toBeNull();
+    window.gtag.mockImplementation(() => { throw new Error('blocked'); });
+    await expect(gaSessionId()).resolves.toBeNull();
+  });
+
+  it('discards a delayed session callback if consent is withdrawn', async () => {
+    document.cookie = '_ga=GA1.1.123.456';
+    let callback;
+    window.gtag.mockImplementation((command, measurement, key, fn) => { callback = fn; });
+    const pending = gaSessionId();
+    window.__ieltsOptionalConsent = 'denied';
+    callback('1790207000');
+    await expect(pending).resolves.toBeNull();
   });
 
   it('persists stable anonymous and per-tab session IDs', () => {

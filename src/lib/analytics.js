@@ -1,3 +1,4 @@
+import { sanitizeGaSessionId } from '../../lib/gaSession';
 import { FUNNEL_VERSION } from '../../lib/monetizationExperiment';
 import { analyticsConsentGranted } from './consent';
 import { recordPracticeActivity } from './practiceActivity';
@@ -244,6 +245,27 @@ export function track(event, params = {}, options = {}) {
     // A synchronous fetch failure (keepalive quota, patched fetch, unstringifiable
     // payload) must not propagate into the caller.
   }
+}
+
+// Read the tag's own session ID. Missing/blocked tags must not stall checkout.
+export function gaSessionId() {
+  if (typeof window === 'undefined' || !analyticsConsentGranted() || !gaClientId()) return Promise.resolve(null);
+  if (typeof window.gtag !== 'function') return Promise.resolve(null);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(analyticsConsentGranted() ? sanitizeGaSessionId(value) : null);
+    };
+    const timer = setTimeout(() => finish(null), 250);
+    try {
+      window.gtag('get', GA_MEASUREMENT_ID, 'session_id', finish);
+    } catch {
+      finish(null);
+    }
+  });
 }
 
 // GA4 client id from the _ga cookie ("GA1.1.123456.789" → "123456.789").

@@ -32,6 +32,7 @@ import {
   isPppCountry,
 } from '../../../lib/billing';
 import { BILLING_USER_COLUMNS, checkoutEligibility } from '../../../lib/checkoutEligibility';
+import { sanitizeGaSessionId } from '../../../lib/gaSession';
 import { sanitizeGaClientId } from '../../../lib/ga4mp';
 import {
   LEGACY_EXAM_PASS_DAYS,
@@ -361,6 +362,7 @@ export default async function handler(req, res) {
     // consent). Lets the webhook report the purchase to GA4 via Measurement
     // Protocol when the buyer never returns to the success page (lib/ga4mp.js).
     const gaCid = sanitizeGaClientId(req.body?.ga_cid);
+    const gaSid = gaCid ? sanitizeGaSessionId(req.body?.ga_sid) : null;
     const resumedFrom = resumedSessionId(req);
     const metadata = {
       user_id: userRow.id,
@@ -370,6 +372,7 @@ export default async function handler(req, res) {
       // this, so a later length change never alters what was bought.
       ...(isOneTimeSku(sku) ? { pass_days: String(examPassDays()) } : {}),
       ...(gaCid ? { ga_cid: gaCid } : {}),
+      ...(gaSid ? { ga_sid: gaSid } : {}),
       ...checkoutAttribution(req.body),
       // Set only by pages/api/billing/resume.js (a request property, never the
       // body), so the webhook can attribute a purchase to the recovery email.

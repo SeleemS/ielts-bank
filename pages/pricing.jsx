@@ -35,7 +35,7 @@ import { IS_WEEKLY_FREE_SCORE, freeScoreCopy, nextFreeScoreHint } from '../lib/f
 import { usePlan } from '../src/lib/usePlan';
 import { getSupabase, getPublicTrustStats } from '../lib/supabase';
 import { useVisitorMarket } from '../src/lib/useVisitorMarket';
-import { gaClientId, track } from '../src/lib/analytics';
+import { gaClientId, gaSessionId, track } from '../src/lib/analytics';
 import {
   trackBeginCheckout,
   trackPurchase,
@@ -684,7 +684,7 @@ export default function PricingPage() {
       const response = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ sku, offer, ga_cid: gaClientId(), ...attribution, ...normalizeUpgradeContext({ upgrade, stage, return_to: returnTo }) }),
+        body: JSON.stringify({ sku, offer, ga_sid: await gaSessionId(), ga_cid: gaClientId(), ...attribution, ...normalizeUpgradeContext({ upgrade, stage, return_to: returnTo }) }),
       });
       const body = await response.json().catch(() => ({}));
       if (response.ok && body.url) {

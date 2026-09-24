@@ -134,6 +134,7 @@ export default async function handler(req, res) {
     sku: decision.sku,
     ...(decision.offer ? { offer: decision.offer } : {}),
     ...(typeof req.body?.ga_cid === 'string' ? { ga_cid: req.body.ga_cid } : {}),
+    ...(typeof req.body?.ga_sid === 'string' ? { ga_sid: req.body.ga_sid } : {}),
     ...decision.context,
   };
   req.checkoutResume = { sessionId: decision.sessionId };

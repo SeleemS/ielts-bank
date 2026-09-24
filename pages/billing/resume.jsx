@@ -9,7 +9,7 @@ import SignInDialog from '../../src/components/auth/SignInDialog';
 import { Button } from '../../components/ui/button';
 import { useAuth } from '../../src/lib/auth';
 import { getSupabase } from '../../lib/supabase';
-import { gaClientId, track } from '../../src/lib/analytics';
+import { gaClientId, gaSessionId, track } from '../../src/lib/analytics';
 import { getSessionAccess } from '../../src/lib/sessionAccess';
 
 // /billing/resume?c=<token> — where the checkout recovery email lands.
@@ -83,7 +83,7 @@ export default function ResumeCheckoutPage() {
       const response = await fetch('/api/billing/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ c: token, ga_cid: gaClientId() }),
+        body: JSON.stringify({ c: token, ga_sid: await gaSessionId(), ga_cid: gaClientId() }),
       });
       const body = await response.json().catch(() => ({}));
       if (response.ok && typeof body.url === 'string') {

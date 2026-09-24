@@ -232,18 +232,31 @@ describe('POST /api/billing/resume', () => {
   });
 
   it('opens a brand-new session for the same plan through the normal checkout path', async () => {
-    const res = await callResume({ body: { c: TOKEN, ga_cid: '123.456' } });
+    const res = await callResume({ body: { c: TOKEN, ga_cid: '123.456', ga_sid: '1790207000' } });
     expect(res.statusCode).toBe(200);
     expect(res.jsonBody).toEqual({ outcome: 'new_session', url: 'https://checkout.stripe.com/c/pay/cs_live_fresh' });
     // Fresh session, priced by today's catalogue — never Stripe's recovery URL.
     const created = state.stripeCalls.sessionCreate;
     expect(created.mode).toBe('payment');
+    expect(created.metadata).toMatchObject({ ga_cid: '123.456', ga_sid: '1790207000' });
     expect(state.stripeCalls.pricesList.lookup_keys).toEqual(['premium_exam_pass']);
     expect(created.metadata).toMatchObject({ user_id: 'user-1', sku: 'exam_pass', resumed_from: 'cs_live_expired' });
     expect(created.success_url).toContain('upgrade=writing');
     expect(JSON.stringify(created)).not.toContain('buy.stripe.com');
     expect(resumeEvents().map((row) => row.props.outcome)).toEqual(['new_session']);
     expect(JSON.stringify(state.activity)).not.toContain(TOKEN);
+  });
+
+  it('does not attach a session identifier without a valid GA client identity', async () => {
+    await callResume({ body: { c: TOKEN, ga_sid: '1790207000' } });
+    expect(state.stripeCalls.sessionCreate.metadata).not.toHaveProperty('ga_sid');
+    expect(state.stripeCalls.sessionCreate.metadata).not.toHaveProperty('ga_cid');
+  });
+
+  it('does not persist an application UUID as a GA session', async () => {
+    await callResume({ body: { c: TOKEN, ga_cid: '123.456', ga_sid: '00000000-0000-4000-8000-000000000001' } });
+    expect(state.stripeCalls.sessionCreate.metadata).not.toHaveProperty('ga_sid');
+    expect(state.stripeCalls.sessionCreate.metadata.ga_cid).toBe('123.456');
   });
 
   it('asks an anonymous session to sign in with a real account', async () => {
