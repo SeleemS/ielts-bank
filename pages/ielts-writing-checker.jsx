@@ -133,12 +133,12 @@ export default function WritingCheckerPage() {
                 AI IELTS Writing Checker
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Paste a Task 1 or Task 2 answer. In under a minute you get a band on each of
-                the four official criteria and the sentences holding your score back.
+                Paste a Task 1 or Task 2 answer for AI practice band estimates on the four
+                Writing criteria and feedback to guide your revision.{' '}
                 {freeScoreCopy().checkerFreeLine}
               </p>
               <ul className="mx-auto mt-5 hidden max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-foreground sm:flex">
-                {['Free first report — no card', 'Marked on the public band descriptors', 'Your draft is saved while you sign up'].map((item) => (
+                {['Free sample — no card', 'Marked on the public band descriptors', 'Your draft is saved while you sign up'].map((item) => (
                   <li key={item} className="inline-flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                     {item}

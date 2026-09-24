@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { freeScoreCopy } from '../../lib/freeScorePeriod';
 import { Lock, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { BandHero, BandMeter } from './question/ScoreUI';
@@ -156,7 +157,7 @@ export default function SampleReportPreview({
         </h2>
         <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           {intro ||
-            'An illustrative Task 2 report — not a real learner’s result or a promised score. Your first report is free; Pro adds the sections marked Pro to every essay you score after that.'}
+            `An illustrative Task 2 report — not a real learner’s result or a promised score. ${freeScoreCopy().checkerFreeLine} Pro sections apply to new scored essays; upgrading does not unlock an old free sample.`}
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">

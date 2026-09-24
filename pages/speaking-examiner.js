@@ -1102,7 +1102,7 @@ export default function SpeakingExaminerPage() {
             Powered by gpt-live-1
           </p>
           <h1 className="relative text-3xl font-bold tracking-tight sm:text-4xl">
-            A real examiner that listens while it speaks
+            Practise an IELTS-style interview with an AI examiner
           </h1>
           <p className="relative mx-auto mt-3 max-w-2xl text-muted-foreground">
             Your interview runs on OpenAI&apos;s gpt-live-1, released in September 2026 — a

@@ -375,13 +375,13 @@ const HomePage = ({ counts = {}, directory = [] }) => {
                   Free AI IELTS Writing check
                 </span>
                 <h1 className="mt-5 text-3xl font-extrabold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.25rem]">
-                  Know your IELTS Writing band{' '}
-                  <span className="text-emerald-400 sm:block">and exactly what to fix</span>
+                  Estimate your IELTS Writing band{' '}
+                  <span className="text-emerald-400 sm:block">and plan your next revision</span>
                 </h1>
                 <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
-                  Paste a Task 1 or Task 2 answer. An AI examiner marks it on the four
-                  official criteria in under a minute and shows the sentences holding your
-                  score back. Reading and Listening practice is free too.
+                  Paste a Task 1 or Task 2 answer for AI practice band estimates and
+                  revision feedback. {freeScoreCopy().heroFreeLine} Reading and Listening
+                  practice is free too.
                 </p>
               </div>
 
