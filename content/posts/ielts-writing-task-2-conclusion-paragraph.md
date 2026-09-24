@@ -1,5 +1,5 @@
 ---
-title: "IELTS Writing Task 2: How to Write a Conclusion That Lifts Your Band Score"
+title: "IELTS Writing Task 2: How to Write a Conclusion"
 date: August 21, 2026
 excerpt: "A step-by-step guide to writing a clear, high-scoring IELTS Task 2 conclusion — what to include, what to avoid, and ready-to-adapt sentence templates."
 answer: "A Task 2 conclusion takes three moves in two or three sentences: signal the ending with a phrase such as In conclusion or Overall, restate your position in fresh wording rather than copying your thesis, then summarise your body-paragraph reasons in one sentence. Add no new ideas, no rhetorical question and no late hedging, and start writing it with three or four minutes still on the clock."

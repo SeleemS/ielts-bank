@@ -7,7 +7,7 @@ import Footer from '../src/components/Footer';
 
 import { SITE_URL } from '../lib/site';
 
-const PAGE_TITLE = 'IELTS Band Descriptors Explained: Writing & Speaking Criteria (Bands 5–9)';
+const PAGE_TITLE = 'IELTS Writing & Speaking Band Descriptors (Bands 5–9)';
 const PAGE_DESCRIPTION =
   'What IELTS examiners look for at each band: the four Writing criteria and four Speaking criteria summarised in plain English for bands 5–9, with tables.';
 const CANONICAL = `${SITE_URL}/ielts-band-descriptors`;
