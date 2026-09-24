@@ -81,7 +81,7 @@ function AverageUserBand({ item, className }) {
   const estimated = item.averageUserBandIsEstimated !== false;
   const formatted = formatAverageUserBand(value);
   const description = estimated
-    ? `Estimated average band ${formatted}; this becomes the submitted user average after the first score`
+    ? 'Submission average not available; seeded estimates are not learner results'
     : `Average user band ${formatted} from ${item.bandSubmissionCount} total ${item.bandSubmissionCount === 1 ? 'submission' : 'submissions'}`;
 
   return (
@@ -90,7 +90,14 @@ function AverageUserBand({ item, className }) {
       aria-label={description}
       title={description}
     >
-      <span className="font-semibold text-foreground">{formatted}</span>
+      {estimated ? (
+        <span className="text-xs text-muted-foreground">Not available</span>
+      ) : (
+        <>
+          <span className="font-semibold text-foreground">{formatted}</span>
+          <span className="text-xs text-muted-foreground">({item.bandSubmissionCount} scores)</span>
+        </>
+      )}
     </span>
   );
 }

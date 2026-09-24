@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe('DataTable average user band', () => {
-  it('shows transparent estimates and real submitted averages', () => {
+  it('withholds seeded values and shows the sample size of submitted averages', () => {
     act(() => {
       root.render(
         <DataTable
@@ -62,12 +62,14 @@ describe('DataTable average user band', () => {
 
     expect(container.querySelector('abbr[title="Average user band"]')).not.toBeNull();
     const estimatedBand = container.querySelector(
-      '[aria-label^="Estimated average band 5.0"]'
+      '[aria-label^="Submission average not available"]'
     );
     expect(estimatedBand).not.toBeNull();
-    expect(estimatedBand.textContent).toBe('5.0');
+    expect(estimatedBand.textContent).toBe('Not available');
+    expect(estimatedBand.textContent).not.toContain('5.0');
     expect(
       container.querySelector('[aria-label="Average user band 6.3 from 4 total submissions"]')
     ).not.toBeNull();
+    expect(container.textContent).toContain('6.3(4 scores)');
   });
 });
