@@ -184,6 +184,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
           prompt: htmlToText(promptHtml),
           essay: userResponse,
           task,
+          task_type: task === 2 ? 'task2' : passage?.module === 'general' ? 'task1-general' : 'task1-academic',
           passage_id: passage?.id || null,
           anon_id: getAnonId(),
         }),
@@ -237,7 +238,7 @@ const WritingQuestion = ({ id: docId, passage, description, related = [], sample
       // (handleScoringFinished); every failure path closes it immediately.
       if (!scored) setIsLoading(false);
     }
-  }, [goToPremium, passage?.id, promptHtml, storageKey, task, user, userResponse, wordCount]);
+  }, [goToPremium, passage?.id, passage?.module, promptHtml, storageKey, task, user, userResponse, wordCount]);
 
   // The server owns the entitlement decision: a free user may still have the
   // one lifetime sample, while a used sample returns premium_required.

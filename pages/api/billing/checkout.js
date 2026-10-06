@@ -20,7 +20,7 @@ export const config = { runtime: 'nodejs' };
 
 import { randomUUID } from 'node:crypto';
 import { recordCheckoutOperation } from '../../../lib/checkoutOperations';
-import { checkoutReturnUrls } from '../../../lib/upgradeContext';
+import { checkoutReturnUrls, normalizeUpgradeContext } from '../../../lib/upgradeContext';
 import { checkoutExpiryParams } from '../../../lib/checkoutRecovery';
 import { createClient } from '@supabase/supabase-js';
 import { clientIp, originAllowed } from '../../../lib/apiSecurity';
@@ -267,6 +267,19 @@ export default async function handler(req, res) {
     return res.status(503).json({
       error: 'Could not start checkout. Please try again.',
     });
+  }
+
+  const reportReturn = normalizeUpgradeContext(req.body).return_to;
+  if (reportReturn?.startsWith('/writing-report/')) {
+    try {
+      const { data, error } = await admin.from('writing_reports').select('attempt_id')
+        .eq('attempt_id', reportReturn.split('/').pop()).eq('user_id', authUser.id).maybeSingle();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ error: 'This report is not in your account. Open your saved reports before upgrading.', code: 'report_not_found' });
+    } catch (error) {
+      console.error('checkout report verification failed:', error.message);
+      return res.status(503).json({ error: 'Could not verify your saved report. Please try again before paying.' });
+    }
   }
 
   const country = String(req.headers['x-vercel-ip-country'] || '').toUpperCase();

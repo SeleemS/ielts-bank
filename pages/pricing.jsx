@@ -245,7 +245,8 @@ function planNote(plan, { examDays, examWeeks }) {
   return '';
 }
 
-function contextualCopy(upgrade, saved) {
+function contextualCopy(upgrade, saved, currentReport) {
+  if (currentReport) return { icon: '✍️', title: 'Unlock your saved essay feedback', body: 'Choose a plan to unlock this saved report, then revise your essay. No resubmission or extra scoring allowance needed to open it.' };
   if (upgrade === 'writing') {
     return {
       icon: '✍️',
@@ -372,7 +373,7 @@ function CanceledRecovery({ upgrade, saved, returnTo, passFirst = false, onSeePl
 function ActivationChecklist({ upgrade, saved, returnTo }) {
   const first =
     upgrade === 'writing'
-      ? { href: '/ielts-writing-checker', label: saved ? 'Score the essay you saved' : 'Score an essay' }
+      ? { href: '/ielts-writing-checker', label: returnTo?.startsWith('/writing-report/') ? 'Open your full essay report' : saved ? 'Score the essay you saved' : 'Score an essay' }
       : upgrade === 'speaking'
         ? { href: '/speakingquestion', label: saved ? 'Score the recording you saved' : 'Practise Speaking' }
         : upgrade === 'mock'
@@ -501,7 +502,7 @@ export default function PricingPage() {
   const ownsSubscription =
     (isPremium && !examPassActive) || pauseActive || pausePending;
   const saved = stage === 'saved';
-  const context = contextualCopy(upgrade, saved);
+  const context = contextualCopy(upgrade, saved, upgrade === 'writing' && returnTo.startsWith('/writing-report/'));
   // Weekly free scores: a free learner sent here by a spent sample also sees
   // when the next free one unlocks (no query at all in lifetime mode).
   const paywallSkill = upgrade === 'speaking' ? 'speaking' : 'writing';
@@ -1214,7 +1215,7 @@ export default function PricingPage() {
         <SampleReportPreview
           className="mx-auto mt-20 max-w-4xl"
           title="What a full Pro report looks like"
-          intro="Illustrative Writing report, not a learner testimonial or a promised score. Your free sample includes the sections marked Free; Pro adds the rest to every essay you score next. Buying Pro does not unlock an old free sample."
+          intro="Illustrative Writing report, not a learner testimonial or a promised score. Your free sample includes the sections marked Free. Pro unlocks newly saved Writing reports and adds full feedback to continued practice. Older samples without a saved report link cannot be expanded."
         >
           <div className="text-center">
             <a href="#plans" className="text-sm font-semibold text-accent underline underline-offset-4">

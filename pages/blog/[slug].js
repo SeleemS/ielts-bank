@@ -1,3 +1,4 @@
+import WritingGuideAction from "../../src/components/WritingGuideAction";
 import PracticeFeedbackEntry, { feedbackEntrySkill } from '../../src/components/PracticeFeedbackEntry';
 import Head from "next/head";
 import NextLink from "next/link";
@@ -209,6 +210,8 @@ export default function BlogPost({ post, essayBank = [], related = [], skill = n
                 className={`${PROSE} overflow-x-auto`}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
               />
+
+              <WritingGuideAction slug={post.slug} />
 
               {/* Optional per-post FAQ. Rendered from the SAME array that feeds
                   the FAQPage JSON-LD above, so the structured data can never

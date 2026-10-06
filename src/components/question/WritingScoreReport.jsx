@@ -1,3 +1,4 @@
+import { writingReportPath } from '../../../lib/writingReport';
 import * as React from 'react';
 import NextLink from 'next/link';
 import { Lock } from 'lucide-react';
@@ -195,7 +196,7 @@ export default function WritingScoreReport({
         <>
           <LockedPlaceholder
             label="Examiner summary & improvement plan"
-            hint={`Unlock Pro for the examiner summary and a prioritised plan to raise your band on your next ${submissionLabel}.`}
+            hint={writingReportPath(result.reportId) ? "Unlock Pro to read the summary and prioritised improvement plan for this saved essay." : `Unlock Pro for the examiner summary and a prioritised plan to raise your band on your next ${submissionLabel}.`}
           />
 
           {/* Pro preview: one real correction in the clear, then shaped
@@ -288,8 +289,14 @@ export default function WritingScoreReport({
         </>
       )}
 
+      {!sample && writingReportPath(result.reportId) && analyticsSource !== 'saved_report' ? (
+        <NextLink href={writingReportPath(result.reportId)} className="block rounded-lg border p-4 text-sm font-semibold text-accent">
+          Open your saved report{isTeaser ? '' : ' and revise this essay'}
+        </NextLink>
+      ) : null}
       {isTeaser ? (
         <ExamPassOffer
+          reportId={result.reportId}
           skill="writing"
           source={analyticsSource}
           band={result.overallBand}

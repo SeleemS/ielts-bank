@@ -176,3 +176,13 @@ describe('task page server render', () => {
     for (const q of blocks[1].mainEntity) expect(html).toContain(q.name.replace(/'/g, '&#x27;'));
   });
 });
+
+it('restores a revision for editing without an automatic scoring request', async () => {
+  saveWritingDraft({ taskType: 'task1-general', prompt: 'Write a letter', essay: LETTER, autoSubmit: false, revisionOf: '10000000-0000-4000-8000-000000000001' });
+  const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+  render({});
+  expect(container.querySelector('select').value).toBe('task1-general');
+  expect(container.textContent).toContain('Revising your saved essay');
+  expect(fetch).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});

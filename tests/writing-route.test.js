@@ -11,6 +11,7 @@ const state = {
   tableCalls: [],
   rateLimitResponses: [],
   rpcCalls: [],
+  reportError: null,
   scoreError: null,
   scoreReject: null,
   deletedAttemptIds: [],
@@ -70,7 +71,7 @@ vi.mock('@supabase/supabase-js', () => ({
         }
         return Promise.resolve({
           data: null,
-          error: table === 'scores' ? state.scoreError : null,
+          error: table === 'scores' ? state.scoreError : table === 'writing_reports' ? state.reportError : null,
         });
       },
       delete: () => ({
@@ -132,6 +133,7 @@ describe('POST /api/score/writing account and quota safety', () => {
     state.rateLimitResponses = [];
     state.rpcCalls = [];
     state.scoreError = null;
+    state.reportError = null;
     state.scoreReject = null;
     state.deletedAttemptIds = [];
     state.consumeData = null;
@@ -389,6 +391,23 @@ describe('POST /api/score/writing account and quota safety', () => {
       ]);
     }
   );
+
+  it('persists full feedback privately but returns only the free diagnostic and saved ID', async () => {
+    state.authUser = linkedUser(); await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes(); await handler(makeReq({ body: validBody() }), res);
+    const row = state.tableCalls.find(c => c.table === 'writing_reports').values;
+    expect(row.result.summary).toBeTruthy(); expect(row.unlocked_at).toBeNull();
+    expect(res.jsonBody.summary).toBeUndefined(); expect(res.jsonBody.reportId).toBe('attempt-id');
+  });
+  it('does not advertise a saved report when persistence fails, and keeps the original score', async () => {
+    state.authUser = linkedUser(); state.reportError = new Error('database unavailable');
+    vi.spyOn(console, 'error').mockImplementation(() => {}); await mockSuccessfulWritingScore();
+    const { default: handler } = await import('../pages/api/score/writing');
+    const res = makeRes(); await handler(makeReq({ body: validBody() }), res);
+    expect(res.statusCode).toBe(200); expect(res.jsonBody.reportId).toBeUndefined();
+    expect(res.jsonBody.summary).toBeUndefined(); expect(state.deletedAttemptIds).toEqual([]);
+  });
 
   it('refunds quota when criterion bands cannot produce an overall score', async () => {
     state.authUser = linkedUser();
