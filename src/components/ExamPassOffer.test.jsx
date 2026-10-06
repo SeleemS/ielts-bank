@@ -88,3 +88,13 @@ it('computes a plain per-day cost', () => {
   expect(perDay(14.99, 45)).toBe('$0.33');
   expect(perDay(Number.NaN, 30)).toBeNull();
 });
+
+it('offers the current report only when a valid saved report ID exists', () => {
+  act(() => root.render(<ExamPassOffer skill="writing" source="score_tease" reportId="10000000-0000-4000-8000-000000000001" />));
+  expect(container.textContent).toContain('Unlock the full feedback on this essay');
+  expect(container.textContent).not.toContain('this free sample stays');
+  const href = new URL(container.querySelector('a').href);
+  expect(href.searchParams.get('return_to')).toBe('/writing-report/10000000-0000-4000-8000-000000000001');
+  observed([{ isIntersecting: true, intersectionRatio: 0.5 }]);
+  expect(track).toHaveBeenCalledWith('exam_pass_offer_view', expect.objectContaining({ offer_version: 'current_report_v4' }));
+});

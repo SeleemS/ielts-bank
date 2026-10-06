@@ -158,6 +158,7 @@ function DashboardHero({ user, profile, data }) {
             <NextLink href={recommended.href} className="group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-bold text-white no-underline shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400">
               Practice {recommended.label} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </NextLink>
+            <NextLink href="/writing-reports" className="inline-flex h-11 items-center rounded-xl border border-white/15 px-5 text-sm font-bold text-white no-underline">Saved Writing reports</NextLink>
             <NextLink href="/mock-test" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 text-sm font-bold text-white no-underline transition hover:bg-white/10">
               <Sparkles className="h-4 w-4 text-emerald-300" /> Take a full mock
             </NextLink>

@@ -22,6 +22,7 @@ import { chatUsageRow, recordAiUsage } from '../../../lib/aiCost';
 import { overallBand as calculateOverallBand } from '../../../lib/bandTables';
 import { chatCompletionWithFallback } from '../../../lib/openaiChat';
 import { WRITING_PROMPT_MAX_CHARS } from '../../../lib/writingLimits';
+import { normalizeRewrite, reduceForFree, REPORT_ID_RE } from '../../../lib/writingReport';
 import { buildWritingScoreSchema } from '../../../lib/writingScoreSchema';
 import {
   buildWritingSystemPrompt,
@@ -141,7 +142,7 @@ async function resolveUserId(req) {
 // is logged (message only, never keys) and never affects the scoring response.
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-async function saveWritingScore({ userId, passageId, task, essay, model, result, startedAt, anonId, wordCount }) {
+async function saveWritingScore({ userId, passageId, task, taskType, prompt, essay, model, result, startedAt, anonId, wordCount, isFreeScore, revisionOf }) {
   let admin;
   let attemptId;
   try {
@@ -182,15 +183,34 @@ async function saveWritingScore({ userId, passageId, task, essay, model, result,
       return;
     }
 
-    if (UUID_RE.test(anonId || '')) {
-      await admin.from('activity_events').insert({
-        anon_id: anonId,
-        user_id: userId,
-        event: 'writing_score_server',
-        skill: 'writing',
-        props: { task, word_count: wordCount, band: overall, model },
+    // Save the full report in a server-only table. Never put paid text into
+    // scores.criteria: owners can read that legacy table directly via RLS.
+    let reportId = null;
+    try {
+      const { error } = await admin.from('writing_reports').insert({
+        attempt_id: attemptId, user_id: userId, task, task_type: taskType,
+        prompt, result, revision_of: revisionOf,
+        unlocked_at: isFreeScore ? null : new Date().toISOString(),
+        first_opened_at: isFreeScore ? null : new Date().toISOString(),
       });
+      if (error) throw error;
+      reportId = attemptId;
+    } catch (error) {
+      // The useful diagnostic still succeeds, but no current-report purchase
+      // promise is offered unless its full contents were durably stored.
+      console.error('writing report save failed:', error.message);
     }
+    try {
+      if (UUID_RE.test(anonId || '')) {
+        await admin.from('activity_events').insert({
+          anon_id: anonId, user_id: userId, event: 'writing_score_server', skill: 'writing',
+          props: { task, word_count: wordCount, band: overall, model, report_saved: Boolean(reportId) },
+        });
+      }
+    } catch (error) {
+      console.error('writing score telemetry failed:', error.message);
+    }
+    return reportId;
   } catch (e) {
     console.error('saveWritingScore error:', e.message);
     if (admin && attemptId) await rollbackWritingAttempt(admin, attemptId);
@@ -209,61 +229,6 @@ async function rollbackWritingAttempt(admin, attemptId) {
 
 function countWords(str) {
   return str.split(/\s+/).filter(Boolean).length;
-}
-
-// Total actionable issues across the full report — sent as a bare NUMBER to free
-// users so the upgrade CTA can say "N fixable issues" without shipping the
-// underlying (paid) feedback text.
-function countWritingIssues(result) {
-  const criterionIssues = Object.values(result.criteria || {}).reduce(
-    (n, c) => n + (Array.isArray(c?.improvements) ? c.improvements.length : 0),
-    0
-  );
-  return (
-    criterionIssues +
-    (Array.isArray(result.improvements) ? result.improvements.length : 0) +
-    (Array.isArray(result.correctedExamples) ? result.correctedExamples.length : 0)
-  );
-}
-
-// Rewrites are a single paragraph by prompt instruction; this is a defensive
-// ceiling so a verbose model can never balloon the stored/returned payload.
-const MAX_REWRITE_CHARS = 900;
-
-function normalizeRewrite(rewrite) {
-  if (!rewrite || typeof rewrite !== 'object') return null;
-  const text = typeof rewrite.text === 'string' ? rewrite.text.trim() : '';
-  if (!text) return null;
-  return {
-    focus: typeof rewrite.focus === 'string' ? rewrite.focus.trim().slice(0, 160) : '',
-    text: text.slice(0, MAX_REWRITE_CHARS),
-  };
-}
-
-// The free lifetime sample is a real diagnostic, not a stub: the overall band
-// and ALL FOUR criteria (band + strengths + improvements) are the candidate's
-// to keep. What Premium buys is the FIXES — the examiner summary, the
-// prioritised improvement plan, every corrected example beyond the first, and
-// the band-8 rewrite.
-//
-// The withheld text is removed HERE rather than blurred in the browser: a CSS
-// filter over real text is a paywall bypass (see WritingScoreReport, which
-// renders shaped placeholders instead of the real strings). The counts below
-// are bare numbers so the upgrade CTA can be specific without leaking content.
-// The full result is still persisted server-side for the user's own history.
-function reduceForFree(result) {
-  const corrected = Array.isArray(result.correctedExamples) ? result.correctedExamples : [];
-  const rewrite = normalizeRewrite(result.rewrite);
-  return {
-    overallBand: result.overallBand,
-    criteria: result.criteria || {},
-    // One real correction, so the preview shows the genuine article.
-    correctedExamples: corrected.slice(0, 1),
-    lockedCorrectionCount: Math.max(0, corrected.length - 1),
-    // Presence flag only — never the rewrite text itself.
-    rewriteLocked: Boolean(rewrite),
-    lockedIssueCount: countWritingIssues(result),
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -301,6 +266,8 @@ export default async function handler(req, res) {
   const essay = typeof body.essay === 'string' ? body.essay.trim() : '';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   const task = body.task === 1 || body.task === '1' ? 1 : 2;
+  const taskType = task === 2 ? 'task2' : body.task_type === 'task1-general' ? 'task1-general' : 'task1-academic';
+  let revisionOf = null;
   const passageId = typeof body.passage_id === 'string' && body.passage_id ? body.passage_id : null;
 
   if (!essay) {
@@ -326,6 +293,21 @@ export default async function handler(req, res) {
     return res
       .status(400)
       .json({ error: 'Your response is too long to score.' });
+  }
+
+  if (body.revision_of != null) {
+    if (typeof body.revision_of !== 'string' || !REPORT_ID_RE.test(body.revision_of)) {
+      return res.status(400).json({ error: 'Invalid original report.' });
+    }
+    try {
+      const { data, error } = await getAdmin().from('writing_reports')
+        .select('attempt_id, task_type').eq('attempt_id', body.revision_of).eq('user_id', userId).maybeSingle();
+      if (error) throw error;
+      if (!data || data.task_type !== taskType) return res.status(404).json({ error: 'Original report not found for this task.' });
+      revisionOf = data.attempt_id;
+    } catch {
+      return res.status(503).json({ error: 'Could not load your original report. Please try again.' });
+    }
   }
 
   // --- Abuse protection BEFORE calling OpenAI ------------------------------
@@ -494,10 +476,10 @@ export default async function handler(req, res) {
     }
     result = { ...result, overallBand, rewrite: normalizeRewrite(result.rewrite) };
 
-    await saveWritingScore({
+    const reportId = await saveWritingScore({
       userId,
       passageId,
-      task,
+      task, taskType, prompt, isFreeScore, revisionOf,
       essay,
       model: ai.model,
       result,
@@ -509,6 +491,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       task,
       wordCount: words,
+      ...(reportId ? { reportId } : {}),
       quotaRemaining: quota.remaining,
       plan: quota.plan,
       free: isFreeScore,

@@ -718,3 +718,12 @@ describe('pricing plan fit and clarity', () => {
     ).toBe('Create your account to get the Exam Pass');
   });
 });
+
+it('returns a verified buyer to the exact report instead of asking them to rescore', async () => {
+  testState.user = { id: 'user-1' };
+  testState.router.query = { checkout: 'success', session_id: 'cs_test_checkout_return', upgrade: 'writing', stage: 'sample', return_to: '/writing-report/10000000-0000-4000-8000-000000000001' };
+  global.fetch.mockResolvedValue({ ok: true, json: async () => ({ active: true }) });
+  await renderPage();
+  const link = [...container.querySelectorAll('a')].find(a => a.textContent === 'Open your full essay report');
+  expect(link?.getAttribute('href')).toBe(testState.router.query.return_to);
+});

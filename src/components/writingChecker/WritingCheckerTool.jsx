@@ -70,6 +70,7 @@ export default function WritingCheckerTool({
   const [taskType, setTaskType] = useState(locked || 'task2');
   const [prompt, setPrompt] = useState('');
   const [essay, setEssay] = useState('');
+  const [revisionOf, setRevisionOf] = useState(null);
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -123,6 +124,7 @@ export default function WritingCheckerTool({
     if (handoff && (!locked || handoff.taskType === locked)) {
       setTaskType(locked || handoff.taskType);
       setPrompt(handoff.prompt);
+      setRevisionOf(handoff.revisionOf || null);
       // A prompt-only handoff (the essay bank's "answer this question in the
       // checker" link) arrives with an empty essay and autoSubmit=false, so the
       // learner lands on a blank answer box under the pre-filled question.
@@ -140,6 +142,7 @@ export default function WritingCheckerTool({
         const savedType = typeof saved.taskType === 'string' ? saved.taskType : null;
         if (locked && savedType !== locked) return;
         if (!locked && savedType) setTaskType(savedType);
+        if (typeof saved.revisionOf === 'string') setRevisionOf(saved.revisionOf);
         if (typeof saved.prompt === 'string') setPrompt(saved.prompt);
         if (typeof saved.essay === 'string') setEssay(saved.essay);
         setDirty(true);
@@ -165,12 +168,12 @@ export default function WritingCheckerTool({
     try {
       window.localStorage.setItem(
         WRITING_CHECKER_DRAFT_KEY,
-        JSON.stringify({ taskType, prompt, essay })
+        JSON.stringify({ taskType, prompt, essay, revisionOf })
       );
     } catch {
       /* storage full / unavailable — non-fatal */
     }
-  }, [restored, dirty, taskType, prompt, essay]);
+  }, [restored, dirty, taskType, prompt, essay, revisionOf]);
 
   // Premium gate: capture the essay to the signed-in user's account (attempt
   // row without a band — the checker has no passage row, so passage_id stays
@@ -224,7 +227,7 @@ export default function WritingCheckerTool({
 
       // Prepend the task-type label to the free-form prompt so the model knows
       // whether this is Academic Task 1, General Training Task 1, or Task 2.
-      const promptText = [active.label, prompt.trim()].filter(Boolean).join('\n\n');
+      const promptText = prompt.trim().startsWith(active.label) ? prompt.trim() : [active.label, prompt.trim()].filter(Boolean).join('\n\n');
 
       const response = await fetch(SCORE_API, {
         method: 'POST',
@@ -233,6 +236,8 @@ export default function WritingCheckerTool({
           prompt: promptText,
           essay,
           task: apiTask,
+          task_type: taskType,
+          ...(revisionOf ? { revision_of: revisionOf } : {}),
           passage_id: null,
           anon_id: getAnonId(),
         }),
@@ -280,7 +285,7 @@ export default function WritingCheckerTool({
     } finally {
       if (!scored) setIsLoading(false);
     }
-  }, [active.label, apiTask, essay, goToPremium, isSufficient, minWords, prompt, user, variant, wordCount]);
+  }, [active.label, apiTask, essay, goToPremium, isSufficient, minWords, prompt, user, variant, wordCount, taskType, revisionOf]);
 
   // The route owns the entitlement decision because a non-premium account may
   // still have its one lifetime sample available.
@@ -341,12 +346,14 @@ export default function WritingCheckerTool({
               </p>
             ) : (
               <div className="grid gap-1.5">
+                {revisionOf ? <div className="rounded-lg border border-accent/30 p-3 text-sm"><p>Revising your saved essay. Edit it before scoring; your normal allowance applies.</p><button type="button" className="mt-1 font-semibold text-accent" onClick={() => setRevisionOf(null)}>Start as a new essay instead</button></div> : null}
                 <Label htmlFor="task-type">Task type</Label>
                 <Select
                   id="task-type"
                   value={taskType}
                   onChange={(e) => {
                     setTaskType(e.target.value);
+                    setRevisionOf(null);
                     setDirty(true);
                   }}
                 >

@@ -1,6 +1,9 @@
 // Read-only operational funnel report. Run with --read-only; no Stripe writes.
-// Optional --end=YYYY-MM-DD (exclusive UTC date), --exclusions=/private/file.json
+// Optional --end=YYYY-MM-DD (exclusive UTC date), --writing-reports-start=YYYY-MM-DD
+// (first complete UTC day after the actual live release), --exclusions=/private/file.json
 // (array of user UUIDs), --anonymous-exclusions=/private/anon-ids.json, --output=/path/report.json. Never outputs user/session IDs.
+import { reportDelivery } from './report-delivery.mjs';
+import { summarizeAcquisition } from './acquisition-source.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,9 +20,11 @@ for (const line of fs.readFileSync(path.join(root, '.env.local'), 'utf8').split(
 }
 const endDate = option('end') || new Date().toISOString().slice(0, 10);
 if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate) || !Number.isFinite(Date.parse(endDate))) throw new Error('Invalid exclusive UTC end date');
+const reportStartDate = option('writing-reports-start') || env.WRITING_REPORTS_OBSERVATION_START || null;
+if (reportStartDate && (!/^\d{4}-\d{2}-\d{2}$/.test(reportStartDate) || !Number.isFinite(Date.parse(reportStartDate)))) throw new Error('Invalid Writing report observation start date');
 const end = `${endDate}T00:00:00.000Z`;
 const start = new Date(Date.parse(end) - 28 * 86400000).toISOString();
-const offerVersions = ['exam_pass_v1', 'feedback_value_v2', 'locked_value_v3'];
+const offerVersions = ['exam_pass_v1', 'feedback_value_v2', 'locked_value_v3', 'current_report_v4'];
 const exclusions = new Set(JSON.parse(option('exclusions') ? fs.readFileSync(option('exclusions'), 'utf8') : env.FUNNEL_QA_USER_IDS_JSON || '[]'));
 // The approved audit account never enters reported business results.
 for (const qaFile of ['/private/tmp/ielts-confirmed-qa.json', '/private/tmp/ielts-exampass-qa.json']) {
@@ -66,6 +71,27 @@ try {
       and props->>'offer_version'=any($4::text[])
       and coalesce(anon_id,'')<>all($5::text[])
       group by event,props->>'offer_version' order by offer_version,event`, [start,end,[...exclusions],offerVersions,anonymousExclusions])).rows;
+  const sources = (await db.query(`select distinct coalesce(user_id::text,anon_id) identity, props->>'acquisition_source' source
+    from public.activity_events where event='page_view' and created_at >= $1 and created_at < $2
+    and coalesce(user_id::text,'')<>all($3::text[]) and coalesce(anon_id,'')<>all($4::text[])`,
+    [start,end,[...exclusions],anonymousExclusions])).rows;
+  report.acquisition = { method: 'Consent-limited identities per source group. One identity may appear in more than one group; do not sum as unique traffic.', groups: summarizeAcquisition(sources) };
+  const hasReports = (await db.query("select to_regclass('public.writing_reports') is not null available")).rows[0].available;
+  // Use complete UTC days after the rollout; never call pre-instrumentation
+  // purchases failed deliveries. The launch day itself is deliberately omitted.
+  const reportObservationStart = reportStartDate ? `${reportStartDate}T00:00:00.000Z` : null;
+  const deliveryStart = reportObservationStart ? new Date(Math.max(Date.parse(start), Date.parse(reportObservationStart))).toISOString() : null;
+  const deliveryObservable = Boolean(hasReports && deliveryStart && Date.parse(end) > Date.parse(deliveryStart));
+  report.writingDeliveryCoverage = { firstCompleteDayUtc: reportObservationStart, effectiveStartUtc: deliveryStart, observable: deliveryObservable };
+  report.savedWritingDelivery = deliveryObservable ? (await db.query(`
+    select count(*)::int reports_created,
+      count(*) filter(where r.unlocked_at < $2)::int unlocked,
+      count(*) filter(where r.first_opened_at < $2)::int opened_full,
+      count(*) filter(where r.revision_of is not null)::int revision_reports
+    from public.writing_reports r where r.created_at >= $1 and r.created_at < $2 and r.user_id<>all($3::uuid[])`, [deliveryStart,end,[...exclusions]])).rows[0] : null;
+  const savedReports = deliveryObservable ? (await db.query(`select attempt_id,user_id,created_at,unlocked_at,first_opened_at,revision_of from public.writing_reports
+    where created_at < $2 and (created_at >= $1 or unlocked_at >= $1) and user_id<>all($3::uuid[])`,[deliveryStart,end,[...exclusions]])).rows : null;
+  report.savedWritingDeliveryDefinition = 'Account records, not proof of incremental purchases. Unlock/open counts are bounded by report cohort; replay does not add rows. Older reports are unavailable, not zero.';
   report.operationalDiagnostics = (await db.query(`select event,props->>'stage' stage,count(*)::int records
     from public.activity_events where created_at >= $1 and created_at<$2 and props->>'source'='billing_checkout'
       and user_id<>all($3::uuid[]) group by event,props->>'stage' order by event,stage`,[start,end,[...exclusions]])).rows;
@@ -84,6 +110,8 @@ try {
     const revoked=revocations.find(r=>r.purchase_key===key);
     if(revoked && (!f.access_expires_at || Date.parse(revoked.revoked_at)<Date.parse(f.access_expires_at))) f.access_expires_at=revoked.revoked_at;
   }
+  report.paidWritingDelivery = savedReports ? reportDelivery({ sessions, fulfillments, reports: savedReports, start: deliveryStart, end, exclusions: [...exclusions] }) : null;
+  report.paidWritingDeliveryDefinition = 'Positive live applied Checkouts only; separate mature 24-hour and 7-day denominators. Full response prepared by server, not proof of reading. Revisions must reference a delivered report. Includes repeat buyers; pre-release reports are not observable.';
   // Paid invoice history identifies existing recurring/direct-billed customers,
   // excluding invoices belonging to the Checkout activations already modeled.
   const invoices = await listAll(stripe.invoices, { status: 'paid', created: { lt: Date.parse(end)/1000 } });

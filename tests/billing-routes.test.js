@@ -110,6 +110,9 @@ describe('POST /api/webhooks/stripe', () => {
 // Checkout route (mocked supabase + stripe client)
 // ---------------------------------------------------------------------------
 const mockState = {
+  reportRow: null,
+  reportError: null,
+  reportFilters: [],
   authUser: null,
   authError: null,
   authReject: null,
@@ -187,7 +190,12 @@ vi.mock('@supabase/supabase-js', () => ({
             };
       },
     },
-    from: () => ({
+    from: (table) => table === 'writing_reports' ? {
+      select: () => {
+        const query = { eq: (key, value) => { mockState.reportFilters.push([key, value]); return query; }, maybeSingle: async () => ({ data: mockState.reportRow, error: mockState.reportError }) };
+        return query;
+      },
+    } : ({
       select: (columns) => ({
         eq: () => ({
           maybeSingle: async () => {
@@ -311,6 +319,7 @@ vi.mock('../lib/billing', async (importOriginal) => {
 
 describe('POST /api/billing/checkout', () => {
   beforeEach(() => {
+    mockState.reportRow = null; mockState.reportError = null; mockState.reportFilters = [];
     mockState.authUser = null;
     mockState.authError = null;
     mockState.authReject = null;
@@ -653,6 +662,26 @@ describe('POST /api/billing/checkout', () => {
       expect(session[key]).not.toContain('private');
     }
     expect(session.success_url).toContain('session_id={CHECKOUT_SESSION_ID}');
+  });
+
+  it.each([false, true])('verifies ownership of a saved report before opening Stripe (found=%s)', async found => {
+    const reportId = '10000000-0000-4000-8000-000000000001';
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = { id: 'user-1', email: 'a@b.com', is_anonymous: false, plan: 'free' };
+    mockState.reportRow = found ? { attempt_id: reportId } : null;
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' }, body: { upgrade: 'writing', stage: 'sample', return_to: `/writing-report/${reportId}` } });
+    expect(mockState.reportFilters).toEqual([['attempt_id', reportId], ['user_id', 'user-1']]);
+    expect(res.statusCode).toBe(found ? 200 : 404);
+    if (!found) expect(mockState.stripeCalls).toEqual({});
+    else expect(mockState.stripeCalls.sessionCreate.success_url).toContain(encodeURIComponent(`/writing-report/${reportId}`));
+  });
+  it('does not open Stripe when report verification fails', async () => {
+    mockState.authUser = { id: 'user-1' };
+    mockState.userRow = { id: 'user-1', email: 'a@b.com', is_anonymous: false, plan: 'free' };
+    mockState.reportError = { message: 'database offline' };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await callCheckout({ headers: { authorization: 'Bearer tok' }, body: { upgrade: 'writing', return_to: '/writing-report/10000000-0000-4000-8000-000000000001' } });
+    expect(res.statusCode).toBe(503); expect(mockState.stripeCalls).toEqual({});
   });
 
   it('drops untrusted return URLs at the server boundary', async () => {

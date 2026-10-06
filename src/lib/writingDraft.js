@@ -1,3 +1,4 @@
+import { REPORT_ID_RE } from '../../lib/writingReport';
 // src/lib/writingDraft.js
 // One-shot handoff of an essay drafted OUTSIDE the writing checker (currently
 // the homepage hero paste box) into /ielts-writing-checker, which pre-fills the
@@ -38,9 +39,10 @@ function normalizeText(value, max) {
 // `promptOnly` handoffs carry a question but no essay (the essay bank's "answer
 // this prompt in the checker" link): the checker pre-fills the task type and
 // question and waits for the learner to write — they can never auto-submit.
-export function serializeWritingDraft({ taskType, prompt, essay, autoSubmit = true, promptOnly = false } = {}) {
+export function serializeWritingDraft({ taskType, prompt, essay, autoSubmit = true, promptOnly = false, revisionOf } = {}) {
   return JSON.stringify({
     v: 1,
+    ...(typeof revisionOf === 'string' && REPORT_ID_RE.test(revisionOf) ? { revisionOf } : {}),
     taskType: normalizeTaskType(taskType),
     prompt: normalizeText(prompt, MAX_PROMPT_CHARS),
     essay: promptOnly ? '' : normalizeText(essay, MAX_ESSAY_CHARS),
@@ -81,6 +83,7 @@ export function parseWritingDraft(raw) {
     taskType: normalizeTaskType(parsed.taskType),
     prompt: normalizeText(parsed.prompt, MAX_PROMPT_CHARS),
     essay,
+    ...(typeof parsed.revisionOf === 'string' && REPORT_ID_RE.test(parsed.revisionOf) ? { revisionOf: parsed.revisionOf } : {}),
     autoSubmit: parsed.autoSubmit !== false,
     createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : null,
   };

@@ -1,3 +1,4 @@
+import { writingReportPath } from '../../lib/writingReport';
 import FeedbackPreview from './FeedbackPreview';
 import { OFFER_VERSION } from '../../lib/monetizationExperiment';
 import * as React from 'react';
@@ -45,7 +46,9 @@ export function perDay(price, days = EXAM_PASS_DAYS) {
 
 // The single next step after a learner has received a free result. One
 // primary action; the monthly option is information, not a competing button.
-export default function ExamPassOffer({ skill, source, band, locked, children }) {
+export default function ExamPassOffer({ skill, source, band, locked, reportId, children }) {
+  const reportPath = skill === 'writing' ? writingReportPath(reportId) : null;
+  const offerVersion = reportPath ? 'current_report_v4' : OFFER_VERSION;
   const element = React.useRef(null);
   const viewed = React.useRef(false);
   const passFirstRef = React.useRef(false);
@@ -58,7 +61,7 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
     const record = () => {
       if (viewed.current) return;
       viewed.current = true;
-      track('exam_pass_offer_view', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION, pass_first: passFirstRef.current });
+      track('exam_pass_offer_view', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: offerVersion, pass_first: passFirstRef.current });
     };
     if (typeof IntersectionObserver === 'undefined') { record(); return; }
     const observer = new IntersectionObserver(entries => {
@@ -66,9 +69,9 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
     }, { threshold: 0.5 });
     if (element.current) observer.observe(element.current);
     return () => observer.disconnect();
-  }, [skill, source]);
+  }, [skill, source, offerVersion]);
   passFirstRef.current = passFirst;
-  const href = buildUpgradeHref({ upgrade: skill, stage: 'sample', return_to: returnTo });
+  const href = buildUpgradeHref({ upgrade: skill, stage: 'sample', return_to: reportPath || returnTo });
   const price = planPricing('exam_pass', regional);
   const monthly = planPricing('monthly', regional);
   const speaking = skill === 'speaking';
@@ -78,7 +81,7 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
     <section ref={element} aria-label={`${EXAM_PASS_DAYS}-day Exam Pass`} className="rounded-xl border-2 border-accent/40 bg-accent/[0.04] p-5 sm:p-6">
       <p className="text-xs font-bold uppercase tracking-wide text-accent">Your free sample is done</p>
       <h3 className="mt-2 text-lg font-bold text-foreground sm:text-xl">
-        Get the full report on your next {next}
+        {reportPath ? 'Unlock the full feedback on this essay' : `Get the full report on your next ${next}`}
       </h3>
       {children ? <p className="mt-2 text-sm text-muted-foreground">{children}</p> : null}
       <p className="mt-3 text-sm font-semibold text-foreground">Pro adds to every report:</p>
@@ -100,9 +103,9 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
         </p>
         <Button asChild variant="accent" size="lg" className="mt-3 w-full sm:w-auto sm:self-start">
           <NextLink href={href} className="no-underline" onClick={() => {
-            track('exam_pass_offer_click', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: OFFER_VERSION, pass_first: passFirst });
+            track('exam_pass_offer_click', { skill, source, sku: 'exam_pass', stage: 'sample', offer_version: offerVersion, pass_first: passFirst });
             track('paywall_upgrade_click', { skill, source, band });
-          }}>Continue to the Exam Pass <ArrowRight className="h-4 w-4" aria-hidden="true" /></NextLink>
+          }}>{reportPath ? 'Unlock this report with the Exam Pass' : 'Continue to the Exam Pass'} <ArrowRight className="h-4 w-4" aria-hidden="true" /></NextLink>
         </Button>
         <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
@@ -112,7 +115,7 @@ export default function ExamPassOffer({ skill, source, band, locked, children })
 
       <p className="mt-3 text-xs leading-5 text-muted-foreground">
         Prefer a subscription? Monthly is {money(monthly.price)} USD/month, renewing until canceled, with the same scoring limits.
-        Pro applies to the {next}s you score next — this free sample stays as it is.
+        {reportPath ? ' Both plans unlock this saved report and include continued practice. No resubmission needed.' : ` Pro applies to the ${next}s you score next — this free sample stays as it is.`}
       </p>
       <FeedbackPreview skill={skill} />
     </section>
