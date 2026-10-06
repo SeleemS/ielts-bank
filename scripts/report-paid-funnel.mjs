@@ -1,5 +1,6 @@
 // Read-only operational funnel report. Run with --read-only; no Stripe writes.
-// Optional --end=YYYY-MM-DD (exclusive UTC date), --exclusions=/private/file.json
+// Optional --end=YYYY-MM-DD (exclusive UTC date), --writing-reports-start=YYYY-MM-DD
+// (first complete UTC day after the actual live release), --exclusions=/private/file.json
 // (array of user UUIDs), --anonymous-exclusions=/private/anon-ids.json, --output=/path/report.json. Never outputs user/session IDs.
 import { reportDelivery } from './report-delivery.mjs';
 import { summarizeAcquisition } from './acquisition-source.mjs';
@@ -19,6 +20,8 @@ for (const line of fs.readFileSync(path.join(root, '.env.local'), 'utf8').split(
 }
 const endDate = option('end') || new Date().toISOString().slice(0, 10);
 if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate) || !Number.isFinite(Date.parse(endDate))) throw new Error('Invalid exclusive UTC end date');
+const reportStartDate = option('writing-reports-start') || env.WRITING_REPORTS_OBSERVATION_START || null;
+if (reportStartDate && (!/^\d{4}-\d{2}-\d{2}$/.test(reportStartDate) || !Number.isFinite(Date.parse(reportStartDate)))) throw new Error('Invalid Writing report observation start date');
 const end = `${endDate}T00:00:00.000Z`;
 const start = new Date(Date.parse(end) - 28 * 86400000).toISOString();
 const offerVersions = ['exam_pass_v1', 'feedback_value_v2', 'locked_value_v3', 'current_report_v4'];
@@ -76,9 +79,9 @@ try {
   const hasReports = (await db.query("select to_regclass('public.writing_reports') is not null available")).rows[0].available;
   // Use complete UTC days after the rollout; never call pre-instrumentation
   // purchases failed deliveries. The launch day itself is deliberately omitted.
-  const reportObservationStart = '2026-10-07T00:00:00.000Z';
-  const deliveryStart = new Date(Math.max(Date.parse(start), Date.parse(reportObservationStart))).toISOString();
-  const deliveryObservable = hasReports && Date.parse(end) > Date.parse(deliveryStart);
+  const reportObservationStart = reportStartDate ? `${reportStartDate}T00:00:00.000Z` : null;
+  const deliveryStart = reportObservationStart ? new Date(Math.max(Date.parse(start), Date.parse(reportObservationStart))).toISOString() : null;
+  const deliveryObservable = Boolean(hasReports && deliveryStart && Date.parse(end) > Date.parse(deliveryStart));
   report.writingDeliveryCoverage = { firstCompleteDayUtc: reportObservationStart, effectiveStartUtc: deliveryStart, observable: deliveryObservable };
   report.savedWritingDelivery = deliveryObservable ? (await db.query(`
     select count(*)::int reports_created,
