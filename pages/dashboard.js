@@ -16,6 +16,7 @@ import { LoadingState, SignedOutState, ErrorState } from '../src/components/dash
 import { buildDashboardData, formatBand, getInitials, SKILL_META } from '../src/components/dashboard/utils';
 import LearningInsights from '../src/components/dashboard/LearningInsights';
 import InviteCard from '../src/components/dashboard/InviteCard';
+import PlanSetupCard from '../src/components/dashboard/PlanSetupCard';
 import StreakCard from '../src/components/dashboard/StreakCard';
 import DailyReminderCard from '../src/components/dashboard/DailyReminderCard';
 import EmailPreferences from '../src/components/dashboard/EmailPreferences';
@@ -274,6 +275,11 @@ function DashboardBody({ user, signOut }) {
       <div id="dashboard-content" tabIndex={-1} className="space-y-5 outline-none">
         {activeTab === 'overview' && (
           <>
+            <PlanSetupCard
+              user={user}
+              profile={profile}
+              onProfileChange={(changes) => setProfileOverride((current) => ({ ...(current || {}), ...changes }))}
+            />
             {!data.hasData && <EmptyNudge />}
             {!isPremium && <FreeUpgradeCard examDate={profile.exam_date || profile.prefs?.examDate} />}
             <BaselineCard />

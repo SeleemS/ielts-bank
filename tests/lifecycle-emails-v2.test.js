@@ -48,7 +48,7 @@ describe('new lifecycle templates', () => {
       recovery_expires_at: '2099-10-23T12:00:00.000Z',
     });
     expect(rendered.subject).toBe('Your IELTS Bank checkout is saved — finish in one tap');
-    expect(rendered.html).toContain(`href="https://www.ielts-bank.com/billing/resume?c=${token}"`);
+    expect(rendered.html).toContain(`href="https://www.ielts-bank.com/billing/resume?c=${token}&amp;utm_source=email&amp;utm_medium=lifecycle&amp;utm_campaign=checkout_abandoned"`);
     expect(rendered.html).not.toContain('stripe.com');
     expect(rendered.html).not.toContain('cs_live_expired');
     expect(rendered.html).toContain('Finish my checkout');
@@ -68,7 +68,7 @@ describe('new lifecycle templates', () => {
     ]) {
       const rendered = render('checkout_abandoned', payload);
       expect(rendered.subject).toContain('no charge was made');
-      expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing?upgrade=speaking"');
+      expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing?upgrade=speaking&amp;utm_source=email');
       expect(rendered.html).not.toContain('evil.example');
       expect(rendered.html).not.toContain('buy.stripe.com');
     }
@@ -76,7 +76,7 @@ describe('new lifecycle templates', () => {
 
   it('checkout_abandoned ignores an unexpected upgrade value', () => {
     const rendered = render('checkout_abandoned', { upgrade: '"><script>' });
-    expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing"');
+    expect(rendered.html).toContain('href="https://www.ielts-bank.com/pricing?utm_source=email');
     expect(rendered.html).not.toContain('<script>');
   });
 
@@ -186,5 +186,28 @@ describe('queueExamCountdown', () => {
     const admin = fakeAdmin({ batches, users: [] });
     expect(await queueExamCountdown(admin, NOW)).toBe(0);
     expect(batches).toHaveLength(0);
+  });
+});
+
+describe('email link tagging', () => {
+  it('tags site links with the email type and leaves API links alone', async () => {
+    const { tagEmailLinks } = await import('../lib/lifecycleEmail');
+    const html =
+      '<a href="https://www.ielts-bank.com/pricing?upgrade=writing&amp;stage=sample#week-pass">a</a>'
+      + '<a href="https://www.ielts-bank.com/dashboard">b</a>'
+      + '<a href="https://www.ielts-bank.com/api/newsletter/unsubscribe?t=1">c</a>'
+      + '<a href="https://example.com/x">d</a>';
+    const out = tagEmailLinks(html, 'free_report_offer');
+    expect(out).toContain(
+      'href="https://www.ielts-bank.com/pricing?upgrade=writing&amp;stage=sample&amp;utm_source=email&amp;utm_medium=lifecycle&amp;utm_campaign=free_report_offer#week-pass"'
+    );
+    expect(out).toContain('href="https://www.ielts-bank.com/dashboard?utm_source=email&amp;utm_medium=lifecycle&amp;utm_campaign=free_report_offer"');
+    expect(out).toContain('href="https://www.ielts-bank.com/api/newsletter/unsubscribe?t=1"');
+    expect(out).toContain('href="https://example.com/x"');
+  });
+
+  it('applies to rendered emails', () => {
+    const { html } = renderLifecycleEmail({ email_type: 'welcome_signup', recipient_email: 'a@b.com', payload: {} });
+    expect(html).toContain('utm_campaign=welcome_signup');
   });
 });

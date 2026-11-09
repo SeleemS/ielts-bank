@@ -8,7 +8,7 @@ import AffiliateLink, {
 } from './AffiliateLink';
 
 export const TUTOR_BAND_CEILING = 6.5;
-export const TUTOR_PROGRAMS = ['preply', 'italki'];
+export const TUTOR_PROGRAMS = ['preply', 'italki', 'cambly'];
 export const TUTOR_CAP_KEY = 'ib_aff_tutor_last';
 export const TUTOR_CAP_MS = 7 * 24 * 60 * 60 * 1000;
 

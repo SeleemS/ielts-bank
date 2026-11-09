@@ -299,10 +299,26 @@ export function deviceInfo(ua, maxTouchPoints = 0) {
   return { browser, os, device };
 }
 
+// Attribution is first-touch, so a returning learner arriving from one of our
+// emails would otherwise be invisible. Lifecycle email links carry
+// utm_medium=lifecycle; record one email_click per campaign per page load.
+const emailClicksSeen = new Set();
+export function emailClickCampaign(url) {
+  const query = String(url || '').split('#', 1)[0].split('?')[1] || '';
+  const params = new URLSearchParams(query);
+  if (params.get('utm_medium') !== 'lifecycle') return '';
+  return (params.get('utm_campaign') || 'unknown').replace(/[^a-z0-9_]/gi, '').slice(0, 60);
+}
+
 export function trackPageView(url, signedIn = false) {
   if (typeof window === 'undefined') return;
   if (!analyticsConsentGranted()) return;
   rotatePageViewId();
+  const emailCampaign = emailClickCampaign(url);
+  if (emailCampaign && !emailClicksSeen.has(emailCampaign)) {
+    emailClicksSeen.add(emailCampaign);
+    track('email_click', { campaign: emailCampaign, page_path: String(url).split(/[?#]/, 1)[0] });
+  }
   track('page_view', {
     page_location: `${window.location.origin}${url}`,
     page_path: url,
@@ -316,4 +332,5 @@ export function resetAnalyticsForTests() {
   analyticsAccessToken = null;
   pageViewId = null;
   volatileAnonId = null;
+  emailClicksSeen.clear();
 }

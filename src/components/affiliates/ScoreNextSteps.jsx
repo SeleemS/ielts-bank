@@ -35,6 +35,18 @@ function copyFor(id, shortName) {
         body: 'Leverage Edu offers application guidance for students in India applying to universities abroad.',
         cta: 'Talk to Leverage Edu',
       };
+    case 'idp-booking':
+      return {
+        title: 'Book your IELTS test',
+        body: 'Check test dates, fees and centres near you and book your IELTS test with IDP.',
+        cta: 'Find a test date with IDP',
+      };
+    case 'bc-booking':
+      return {
+        title: 'Book your IELTS test',
+        body: 'Check test dates, fees and centres near you and book your IELTS test with the British Council.',
+        cta: 'Find a test date with the British Council',
+      };
     default:
       return null;
   }

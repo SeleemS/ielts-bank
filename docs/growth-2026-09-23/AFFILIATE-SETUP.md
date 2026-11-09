@@ -23,13 +23,14 @@ Implements actions #7 (tutor CTA) and #9 ("next steps" on score-requirement page
 |---|---|---|---|
 | Preply | `AFFILIATE_URL_PREPLY` | Tutor card on the free writing and speaking score reports (`/writingquestion/<id>`, `/speakingquestion/<id>`) | all |
 | italki | `AFFILIATE_URL_ITALKI` | Same card. Shown only when Preply is **not** configured | all |
+| Cambly | `AFFILIATE_URL_CAMBLY` | Same card. Shown only when neither Preply nor italki is configured | all |
 | Wise | `AFFILIATE_URL_WISE` | "Next steps after your score" box on all 10 `/ielts-score-requirements/<country>` pages | all |
 | Amber | `AFFILIATE_URL_AMBER` | Same box, on the UK, AU, CA, US, IE and NZ pages only | all |
 | Insubuy | `AFFILIATE_URL_INSUBUY` | Same box, on the US page only | all |
 | Leverage Edu | `AFFILIATE_URL_LEVERAGE_EDU` | Same box, first position. Shown only to visitors in India, detected by the `ib_country` cookie that the middleware sets from `x-vercel-ip-country`. Hidden when geo is unknown | **IN only** |
 | Amazon (Cambridge IELTS books) | `AFFILIATE_URL_AMAZON_CAMBRIDGE_BOOKS` | Books box on blog posts tagged `books` / `study-plan` / `resources` / `self-study`, or whose slug contains `study-plan`, `practice-resources`, `book(s)` or `cambridge-ielts`. Currently: the 7-day and 30-day study plans and the free-resources list | all |
-| IDP test booking | `AFFILIATE_URL_IDP_BOOKING` | **Not placed yet.** `/go/idp-booking` works once set. Read the trademark caveat in the plan (item 6) before applying | all |
-| British Council test booking | `AFFILIATE_URL_BC_BOOKING` | **Not placed yet.** Same as IDP | all |
+| IDP test booking | `AFFILIATE_URL_IDP_BOOKING` | First link in the "Next steps after your score" box on all 10 score-requirement pages ("Book your IELTS test"). Read the trademark caveat in the plan (item 6) before applying | all |
+| British Council test booking | `AFFILIATE_URL_BC_BOOKING` | Same slot as IDP; shown only when IDP is **not** configured | all |
 
 Value format: the full tracking URL from the network, e.g. `https://preply.com/en/?pref=XXXX`. It must be `https://`. Leading and trailing whitespace is ignored.
 

@@ -216,3 +216,13 @@ describe('dual analytics tracking', () => {
     expect(window.fetch).not.toHaveBeenCalled();
   });
 });
+
+describe('emailClickCampaign', () => {
+  it('reads the campaign only from lifecycle email links', async () => {
+    const { emailClickCampaign } = await import('./analytics');
+    expect(emailClickCampaign('/pricing?upgrade=writing&utm_source=email&utm_medium=lifecycle&utm_campaign=free_report_offer#week-pass')).toBe('free_report_offer');
+    expect(emailClickCampaign('/pricing?utm_medium=lifecycle')).toBe('unknown');
+    expect(emailClickCampaign('/pricing?utm_medium=cpc&utm_campaign=x')).toBe('');
+    expect(emailClickCampaign('/pricing')).toBe('');
+  });
+});
