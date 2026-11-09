@@ -29,7 +29,7 @@ describe('planItem', () => {
       item_name: 'Pro Monthly',
       item_category: 'subscription',
       item_variant: 'global',
-      price: 8.99,
+      price: 14.99,
       // No promo is configured, so there is no discount to report. This is the
       // regression guard for the removed fictitious anchors: `discount` must
       // never carry a marketing "was" delta again.
@@ -48,7 +48,7 @@ describe('planItem', () => {
       item_id: 'pro_exam_pass',
       item_name: 'Pro Exam Pass',
       item_category: 'one_time',
-      price: 19.99,
+      price: 24.99,
     });
   });
 
@@ -57,7 +57,7 @@ describe('planItem', () => {
       item_variant: 'ppp',
       price: 19.99,
     });
-    expect(planItem('exam_pass', true)).toMatchObject({ price: 5.99 });
+    expect(planItem('exam_pass', true)).toMatchObject({ price: 9.99 });
     expect(planItem('3month', false)).toBeNull();
     expect(planItem('6month', false)).toBeNull();
   });
@@ -100,7 +100,7 @@ describe('funnel events', () => {
   it('begin_checkout reports the Exam Pass as a one-time purchase', () => {
     trackBeginCheckout('exam_pass', true, 'pricing');
     const [, params] = trackMock.mock.calls[0];
-    expect(params.value).toBe(5.99);
+    expect(params.value).toBe(9.99);
     expect(params.items[0].item_category).toBe('one_time');
     // No promo is configured, so no coupon may be claimed on the event.
     expect(params.coupon).toBeUndefined();
@@ -117,8 +117,8 @@ describe('funnel events', () => {
   });
 
   it('purchase carries recovered_from for checkouts reopened from the recovery email', () => {
-    trackPurchase({ transactionId: 'cs_new', sku: 'exam_pass', ppp: true, amountMinor: 599, recoveredFrom: 'cs_old' });
-    trackPurchase({ transactionId: 'cs_plain', sku: 'monthly', amountMinor: 899 });
+    trackPurchase({ transactionId: 'cs_new', sku: 'exam_pass', ppp: true, amountMinor: 999, recoveredFrom: 'cs_old' });
+    trackPurchase({ transactionId: 'cs_plain', sku: 'monthly', amountMinor: 1499 });
     expect(trackMock.mock.calls[0][1].recovered_from).toBe('cs_old');
     expect(trackMock.mock.calls[1][1]).not.toHaveProperty('recovered_from');
   });
@@ -133,15 +133,15 @@ describe('funnel events', () => {
       transactionId: 'cs_live_123',
       sku: 'monthly',
       ppp: false,
-      amountMinor: 539, // e.g. winback coupon applied
+      amountMinor: 899, // e.g. winback coupon applied
       currency: 'usd',
     });
     const [event, params] = trackMock.mock.calls[0];
     expect(event).toBe('purchase');
     expect(params.transaction_id).toBe('cs_live_123');
-    expect(params.value).toBe(5.39);
+    expect(params.value).toBe(8.99);
     expect(params.currency).toBe('USD');
-    expect(params.items[0].price).toBe(5.39);
+    expect(params.items[0].price).toBe(8.99);
   });
 
   it('purchase falls back to the advertised price and requires identifiers', () => {

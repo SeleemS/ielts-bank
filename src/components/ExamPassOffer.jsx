@@ -4,6 +4,7 @@ import { OFFER_VERSION } from '../../lib/monetizationExperiment';
 import * as React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import QuickCheckout from './billing/QuickCheckout';
+import ReportUnlockButton from './billing/ReportUnlockButton';
 import { EXAM_PASS_DAYS, money } from '../lib/saleConfig';
 import { useVisitorMarket } from '../lib/useVisitorMarket';
 import { track } from '../lib/analytics';
@@ -96,6 +97,9 @@ export default function ExamPassOffer({ skill, source, band, locked, reportId, c
         returnTo={reportPath || returnTo}
         source={source || 'score_tease'}
       />
+      {reportPath ? (
+        <ReportUnlockButton reportId={reportId} source={source || 'score_tease'} className="mt-4" />
+      ) : null}
       <p className="mt-3 text-xs leading-5 text-muted-foreground">
         {reportPath
           ? 'Every plan unlocks this saved report and includes continued practice. No resubmission needed. Scoring limits apply.'

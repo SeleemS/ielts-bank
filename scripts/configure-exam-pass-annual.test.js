@@ -85,14 +85,17 @@ describe('desired catalogue', () => {
     expect(
       Object.fromEntries(DESIRED_PRICES.map((spec) => [spec.lookupKey, spec.unitAmount]))
     ).toEqual(expected);
-    // Founder decision: annual $49.99 global / $19.99 PPP, pass $19.99 / $5.99 (Oct 20 2026).
+    // Founder decision Nov 9 2026: monthly $14.99 / $6.99, pass $24.99 / $9.99,
+    // week $9.99 / $4.99; annual unchanged.
     expect(expected).toMatchObject({
+      premium_monthly: 1499,
+      premium_monthly_ppp: 699,
       premium_annual: 4999,
       premium_annual_ppp: 1999,
-      premium_exam_pass: 1999,
-      premium_exam_pass_ppp: 599,
-      premium_week_pass: 499,
-      premium_week_pass_ppp: 299,
+      premium_exam_pass: 2499,
+      premium_exam_pass_ppp: 999,
+      premium_week_pass: 999,
+      premium_week_pass_ppp: 499,
     });
   });
 
@@ -253,7 +256,7 @@ describe('applyCatalogPlan', () => {
       }),
       expect.objectContaining({
         currency: 'usd',
-        unit_amount: 599,
+        unit_amount: 999,
         lookup_key: 'premium_exam_pass_ppp',
         transfer_lookup_key: true,
       }),

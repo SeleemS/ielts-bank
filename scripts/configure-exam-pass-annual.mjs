@@ -2,6 +2,13 @@
 // scripts/configure-exam-pass-annual.mjs
 //
 // Moves the live Stripe catalogue to the pricing in src/lib/saleConfig.js.
+// Nov 9 2026 run:
+//   premium_monthly            $8.99 -> $14.99  (recurring, month)
+//   premium_monthly_ppp        $4.99 ->  $6.99  (recurring, month)
+//   premium_exam_pass         $19.99 -> $24.99  (one-time)
+//   premium_exam_pass_ppp      $5.99 ->  $9.99  (one-time)
+//   premium_week_pass          $4.99 ->  $9.99  (one-time)
+//   premium_week_pass_ppp      $2.99 ->  $4.99  (one-time)
 // Oct 20 2026 run:
 //   premium_exam_pass       $14.99 -> $19.99  (one-time)
 //   premium_monthly_ppp      $3.99 ->  $4.99  (recurring, month)
@@ -43,14 +50,14 @@ export const PRODUCT_METADATA_MARKER = 'premium';
 export const DESIRED_PRICES = [
   {
     lookupKey: 'premium_monthly',
-    unitAmount: 899,
+    unitAmount: 1499,
     interval: 'month',
     intervalCount: 1,
     nickname: 'Pro Monthly (global)',
   },
   {
     lookupKey: 'premium_monthly_ppp',
-    unitAmount: 499,
+    unitAmount: 699,
     interval: 'month',
     intervalCount: 1,
     nickname: 'Pro Monthly (PPP)',
@@ -71,22 +78,22 @@ export const DESIRED_PRICES = [
   },
   {
     lookupKey: 'premium_exam_pass',
-    unitAmount: 1999,
+    unitAmount: 2499,
     nickname: 'Pro Exam Pass — 30 days (global)',
   },
   {
     lookupKey: 'premium_exam_pass_ppp',
-    unitAmount: 599,
+    unitAmount: 999,
     nickname: 'Pro Exam Pass — 30 days (PPP)',
   },
   {
     lookupKey: 'premium_week_pass',
-    unitAmount: 499,
+    unitAmount: 999,
     nickname: 'Pro Week Pass — 7 days (global)',
   },
   {
     lookupKey: 'premium_week_pass_ppp',
-    unitAmount: 299,
+    unitAmount: 499,
     nickname: 'Pro Week Pass — 7 days (PPP)',
   },
 ];

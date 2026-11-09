@@ -107,7 +107,7 @@ describe('saleConfig honesty guarantees', () => {
 
       const monthly = planPricing('monthly', false, now);
       expect(monthly.promo).toBe(false);
-      expect(monthly.price).toBe(8.99);
+      expect(monthly.price).toBe(14.99);
     } finally {
       Object.assign(PROMO, saved);
     }
@@ -117,7 +117,7 @@ describe('saleConfig honesty guarantees', () => {
 describe('saleConfig planPricing — global list prices', () => {
   it('prices the monthly plan', () => {
     const p = planPricing('monthly', false);
-    expect(p.price).toBe(8.99);
+    expect(p.price).toBe(14.99);
     expect(p.cadence).toBe('per month');
     expect(p.perMonth).toBeNull();
     expect(p.isOneTime).toBe(false);
@@ -135,7 +135,7 @@ describe('saleConfig planPricing — global list prices', () => {
 
   it('prices the one-time Exam Pass with no billing cadence', () => {
     const p = planPricing('exam_pass', false);
-    expect(p.price).toBe(19.99);
+    expect(p.price).toBe(24.99);
     expect(p.isOneTime).toBe(true);
     expect(p.interval).toBeNull();
     expect(p.days).toBe(EXAM_PASS_DAYS);
@@ -180,9 +180,9 @@ describe('Exam Pass length', () => {
 
 describe('saleConfig planPricing — regional (PPP)', () => {
   it('uses the lower regional prices', () => {
-    expect(planPricing('monthly', true).price).toBe(4.99);
+    expect(planPricing('monthly', true).price).toBe(6.99);
     expect(planPricing('annual', true).price).toBe(19.99);
-    expect(planPricing('exam_pass', true).price).toBe(5.99);
+    expect(planPricing('exam_pass', true).price).toBe(9.99);
   });
 
   it('returns null for a retired or unknown plan key', () => {
@@ -199,7 +199,7 @@ describe('saleConfig card layout', () => {
     expect(highlightedSku(ppp)).toBe('exam_pass');
     expect(planOrder(ppp)[0]).toBe(highlightedSku(ppp));
     expect(planOrder(ppp).map(sku => planPricing(sku, ppp).price))
-      .toEqual(ppp ? [5.99, 4.99, 19.99] : [19.99, 8.99, 49.99]);
+      .toEqual(ppp ? [9.99, 6.99, 19.99] : [24.99, 14.99, 49.99]);
     expect(planPricing('exam_pass', ppp)).toMatchObject({
       days: 30, isOneTime: true, interval: null, intervalCount: null,
     });

@@ -9,7 +9,7 @@ import WritingScoreReport from '../../src/components/question/WritingScoreReport
 import { Button } from '../../components/ui/button';
 import { useAuth } from '../../src/lib/auth';
 import { saveWritingDraft } from '../../src/lib/writingDraft';
-import { requestWritingReport } from '../../src/lib/writingReports';
+import { confirmReportUnlock, requestWritingReport } from '../../src/lib/writingReports';
 import { track } from '../../src/lib/analytics';
 import { REPORT_ID_RE, writingReportPath } from '../../lib/writingReport';
 
@@ -20,6 +20,7 @@ export default function SavedWritingReport() {
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [signIn, setSignIn] = useState(false);
+  const [unlockNotice, setUnlockNotice] = useState('');
   const id = typeof router.query.id === 'string' ? router.query.id : '';
   const owner = `${user?.id || ''}:${id}`;
   // Never display an earlier account's report during a session transition.
@@ -30,6 +31,18 @@ export default function SavedWritingReport() {
     if (loading || !user?.id || !id) return;
     if (!REPORT_ID_RE.test(id)) { setError('Invalid report link.'); return; }
     (async () => {
+      // Back from a single-report checkout: confirm the payment with the
+      // server before reading the report, so it opens in full straight away
+      // (the Stripe webhook does the same in the background).
+      const params = new URLSearchParams(window.location.search);
+      const paidSession = params.get('unlock') === 'success' ? params.get('session_id') : '';
+      if (paidSession) {
+        const confirmed = await confirmReportUnlock(id, paidSession).catch(() => false);
+        if (canceled) return;
+        track('report_unlock_return', { confirmed, source: 'saved_report' });
+        setUnlockNotice(confirmed ? 'paid' : 'pending');
+        void router.replace(`/writing-report/${id}`, undefined, { shallow: true });
+      }
       let data = await requestWritingReport(id);
       if (canceled) return;
       if (!data.result.free || data.canUnlock) data = await requestWritingReport(id, 'POST');
@@ -60,6 +73,8 @@ export default function SavedWritingReport() {
       {loading || (user && !report && !error) ? <p role="status" className="mt-6">Opening your saved feedback…</p> : null}
       {!loading && !user ? <div className="mt-6"><p className="mb-4">Sign in with the account you used to score this essay.</p><Button onClick={() => setSignIn(true)}>Sign in to open report</Button></div> : null}
       {error ? <div role="alert" className="my-6 rounded-xl border p-4"><p>{error}</p><Button variant="outline" className="mt-3" onClick={() => setRetry(n => n + 1)}>Try again</Button></div> : null}
+      {report && unlockNotice === 'paid' && !report.result.free ? <p role="status" className="mt-6 rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm font-semibold">Payment received. Your full report is unlocked below.</p> : null}
+      {report && unlockNotice && report.result.free ? <div role="status" className="mt-6 rounded-xl border p-4 text-sm"><p>Your payment is still being confirmed. This usually takes a few seconds.</p><Button variant="outline" className="mt-3" onClick={() => setRetry(n => n + 1)}>Check again</Button></div> : null}
       {report ? <div className="mt-6 space-y-6">
         {!report.result.free ? <section className="rounded-xl border border-accent/30 bg-accent/5 p-5">
           <h2 className="text-lg font-bold">Turn this feedback into your next draft</h2>
